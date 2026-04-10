@@ -65,6 +65,9 @@ importers:
       stripe:
         specifier: ^22.0.1
         version: 22.0.1(@types/node@20.19.39)
+      svix:
+        specifier: ^1.90.0
+        version: 1.90.0
       tailwind-merge:
         specifier: ^3.5.0
         version: 3.5.0
@@ -3724,6 +3727,9 @@ packages:
 
   svix@1.88.0:
     resolution: {integrity: sha512-vm/JrrUd3bVyBE+3L33TIyVSs8gS5fYx7lrISvKlDJXTYX1ACH4REX8P1tHxsSKoZi/rvifM1t0XRc5Vc45THw==}
+
+  svix@1.90.0:
+    resolution: {integrity: sha512-ljkZuyy2+IBEoESkIpn8sLM+sxJHQcPxlZFxU+nVDhltNfUMisMBzWX/UR8SjEnzoI28ZjCzMbmYAPwSTucoMw==}
 
   tabbable@6.4.0:
     resolution: {integrity: sha512-05PUHKSNE8ou2dwIxTngl4EzcnsCDZGJ/iCLtDflR/SHB/ny14rXc+qU5P4mG9JkusiV7EivzY9Mhm55AzAvCg==}
@@ -7508,6 +7514,11 @@ snapshots:
   supports-preserve-symlinks-flag@1.0.0: {}
 
   svix@1.88.0:
+    dependencies:
+      standardwebhooks: 1.0.0
+      uuid: 10.0.0
+
+  svix@1.90.0:
     dependencies:
       standardwebhooks: 1.0.0
       uuid: 10.0.0
