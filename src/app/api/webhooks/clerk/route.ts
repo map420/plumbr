@@ -1,9 +1,7 @@
 import { headers } from 'next/headers'
 import { WebhookEvent } from '@clerk/nextjs/server'
 import { Webhook } from 'svix'
-import { db } from '@/db'
-import { users } from '@/db/schema/users'
-import { eq } from 'drizzle-orm'
+import { dbAdapter } from '@/lib/adapters/db'
 
 export async function POST(req: Request) {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET
@@ -33,11 +31,13 @@ export async function POST(req: Request) {
     const { id, email_addresses, first_name, last_name } = evt.data
     const email = email_addresses[0]?.email_address
     if (email) {
-      await db.insert(users).values({
+      await dbAdapter.users.upsert({
         id,
         email,
         name: [first_name, last_name].filter(Boolean).join(' ') || null,
-      }).onConflictDoNothing()
+        companyName: null, phone: null, plan: null,
+        stripeCustomerId: null, stripeSubscriptionId: null,
+      })
     }
   }
 
@@ -45,11 +45,10 @@ export async function POST(req: Request) {
     const { id, email_addresses, first_name, last_name } = evt.data
     const email = email_addresses[0]?.email_address
     if (email) {
-      await db.update(users).set({
+      await dbAdapter.users.update(id, {
         email,
         name: [first_name, last_name].filter(Boolean).join(' ') || null,
-        updatedAt: new Date(),
-      }).where(eq(users.id, id))
+      })
     }
   }
 

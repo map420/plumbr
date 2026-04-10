@@ -1,32 +1,32 @@
 'use server'
 
-import { auth, currentUser } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
-import { db } from '@/db'
-import { users } from '@/db/schema/users'
-import { eq } from 'drizzle-orm'
+import { authAdapter } from '@/lib/adapters/auth'
+import { dbAdapter } from '@/lib/adapters/db'
 import { paymentsAdapter } from '@/lib/adapters/payments'
 import { PLANS } from '@/lib/stripe'
 import { headers } from 'next/headers'
 
 async function requireUser(locale: string) {
-  const { userId } = await auth()
+  const userId = await authAdapter.getUserId()
   if (!userId) redirect(`/${locale}/sign-in`)
 
-  const rows = await db.select().from(users).where(eq(users.id, userId))
-  if (rows[0]) return rows[0]
+  const user = await dbAdapter.users.findById(userId)
+  if (user) return user
 
-  // User not in DB yet — create from Clerk data
-  const clerkUser = await currentUser()
-  if (!clerkUser) redirect(`/${locale}/sign-in`)
+  // Auto-create user: pull from Clerk if available, otherwise use fallback
+  let email = `${userId}@local.dev`
+  let name: string | null = null
 
-  const email = clerkUser.emailAddresses[0]?.emailAddress ?? ''
-  const [newUser] = await db.insert(users).values({
-    id: userId,
-    email,
-    name: [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ') || null,
-  }).returning()
-  return newUser
+  if (process.env.CLERK_SECRET_KEY) {
+    const { currentUser } = await import('@clerk/nextjs/server')
+    const clerkUser = await currentUser()
+    if (!clerkUser) redirect(`/${locale}/sign-in`)
+    email = clerkUser.emailAddresses[0]?.emailAddress ?? email
+    name = [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ') || null
+  }
+
+  return dbAdapter.users.upsert({ id: userId, email, name, companyName: null, phone: null, plan: null, stripeCustomerId: null, stripeSubscriptionId: null })
 }
 
 function getOrigin(headersList: Awaited<ReturnType<typeof headers>>) {
@@ -47,7 +47,7 @@ export async function createCheckoutSession(locale: string) {
       metadata: { userId: user.id },
     })
     customerId = customer.id
-    await db.update(users).set({ stripeCustomerId: customerId }).where(eq(users.id, user.id))
+    await dbAdapter.users.update(user.id, { stripeCustomerId: customerId })
   }
 
   const { url } = await paymentsAdapter.createCheckoutSession({
@@ -78,9 +78,8 @@ export async function createPortalSession(locale: string) {
 }
 
 export async function getUserPlan() {
-  const { userId } = await auth()
+  const userId = await authAdapter.getUserId()
   if (!userId) return null
-  const rows = await db.select({ plan: users.plan, stripeSubscriptionId: users.stripeSubscriptionId })
-    .from(users).where(eq(users.id, userId))
-  return rows[0] ?? null
+  const user = await dbAdapter.users.findById(userId)
+  return user ? { plan: user.plan, stripeSubscriptionId: user.stripeSubscriptionId } : null
 }

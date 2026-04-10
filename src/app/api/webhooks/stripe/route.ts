@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
-import { db } from '@/db'
-import { users } from '@/db/schema/users'
-import { eq } from 'drizzle-orm'
+import { dbAdapter } from '@/lib/adapters/db'
 import type Stripe from 'stripe'
 
 export async function POST(req: NextRequest) {
@@ -22,12 +20,11 @@ export async function POST(req: NextRequest) {
       if (session.mode !== 'subscription') break
       const userId = session.metadata?.userId
       if (!userId) break
-      await db.update(users).set({
+      await dbAdapter.users.update(userId, {
         plan: 'pro',
         stripeCustomerId: session.customer as string,
         stripeSubscriptionId: session.subscription as string,
-        updatedAt: new Date(),
-      }).where(eq(users.id, userId))
+      })
       break
     }
 
@@ -38,11 +35,10 @@ export async function POST(req: NextRequest) {
       const userId = (customer as Stripe.Customer).metadata?.userId
       if (!userId) break
       const isActive = sub.status === 'active' || sub.status === 'trialing'
-      await db.update(users).set({
+      await dbAdapter.users.update(userId, {
         plan: isActive ? 'pro' : 'starter',
         stripeSubscriptionId: sub.id,
-        updatedAt: new Date(),
-      }).where(eq(users.id, userId))
+      })
       break
     }
 
@@ -52,11 +48,10 @@ export async function POST(req: NextRequest) {
       if (customer.deleted) break
       const userId = (customer as Stripe.Customer).metadata?.userId
       if (!userId) break
-      await db.update(users).set({
+      await dbAdapter.users.update(userId, {
         plan: 'starter',
         stripeSubscriptionId: null,
-        updatedAt: new Date(),
-      }).where(eq(users.id, userId))
+      })
       break
     }
   }

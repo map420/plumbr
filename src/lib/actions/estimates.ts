@@ -1,61 +1,56 @@
 'use server'
 
-import { auth } from '@clerk/nextjs/server'
-import { db } from '@/db'
-import { estimates } from '@/db/schema/estimates'
-import { lineItems } from '@/db/schema/line-items'
-import { eq, and, desc } from 'drizzle-orm'
+import { authAdapter } from '@/lib/adapters/auth'
+import { dbAdapter } from '@/lib/adapters/db'
 import { revalidatePath } from 'next/cache'
+import type { LineItemInput } from '@/lib/adapters/db/types'
 
 async function requireAuth() {
-  const { userId } = await auth()
+  const userId = await authAdapter.getUserId()
   if (!userId) throw new Error('Unauthorized')
   return userId
 }
 
-async function nextEstimateNumber(userId: string) {
-  const rows = await db.select({ number: estimates.number }).from(estimates).where(eq(estimates.userId, userId))
-  const max = rows.reduce((acc, r) => {
-    const n = parseInt(r.number.replace('EST-', ''), 10)
-    return isNaN(n) ? acc : Math.max(acc, n)
-  }, 0)
-  return `EST-${String(max + 1).padStart(3, '0')}`
-}
-
 export async function getEstimates() {
   const userId = await requireAuth()
-  return db.select().from(estimates).where(eq(estimates.userId, userId)).orderBy(desc(estimates.createdAt))
+  return dbAdapter.estimates.findAll(userId)
 }
 
 export async function getEstimate(id: string) {
   const userId = await requireAuth()
-  const rows = await db.select().from(estimates).where(and(eq(estimates.id, id), eq(estimates.userId, userId)))
-  return rows[0] ?? null
+  return dbAdapter.estimates.findById(id, userId)
 }
 
 export async function getEstimatesByJob(jobId: string) {
   const userId = await requireAuth()
-  return db.select().from(estimates).where(and(eq(estimates.jobId, jobId), eq(estimates.userId, userId)))
+  return dbAdapter.estimates.findByJob(jobId, userId)
 }
 
 export async function getLineItems(estimateId: string) {
-  return db.select().from(lineItems)
-    .where(and(eq(lineItems.parentId, estimateId), eq(lineItems.parentType, 'estimate')))
-    .orderBy(lineItems.sortOrder)
+  return dbAdapter.lineItems.findByParent(estimateId, 'estimate')
 }
 
-type LineItemInput = { type: string; description: string; quantity: number; unitPrice: number; total: number }
+type RawLineItem = { type: string; description: string; quantity: number; unitPrice: number; total: number }
 
 export async function createEstimate(data: {
   jobId: string; clientName: string; clientEmail: string; status: string
   subtotal: number; tax: number; total: number; notes: string; validUntil: string
-}, items: LineItemInput[]) {
+}, items: RawLineItem[]) {
   const userId = await requireAuth()
-  const number = await nextEstimateNumber(userId)
-  const [estimate] = await db.insert(estimates).values({
-    userId,
+  const lineItems: LineItemInput[] = items.map((item, i) => ({
+    parentId: '',
+    parentType: 'estimate' as const,
+    type: item.type as LineItemInput['type'],
+    description: item.description,
+    quantity: String(item.quantity),
+    unitPrice: String(item.unitPrice),
+    total: String(item.total),
+    sortOrder: i,
+  }))
+
+  const estimate = await dbAdapter.estimates.create(userId, {
     jobId: data.jobId || null,
-    number,
+    number: '',
     clientName: data.clientName,
     clientEmail: data.clientEmail || null,
     status: data.status as 'draft',
@@ -65,20 +60,7 @@ export async function createEstimate(data: {
     notes: data.notes || null,
     validUntil: data.validUntil ? new Date(data.validUntil) : null,
     convertedToInvoiceId: null,
-  }).returning()
-
-  if (items.length > 0) {
-    await db.insert(lineItems).values(items.map((item, i) => ({
-      parentId: estimate.id,
-      parentType: 'estimate' as const,
-      type: item.type as 'labor' | 'material' | 'subcontractor' | 'other',
-      description: item.description,
-      quantity: String(item.quantity),
-      unitPrice: String(item.unitPrice),
-      total: String(item.total),
-      sortOrder: i,
-    })))
-  }
+  }, lineItems)
 
   revalidatePath('/[locale]/estimates', 'page')
   return estimate
@@ -88,17 +70,17 @@ export async function updateEstimate(id: string, data: Partial<{
   status: string; notes: string; convertedToInvoiceId: string
 }>) {
   const userId = await requireAuth()
-  const [estimate] = await db.update(estimates)
-    .set({ ...data, status: data.status as 'draft' | 'sent' | 'approved' | 'rejected' | 'converted' | undefined, updatedAt: new Date() })
-    .where(and(eq(estimates.id, id), eq(estimates.userId, userId)))
-    .returning()
+  const estimate = await dbAdapter.estimates.update(id, userId, {
+    ...data.status !== undefined && { status: data.status as 'draft' | 'sent' | 'approved' | 'rejected' | 'converted' },
+    ...data.notes !== undefined && { notes: data.notes },
+    ...data.convertedToInvoiceId !== undefined && { convertedToInvoiceId: data.convertedToInvoiceId || null },
+  })
   revalidatePath('/[locale]/estimates', 'page')
   return estimate
 }
 
 export async function deleteEstimate(id: string) {
   const userId = await requireAuth()
-  await db.delete(lineItems).where(and(eq(lineItems.parentId, id), eq(lineItems.parentType, 'estimate')))
-  await db.delete(estimates).where(and(eq(estimates.id, id), eq(estimates.userId, userId)))
+  await dbAdapter.estimates.delete(id, userId)
   revalidatePath('/[locale]/estimates', 'page')
 }
