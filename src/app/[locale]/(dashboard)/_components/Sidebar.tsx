@@ -1,0 +1,46 @@
+'use client'
+
+import { UserButton } from '@clerk/nextjs'
+import Link from 'next/link'
+import { useTranslations, useLocale } from 'next-intl'
+import {
+  LayoutDashboard, FileText, Briefcase, Calendar, Smartphone, Receipt
+} from 'lucide-react'
+
+export default function Sidebar() {
+  const t = useTranslations('nav')
+  const locale = useLocale()
+
+  const nav = [
+    { href: `/${locale}/dashboard`, label: t('dashboard'), icon: LayoutDashboard },
+    { href: `/${locale}/estimates`, label: t('estimates'), icon: FileText },
+    { href: `/${locale}/jobs`, label: t('jobs'), icon: Briefcase },
+    { href: `/${locale}/invoices`, label: t('invoices'), icon: Receipt },
+    { href: `/${locale}/schedule`, label: t('schedule'), icon: Calendar },
+    { href: `/${locale}/field`, label: t('field'), icon: Smartphone },
+  ]
+
+  return (
+    <aside className="w-60 shrink-0 plumbr-nav flex flex-col">
+      <div className="px-6 py-5 border-b border-white/10">
+        <span className="text-xl font-bold tracking-tight">Plumbr</span>
+      </div>
+      <nav className="flex-1 px-3 py-4 space-y-1">
+        {nav.map(({ href, label, icon: Icon }) => (
+          <Link
+            key={href}
+            href={href}
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <Icon size={18} />
+            {label}
+          </Link>
+        ))}
+      </nav>
+      <div className="px-6 py-4 border-t border-white/10 flex items-center gap-3">
+        <UserButton />
+        <span className="text-sm text-white/60">{t('account')}</span>
+      </div>
+    </aside>
+  )
+}

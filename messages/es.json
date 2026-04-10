@@ -1,0 +1,187 @@
+{
+  "nav": {
+    "dashboard": "Inicio",
+    "estimates": "Presupuestos",
+    "jobs": "Trabajos",
+    "invoices": "Facturas",
+    "schedule": "Calendario",
+    "field": "Campo",
+    "account": "Cuenta"
+  },
+  "dashboard": {
+    "greeting": "Buenos días, {name}",
+    "subtitle": "Esto es lo que está pasando con tu negocio hoy.",
+    "stats": {
+      "activeJobs": "Trabajos Activos",
+      "openEstimates": "Presupuestos Abiertos",
+      "revenueThisMonth": "Ingresos Este Mes",
+      "avgJobMargin": "Margen Promedio"
+    },
+    "quickActions": {
+      "title": "Acciones Rápidas",
+      "newEstimate": "+ Nuevo Presupuesto",
+      "newJob": "+ Nuevo Trabajo"
+    }
+  },
+  "jobs": {
+    "title": "Trabajos",
+    "new": "Nuevo Trabajo",
+    "empty": "Aún no hay trabajos. Crea tu primer trabajo.",
+    "status": {
+      "lead": "Prospecto",
+      "active": "Activo",
+      "on_hold": "En Pausa",
+      "completed": "Completado",
+      "cancelled": "Cancelado"
+    },
+    "fields": {
+      "name": "Nombre del Trabajo",
+      "clientName": "Nombre del Cliente",
+      "clientEmail": "Email del Cliente",
+      "clientPhone": "Teléfono del Cliente",
+      "address": "Dirección",
+      "startDate": "Fecha de Inicio",
+      "endDate": "Fecha de Fin",
+      "notes": "Notas",
+      "budgetedCost": "Costo Presupuestado",
+      "actualCost": "Costo Real"
+    }
+  },
+  "estimates": {
+    "title": "Presupuestos",
+    "new": "Nuevo Presupuesto",
+    "empty": "Aún no hay presupuestos. Crea tu primer presupuesto.",
+    "convertToInvoice": "Convertir a Factura",
+    "status": {
+      "draft": "Borrador",
+      "sent": "Enviado",
+      "approved": "Aprobado",
+      "rejected": "Rechazado",
+      "converted": "Convertido"
+    },
+    "fields": {
+      "number": "Presupuesto #",
+      "clientName": "Nombre del Cliente",
+      "clientEmail": "Email del Cliente",
+      "validUntil": "Válido Hasta",
+      "notes": "Notas",
+      "subtotal": "Subtotal",
+      "tax": "Impuesto",
+      "total": "Total"
+    },
+    "lineItems": {
+      "title": "Líneas de Detalle",
+      "add": "Agregar Ítem",
+      "type": {
+        "labor": "Mano de Obra",
+        "material": "Material",
+        "subcontractor": "Subcontratista",
+        "other": "Otro"
+      },
+      "fields": {
+        "description": "Descripción",
+        "quantity": "Cant.",
+        "unitPrice": "Precio Unit.",
+        "total": "Total"
+      }
+    }
+  },
+  "invoices": {
+    "title": "Facturas",
+    "new": "Nueva Factura",
+    "empty": "Aún no hay facturas.",
+    "markAsPaid": "Marcar como Pagada",
+    "status": {
+      "draft": "Borrador",
+      "sent": "Enviada",
+      "paid": "Pagada",
+      "overdue": "Vencida",
+      "cancelled": "Cancelada"
+    },
+    "fields": {
+      "number": "Factura #",
+      "clientName": "Nombre del Cliente",
+      "clientEmail": "Email del Cliente",
+      "dueDate": "Fecha de Vencimiento",
+      "notes": "Notas",
+      "subtotal": "Subtotal",
+      "tax": "Impuesto",
+      "total": "Total"
+    }
+  },
+  "schedule": {
+    "title": "Calendario",
+    "today": "Hoy",
+    "noJobs": "No hay trabajos programados."
+  },
+  "field": {
+    "title": "Campo",
+    "todaysJobs": "Trabajos de Hoy",
+    "noJobs": "No hay trabajos asignados para hoy.",
+    "checklist": "Lista de Tareas",
+    "photos": "Fotos",
+    "uploadPhoto": "Subir Foto"
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "back": "Volver",
+    "loading": "Cargando...",
+    "error": "Algo salió mal.",
+    "noResults": "Sin resultados.",
+    "currency": "${amount}",
+    "actions": "Acciones"
+  },
+  "marketing": {
+    "nav": {
+      "signIn": "Iniciar sesión",
+      "startTrial": "Prueba gratis"
+    },
+    "hero": {
+      "badge": "Para contratistas con ingresos menores a $5M",
+      "title": "Tu negocio de construcción,",
+      "titleAccent": "en orden.",
+      "subtitle": "Deja de hacer malabares con WhatsApp, Excel y QuickBooks. Plumbr te da presupuestos, costos de trabajo, horarios de equipo y facturación — en un solo lugar.",
+      "cta": "Prueba gratis 14 días",
+      "noCreditCard": "Sin tarjeta de crédito"
+    },
+    "features": {
+      "title": "Todo lo que necesitas. Nada más.",
+      "items": [
+        "Crea presupuestos en minutos con plantillas de costos",
+        "Convierte presupuesto a factura en 1 clic — sin doble entrada",
+        "Costos de trabajo en tiempo real: conoce tus márgenes antes de terminar",
+        "Calendario visual del equipo con arrastrar y soltar",
+        "App móvil para fotos y listas de tareas en campo"
+      ]
+    },
+    "pricing": {
+      "title": "Precio fijo. Sin cobro por usuario.",
+      "subtitle": "14 días de prueba gratis en todos los planes.",
+      "mostPopular": "Más Popular",
+      "perMonth": "/mes",
+      "cta": "Prueba gratis",
+      "plans": {
+        "starter": { "name": "Inicial", "seats": "1–2 usuarios" },
+        "growth": { "name": "Crecimiento", "seats": "3–10 usuarios" },
+        "pro": { "name": "Pro", "seats": "10–25 usuarios" }
+      }
+    },
+    "footer": {
+      "copy": "© 2025 Plumbr. Hecho por Mr Labs.",
+      "tagline": "Tu negocio de construcción, en orden."
+    }
+  },
+  "auth": {
+    "signIn": {
+      "title": "Bienvenido de vuelta",
+      "subtitle": "Inicia sesión en tu cuenta."
+    },
+    "signUp": {
+      "title": "Plumbr",
+      "subtitle": "Comienza tu prueba gratis de 14 días."
+    }
+  }
+}

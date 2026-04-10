@@ -1,0 +1,187 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "estimates": "Estimates",
+    "jobs": "Jobs",
+    "invoices": "Invoices",
+    "schedule": "Schedule",
+    "field": "Field",
+    "account": "Account"
+  },
+  "dashboard": {
+    "greeting": "Good morning, {name}",
+    "subtitle": "Here's what's happening with your business today.",
+    "stats": {
+      "activeJobs": "Active Jobs",
+      "openEstimates": "Open Estimates",
+      "revenueThisMonth": "Revenue This Month",
+      "avgJobMargin": "Avg. Job Margin"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "newEstimate": "+ New Estimate",
+      "newJob": "+ New Job"
+    }
+  },
+  "jobs": {
+    "title": "Jobs",
+    "new": "New Job",
+    "empty": "No jobs yet. Create your first job.",
+    "status": {
+      "lead": "Lead",
+      "active": "Active",
+      "on_hold": "On Hold",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "fields": {
+      "name": "Job Name",
+      "clientName": "Client Name",
+      "clientEmail": "Client Email",
+      "clientPhone": "Client Phone",
+      "address": "Address",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "notes": "Notes",
+      "budgetedCost": "Budgeted Cost",
+      "actualCost": "Actual Cost"
+    }
+  },
+  "estimates": {
+    "title": "Estimates",
+    "new": "New Estimate",
+    "empty": "No estimates yet. Create your first estimate.",
+    "convertToInvoice": "Convert to Invoice",
+    "status": {
+      "draft": "Draft",
+      "sent": "Sent",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "converted": "Converted"
+    },
+    "fields": {
+      "number": "Estimate #",
+      "clientName": "Client Name",
+      "clientEmail": "Client Email",
+      "validUntil": "Valid Until",
+      "notes": "Notes",
+      "subtotal": "Subtotal",
+      "tax": "Tax",
+      "total": "Total"
+    },
+    "lineItems": {
+      "title": "Line Items",
+      "add": "Add Item",
+      "type": {
+        "labor": "Labor",
+        "material": "Material",
+        "subcontractor": "Subcontractor",
+        "other": "Other"
+      },
+      "fields": {
+        "description": "Description",
+        "quantity": "Qty",
+        "unitPrice": "Unit Price",
+        "total": "Total"
+      }
+    }
+  },
+  "invoices": {
+    "title": "Invoices",
+    "new": "New Invoice",
+    "empty": "No invoices yet.",
+    "markAsPaid": "Mark as Paid",
+    "status": {
+      "draft": "Draft",
+      "sent": "Sent",
+      "paid": "Paid",
+      "overdue": "Overdue",
+      "cancelled": "Cancelled"
+    },
+    "fields": {
+      "number": "Invoice #",
+      "clientName": "Client Name",
+      "clientEmail": "Client Email",
+      "dueDate": "Due Date",
+      "notes": "Notes",
+      "subtotal": "Subtotal",
+      "tax": "Tax",
+      "total": "Total"
+    }
+  },
+  "schedule": {
+    "title": "Schedule",
+    "today": "Today",
+    "noJobs": "No jobs scheduled."
+  },
+  "field": {
+    "title": "Field",
+    "todaysJobs": "Today's Jobs",
+    "noJobs": "No jobs assigned for today.",
+    "checklist": "Checklist",
+    "photos": "Photos",
+    "uploadPhoto": "Upload Photo"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "loading": "Loading...",
+    "error": "Something went wrong.",
+    "noResults": "No results found.",
+    "currency": "${amount}",
+    "actions": "Actions"
+  },
+  "marketing": {
+    "nav": {
+      "signIn": "Sign in",
+      "startTrial": "Start free trial"
+    },
+    "hero": {
+      "badge": "Built for contractors under $5M revenue",
+      "title": "Your construction business,",
+      "titleAccent": "straight.",
+      "subtitle": "Stop juggling WhatsApp, Excel, and QuickBooks. Plumbr gives you estimates, job costing, crew scheduling, and invoicing — in one place.",
+      "cta": "Start 14-day free trial",
+      "noCreditCard": "No credit card required"
+    },
+    "features": {
+      "title": "Everything you need. Nothing you don't.",
+      "items": [
+        "Build estimates in minutes with cost templates",
+        "Convert estimate to invoice in 1 click — no double entry",
+        "Real-time job costing: know your margins before the job ends",
+        "Visual crew scheduling with drag-and-drop",
+        "Mobile field app for photos and task checklists"
+      ]
+    },
+    "pricing": {
+      "title": "Flat-rate pricing. No per-user fees.",
+      "subtitle": "14-day free trial on all plans.",
+      "mostPopular": "Most Popular",
+      "perMonth": "/mo",
+      "cta": "Start free trial",
+      "plans": {
+        "starter": { "name": "Starter", "seats": "1–2 users" },
+        "growth": { "name": "Growth", "seats": "3–10 users" },
+        "pro": { "name": "Pro", "seats": "10–25 users" }
+      }
+    },
+    "footer": {
+      "copy": "© 2025 Plumbr. Built by Mr Labs.",
+      "tagline": "Your construction business, straight."
+    }
+  },
+  "auth": {
+    "signIn": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to your account."
+    },
+    "signUp": {
+      "title": "Plumbr",
+      "subtitle": "Start your 14-day free trial."
+    }
+  }
+}

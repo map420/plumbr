@@ -1,19 +1,24 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import createIntlMiddleware from 'next-intl/middleware'
+import { routing } from './i18n/routing'
+import { NextRequest } from 'next/server'
+
+const intlMiddleware = createIntlMiddleware(routing)
 
 const isPublicRoute = createRouteMatcher([
   '/',
-  '/sign-in(.*)',
-  '/sign-up(.*)',
-  '/pricing',
+  '/:locale',
+  '/:locale/sign-in(.*)',
+  '/:locale/sign-up(.*)',
+  '/:locale/pricing',
   '/api/webhooks(.*)',
 ])
 
-export default clerkMiddleware(async (auth, req) => {
-  if (!isPublicRoute(req)) {
-    await auth.protect()
-  }
+export default clerkMiddleware(async (auth, req: NextRequest) => {
+  if (!isPublicRoute(req)) await auth.protect()
+  return intlMiddleware(req)
 })
 
 export const config = {
-  matcher: ['/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)','/(api|trpc)(.*)'],
+  matcher: ['/((?!_next|_vercel|.*\\..*).*)'],
 }
