@@ -1,0 +1,118 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { useLocale } from 'next-intl'
+import { getJobs, deleteJob, Job, JobStatus } from '@/lib/store/jobs'
+import { JobStatusBadge } from '@/components/jobs/JobStatusBadge'
+import { Briefcase, Plus, Trash2 } from 'lucide-react'
+
+type Translations = {
+  title: string
+  new: string
+  empty: string
+  status: Record<JobStatus, string>
+  fields: { name: string; clientName: string; startDate: string; budgetedCost: string }
+}
+
+const ALL_STATUSES: JobStatus[] = ['lead', 'active', 'on_hold', 'completed', 'cancelled']
+
+export function JobsClient({ translations: t }: { translations: Translations }) {
+  const locale = useLocale()
+  const [jobs, setJobs] = useState<Job[]>([])
+  const [filter, setFilter] = useState<JobStatus | 'all'>('all')
+
+  useEffect(() => { setJobs(getJobs()) }, [])
+
+  const filtered = filter === 'all' ? jobs : jobs.filter((j) => j.status === filter)
+
+  function handleDelete(id: string) {
+    if (!confirm('Delete this job?')) return
+    deleteJob(id)
+    setJobs(getJobs())
+  }
+
+  return (
+    <div className="p-8">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-slate-900">{t.title}</h1>
+        <Link href={`/${locale}/jobs/new`} className="btn-primary flex items-center gap-2 text-sm">
+          <Plus size={16} /> {t.new}
+        </Link>
+      </div>
+
+      {/* Filters */}
+      <div className="flex gap-2 mb-6 flex-wrap">
+        <button
+          onClick={() => setFilter('all')}
+          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filter === 'all' ? 'bg-[#1E3A5F] text-white' : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'}`}
+        >
+          All
+        </button>
+        {ALL_STATUSES.map((s) => (
+          <button
+            key={s}
+            onClick={() => setFilter(s)}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filter === s ? 'bg-[#1E3A5F] text-white' : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'}`}
+          >
+            {t.status[s]}
+          </button>
+        ))}
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="plumbr-card p-12 text-center">
+          <Briefcase size={40} className="mx-auto text-slate-300 mb-3" />
+          <p className="text-slate-500">{t.empty}</p>
+          <Link href={`/${locale}/jobs/new`} className="btn-primary inline-flex items-center gap-2 text-sm mt-4">
+            <Plus size={16} /> {t.new}
+          </Link>
+        </div>
+      ) : (
+        <div className="plumbr-card overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.name}</th>
+                <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.clientName}</th>
+                <th className="text-left px-4 py-3 font-medium text-slate-500">Status</th>
+                <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.startDate}</th>
+                <th className="text-right px-4 py-3 font-medium text-slate-500">{t.fields.budgetedCost}</th>
+                <th className="px-4 py-3" />
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filtered.map((job) => (
+                <tr key={job.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="px-4 py-3">
+                    <Link href={`/${locale}/jobs/${job.id}`} className="font-medium text-[#1E3A5F] hover:underline">
+                      {job.name}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3 text-slate-600">{job.clientName}</td>
+                  <td className="px-4 py-3">
+                    <JobStatusBadge status={job.status} label={t.status[job.status]} />
+                  </td>
+                  <td className="px-4 py-3 text-slate-500">
+                    {job.startDate ? new Date(job.startDate).toLocaleDateString() : '—'}
+                  </td>
+                  <td className="px-4 py-3 text-right font-medium text-slate-700">
+                    {job.budgetedCost > 0 ? `$${job.budgetedCost.toLocaleString()}` : '—'}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      onClick={() => handleDelete(job.id)}
+                      className="text-slate-400 hover:text-red-500 transition-colors"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
+}
