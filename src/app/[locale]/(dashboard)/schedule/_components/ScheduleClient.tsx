@@ -1,18 +1,18 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { useLocale } from 'next-intl'
-import { getJobs, Job, JobStatus } from '@/lib/store/jobs'
 import { JobStatusBadge } from '@/components/jobs/JobStatusBadge'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
+type JobStatus = 'lead' | 'active' | 'on_hold' | 'completed' | 'cancelled'
+type Job = { id: string; name: string; clientName: string; status: string; startDate: Date | null }
 type T = { title: string; today: string; noJobs: string; status: Record<JobStatus, string> }
 
 function startOfWeek(date: Date) {
   const d = new Date(date)
-  const day = d.getDay()
-  d.setDate(d.getDate() - day)
+  d.setDate(d.getDate() - d.getDay())
   d.setHours(0, 0, 0, 0)
   return d
 }
@@ -21,12 +21,11 @@ function sameDay(a: Date, b: Date) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
 }
 
-export function ScheduleClient({ translations: t }: { translations: T }) {
-  const locale = useLocale()
-  const [jobs, setJobs] = useState<Job[]>([])
-  const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()))
+const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-  useEffect(() => { setJobs(getJobs()) }, [])
+export function ScheduleClient({ initialJobs, translations: t }: { initialJobs: Job[]; translations: T }) {
+  const locale = useLocale()
+  const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()))
 
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(weekStart)
@@ -35,13 +34,8 @@ export function ScheduleClient({ translations: t }: { translations: T }) {
   })
 
   function jobsForDay(day: Date) {
-    return jobs.filter((j) => {
-      if (!j.startDate) return false
-      return sameDay(new Date(j.startDate), day)
-    })
+    return initialJobs.filter((j) => j.startDate && sameDay(new Date(j.startDate), day))
   }
-
-  const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
   return (
     <div className="p-8">
@@ -78,7 +72,7 @@ export function ScheduleClient({ translations: t }: { translations: T }) {
                       <p className="text-xs font-medium text-[#1E3A5F] truncate">{job.name}</p>
                       <p className="text-xs text-slate-400 truncate">{job.clientName}</p>
                       <div className="mt-1">
-                        <JobStatusBadge status={job.status} label={t.status[job.status]} />
+                        <JobStatusBadge status={job.status as JobStatus} label={t.status[job.status as JobStatus]} />
                       </div>
                     </Link>
                   ))}

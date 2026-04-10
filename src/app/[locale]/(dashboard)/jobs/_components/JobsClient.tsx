@@ -1,35 +1,37 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useLocale } from 'next-intl'
-import { getJobs, deleteJob, Job, JobStatus } from '@/lib/store/jobs'
+import { useRouter } from 'next/navigation'
+import { deleteJob } from '@/lib/actions/jobs'
 import { JobStatusBadge } from '@/components/jobs/JobStatusBadge'
 import { Briefcase, Plus, Trash2 } from 'lucide-react'
 
+type Job = { id: string; name: string; clientName: string; status: string; startDate: Date | null; budgetedCost: string | null }
+type JobStatus = 'lead' | 'active' | 'on_hold' | 'completed' | 'cancelled'
 type Translations = {
-  title: string
-  new: string
-  empty: string
+  title: string; new: string; empty: string
   status: Record<JobStatus, string>
   fields: { name: string; clientName: string; startDate: string; budgetedCost: string }
 }
 
 const ALL_STATUSES: JobStatus[] = ['lead', 'active', 'on_hold', 'completed', 'cancelled']
 
-export function JobsClient({ translations: t }: { translations: Translations }) {
+export function JobsClient({ initialJobs, translations: t }: { initialJobs: Job[]; translations: Translations }) {
   const locale = useLocale()
-  const [jobs, setJobs] = useState<Job[]>([])
+  const router = useRouter()
   const [filter, setFilter] = useState<JobStatus | 'all'>('all')
+  const [isPending, startTransition] = useTransition()
 
-  useEffect(() => { setJobs(getJobs()) }, [])
-
-  const filtered = filter === 'all' ? jobs : jobs.filter((j) => j.status === filter)
+  const filtered = filter === 'all' ? initialJobs : initialJobs.filter((j) => j.status === filter)
 
   function handleDelete(id: string) {
     if (!confirm('Delete this job?')) return
-    deleteJob(id)
-    setJobs(getJobs())
+    startTransition(async () => {
+      await deleteJob(id)
+      router.refresh()
+    })
   }
 
   return (
@@ -41,20 +43,12 @@ export function JobsClient({ translations: t }: { translations: Translations }) 
         </Link>
       </div>
 
-      {/* Filters */}
       <div className="flex gap-2 mb-6 flex-wrap">
-        <button
-          onClick={() => setFilter('all')}
-          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filter === 'all' ? 'bg-[#1E3A5F] text-white' : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'}`}
-        >
+        <button onClick={() => setFilter('all')} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filter === 'all' ? 'bg-[#1E3A5F] text-white' : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'}`}>
           All
         </button>
         {ALL_STATUSES.map((s) => (
-          <button
-            key={s}
-            onClick={() => setFilter(s)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filter === s ? 'bg-[#1E3A5F] text-white' : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'}`}
-          >
+          <button key={s} onClick={() => setFilter(s)} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filter === s ? 'bg-[#1E3A5F] text-white' : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'}`}>
             {t.status[s]}
           </button>
         ))}
@@ -81,29 +75,24 @@ export function JobsClient({ translations: t }: { translations: Translations }) 
                 <th className="px-4 py-3" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className={`divide-y divide-slate-100 ${isPending ? 'opacity-50' : ''}`}>
               {filtered.map((job) => (
                 <tr key={job.id} className="hover:bg-slate-50 transition-colors">
                   <td className="px-4 py-3">
-                    <Link href={`/${locale}/jobs/${job.id}`} className="font-medium text-[#1E3A5F] hover:underline">
-                      {job.name}
-                    </Link>
+                    <Link href={`/${locale}/jobs/${job.id}`} className="font-medium text-[#1E3A5F] hover:underline">{job.name}</Link>
                   </td>
                   <td className="px-4 py-3 text-slate-600">{job.clientName}</td>
                   <td className="px-4 py-3">
-                    <JobStatusBadge status={job.status} label={t.status[job.status]} />
+                    <JobStatusBadge status={job.status as JobStatus} label={t.status[job.status as JobStatus]} />
                   </td>
                   <td className="px-4 py-3 text-slate-500">
                     {job.startDate ? new Date(job.startDate).toLocaleDateString() : '—'}
                   </td>
                   <td className="px-4 py-3 text-right font-medium text-slate-700">
-                    {job.budgetedCost > 0 ? `$${job.budgetedCost.toLocaleString()}` : '—'}
+                    {job.budgetedCost && parseFloat(job.budgetedCost) > 0 ? `$${parseFloat(job.budgetedCost).toLocaleString()}` : '—'}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => handleDelete(job.id)}
-                      className="text-slate-400 hover:text-red-500 transition-colors"
-                    >
+                    <button onClick={() => handleDelete(job.id)} className="text-slate-400 hover:text-red-500 transition-colors">
                       <Trash2 size={15} />
                     </button>
                   </td>

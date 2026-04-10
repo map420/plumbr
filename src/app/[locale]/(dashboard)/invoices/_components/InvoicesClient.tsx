@@ -1,53 +1,42 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useTransition } from 'react'
 import Link from 'next/link'
 import { useLocale } from 'next-intl'
-import { getInvoices, isOverdue, updateInvoice, Invoice, InvoiceStatus } from '@/lib/store/invoices'
+import { useRouter } from 'next/navigation'
+import { updateInvoice } from '@/lib/actions/invoices'
 import { InvoiceStatusBadge } from '@/components/invoices/InvoiceStatusBadge'
 import { Receipt, Plus } from 'lucide-react'
 
-type Translations = {
-  title: string; new: string; empty: string; markAsPaid: string
-  status: Record<InvoiceStatus, string>
-  fields: { number: string; clientName: string; dueDate: string; total: string }
+type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
+type Invoice = { id: string; number: string; clientName: string; status: string; dueDate: Date | null; total: string; paidAt: Date | null }
+type T = { title: string; new: string; empty: string; markAsPaid: string; status: Record<InvoiceStatus, string>; fields: { number: string; clientName: string; dueDate: string; total: string } }
+
+function effectiveStatus(inv: Invoice): InvoiceStatus {
+  if (inv.status === 'sent' && inv.dueDate && new Date(inv.dueDate) < new Date()) return 'overdue'
+  return inv.status as InvoiceStatus
 }
 
-export function InvoicesClient({ translations: t }: { translations: Translations }) {
+export function InvoicesClient({ initialInvoices, translations: t }: { initialInvoices: Invoice[]; translations: T }) {
   const locale = useLocale()
-  const [invoices, setInvoices] = useState<Invoice[]>([])
-
-  function load() {
-    const all = getInvoices().map((inv) => ({
-      ...inv,
-      status: isOverdue(inv) ? 'overdue' as InvoiceStatus : inv.status,
-    }))
-    setInvoices(all)
-  }
-
-  useEffect(() => { load() }, [])
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
 
   function handleMarkPaid(id: string) {
-    updateInvoice(id, { status: 'paid', paidAt: new Date().toISOString() })
-    load()
+    startTransition(async () => { await updateInvoice(id, { status: 'paid', paidAt: new Date().toISOString() }); router.refresh() })
   }
 
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-slate-900">{t.title}</h1>
-        <Link href={`/${locale}/invoices/new`} className="btn-primary flex items-center gap-2 text-sm">
-          <Plus size={16} /> {t.new}
-        </Link>
+        <Link href={`/${locale}/invoices/new`} className="btn-primary flex items-center gap-2 text-sm"><Plus size={16} /> {t.new}</Link>
       </div>
 
-      {invoices.length === 0 ? (
-        <div className="plumbr-card p-12 text-center">
-          <Receipt size={40} className="mx-auto text-slate-300 mb-3" />
-          <p className="text-slate-500">{t.empty}</p>
-        </div>
+      {initialInvoices.length === 0 ? (
+        <div className="plumbr-card p-12 text-center"><Receipt size={40} className="mx-auto text-slate-300 mb-3" /><p className="text-slate-500">{t.empty}</p></div>
       ) : (
-        <div className="plumbr-card overflow-hidden">
+        <div className={`plumbr-card overflow-hidden ${isPending ? 'opacity-50' : ''}`}>
           <table className="w-full text-sm">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
@@ -60,30 +49,23 @@ export function InvoicesClient({ translations: t }: { translations: Translations
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {invoices.map((inv) => (
-                <tr key={inv.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-4 py-3">
-                    <Link href={`/${locale}/invoices/${inv.id}`} className="font-medium text-[#1E3A5F] hover:underline">
-                      {inv.number}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-slate-600">{inv.clientName}</td>
-                  <td className="px-4 py-3">
-                    <InvoiceStatusBadge status={inv.status} label={t.status[inv.status]} />
-                  </td>
-                  <td className="px-4 py-3 text-slate-500">
-                    {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '—'}
-                  </td>
-                  <td className="px-4 py-3 text-right font-semibold">${inv.total.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-right">
-                    {(inv.status === 'sent' || inv.status === 'overdue') && (
-                      <button onClick={() => handleMarkPaid(inv.id)} className="text-xs px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200 transition-colors font-medium">
-                        {t.markAsPaid}
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {initialInvoices.map((inv) => {
+                const status = effectiveStatus(inv)
+                return (
+                  <tr key={inv.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-4 py-3"><Link href={`/${locale}/invoices/${inv.id}`} className="font-medium text-[#1E3A5F] hover:underline">{inv.number}</Link></td>
+                    <td className="px-4 py-3 text-slate-600">{inv.clientName}</td>
+                    <td className="px-4 py-3"><InvoiceStatusBadge status={status} label={t.status[status]} /></td>
+                    <td className="px-4 py-3 text-slate-500">{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '—'}</td>
+                    <td className="px-4 py-3 text-right font-semibold">${parseFloat(inv.total).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right">
+                      {(status === 'sent' || status === 'overdue') && (
+                        <button onClick={() => handleMarkPaid(inv.id)} className="text-xs px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200 font-medium">{t.markAsPaid}</button>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>

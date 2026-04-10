@@ -1,11 +1,12 @@
 import { getTranslations } from 'next-intl/server'
+import { getJobs } from '@/lib/actions/jobs'
 import { ScheduleClient } from './_components/ScheduleClient'
 
 export default async function SchedulePage() {
-  const t = await getTranslations('schedule')
-  const tj = await getTranslations('jobs')
+  const [t, tj, jobs] = await Promise.all([getTranslations('schedule'), getTranslations('jobs'), getJobs()])
   return (
     <ScheduleClient
+      initialJobs={jobs}
       translations={{
         title: t('title'),
         today: t('today'),

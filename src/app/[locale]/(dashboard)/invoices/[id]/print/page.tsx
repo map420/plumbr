@@ -1,31 +1,15 @@
-'use client'
+import { notFound } from 'next/navigation'
+import { getInvoice, getInvoiceLineItems } from '@/lib/actions/invoices'
+import { PrintButton } from './_components/PrintButton'
 
-import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { getInvoice, getInvoiceLineItems, Invoice } from '@/lib/store/invoices'
-import { LineItem } from '@/lib/store/estimates'
-
-export default function PrintInvoicePage() {
-  const params = useParams()
-  const router = useRouter()
-  const locale = params.locale as string
-  const id = params.id as string
-  const [invoice, setInvoice] = useState<Invoice | null>(null)
-  const [lineItems, setLineItems] = useState<LineItem[]>([])
-
-  useEffect(() => {
-    const inv = getInvoice(id)
-    if (!inv) { router.push(`/${locale}/invoices`); return }
-    setInvoice(inv)
-    setLineItems(getInvoiceLineItems(id))
-    setTimeout(() => window.print(), 500)
-  }, [id, locale, router])
-
-  if (!invoice) return null
+export default async function PrintInvoicePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const [invoice, lineItems] = await Promise.all([getInvoice(id), getInvoiceLineItems(id)])
+  if (!invoice) notFound()
 
   return (
     <div className="max-w-2xl mx-auto p-12 bg-white min-h-screen print:p-8">
-      <style>{`@media print { body { -webkit-print-color-adjust: exact; } }`}</style>
+      <style>{`@media print { body { -webkit-print-color-adjust: exact; } .no-print { display: none; } }`}</style>
       <div className="flex justify-between items-start mb-10">
         <div>
           <h1 className="text-3xl font-bold text-[#1E3A5F]">Plumbr</h1>
@@ -68,28 +52,24 @@ export default function PrintInvoicePage() {
             <tr key={li.id} className="border-b border-slate-100">
               <td className="py-2.5">{li.description}</td>
               <td className="py-2.5 text-center text-slate-500">{li.quantity}</td>
-              <td className="py-2.5 text-right text-slate-500">${li.unitPrice.toFixed(2)}</td>
-              <td className="py-2.5 text-right font-medium">${li.total.toFixed(2)}</td>
+              <td className="py-2.5 text-right text-slate-500">${parseFloat(li.unitPrice).toFixed(2)}</td>
+              <td className="py-2.5 text-right font-medium">${parseFloat(li.total).toFixed(2)}</td>
             </tr>
           ))}
         </tbody>
       </table>
 
       <div className="ml-auto max-w-xs text-sm space-y-1">
-        <div className="flex justify-between text-slate-600">
-          <span>Subtotal</span><span>${invoice.subtotal.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between text-slate-600">
-          <span>Tax</span><span>${invoice.tax.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between text-lg font-bold text-slate-900 pt-2 border-t border-slate-300">
-          <span>Total</span><span>${invoice.total.toFixed(2)}</span>
-        </div>
+        <div className="flex justify-between text-slate-600"><span>Subtotal</span><span>${parseFloat(invoice.subtotal).toFixed(2)}</span></div>
+        <div className="flex justify-between text-slate-600"><span>Tax</span><span>${parseFloat(invoice.tax).toFixed(2)}</span></div>
+        <div className="flex justify-between text-lg font-bold text-slate-900 pt-2 border-t border-slate-300"><span>Total</span><span>${parseFloat(invoice.total).toFixed(2)}</span></div>
       </div>
 
       <div className="mt-12 pt-6 border-t border-slate-200 text-xs text-slate-400 text-center">
         Thank you for your business · Plumbr · Built by Mr Labs
       </div>
+
+      <PrintButton />
     </div>
   )
 }

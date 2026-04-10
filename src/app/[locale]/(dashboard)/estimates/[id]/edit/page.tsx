@@ -1,28 +1,14 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { getEstimate, Estimate } from '@/lib/store/estimates'
+import { notFound } from 'next/navigation'
+import { getTranslations } from 'next-intl/server'
+import { getEstimate, getLineItems } from '@/lib/actions/estimates'
 import { EstimateFormClient } from '../../_components/EstimateFormClient'
-import { useTranslations } from 'next-intl'
 
-export default function EditEstimatePage() {
-  const params = useParams()
-  const router = useRouter()
-  const locale = params.locale as string
-  const id = params.id as string
-  const [estimate, setEstimate] = useState<Estimate | null>(null)
-  const te = useTranslations('estimates')
-  const tc = useTranslations('common')
-  const tj = useTranslations('jobs')
-
-  useEffect(() => {
-    const e = getEstimate(id)
-    if (!e) { router.push(`/${locale}/estimates`); return }
-    setEstimate(e)
-  }, [id, locale, router])
-
-  if (!estimate) return null
+export default async function EditEstimatePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const [te, tc, tj, estimate] = await Promise.all([
+    getTranslations('estimates'), getTranslations('common'), getTranslations('jobs'), getEstimate(id),
+  ])
+  if (!estimate) notFound()
 
   return (
     <div className="p-8 max-w-3xl">

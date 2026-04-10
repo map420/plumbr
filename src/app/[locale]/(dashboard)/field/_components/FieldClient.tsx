@@ -1,34 +1,28 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useLocale } from 'next-intl'
-import { getJobs, Job, JobStatus } from '@/lib/store/jobs'
 import { JobStatusBadge } from '@/components/jobs/JobStatusBadge'
 import { MapPin, ChevronRight, Smartphone } from 'lucide-react'
 
+type JobStatus = 'lead' | 'active' | 'on_hold' | 'completed' | 'cancelled'
+type Job = { id: string; name: string; clientName: string; status: string; address: string | null; startDate: Date | null }
 type T = {
   title: string; todaysJobs: string; noJobs: string
   status: Record<JobStatus, string>
   fields: { address: string; clientName: string }
 }
 
-function isToday(dateStr: string) {
-  const d = new Date(dateStr)
+function isToday(date: Date) {
   const today = new Date()
-  return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate()
+  return date.getFullYear() === today.getFullYear() && date.getMonth() === today.getMonth() && date.getDate() === today.getDate()
 }
 
-export function FieldClient({ translations: t }: { translations: T }) {
+export function FieldClient({ initialJobs, translations: t }: { initialJobs: Job[]; translations: T }) {
   const locale = useLocale()
-  const [todayJobs, setTodayJobs] = useState<Job[]>([])
-  const [upcomingJobs, setUpcomingJobs] = useState<Job[]>([])
-
-  useEffect(() => {
-    const all = getJobs().filter((j) => j.status === 'active')
-    setTodayJobs(all.filter((j) => j.startDate && isToday(j.startDate)))
-    setUpcomingJobs(all.filter((j) => !j.startDate || !isToday(j.startDate)).slice(0, 5))
-  }, [])
+  const active = initialJobs.filter((j) => j.status === 'active')
+  const todayJobs = active.filter((j) => j.startDate && isToday(new Date(j.startDate)))
+  const upcomingJobs = active.filter((j) => !j.startDate || !isToday(new Date(j.startDate))).slice(0, 5)
 
   return (
     <div className="p-4 max-w-lg mx-auto">
@@ -37,7 +31,6 @@ export function FieldClient({ translations: t }: { translations: T }) {
         <h1 className="text-xl font-bold text-slate-900">{t.title}</h1>
       </div>
 
-      {/* Today */}
       <div className="mb-6">
         <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">{t.todaysJobs}</h2>
         {todayJobs.length === 0 ? (
@@ -55,7 +48,7 @@ export function FieldClient({ translations: t }: { translations: T }) {
                     </div>
                   )}
                   <div className="mt-2">
-                    <JobStatusBadge status={job.status} label={t.status[job.status]} />
+                    <JobStatusBadge status={job.status as JobStatus} label={t.status[job.status as JobStatus]} />
                   </div>
                 </div>
                 <ChevronRight size={18} className="text-slate-300 ml-3 shrink-0" />
@@ -65,7 +58,6 @@ export function FieldClient({ translations: t }: { translations: T }) {
         )}
       </div>
 
-      {/* Upcoming active jobs */}
       {upcomingJobs.length > 0 && (
         <div>
           <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">Active Jobs</h2>

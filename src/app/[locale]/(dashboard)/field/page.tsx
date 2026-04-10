@@ -1,11 +1,12 @@
 import { getTranslations } from 'next-intl/server'
+import { getJobs } from '@/lib/actions/jobs'
 import { FieldClient } from './_components/FieldClient'
 
 export default async function FieldPage() {
-  const t = await getTranslations('field')
-  const tj = await getTranslations('jobs')
+  const [t, tj, jobs] = await Promise.all([getTranslations('field'), getTranslations('jobs'), getJobs()])
   return (
     <FieldClient
+      initialJobs={jobs}
       translations={{
         title: t('title'), todaysJobs: t('todaysJobs'), noJobs: t('noJobs'),
         status: {
