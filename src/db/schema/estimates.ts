@@ -1,6 +1,7 @@
 import { pgTable, text, timestamp, varchar, numeric, pgEnum } from 'drizzle-orm/pg-core'
 import { users } from './users'
 import { jobs } from './jobs'
+import { clients } from './clients'
 
 export const estimateStatusEnum = pgEnum('estimate_status', [
   'draft', 'sent', 'approved', 'rejected', 'converted'
@@ -10,6 +11,7 @@ export const estimates = pgTable('estimates', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   jobId: text('job_id').references(() => jobs.id, { onDelete: 'set null' }),
+  clientId: text('client_id').references(() => clients.id, { onDelete: 'set null' }),
   number: varchar('number', { length: 50 }).notNull(), // EST-001
   clientName: varchar('client_name', { length: 255 }).notNull(),
   clientEmail: varchar('client_email', { length: 255 }),

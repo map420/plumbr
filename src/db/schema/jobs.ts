@@ -1,5 +1,6 @@
 import { pgTable, text, timestamp, varchar, numeric, pgEnum } from 'drizzle-orm/pg-core'
 import { users } from './users'
+import { clients } from './clients'
 
 export const jobStatusEnum = pgEnum('job_status', [
   'lead', 'active', 'on_hold', 'completed', 'cancelled'
@@ -8,6 +9,7 @@ export const jobStatusEnum = pgEnum('job_status', [
 export const jobs = pgTable('jobs', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  clientId: text('client_id').references(() => clients.id, { onDelete: 'set null' }),
   name: varchar('name', { length: 255 }).notNull(),
   clientName: varchar('client_name', { length: 255 }).notNull(),
   clientEmail: varchar('client_email', { length: 255 }),

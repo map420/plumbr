@@ -1,11 +1,17 @@
 // Shared domain types (independent of Drizzle)
+export interface Client {
+  id: string; userId: string; name: string
+  email: string | null; phone: string | null; address: string | null; notes: string | null
+  createdAt: Date; updatedAt: Date
+}
+
 export type JobStatus = 'lead' | 'active' | 'on_hold' | 'completed' | 'cancelled'
 export type EstimateStatus = 'draft' | 'sent' | 'approved' | 'rejected' | 'converted'
 export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
 export type LineItemType = 'labor' | 'material' | 'subcontractor' | 'other'
 
 export interface Job {
-  id: string; userId: string; name: string; clientName: string
+  id: string; userId: string; clientId: string | null; name: string; clientName: string
   clientEmail: string | null; clientPhone: string | null; address: string | null
   status: JobStatus; budgetedCost: string; actualCost: string
   startDate: Date | null; endDate: Date | null; notes: string | null
@@ -13,7 +19,7 @@ export interface Job {
 }
 
 export interface Estimate {
-  id: string; userId: string; jobId: string | null; number: string
+  id: string; userId: string; jobId: string | null; clientId: string | null; number: string
   clientName: string; clientEmail: string | null; status: EstimateStatus
   subtotal: string; tax: string; total: string; notes: string | null
   validUntil: Date | null; convertedToInvoiceId: string | null
@@ -41,6 +47,7 @@ export interface User {
 }
 
 // Input types
+export type ClientInput = Omit<Client, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
 export type JobInput = Omit<Job, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
 export type EstimateInput = Omit<Estimate, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
 export type InvoiceInput = Omit<Invoice, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
@@ -48,6 +55,13 @@ export type LineItemInput = Omit<LineItem, 'id' | 'createdAt'>
 
 // Repository interfaces
 export interface DbAdapter {
+  clients: {
+    findAll(userId: string): Promise<Client[]>
+    findById(id: string, userId: string): Promise<Client | null>
+    create(userId: string, data: ClientInput): Promise<Client>
+    update(id: string, userId: string, data: Partial<ClientInput>): Promise<Client>
+    delete(id: string, userId: string): Promise<void>
+  }
   jobs: {
     findAll(userId: string): Promise<Job[]>
     findById(id: string, userId: string): Promise<Job | null>

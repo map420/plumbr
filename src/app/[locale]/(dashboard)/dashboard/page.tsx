@@ -1,23 +1,19 @@
 import { getTranslations } from 'next-intl/server'
-import { auth } from '@clerk/nextjs/server'
-import { db } from '@/db'
-import { jobs } from '@/db/schema/jobs'
-import { estimates } from '@/db/schema/estimates'
-import { invoices } from '@/db/schema/invoices'
-import { eq, and, gte, inArray } from 'drizzle-orm'
+import { authAdapter } from '@/lib/adapters/auth'
+import { dbAdapter } from '@/lib/adapters/db'
 import { DashboardStats } from './_components/DashboardStats'
 
 export default async function DashboardPage() {
   const t = await getTranslations('dashboard')
-  const { userId } = await auth()
+  const userId = await authAdapter.getUserId()
 
   let stats = { activeJobs: 0, openEstimates: 0, revenueThisMonth: 0, avgMargin: null as number | null }
 
   if (userId) {
     const [allJobs, allEstimates, allInvoices] = await Promise.all([
-      db.select().from(jobs).where(eq(jobs.userId, userId)),
-      db.select().from(estimates).where(eq(estimates.userId, userId)),
-      db.select().from(invoices).where(eq(invoices.userId, userId)),
+      dbAdapter.jobs.findAll(userId),
+      dbAdapter.estimates.findAll(userId),
+      dbAdapter.invoices.findAll(userId),
     ])
 
     const activeJobs = allJobs.filter((j) => j.status === 'active').length
@@ -30,11 +26,11 @@ export default async function DashboardPage() {
       .filter((inv) => inv.status === 'paid' && inv.paidAt && new Date(inv.paidAt) >= monthStart)
       .reduce((sum, inv) => sum + parseFloat(inv.total), 0)
 
-    const jobsWithBudget = allJobs.filter((j) => parseFloat(j.budgetedCost ?? '0') > 0)
+    const jobsWithBudget = allJobs.filter((j) => parseFloat(j.budgetedCost) > 0)
     const avgMargin = jobsWithBudget.length > 0
       ? jobsWithBudget.reduce((sum, j) => {
-          const budget = parseFloat(j.budgetedCost ?? '0')
-          const actual = parseFloat(j.actualCost ?? '0')
+          const budget = parseFloat(j.budgetedCost)
+          const actual = parseFloat(j.actualCost)
           return sum + ((budget - actual) / budget) * 100
         }, 0) / jobsWithBudget.length
       : null

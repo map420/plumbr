@@ -50,6 +50,7 @@ export async function createEstimate(data: {
 
   const estimate = await dbAdapter.estimates.create(userId, {
     jobId: data.jobId || null,
+    clientId: null,
     number: '',
     clientName: data.clientName,
     clientEmail: data.clientEmail || null,

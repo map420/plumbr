@@ -1,4 +1,5 @@
 import { db } from '@/db'
+import { clients } from '@/db/schema/clients'
 import { jobs } from '@/db/schema/jobs'
 import { estimates } from '@/db/schema/estimates'
 import { invoices } from '@/db/schema/invoices'
@@ -21,6 +22,27 @@ function nextNumber(rows: { number: string }[], prefix: string) {
 }
 
 export const drizzleAdapter: DbAdapter = {
+  clients: {
+    async findAll(userId) {
+      return db.select().from(clients).where(eq(clients.userId, userId)).orderBy(desc(clients.createdAt))
+    },
+    async findById(id, userId) {
+      const rows = await db.select().from(clients).where(and(eq(clients.id, id), eq(clients.userId, userId)))
+      return rows[0] ?? null
+    },
+    async create(userId, data) {
+      const [client] = await db.insert(clients).values({ ...data, userId }).returning()
+      return client
+    },
+    async update(id, userId, data) {
+      const [client] = await db.update(clients).set({ ...data, updatedAt: new Date() })
+        .where(and(eq(clients.id, id), eq(clients.userId, userId))).returning()
+      return client
+    },
+    async delete(id, userId) {
+      await db.delete(clients).where(and(eq(clients.id, id), eq(clients.userId, userId)))
+    },
+  },
   jobs: {
     async findAll(userId) {
       const rows = await db.select().from(jobs).where(eq(jobs.userId, userId)).orderBy(desc(jobs.createdAt))

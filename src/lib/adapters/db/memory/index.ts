@@ -1,7 +1,8 @@
-import type { DbAdapter, Job, Estimate, Invoice, LineItem, User, JobInput, EstimateInput, InvoiceInput, LineItemInput } from '../types'
+import type { DbAdapter, Client, Job, Estimate, Invoice, LineItem, User, ClientInput, JobInput, EstimateInput, InvoiceInput, LineItemInput } from '../types'
 
 // In-memory store — persists for the Node.js process lifetime
 const store = {
+  clients: new Map<string, Client>(),
   jobs: new Map<string, Job>(),
   estimates: new Map<string, Estimate>(),
   invoices: new Map<string, Invoice>(),
@@ -14,6 +15,33 @@ function uuid() { return crypto.randomUUID() }
 function now() { return new Date() }
 
 export const memoryAdapter: DbAdapter = {
+  clients: {
+    async findAll(userId) {
+      return [...store.clients.values()]
+        .filter(c => c.userId === userId)
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    },
+    async findById(id, userId) {
+      const c = store.clients.get(id)
+      return c?.userId === userId ? c : null
+    },
+    async create(userId, data) {
+      const client: Client = { ...data, id: uuid(), userId, createdAt: now(), updatedAt: now() }
+      store.clients.set(client.id, client)
+      return client
+    },
+    async update(id, userId, data) {
+      const existing = store.clients.get(id)
+      if (!existing || existing.userId !== userId) throw new Error('Not found')
+      const updated = { ...existing, ...data, updatedAt: now() }
+      store.clients.set(id, updated)
+      return updated
+    },
+    async delete(id, userId) {
+      const c = store.clients.get(id)
+      if (c?.userId === userId) store.clients.delete(id)
+    },
+  },
   jobs: {
     async findAll(userId) {
       return [...store.jobs.values()]

@@ -81,5 +81,6 @@ export async function getUserPlan() {
   const userId = await authAdapter.getUserId()
   if (!userId) return null
   const user = await dbAdapter.users.findById(userId)
-  return user ? { plan: user.plan, stripeSubscriptionId: user.stripeSubscriptionId } : null
+  const plan = user?.plan ?? process.env.MOCK_USER_PLAN ?? null
+  return { plan, stripeSubscriptionId: user?.stripeSubscriptionId ?? null }
 }

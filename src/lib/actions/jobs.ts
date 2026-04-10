@@ -27,6 +27,7 @@ export async function createJob(data: {
 }) {
   const userId = await requireAuth()
   const job = await dbAdapter.jobs.create(userId, {
+    clientId: null,
     name: data.name,
     clientName: data.clientName,
     clientEmail: data.clientEmail || null,

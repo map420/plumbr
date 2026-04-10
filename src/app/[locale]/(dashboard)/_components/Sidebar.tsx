@@ -3,18 +3,23 @@
 import { UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
+import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, FileText, Briefcase, Calendar, Smartphone, Receipt, Settings
+  LayoutDashboard, FileText, Briefcase, Calendar, Smartphone, Receipt, Settings, Users
 } from 'lucide-react'
 
 export default function Sidebar() {
   const t = useTranslations('nav')
   const locale = useLocale()
+  const pathname = usePathname()
+  const otherLocale = locale === 'en' ? 'es' : 'en'
+  const switchHref = pathname.replace(`/${locale}`, `/${otherLocale}`)
 
   const nav = [
     { href: `/${locale}/dashboard`, label: t('dashboard'), icon: LayoutDashboard },
-    { href: `/${locale}/estimates`, label: t('estimates'), icon: FileText },
+    { href: `/${locale}/clients`, label: 'Clients', icon: Users },
     { href: `/${locale}/jobs`, label: t('jobs'), icon: Briefcase },
+    { href: `/${locale}/estimates`, label: t('estimates'), icon: FileText },
     { href: `/${locale}/invoices`, label: t('invoices'), icon: Receipt },
     { href: `/${locale}/schedule`, label: t('schedule'), icon: Calendar },
     { href: `/${locale}/field`, label: t('field'), icon: Smartphone },
@@ -43,9 +48,17 @@ export default function Sidebar() {
           Settings
         </Link>
       </div>
-      <div className="px-6 py-4 border-t border-white/10 flex items-center gap-3">
-        <UserButton />
-        <span className="text-sm text-white/60">{t('account')}</span>
+      <div className="px-6 py-3 border-t border-white/10 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <UserButton />
+          <span className="text-sm text-white/60">{t('account')}</span>
+        </div>
+        <Link
+          href={switchHref}
+          className="text-xs font-medium text-white/40 hover:text-white/80 transition-colors uppercase tracking-wide"
+        >
+          {otherLocale}
+        </Link>
       </div>
     </aside>
   )
