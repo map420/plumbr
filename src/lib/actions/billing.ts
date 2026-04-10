@@ -1,6 +1,6 @@
 'use server'
 
-import { auth } from '@clerk/nextjs/server'
+import { auth, currentUser } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import { db } from '@/db'
 import { users } from '@/db/schema/users'
@@ -8,17 +8,29 @@ import { eq } from 'drizzle-orm'
 import { getStripe, PLANS } from '@/lib/stripe'
 import { headers } from 'next/headers'
 
-async function requireUser() {
+async function requireUser(locale: string) {
   const { userId } = await auth()
-  if (!userId) throw new Error('Unauthorized')
+  if (!userId) redirect(`/${locale}/sign-in`)
+
+  // Try to find user in DB
   const rows = await db.select().from(users).where(eq(users.id, userId))
-  const user = rows[0]
-  if (!user) throw new Error('User not found')
-  return user
+  if (rows[0]) return rows[0]
+
+  // User not in DB yet (Clerk webhook hasn't fired) — create from Clerk data
+  const clerkUser = await currentUser()
+  if (!clerkUser) redirect(`/${locale}/sign-in`)
+
+  const email = clerkUser.emailAddresses[0]?.emailAddress ?? ''
+  const [newUser] = await db.insert(users).values({
+    id: userId,
+    email,
+    name: [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ') || null,
+  }).returning()
+  return newUser
 }
 
 export async function createCheckoutSession(locale: string) {
-  const user = await requireUser()
+  const user = await requireUser(locale)
   const headersList = await headers()
   const origin = headersList.get('origin') ?? 'https://plumbr.vercel.app'
 
@@ -49,7 +61,7 @@ export async function createCheckoutSession(locale: string) {
 }
 
 export async function createPortalSession(locale: string) {
-  const user = await requireUser()
+  const user = await requireUser(locale)
   if (!user.stripeCustomerId) redirect(`/${locale}/pricing`)
 
   const headersList = await headers()
