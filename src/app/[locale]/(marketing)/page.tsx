@@ -1,17 +1,17 @@
 import { getTranslations, getLocale } from 'next-intl/server'
+import { auth } from '@clerk/nextjs/server'
 import Link from 'next/link'
 import { CheckCircle, ArrowRight } from 'lucide-react'
-
-const plans = [
-  { key: 'starter', price: 99, featured: false },
-  { key: 'growth', price: 199, featured: true },
-  { key: 'pro', price: 299, featured: false },
-] as const
 
 export default async function LandingPage() {
   const t = await getTranslations('marketing')
   const locale = await getLocale()
   const features = t.raw('features.items') as string[]
+  const { userId } = await auth()
+  const isSignedIn = !!userId
+
+  const ctaHref = isSignedIn ? `/${locale}/dashboard` : `/${locale}/sign-up`
+  const ctaLabel = isSignedIn ? 'Go to Dashboard' : t('hero.cta')
 
   return (
     <div className="min-h-screen bg-white">
@@ -20,12 +20,14 @@ export default async function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <span className="text-xl font-bold text-[#1E3A5F]">Plumbr</span>
           <div className="flex items-center gap-4">
-            <Link href={`/${locale}/sign-in`} className="text-sm text-slate-600 hover:text-slate-900">
-              {t('nav.signIn')}
-            </Link>
-            <Link href={`/${locale}/sign-up`} className="btn-primary text-sm">
-              {t('nav.startTrial')}
-            </Link>
+            {isSignedIn ? (
+              <Link href={`/${locale}/dashboard`} className="btn-primary text-sm">Dashboard</Link>
+            ) : (
+              <>
+                <Link href={`/${locale}/sign-in`} className="text-sm text-slate-600 hover:text-slate-900">{t('nav.signIn')}</Link>
+                <Link href={`/${locale}/sign-up`} className="btn-primary text-sm">{t('nav.startTrial')}</Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -39,23 +41,19 @@ export default async function LandingPage() {
           {t('hero.title')}<br />
           <span className="text-[#F97316]">{t('hero.titleAccent')}</span>
         </h1>
-        <p className="text-xl text-slate-500 max-w-2xl mx-auto mb-10">
-          {t('hero.subtitle')}
-        </p>
+        <p className="text-xl text-slate-500 max-w-2xl mx-auto mb-10">{t('hero.subtitle')}</p>
         <div className="flex items-center justify-center gap-4">
-          <Link href={`/${locale}/sign-up`} className="btn-primary flex items-center gap-2 text-base px-6 py-3">
-            {t('hero.cta')} <ArrowRight size={18} />
+          <Link href={ctaHref} className="btn-primary flex items-center gap-2 text-base px-6 py-3">
+            {ctaLabel} <ArrowRight size={18} />
           </Link>
-          <span className="text-sm text-slate-400">{t('hero.noCreditCard')}</span>
+          {!isSignedIn && <span className="text-sm text-slate-400">{t('hero.noCreditCard')}</span>}
         </div>
       </section>
 
       {/* Features */}
       <section className="bg-slate-50 py-20">
         <div className="max-w-6xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-[#1E3A5F] text-center mb-12">
-            {t('features.title')}
-          </h2>
+          <h2 className="text-3xl font-bold text-[#1E3A5F] text-center mb-12">{t('features.title')}</h2>
           <div className="max-w-xl mx-auto space-y-4">
             {features.map((f) => (
               <div key={f} className="flex items-start gap-3">
@@ -70,35 +68,18 @@ export default async function LandingPage() {
       {/* Pricing */}
       <section className="py-20">
         <div className="max-w-6xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-[#1E3A5F] text-center mb-4">
-            {t('pricing.title')}
-          </h2>
+          <h2 className="text-3xl font-bold text-[#1E3A5F] text-center mb-4">{t('pricing.title')}</h2>
           <p className="text-center text-slate-500 mb-12">{t('pricing.subtitle')}</p>
-          <div className="grid grid-cols-3 gap-6 max-w-4xl mx-auto">
-            {plans.map(({ key, price, featured }) => (
-              <div key={key} className={`rounded-xl border p-6 ${featured ? 'border-[#F97316] bg-orange-50 shadow-md' : 'border-slate-200 bg-white'}`}>
-                {featured && (
-                  <div className="text-xs font-bold text-[#F97316] uppercase tracking-wider mb-3">
-                    {t('pricing.mostPopular')}
-                  </div>
-                )}
-                <div className="text-lg font-bold text-slate-900 mb-1">
-                  {t(`pricing.plans.${key}.name`)}
-                </div>
-                <div className="text-3xl font-bold text-[#1E3A5F] mb-1">
-                  ${price}<span className="text-base font-normal text-slate-400">{t('pricing.perMonth')}</span>
-                </div>
-                <div className="text-sm text-slate-500 mb-6">
-                  {t(`pricing.plans.${key}.seats`)}
-                </div>
-                <Link
-                  href={`/${locale}/sign-up`}
-                  className={`block text-center text-sm font-semibold py-2 rounded-lg transition-colors ${featured ? 'bg-[#F97316] text-white hover:bg-orange-600' : 'bg-[#1E3A5F] text-white hover:bg-blue-900'}`}
-                >
-                  {t('pricing.cta')}
-                </Link>
-              </div>
-            ))}
+          <div className="flex justify-center">
+            <div className="rounded-xl border border-[#F97316] bg-orange-50 shadow-md p-8 max-w-sm w-full">
+              <div className="text-xs font-bold text-[#F97316] uppercase tracking-wider mb-3">Only plan</div>
+              <div className="text-lg font-bold text-slate-900 mb-1">Plumbr Pro</div>
+              <div className="text-3xl font-bold text-[#1E3A5F] mb-1">$49<span className="text-base font-normal text-slate-400">/mo</span></div>
+              <div className="text-sm text-slate-500 mb-6">14-day free trial · Cancel anytime</div>
+              <Link href={ctaHref} className="block text-center text-sm font-semibold py-2 rounded-lg bg-[#F97316] text-white hover:bg-orange-600 transition-colors">
+                {ctaLabel}
+              </Link>
+            </div>
           </div>
         </div>
       </section>

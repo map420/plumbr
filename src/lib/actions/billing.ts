@@ -5,18 +5,18 @@ import { redirect } from 'next/navigation'
 import { db } from '@/db'
 import { users } from '@/db/schema/users'
 import { eq } from 'drizzle-orm'
-import { getStripe, PLANS } from '@/lib/stripe'
+import { paymentsAdapter } from '@/lib/adapters/payments'
+import { PLANS } from '@/lib/stripe'
 import { headers } from 'next/headers'
 
 async function requireUser(locale: string) {
   const { userId } = await auth()
   if (!userId) redirect(`/${locale}/sign-in`)
 
-  // Try to find user in DB
   const rows = await db.select().from(users).where(eq(users.id, userId))
   if (rows[0]) return rows[0]
 
-  // User not in DB yet (Clerk webhook hasn't fired) — create from Clerk data
+  // User not in DB yet — create from Clerk data
   const clerkUser = await currentUser()
   if (!clerkUser) redirect(`/${locale}/sign-in`)
 
@@ -29,15 +29,19 @@ async function requireUser(locale: string) {
   return newUser
 }
 
+function getOrigin(headersList: Awaited<ReturnType<typeof headers>>) {
+  return headersList.get('origin') ?? 'https://plumbr.vercel.app'
+}
+
 export async function createCheckoutSession(locale: string) {
   const user = await requireUser(locale)
   const headersList = await headers()
-  const origin = headersList.get('origin') ?? 'https://plumbr.vercel.app'
+  const origin = getOrigin(headersList)
 
   let customerId = user.stripeCustomerId
 
   if (!customerId) {
-    const customer = await getStripe().customers.create({
+    const customer = await paymentsAdapter.createCustomer({
       email: user.email,
       name: user.name ?? undefined,
       metadata: { userId: user.id },
@@ -46,18 +50,16 @@ export async function createCheckoutSession(locale: string) {
     await db.update(users).set({ stripeCustomerId: customerId }).where(eq(users.id, user.id))
   }
 
-  const session = await getStripe().checkout.sessions.create({
-    customer: customerId,
-    mode: 'subscription',
-    payment_method_types: ['card'],
-    line_items: [{ price: PLANS.pro.priceId, quantity: 1 }],
-    subscription_data: { trial_period_days: 14 },
-    success_url: `${origin}/${locale}/dashboard?upgraded=1`,
-    cancel_url: `${origin}/${locale}/pricing`,
+  const { url } = await paymentsAdapter.createCheckoutSession({
+    customerId,
+    priceId: PLANS.pro.priceId,
+    trialDays: 14,
+    successUrl: `${origin}/${locale}/dashboard?upgraded=1`,
+    cancelUrl: `${origin}/${locale}/pricing`,
     metadata: { userId: user.id, locale },
   })
 
-  redirect(session.url!)
+  redirect(url)
 }
 
 export async function createPortalSession(locale: string) {
@@ -65,19 +67,20 @@ export async function createPortalSession(locale: string) {
   if (!user.stripeCustomerId) redirect(`/${locale}/pricing`)
 
   const headersList = await headers()
-  const origin = headersList.get('origin') ?? 'https://plumbr.vercel.app'
+  const origin = getOrigin(headersList)
 
-  const session = await getStripe().billingPortal.sessions.create({
-    customer: user.stripeCustomerId!,
-    return_url: `${origin}/${locale}/settings`,
+  const { url } = await paymentsAdapter.createPortalSession({
+    customerId: user.stripeCustomerId!,
+    returnUrl: `${origin}/${locale}/settings`,
   })
 
-  redirect(session.url)
+  redirect(url)
 }
 
 export async function getUserPlan() {
   const { userId } = await auth()
   if (!userId) return null
-  const rows = await db.select({ plan: users.plan, stripeSubscriptionId: users.stripeSubscriptionId }).from(users).where(eq(users.id, userId))
+  const rows = await db.select({ plan: users.plan, stripeSubscriptionId: users.stripeSubscriptionId })
+    .from(users).where(eq(users.id, userId))
   return rows[0] ?? null
 }
