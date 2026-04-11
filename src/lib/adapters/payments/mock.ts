@@ -13,4 +13,8 @@ export const mockAdapter: PaymentsAdapter = {
     console.log('[PAYMENTS MOCK] customer created for', email)
     return { id: `mock_cus_${email.split('@')[0]}` }
   },
+  async createPaymentLink({ amountCents, description }) {
+    console.log('[PAYMENTS MOCK] payment link —', description, amountCents)
+    return { url: 'https://buy.stripe.com/mock', id: `mock_pl_${Date.now()}` }
+  },
 }

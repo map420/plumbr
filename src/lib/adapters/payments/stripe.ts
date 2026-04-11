@@ -38,4 +38,18 @@ export const stripeAdapter: PaymentsAdapter = {
     })
     return { id: customer.id }
   },
+
+  async createPaymentLink({ amountCents, currency, description, metadata }) {
+    // Create a one-time price on the fly
+    const price = await getStripe().prices.create({
+      unit_amount: amountCents,
+      currency,
+      product_data: { name: description },
+    })
+    const link = await getStripe().paymentLinks.create({
+      line_items: [{ price: price.id, quantity: 1 }],
+      ...(metadata && { metadata }),
+    })
+    return { url: link.url, id: link.id }
+  },
 }

@@ -2,6 +2,7 @@
 
 import { authAdapter } from '@/lib/adapters/auth'
 import { dbAdapter } from '@/lib/adapters/db'
+import { paymentsAdapter } from '@/lib/adapters/payments'
 import { revalidatePath } from 'next/cache'
 import type { LineItemInput } from '@/lib/adapters/db/types'
 
@@ -67,6 +68,28 @@ export async function createInvoice(data: {
 
   revalidatePath('/[locale]/invoices', 'page')
   return invoice
+}
+
+export async function createInvoicePaymentLink(id: string): Promise<{ url: string }> {
+  const userId = await requireAuth()
+  const invoice = await dbAdapter.invoices.findById(id, userId)
+  if (!invoice) throw new Error('Invoice not found')
+
+  const amountCents = Math.round(parseFloat(invoice.total) * 100)
+  const { url } = await paymentsAdapter.createPaymentLink({
+    amountCents,
+    currency: 'usd',
+    description: `Invoice ${invoice.number} — ${invoice.clientName}`,
+    metadata: { invoiceId: invoice.id, userId },
+  })
+
+  // Mark as sent if still draft
+  if (invoice.status === 'draft') {
+    await dbAdapter.invoices.update(id, userId, { status: 'sent' })
+    revalidatePath('/[locale]/invoices/[id]', 'page')
+  }
+
+  return { url }
 }
 
 export async function updateInvoice(id: string, data: Partial<{

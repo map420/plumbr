@@ -18,4 +18,11 @@ export interface PaymentsAdapter {
     name?: string
     metadata?: Record<string, string>
   }): Promise<{ id: string }>
+
+  createPaymentLink(opts: {
+    amountCents: number
+    currency: string
+    description: string
+    metadata?: Record<string, string>
+  }): Promise<{ url: string; id: string }>
 }
