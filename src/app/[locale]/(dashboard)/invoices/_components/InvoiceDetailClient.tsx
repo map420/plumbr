@@ -5,7 +5,8 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { updateInvoice } from '@/lib/actions/invoices'
 import { InvoiceStatusBadge } from '@/components/invoices/InvoiceStatusBadge'
-import { ArrowLeft, Printer } from 'lucide-react'
+import { Breadcrumbs } from '@/components/Breadcrumbs'
+import { Printer } from 'lucide-react'
 
 type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
 type LineItemType = 'labor' | 'material' | 'subcontractor' | 'other'
@@ -37,7 +38,7 @@ export function InvoiceDetailClient({ invoice, lineItems, translations: t }: { i
     <div className="p-4 md:p-8 max-w-3xl">
       <div className="flex items-start justify-between mb-6">
         <div>
-          <Link href={`/${locale}/invoices`} className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-2"><ArrowLeft size={14} /> {t.back}</Link>
+          <Breadcrumbs items={[{ label: 'Invoices', href: `/${locale}/invoices` }, { label: invoice.number }]} />
           <h1 className="text-2xl font-bold text-slate-900">{invoice.number}</h1>
           <div className="mt-1"><InvoiceStatusBadge status={status} label={t.status[status]} /></div>
         </div>

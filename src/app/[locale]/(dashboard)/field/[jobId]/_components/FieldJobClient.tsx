@@ -5,7 +5,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { updateJob } from '@/lib/actions/jobs'
 import { JobStatusBadge } from '@/components/jobs/JobStatusBadge'
-import { ArrowLeft, CheckSquare, Square, Camera, MapPin } from 'lucide-react'
+import { Breadcrumbs } from '@/components/Breadcrumbs'
+import { CheckSquare, Square, Camera, MapPin, ExternalLink } from 'lucide-react'
 
 type JobStatus = 'lead' | 'active' | 'on_hold' | 'completed' | 'cancelled'
 type Job = { id: string; name: string; clientName: string; status: string; address: string | null }
@@ -43,13 +44,18 @@ export function FieldJobClient({ job, locale, translations: t }: { job: Job; loc
 
   return (
     <div className="p-4 max-w-lg mx-auto">
-      <Link href={`/${locale}/field`} className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-4">
-        <ArrowLeft size={14} /> {t.todaysJobs}
-      </Link>
+      <Breadcrumbs items={[{ label: 'Field', href: `/${locale}/field` }, { label: job.name }]} />
 
       <div className="plumbr-card p-4 mb-4">
-        <h1 className="text-lg font-bold text-slate-900">{job.name}</h1>
-        <p className="text-sm text-slate-500 mt-0.5">{job.clientName}</p>
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <h1 className="text-lg font-bold text-slate-900">{job.name}</h1>
+            <p className="text-sm text-slate-500 mt-0.5">{job.clientName}</p>
+          </div>
+          <Link href={`/${locale}/jobs/${job.id}`} className="flex items-center gap-1 text-xs text-[#1E3A5F] hover:underline shrink-0 mt-1">
+            <ExternalLink size={12} /> Full details
+          </Link>
+        </div>
         {job.address && (
           <a href={`https://maps.google.com/?q=${encodeURIComponent(job.address)}`} target="_blank" rel="noreferrer"
             className="flex items-center gap-1 text-xs text-[#F97316] mt-2 hover:underline">

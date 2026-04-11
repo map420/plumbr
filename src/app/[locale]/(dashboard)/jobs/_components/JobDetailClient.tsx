@@ -10,7 +10,8 @@ import { JobStatusBadge } from '@/components/jobs/JobStatusBadge'
 import { EstimateStatusBadge } from '@/components/estimates/EstimateStatusBadge'
 import { InvoiceStatusBadge } from '@/components/invoices/InvoiceStatusBadge'
 import { ConfirmModal } from '@/components/ConfirmModal'
-import { ArrowLeft, Edit, Trash2, Plus, X } from 'lucide-react'
+import { Breadcrumbs } from '@/components/Breadcrumbs'
+import { Edit, Trash2, Plus, X } from 'lucide-react'
 
 type JobStatus = 'lead' | 'active' | 'on_hold' | 'completed' | 'cancelled'
 type EstimateStatus = 'draft' | 'sent' | 'approved' | 'rejected' | 'converted'
@@ -106,9 +107,7 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
       )}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <Link href={`/${locale}/jobs`} className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-2">
-            <ArrowLeft size={14} /> {t.back}
-          </Link>
+          <Breadcrumbs items={[{ label: 'Jobs', href: `/${locale}/jobs` }, { label: job.name }]} />
           <h1 className="text-2xl font-bold text-slate-900">{job.name}</h1>
           <div className="mt-1"><JobStatusBadge status={job.status as JobStatus} label={t.status[job.status as JobStatus]} /></div>
         </div>

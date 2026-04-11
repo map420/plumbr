@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { updateClient } from '@/lib/actions/clients'
 import { EstimateStatusBadge } from '@/components/estimates/EstimateStatusBadge'
 import { Toast } from '@/components/Toast'
+import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { Mail, Phone, MapPin, FileText, Briefcase, Receipt, Edit2, Check, X } from 'lucide-react'
 import type { EstimateStatus } from '@/lib/store/estimates'
 
@@ -47,6 +48,7 @@ export function ClientDetailClient({ client, jobs, estimates, invoices }: {
   return (
     <div className="p-4 md:p-8 max-w-4xl space-y-6">
       {saved && <Toast message="Client updated successfully!" onDone={() => setSaved(false)} />}
+      <Breadcrumbs items={[{ label: 'Clients', href: `/${locale}/clients` }, { label: client.name }]} />
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>

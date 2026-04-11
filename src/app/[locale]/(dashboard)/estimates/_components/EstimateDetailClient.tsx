@@ -7,7 +7,8 @@ import { deleteEstimate, updateEstimate } from '@/lib/actions/estimates'
 import { createInvoice } from '@/lib/actions/invoices'
 import { EstimateStatusBadge } from '@/components/estimates/EstimateStatusBadge'
 import { ConfirmModal } from '@/components/ConfirmModal'
-import { ArrowLeft, Edit, Trash2, ArrowRight, Loader2 } from 'lucide-react'
+import { Breadcrumbs } from '@/components/Breadcrumbs'
+import { Edit, Trash2, ArrowRight, Loader2 } from 'lucide-react'
 
 type EstimateStatus = 'draft' | 'sent' | 'approved' | 'rejected' | 'converted'
 type LineItemType = 'labor' | 'material' | 'subcontractor' | 'other'
@@ -63,7 +64,7 @@ export function EstimateDetailClient({ estimate, lineItems, translations: t }: {
       )}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <Link href={`/${locale}/estimates`} className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-2"><ArrowLeft size={14} /> {t.back}</Link>
+          <Breadcrumbs items={[{ label: 'Estimates', href: `/${locale}/estimates` }, { label: estimate.number }]} />
           <h1 className="text-2xl font-bold text-slate-900">{estimate.number}</h1>
           <div className="mt-1"><EstimateStatusBadge status={estimate.status as EstimateStatus} label={t.status[estimate.status as EstimateStatus]} /></div>
         </div>

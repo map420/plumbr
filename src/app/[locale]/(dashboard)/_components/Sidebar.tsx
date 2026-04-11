@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, FileText, Briefcase, Calendar, Smartphone, Receipt, Settings, Users, X
+  LayoutDashboard, FileText, Briefcase, Calendar, Wrench, Receipt, Settings, Users, X
 } from 'lucide-react'
 
 export default function Sidebar({ onClose }: { onClose?: () => void }) {
@@ -22,7 +22,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
     { href: `/${locale}/estimates`, label: t('estimates'), icon: FileText },
     { href: `/${locale}/invoices`, label: t('invoices'), icon: Receipt },
     { href: `/${locale}/schedule`, label: t('schedule'), icon: Calendar },
-    { href: `/${locale}/field`, label: t('field'), icon: Smartphone },
+    { href: `/${locale}/field`, label: t('field'), icon: Wrench },
     { href: `/${locale}/team`, label: 'Team', icon: Users },
   ]
 
