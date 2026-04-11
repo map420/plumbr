@@ -1,15 +1,11 @@
 'use server'
+import { requireUser as requireAuth } from './auth-helpers'
 
-import { authAdapter } from '@/lib/adapters/auth'
+
 import { dbAdapter } from '@/lib/adapters/db'
 import { revalidatePath } from 'next/cache'
 import type { ExpenseType } from '@/lib/adapters/db/types'
 
-async function requireAuth() {
-  const userId = await authAdapter.getUserId()
-  if (!userId) throw new Error('Unauthorized')
-  return userId
-}
 
 export async function getExpensesByJob(jobId: string) {
   const userId = await requireAuth()

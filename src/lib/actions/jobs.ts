@@ -1,18 +1,12 @@
 'use server'
 
-import { authAdapter } from '@/lib/adapters/auth'
 import { dbAdapter } from '@/lib/adapters/db'
 import { emailAdapter } from '@/lib/adapters/email'
 import { revalidatePath } from 'next/cache'
 import { jobCompletedInvoiceDueEmail } from '@/lib/email-templates'
 import { isPro, STARTER_LIMITS } from '@/lib/stripe'
 import { getUserPlan } from './billing'
-
-async function requireAuth() {
-  const userId = await authAdapter.getUserId()
-  if (!userId) throw new Error('Unauthorized')
-  return userId
-}
+import { requireUser as requireAuth } from './auth-helpers'
 
 export async function getJobs() {
   const userId = await requireAuth()
