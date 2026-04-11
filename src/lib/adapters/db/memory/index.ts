@@ -1,7 +1,8 @@
-import type { DbAdapter, Client, Job, Estimate, Invoice, LineItem, User, ClientInput, JobInput, EstimateInput, InvoiceInput, LineItemInput } from '../types'
+import type { DbAdapter, Expense, Client, Job, Estimate, Invoice, LineItem, User, ExpenseInput, ClientInput, JobInput, EstimateInput, InvoiceInput, LineItemInput } from '../types'
 
 // In-memory store — persists for the Node.js process lifetime
 const store = {
+  expenses: new Map<string, Expense>(),
   clients: new Map<string, Client>(),
   jobs: new Map<string, Job>(),
   estimates: new Map<string, Estimate>(),
@@ -15,6 +16,22 @@ function uuid() { return crypto.randomUUID() }
 function now() { return new Date() }
 
 export const memoryAdapter: DbAdapter = {
+  expenses: {
+    async findByJob(jobId, userId) {
+      return [...store.expenses.values()]
+        .filter(e => e.jobId === jobId && e.userId === userId)
+        .sort((a, b) => b.date.getTime() - a.date.getTime())
+    },
+    async create(userId, data) {
+      const expense: Expense = { ...data, id: uuid(), userId, createdAt: now() }
+      store.expenses.set(expense.id, expense)
+      return expense
+    },
+    async delete(id, userId) {
+      const e = store.expenses.get(id)
+      if (e?.userId === userId) store.expenses.delete(id)
+    },
+  },
   clients: {
     async findAll(userId) {
       return [...store.clients.values()]

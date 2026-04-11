@@ -1,4 +1,12 @@
 // Shared domain types (independent of Drizzle)
+export type ExpenseType = 'labor' | 'material' | 'subcontractor' | 'other'
+
+export interface Expense {
+  id: string; userId: string; jobId: string
+  description: string; type: ExpenseType; amount: string
+  date: Date; createdAt: Date
+}
+
 export interface Client {
   id: string; userId: string; name: string
   email: string | null; phone: string | null; address: string | null; notes: string | null
@@ -47,6 +55,7 @@ export interface User {
 }
 
 // Input types
+export type ExpenseInput = Omit<Expense, 'id' | 'userId' | 'createdAt'>
 export type ClientInput = Omit<Client, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
 export type JobInput = Omit<Job, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
 export type EstimateInput = Omit<Estimate, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
@@ -55,6 +64,11 @@ export type LineItemInput = Omit<LineItem, 'id' | 'createdAt'>
 
 // Repository interfaces
 export interface DbAdapter {
+  expenses: {
+    findByJob(jobId: string, userId: string): Promise<Expense[]>
+    create(userId: string, data: ExpenseInput): Promise<Expense>
+    delete(id: string, userId: string): Promise<void>
+  }
   clients: {
     findAll(userId: string): Promise<Client[]>
     findById(id: string, userId: string): Promise<Client | null>

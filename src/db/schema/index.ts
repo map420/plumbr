@@ -1,5 +1,6 @@
 export * from './users'
 export * from './clients'
+export * from './expenses'
 export * from './jobs'
 export * from './estimates'
 export * from './invoices'

@@ -1,21 +1,23 @@
 'use client'
 
-import { useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { deleteJob } from '@/lib/actions/jobs'
+import { createExpense, deleteExpense } from '@/lib/actions/expenses'
 import { JobStatusBadge } from '@/components/jobs/JobStatusBadge'
 import { EstimateStatusBadge } from '@/components/estimates/EstimateStatusBadge'
 import { InvoiceStatusBadge } from '@/components/invoices/InvoiceStatusBadge'
-import { ArrowLeft, Edit, Trash2, Plus } from 'lucide-react'
+import { ArrowLeft, Edit, Trash2, Plus, X } from 'lucide-react'
 
 type JobStatus = 'lead' | 'active' | 'on_hold' | 'completed' | 'cancelled'
 type EstimateStatus = 'draft' | 'sent' | 'approved' | 'rejected' | 'converted'
 type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
 
-type Job = { id: string; name: string; clientName: string; clientEmail: string | null; clientPhone: string | null; address: string | null; status: string; budgetedCost: string | null; actualCost: string | null; startDate: Date | null; notes: string | null }
+type Job = { id: string; name: string; clientName: string; clientEmail: string | null; clientPhone: string | null; address: string | null; status: string; budgetedCost: string; actualCost: string; startDate: Date | null; notes: string | null }
 type Estimate = { id: string; number: string; status: string; total: string }
 type Invoice = { id: string; number: string; status: string; total: string }
+type Expense = { id: string; description: string; type: string; amount: string; date: Date }
 
 type T = {
   edit: string; back: string; delete: string
@@ -26,21 +28,49 @@ type T = {
   invoiceStatus: Record<InvoiceStatus, string>
 }
 
-export function JobDetailClient({ job, estimates, invoices, translations: t }: { job: Job; estimates: Estimate[]; invoices: Invoice[]; translations: T }) {
+const EXPENSE_TYPES = ['labor', 'material', 'subcontractor', 'other'] as const
+
+export function JobDetailClient({ job, estimates, invoices, expenses: initialExpenses, translations: t }: {
+  job: Job; estimates: Estimate[]; invoices: Invoice[]; expenses: Expense[]; translations: T
+}) {
   const params = useParams()
   const router = useRouter()
   const locale = params.locale as string
   const [isPending, startTransition] = useTransition()
+  const [expenses, setExpenses] = useState(initialExpenses)
+  const [showExpenseForm, setShowExpenseForm] = useState(false)
+  const [expenseForm, setExpenseForm] = useState({ description: '', type: 'labor', amount: '', date: new Date().toISOString().split('T')[0] })
 
   const budget = parseFloat(job.budgetedCost ?? '0')
-  const actual = parseFloat(job.actualCost ?? '0')
-  const margin = budget > 0 ? Math.round(((budget - actual) / budget) * 100) : null
+  const actualCost = expenses.reduce((s, e) => s + parseFloat(e.amount), 0)
+  const margin = budget > 0 ? Math.round(((budget - actualCost) / budget) * 100) : null
+
+  // Revenue from paid invoices for this job
+  const revenue = invoices.filter(i => i.status === 'paid').reduce((s, i) => s + parseFloat(i.total), 0)
+  const revenueMargin = revenue > 0 ? Math.round(((revenue - actualCost) / revenue) * 100) : null
 
   function handleDelete() {
     if (!confirm('Delete this job?')) return
     startTransition(async () => {
       await deleteJob(job.id)
       router.push(`/${locale}/jobs`)
+    })
+  }
+
+  function handleAddExpense(e: React.FormEvent) {
+    e.preventDefault()
+    startTransition(async () => {
+      const created = await createExpense(job.id, expenseForm)
+      setExpenses(prev => [created, ...prev])
+      setShowExpenseForm(false)
+      setExpenseForm({ description: '', type: 'labor', amount: '', date: new Date().toISOString().split('T')[0] })
+    })
+  }
+
+  function handleDeleteExpense(id: string) {
+    startTransition(async () => {
+      await deleteExpense(id)
+      setExpenses(prev => prev.filter(e => e.id !== id))
     })
   }
 
@@ -78,18 +108,88 @@ export function JobDetailClient({ job, estimates, invoices, translations: t }: {
         <div className="plumbr-card p-5">
           <h3 className="text-sm font-semibold text-slate-700 mb-4">Job Costing</h3>
           <div className="space-y-3 text-sm">
-            <div className="flex justify-between"><span className="text-slate-500">{t.fields.budgetedCost}</span><span className="font-semibold">${budget.toLocaleString()}</span></div>
-            <div className="flex justify-between"><span className="text-slate-500">{t.fields.actualCost}</span><span className="font-semibold">${actual.toLocaleString()}</span></div>
+            <div className="flex justify-between"><span className="text-slate-500">Budget</span><span className="font-semibold">${budget.toLocaleString()}</span></div>
+            <div className="flex justify-between"><span className="text-slate-500">Actual Cost</span><span className="font-semibold">${actualCost.toLocaleString()}</span></div>
+            {revenue > 0 && <div className="flex justify-between"><span className="text-slate-500">Revenue</span><span className="font-semibold text-green-600">${revenue.toLocaleString()}</span></div>}
             {budget > 0 && (
               <>
                 <div className="w-full bg-slate-100 rounded-full h-2">
-                  <div className={`h-2 rounded-full ${actual > budget ? 'bg-red-500' : 'bg-green-500'}`} style={{ width: `${Math.min((actual / budget) * 100, 100)}%` }} />
+                  <div className={`h-2 rounded-full ${actualCost > budget ? 'bg-red-500' : 'bg-green-500'}`} style={{ width: `${Math.min((actualCost / budget) * 100, 100)}%` }} />
                 </div>
-                {margin !== null && <p className={`text-xs font-medium ${margin >= 0 ? 'text-green-600' : 'text-red-600'}`}>{margin}% margin</p>}
+                {margin !== null && <p className={`text-xs font-medium ${margin >= 0 ? 'text-green-600' : 'text-red-600'}`}>{margin}% budget margin</p>}
               </>
             )}
+            {revenueMargin !== null && <p className={`text-xs font-medium ${revenueMargin >= 0 ? 'text-green-600' : 'text-red-600'}`}>{revenueMargin}% profit margin</p>}
           </div>
         </div>
+      </div>
+
+      {/* Expenses */}
+      <div className="plumbr-card p-5 mb-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-slate-800">Expenses</h3>
+          <button onClick={() => setShowExpenseForm(v => !v)} className="btn-primary text-xs flex items-center gap-1">
+            <Plus size={13} /> Add Expense
+          </button>
+        </div>
+
+        {showExpenseForm && (
+          <form onSubmit={handleAddExpense} className="bg-slate-50 rounded-lg p-4 mb-4 space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-slate-500">Description *</label>
+                <input required value={expenseForm.description} onChange={e => setExpenseForm(f => ({ ...f, description: e.target.value }))} className="plumbr-input mt-1 text-sm" placeholder="Labor hours, materials..." />
+              </div>
+              <div>
+                <label className="text-xs text-slate-500">Type</label>
+                <select value={expenseForm.type} onChange={e => setExpenseForm(f => ({ ...f, type: e.target.value }))} className="plumbr-input mt-1 text-sm">
+                  {EXPENSE_TYPES.map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-slate-500">Amount *</label>
+                <input required type="number" step="0.01" min="0" value={expenseForm.amount} onChange={e => setExpenseForm(f => ({ ...f, amount: e.target.value }))} className="plumbr-input mt-1 text-sm" placeholder="0.00" />
+              </div>
+              <div>
+                <label className="text-xs text-slate-500">Date</label>
+                <input type="date" value={expenseForm.date} onChange={e => setExpenseForm(f => ({ ...f, date: e.target.value }))} className="plumbr-input mt-1 text-sm" />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button type="submit" disabled={isPending} className="btn-primary text-xs">{isPending ? 'Saving...' : 'Save'}</button>
+              <button type="button" onClick={() => setShowExpenseForm(false)} className="btn-secondary text-xs">Cancel</button>
+            </div>
+          </form>
+        )}
+
+        {expenses.length === 0 ? (
+          <p className="text-sm text-slate-400">No expenses recorded.</p>
+        ) : (
+          <div className="space-y-1">
+            {expenses.map(exp => (
+              <div key={exp.id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0 text-sm">
+                <div className="flex items-center gap-3">
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                    exp.type === 'labor' ? 'bg-blue-100 text-blue-700' :
+                    exp.type === 'material' ? 'bg-orange-100 text-orange-700' :
+                    exp.type === 'subcontractor' ? 'bg-purple-100 text-purple-700' :
+                    'bg-slate-100 text-slate-600'
+                  }`}>{exp.type}</span>
+                  <span className="text-slate-700">{exp.description}</span>
+                  <span className="text-xs text-slate-400">{new Date(exp.date).toLocaleDateString()}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="font-semibold">${parseFloat(exp.amount).toLocaleString()}</span>
+                  <button onClick={() => handleDeleteExpense(exp.id)} className="text-slate-300 hover:text-red-500 transition-colors"><X size={14} /></button>
+                </div>
+              </div>
+            ))}
+            <div className="flex justify-between pt-2 text-sm font-semibold text-slate-800">
+              <span>Total</span>
+              <span>${actualCost.toLocaleString()}</span>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="plumbr-card p-5 mb-4">
