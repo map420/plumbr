@@ -6,13 +6,14 @@ import { useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { deleteEstimate } from '@/lib/actions/estimates'
 import { EstimateStatusBadge } from '@/components/estimates/EstimateStatusBadge'
+import { PlanLimitBanner } from '@/components/PlanLimitBanner'
 import { FileText, Plus, Trash2 } from 'lucide-react'
 
 type EstimateStatus = 'draft' | 'sent' | 'approved' | 'rejected' | 'converted'
 type Estimate = { id: string; number: string; clientName: string; status: string; total: string; createdAt: Date }
 type T = { title: string; new: string; empty: string; status: Record<EstimateStatus, string>; fields: { number: string; clientName: string; total: string } }
 
-export function EstimatesClient({ initialEstimates, translations: t }: { initialEstimates: Estimate[]; translations: T }) {
+export function EstimatesClient({ initialEstimates, planInfo, translations: t }: { initialEstimates: Estimate[]; planInfo: { current: number; limit: number } | null; translations: T }) {
   const locale = useLocale()
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -24,6 +25,7 @@ export function EstimatesClient({ initialEstimates, translations: t }: { initial
 
   return (
     <div className="p-4 md:p-8">
+      {planInfo && <PlanLimitBanner current={planInfo.current} limit={planInfo.limit} resource="estimates" />}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-slate-900">{t.title}</h1>
         <Link href={`/${locale}/estimates/new`} className="btn-primary flex items-center gap-2 text-sm"><Plus size={16} /> {t.new}</Link>

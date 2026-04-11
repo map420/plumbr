@@ -15,6 +15,7 @@ export function JobForm({ translations: t, job }: { translations: FormTranslatio
   const params = useParams()
   const locale = params.locale as string
   const [isPending, startTransition] = useTransition()
+  const [error, setError] = useState<string | null>(null)
 
   const [form, setForm] = useState({
     name: job?.name ?? '',
@@ -32,15 +33,25 @@ export function JobForm({ translations: t, job }: { translations: FormTranslatio
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setError(null)
     startTransition(async () => {
-      if (job) {
-        await updateJob(job.id, form)
-        router.push(`/${locale}/jobs/${job.id}`)
-      } else {
-        const created = await createJob(form)
-        router.push(`/${locale}/jobs/${created.id}`)
+      try {
+        if (job) {
+          await updateJob(job.id, form)
+          router.push(`/${locale}/jobs/${job.id}`)
+        } else {
+          const created = await createJob(form)
+          router.push(`/${locale}/jobs/${created.id}`)
+        }
+        router.refresh()
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err)
+        if (msg.includes('PLAN_LIMIT')) {
+          setError(msg.replace('PLAN_LIMIT: ', ''))
+        } else {
+          setError('Something went wrong. Please try again.')
+        }
       }
-      router.refresh()
     })
   }
 
@@ -54,6 +65,12 @@ export function JobForm({ translations: t, job }: { translations: FormTranslatio
 
   return (
     <form onSubmit={handleSubmit} className="plumbr-card p-6 space-y-5">
+      {error && (
+        <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 flex items-center gap-2">
+          <span>{error}</span>
+          <a href={`/${locale}/pricing`} className="ml-auto font-semibold underline whitespace-nowrap">Upgrade to Pro</a>
+        </div>
+      )}
       {field('name', t.fields.name)}
       <div className="grid grid-cols-2 gap-4">
         {field('clientName', t.fields.clientName)}

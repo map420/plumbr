@@ -19,10 +19,22 @@ export const PLANS = {
     features: [
       'Unlimited jobs & estimates',
       'Invoice generation & tracking',
+      'Team / Technicians management',
       'Field mobile view',
       'Schedule calendar',
+      'Email automations',
       'English & Spanish',
       'Email support',
     ],
   },
 } as const
+
+export const STARTER_LIMITS = {
+  jobs: 5,
+  estimates: 5,
+  team: false,
+} as const
+
+export function isPro(plan: string | null | undefined): boolean {
+  return plan === 'pro' || plan === 'Pro'
+}

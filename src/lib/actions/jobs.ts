@@ -5,6 +5,8 @@ import { dbAdapter } from '@/lib/adapters/db'
 import { emailAdapter } from '@/lib/adapters/email'
 import { revalidatePath } from 'next/cache'
 import { jobCompletedInvoiceDueEmail } from '@/lib/email-templates'
+import { isPro, STARTER_LIMITS } from '@/lib/stripe'
+import { getUserPlan } from './billing'
 
 async function requireAuth() {
   const userId = await authAdapter.getUserId()
@@ -28,6 +30,15 @@ export async function createJob(data: {
   startDate: string; endDate: string; notes: string
 }) {
   const userId = await requireAuth()
+
+  // Plan enforcement
+  const planData = await getUserPlan()
+  if (!isPro(planData?.plan)) {
+    const existing = await dbAdapter.jobs.findAll(userId)
+    if (existing.length >= STARTER_LIMITS.jobs) {
+      throw new Error(`PLAN_LIMIT: Upgrade to Pro to create more than ${STARTER_LIMITS.jobs} jobs.`)
+    }
+  }
   const job = await dbAdapter.jobs.create(userId, {
     clientId: null,
     name: data.name,

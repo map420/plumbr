@@ -1,13 +1,14 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createTechnician, deleteTechnician } from '@/lib/actions/technicians'
-import { Users, Plus, Trash2, Mail, Phone, X } from 'lucide-react'
+import { Users, Plus, Trash2, Mail, Phone, X, Lock } from 'lucide-react'
 
 type Technician = { id: string; name: string; email: string; phone: string | null }
 
-export function TeamClient({ initialTechnicians }: { initialTechnicians: Technician[] }) {
+export function TeamClient({ initialTechnicians, isPro, locale }: { initialTechnicians: Technician[]; isPro: boolean; locale: string }) {
   const router = useRouter()
   const [technicians, setTechnicians] = useState(initialTechnicians)
   const [showForm, setShowForm] = useState(false)
@@ -31,6 +32,28 @@ export function TeamClient({ initialTechnicians }: { initialTechnicians: Technic
       setTechnicians(prev => prev.filter(t => t.id !== id))
       router.refresh()
     })
+  }
+
+  if (!isPro) {
+    return (
+      <div className="p-4 md:p-8 max-w-3xl">
+        <div className="flex items-center gap-2 mb-6">
+          <h1 className="text-2xl font-bold text-slate-900">Team</h1>
+        </div>
+        <div className="plumbr-card p-12 text-center">
+          <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
+            <Lock size={24} className="text-amber-600" />
+          </div>
+          <h2 className="text-lg font-semibold text-slate-800 mb-2">Pro feature</h2>
+          <p className="text-slate-500 text-sm mb-6 max-w-sm mx-auto">
+            Team management is available on the Pro plan. Add technicians, assign them to jobs, and filter the field view by team member.
+          </p>
+          <Link href={`/${locale}/pricing`} className="btn-primary inline-flex items-center gap-2 text-sm">
+            Upgrade to Pro — $49/mo
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (

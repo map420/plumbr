@@ -6,6 +6,7 @@ import { useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { deleteJob } from '@/lib/actions/jobs'
 import { JobStatusBadge } from '@/components/jobs/JobStatusBadge'
+import { PlanLimitBanner } from '@/components/PlanLimitBanner'
 import { Briefcase, Plus, Trash2 } from 'lucide-react'
 
 type Job = { id: string; name: string; clientName: string; status: string; startDate: Date | null; budgetedCost: string | null }
@@ -18,7 +19,7 @@ type Translations = {
 
 const ALL_STATUSES: JobStatus[] = ['lead', 'active', 'on_hold', 'completed', 'cancelled']
 
-export function JobsClient({ initialJobs, translations: t }: { initialJobs: Job[]; translations: Translations }) {
+export function JobsClient({ initialJobs, planInfo, translations: t }: { initialJobs: Job[]; planInfo: { current: number; limit: number } | null; translations: Translations }) {
   const locale = useLocale()
   const router = useRouter()
   const [filter, setFilter] = useState<JobStatus | 'all'>('all')
@@ -36,6 +37,7 @@ export function JobsClient({ initialJobs, translations: t }: { initialJobs: Job[
 
   return (
     <div className="p-4 md:p-8">
+      {planInfo && <PlanLimitBanner current={planInfo.current} limit={planInfo.limit} resource="jobs" />}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-slate-900">{t.title}</h1>
         <Link href={`/${locale}/jobs/new`} className="btn-primary flex items-center gap-2 text-sm">

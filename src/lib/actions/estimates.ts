@@ -6,6 +6,8 @@ import { emailAdapter } from '@/lib/adapters/email'
 import { revalidatePath } from 'next/cache'
 import type { LineItemInput } from '@/lib/adapters/db/types'
 import { estimateSentEmail } from '@/lib/email-templates'
+import { isPro, STARTER_LIMITS } from '@/lib/stripe'
+import { getUserPlan } from './billing'
 
 async function requireAuth() {
   const userId = await authAdapter.getUserId()
@@ -39,6 +41,15 @@ export async function createEstimate(data: {
   subtotal: number; tax: number; total: number; notes: string; validUntil: string
 }, items: RawLineItem[]) {
   const userId = await requireAuth()
+
+  // Plan enforcement
+  const planData = await getUserPlan()
+  if (!isPro(planData?.plan)) {
+    const existing = await dbAdapter.estimates.findAll(userId)
+    if (existing.length >= STARTER_LIMITS.estimates) {
+      throw new Error(`PLAN_LIMIT: Upgrade to Pro to create more than ${STARTER_LIMITS.estimates} estimates.`)
+    }
+  }
   const lineItems: LineItemInput[] = items.map((item, i) => ({
     parentId: '',
     parentType: 'estimate' as const,
