@@ -1,7 +1,9 @@
-import type { DbAdapter, Expense, Client, Job, Estimate, Invoice, LineItem, User, ExpenseInput, ClientInput, JobInput, EstimateInput, InvoiceInput, LineItemInput } from '../types'
+import type { DbAdapter, Technician, Expense, Client, Job, Estimate, Invoice, LineItem, User, TechnicianInput, ExpenseInput, ClientInput, JobInput, EstimateInput, InvoiceInput, LineItemInput } from '../types'
 
 // In-memory store — persists for the Node.js process lifetime
 const store = {
+  technicians: new Map<string, Technician>(),
+  jobTechnicians: new Map<string, Set<string>>(), // jobId → Set<technicianId>
   expenses: new Map<string, Expense>(),
   clients: new Map<string, Client>(),
   jobs: new Map<string, Job>(),
@@ -16,6 +18,47 @@ function uuid() { return crypto.randomUUID() }
 function now() { return new Date() }
 
 export const memoryAdapter: DbAdapter = {
+  technicians: {
+    async findAll(userId) {
+      return [...store.technicians.values()].filter(t => t.userId === userId).sort((a, b) => a.name.localeCompare(b.name))
+    },
+    async findById(id, userId) {
+      const t = store.technicians.get(id)
+      return t?.userId === userId ? t : null
+    },
+    async create(userId, data) {
+      const t: Technician = { ...data, id: uuid(), userId, createdAt: now(), updatedAt: now() }
+      store.technicians.set(t.id, t)
+      return t
+    },
+    async update(id, userId, data) {
+      const existing = store.technicians.get(id)
+      if (!existing || existing.userId !== userId) throw new Error('Not found')
+      const updated = { ...existing, ...data, updatedAt: now() }
+      store.technicians.set(id, updated)
+      return updated
+    },
+    async delete(id, userId) {
+      const t = store.technicians.get(id)
+      if (t?.userId === userId) store.technicians.delete(id)
+    },
+    async assignToJob(jobId, technicianId) {
+      if (!store.jobTechnicians.has(jobId)) store.jobTechnicians.set(jobId, new Set())
+      store.jobTechnicians.get(jobId)!.add(technicianId)
+    },
+    async removeFromJob(jobId, technicianId) {
+      store.jobTechnicians.get(jobId)?.delete(technicianId)
+    },
+    async findByJob(jobId) {
+      const ids = store.jobTechnicians.get(jobId) ?? new Set()
+      return [...ids].map(id => store.technicians.get(id)).filter(Boolean) as Technician[]
+    },
+    async findJobsByTechnician(technicianId) {
+      return [...store.jobTechnicians.entries()]
+        .filter(([, ids]) => ids.has(technicianId))
+        .map(([jobId]) => jobId)
+    },
+  },
   expenses: {
     async findByJob(jobId, userId) {
       return [...store.expenses.values()]

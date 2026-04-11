@@ -23,6 +23,7 @@ export default function Sidebar() {
     { href: `/${locale}/invoices`, label: t('invoices'), icon: Receipt },
     { href: `/${locale}/schedule`, label: t('schedule'), icon: Calendar },
     { href: `/${locale}/field`, label: t('field'), icon: Smartphone },
+    { href: `/${locale}/team`, label: 'Team', icon: Users },
   ]
 
   return (

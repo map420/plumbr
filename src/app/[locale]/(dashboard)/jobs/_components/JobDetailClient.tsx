@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { deleteJob } from '@/lib/actions/jobs'
 import { createExpense, deleteExpense } from '@/lib/actions/expenses'
+import { assignTechnicianToJob, removeTechnicianFromJob } from '@/lib/actions/technicians'
 import { JobStatusBadge } from '@/components/jobs/JobStatusBadge'
 import { EstimateStatusBadge } from '@/components/estimates/EstimateStatusBadge'
 import { InvoiceStatusBadge } from '@/components/invoices/InvoiceStatusBadge'
@@ -18,6 +19,7 @@ type Job = { id: string; name: string; clientName: string; clientEmail: string |
 type Estimate = { id: string; number: string; status: string; total: string }
 type Invoice = { id: string; number: string; status: string; total: string }
 type Expense = { id: string; description: string; type: string; amount: string; date: Date }
+type Technician = { id: string; name: string; email: string; phone: string | null }
 
 type T = {
   edit: string; back: string; delete: string
@@ -30,14 +32,16 @@ type T = {
 
 const EXPENSE_TYPES = ['labor', 'material', 'subcontractor', 'other'] as const
 
-export function JobDetailClient({ job, estimates, invoices, expenses: initialExpenses, translations: t }: {
-  job: Job; estimates: Estimate[]; invoices: Invoice[]; expenses: Expense[]; translations: T
+export function JobDetailClient({ job, estimates, invoices, expenses: initialExpenses, allTechnicians, assignedTechnicians: initialAssigned, translations: t }: {
+  job: Job; estimates: Estimate[]; invoices: Invoice[]; expenses: Expense[]
+  allTechnicians: Technician[]; assignedTechnicians: Technician[]; translations: T
 }) {
   const params = useParams()
   const router = useRouter()
   const locale = params.locale as string
   const [isPending, startTransition] = useTransition()
   const [expenses, setExpenses] = useState(initialExpenses)
+  const [assigned, setAssigned] = useState(initialAssigned)
   const [showExpenseForm, setShowExpenseForm] = useState(false)
   const [expenseForm, setExpenseForm] = useState({ description: '', type: 'labor', amount: '', date: new Date().toISOString().split('T')[0] })
 
@@ -54,6 +58,21 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
     startTransition(async () => {
       await deleteJob(job.id)
       router.push(`/${locale}/jobs`)
+    })
+  }
+
+  function handleAssign(tech: Technician) {
+    if (assigned.find(a => a.id === tech.id)) return
+    startTransition(async () => {
+      await assignTechnicianToJob(job.id, tech.id)
+      setAssigned(prev => [...prev, tech])
+    })
+  }
+
+  function handleUnassign(techId: string) {
+    startTransition(async () => {
+      await removeTechnicianFromJob(job.id, techId)
+      setAssigned(prev => prev.filter(a => a.id !== techId))
     })
   }
 
@@ -122,6 +141,30 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
             {revenueMargin !== null && <p className={`text-xs font-medium ${revenueMargin >= 0 ? 'text-green-600' : 'text-red-600'}`}>{revenueMargin}% profit margin</p>}
           </div>
         </div>
+      </div>
+
+      {/* Technicians */}
+      <div className="plumbr-card p-5 mb-4">
+        <h3 className="font-semibold text-slate-800 mb-3">Assigned Technicians</h3>
+        <div className="flex flex-wrap gap-2 mb-3">
+          {assigned.length === 0 && <p className="text-sm text-slate-400">No technicians assigned.</p>}
+          {assigned.map(tech => (
+            <div key={tech.id} className="flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-lg px-3 py-1.5 text-sm">
+              <div className="w-6 h-6 rounded-full bg-[#1E3A5F] text-white text-xs flex items-center justify-center font-bold">{tech.name.charAt(0)}</div>
+              <span className="font-medium text-slate-700">{tech.name}</span>
+              <button onClick={() => handleUnassign(tech.id)} className="text-slate-300 hover:text-red-500 ml-1"><X size={13} /></button>
+            </div>
+          ))}
+        </div>
+        {allTechnicians.filter(t => !assigned.find(a => a.id === t.id)).length > 0 && (
+          <select onChange={e => { const t = allTechnicians.find(t => t.id === e.target.value); if (t) handleAssign(t); e.target.value = '' }}
+            className="plumbr-input text-sm max-w-xs" defaultValue="">
+            <option value="" disabled>+ Assign technician</option>
+            {allTechnicians.filter(t => !assigned.find(a => a.id === t.id)).map(t => (
+              <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
+          </select>
+        )}
       </div>
 
       {/* Expenses */}

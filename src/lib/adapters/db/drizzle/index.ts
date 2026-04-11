@@ -1,4 +1,5 @@
 import { db } from '@/db'
+import { technicians, jobTechnicians } from '@/db/schema/technicians'
 import { expenses } from '@/db/schema/expenses'
 import { clients } from '@/db/schema/clients'
 import { jobs } from '@/db/schema/jobs'
@@ -23,6 +24,44 @@ function nextNumber(rows: { number: string }[], prefix: string) {
 }
 
 export const drizzleAdapter: DbAdapter = {
+  technicians: {
+    async findAll(userId) {
+      return db.select().from(technicians).where(eq(technicians.userId, userId)).orderBy(technicians.name)
+    },
+    async findById(id, userId) {
+      const rows = await db.select().from(technicians).where(and(eq(technicians.id, id), eq(technicians.userId, userId)))
+      return rows[0] ?? null
+    },
+    async create(userId, data) {
+      const [t] = await db.insert(technicians).values({ ...data, userId }).returning()
+      return t
+    },
+    async update(id, userId, data) {
+      const [t] = await db.update(technicians).set({ ...data, updatedAt: new Date() })
+        .where(and(eq(technicians.id, id), eq(technicians.userId, userId))).returning()
+      return t
+    },
+    async delete(id, userId) {
+      await db.delete(technicians).where(and(eq(technicians.id, id), eq(technicians.userId, userId)))
+    },
+    async assignToJob(jobId, technicianId) {
+      await db.insert(jobTechnicians).values({ jobId, technicianId }).onConflictDoNothing()
+    },
+    async removeFromJob(jobId, technicianId) {
+      await db.delete(jobTechnicians).where(and(eq(jobTechnicians.jobId, jobId), eq(jobTechnicians.technicianId, technicianId)))
+    },
+    async findByJob(jobId) {
+      const rows = await db.select({ technician: technicians }).from(jobTechnicians)
+        .innerJoin(technicians, eq(jobTechnicians.technicianId, technicians.id))
+        .where(eq(jobTechnicians.jobId, jobId))
+      return rows.map(r => r.technician)
+    },
+    async findJobsByTechnician(technicianId) {
+      const rows = await db.select({ jobId: jobTechnicians.jobId }).from(jobTechnicians)
+        .where(eq(jobTechnicians.technicianId, technicianId))
+      return rows.map(r => r.jobId)
+    },
+  },
   expenses: {
     async findByJob(jobId, userId) {
       return db.select().from(expenses)
