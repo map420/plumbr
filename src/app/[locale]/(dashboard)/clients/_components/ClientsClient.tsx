@@ -30,7 +30,7 @@ export function ClientsClient({ initialClients }: { initialClients: Client[] }) 
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-slate-900">Clients</h1>
         <Link href={`/${locale}/clients/new`} className="btn-primary flex items-center gap-2 text-sm">

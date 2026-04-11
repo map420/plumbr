@@ -6,7 +6,7 @@ export default async function NewEstimatePage() {
   const tc = await getTranslations('common')
   const tj = await getTranslations('jobs')
   return (
-    <div className="p-8 max-w-3xl">
+    <div className="p-4 md:p-8 max-w-3xl">
       <h1 className="text-2xl font-bold text-slate-900 mb-6">{te('new')}</h1>
       <EstimateFormClient
         translations={{

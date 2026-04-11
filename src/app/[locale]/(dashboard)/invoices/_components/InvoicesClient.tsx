@@ -27,7 +27,7 @@ export function InvoicesClient({ initialInvoices, translations: t }: { initialIn
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-slate-900">{t.title}</h1>
         <Link href={`/${locale}/invoices/new`} className="btn-primary flex items-center gap-2 text-sm"><Plus size={16} /> {t.new}</Link>
@@ -37,7 +37,8 @@ export function InvoicesClient({ initialInvoices, translations: t }: { initialIn
         <div className="plumbr-card p-12 text-center"><Receipt size={40} className="mx-auto text-slate-300 mb-3" /><p className="text-slate-500">{t.empty}</p></div>
       ) : (
         <div className={`plumbr-card overflow-hidden ${isPending ? 'opacity-50' : ''}`}>
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[560px]">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
                 <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.number}</th>
@@ -68,6 +69,7 @@ export function InvoicesClient({ initialInvoices, translations: t }: { initialIn
               })}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

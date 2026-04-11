@@ -94,7 +94,7 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
   }
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="p-4 md:p-8 max-w-4xl">
       <div className="flex items-start justify-between mb-6">
         <div>
           <Link href={`/${locale}/jobs`} className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-2">
@@ -113,9 +113,9 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-6 mb-6">
-        <div className="col-span-2 plumbr-card p-5 space-y-3">
-          <div className="grid grid-cols-2 gap-4 text-sm">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="md:col-span-2 plumbr-card p-5 space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <div><span className="text-slate-500">{t.fields.clientEmail}</span><p className="font-medium mt-0.5">{job.clientEmail || '—'}</p></div>
             <div><span className="text-slate-500">{t.fields.clientPhone}</span><p className="font-medium mt-0.5">{job.clientPhone || '—'}</p></div>
             <div><span className="text-slate-500">{t.fields.address}</span><p className="font-medium mt-0.5">{job.address || '—'}</p></div>
@@ -178,7 +178,7 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
 
         {showExpenseForm && (
           <form onSubmit={handleAddExpense} className="bg-slate-50 rounded-lg p-4 mb-4 space-y-3">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="text-xs text-slate-500">Description *</label>
                 <input required value={expenseForm.description} onChange={e => setExpenseForm(f => ({ ...f, description: e.target.value }))} className="plumbr-input mt-1 text-sm" placeholder="Labor hours, materials..." />

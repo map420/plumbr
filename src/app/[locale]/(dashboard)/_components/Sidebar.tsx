@@ -5,10 +5,10 @@ import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, FileText, Briefcase, Calendar, Smartphone, Receipt, Settings, Users
+  LayoutDashboard, FileText, Briefcase, Calendar, Smartphone, Receipt, Settings, Users, X
 } from 'lucide-react'
 
-export default function Sidebar() {
+export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const t = useTranslations('nav')
   const locale = useLocale()
   const pathname = usePathname()
@@ -27,15 +27,21 @@ export default function Sidebar() {
   ]
 
   return (
-    <aside className="w-60 shrink-0 plumbr-nav flex flex-col">
-      <div className="px-6 py-5 border-b border-white/10">
+    <aside className="w-60 h-full plumbr-nav flex flex-col">
+      <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between">
         <span className="text-xl font-bold tracking-tight">Plumbr</span>
+        {onClose && (
+          <button onClick={onClose} className="md:hidden text-white/60 hover:text-white">
+            <X size={18} />
+          </button>
+        )}
       </div>
       <nav className="flex-1 px-3 py-4 space-y-1">
         {nav.map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
             href={href}
+            onClick={onClose}
             className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-colors"
           >
             <Icon size={18} />
@@ -44,7 +50,7 @@ export default function Sidebar() {
         ))}
       </nav>
       <div className="px-3 pb-2">
-        <Link href={`/${locale}/settings`} className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-colors">
+        <Link href={`/${locale}/settings`} onClick={onClose} className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-colors">
           <Settings size={18} />
           Settings
         </Link>

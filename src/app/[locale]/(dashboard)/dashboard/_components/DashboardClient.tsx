@@ -51,7 +51,7 @@ export function DashboardClient({ translations: t }: { translations: T }) {
   const greeting = t.greeting.replace('{name}', 'there')
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-slate-900">{greeting} 👷</h1>
         <p className="text-slate-500 mt-1">{t.subtitle}</p>

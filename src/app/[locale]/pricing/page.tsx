@@ -24,7 +24,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
             </div>
           </div>
 
-          <div className="p-8">
+          <div className="p-4 md:p-8">
             <ul className="space-y-3 mb-8">
               {PLANS.pro.features.map((feature) => (
                 <li key={feature} className="flex items-center gap-3 text-sm text-slate-700">

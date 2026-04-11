@@ -45,7 +45,7 @@ export function EstimateDetailClient({ estimate, lineItems, translations: t }: {
   }
 
   return (
-    <div className="p-8 max-w-3xl">
+    <div className="p-4 md:p-8 max-w-3xl">
       <div className="flex items-start justify-between mb-6">
         <div>
           <Link href={`/${locale}/estimates`} className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-2"><ArrowLeft size={14} /> {t.back}</Link>
@@ -75,7 +75,7 @@ export function EstimateDetailClient({ estimate, lineItems, translations: t }: {
         </div>
       </div>
 
-      <div className="plumbr-card p-5 mb-4 grid grid-cols-2 gap-4 text-sm">
+      <div className="plumbr-card p-5 mb-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
         <div><span className="text-slate-500">{t.fields.clientName}</span><p className="font-medium mt-0.5">{estimate.clientName}</p></div>
         <div><span className="text-slate-500">{t.fields.clientEmail}</span><p className="font-medium mt-0.5">{estimate.clientEmail || '—'}</p></div>
         <div><span className="text-slate-500">{t.fields.validUntil}</span><p className="font-medium mt-0.5">{estimate.validUntil ? new Date(estimate.validUntil).toLocaleDateString() : '—'}</p></div>

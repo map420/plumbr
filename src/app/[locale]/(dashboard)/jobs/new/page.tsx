@@ -5,7 +5,7 @@ export default async function NewJobPage() {
   const tj = await getTranslations('jobs')
   const tc = await getTranslations('common')
   return (
-    <div className="p-8 max-w-2xl">
+    <div className="p-4 md:p-8 max-w-2xl">
       <h1 className="text-2xl font-bold text-slate-900 mb-6">{tj('new')}</h1>
       <JobForm
         translations={{

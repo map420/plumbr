@@ -23,7 +23,7 @@ export function EstimatesClient({ initialEstimates, translations: t }: { initial
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-slate-900">{t.title}</h1>
         <Link href={`/${locale}/estimates/new`} className="btn-primary flex items-center gap-2 text-sm"><Plus size={16} /> {t.new}</Link>
@@ -37,7 +37,8 @@ export function EstimatesClient({ initialEstimates, translations: t }: { initial
         </div>
       ) : (
         <div className={`plumbr-card overflow-hidden ${isPending ? 'opacity-50' : ''}`}>
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[560px]">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
                 <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.number}</th>
@@ -61,6 +62,7 @@ export function EstimatesClient({ initialEstimates, translations: t }: { initial
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

@@ -7,7 +7,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
   const [t, userPlan] = await Promise.all([getTranslations('nav'), getUserPlan()])
 
   return (
-    <div className="p-8 max-w-xl">
+    <div className="p-4 md:p-8 max-w-xl">
       <h1 className="text-2xl font-bold text-slate-900 mb-6">Settings</h1>
       <SettingsClient locale={locale} plan={userPlan?.plan ?? 'starter'} hasSubscription={!!userPlan?.stripeSubscriptionId} />
     </div>

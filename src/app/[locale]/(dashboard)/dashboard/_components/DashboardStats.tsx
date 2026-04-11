@@ -49,7 +49,7 @@ export function DashboardStats({ stats, chartData, translations: t }: {
   const hasClientData = chartData.topClients.length > 0
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       {/* Greeting */}
       <div>
         <h1 className="text-2xl font-bold text-slate-900">{greeting} 👷</h1>

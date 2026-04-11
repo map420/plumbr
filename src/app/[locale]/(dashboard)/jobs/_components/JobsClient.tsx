@@ -35,7 +35,7 @@ export function JobsClient({ initialJobs, translations: t }: { initialJobs: Job[
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-slate-900">{t.title}</h1>
         <Link href={`/${locale}/jobs/new`} className="btn-primary flex items-center gap-2 text-sm">
@@ -64,7 +64,8 @@ export function JobsClient({ initialJobs, translations: t }: { initialJobs: Job[
         </div>
       ) : (
         <div className="plumbr-card overflow-hidden">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[560px]">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
                 <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.name}</th>
@@ -100,6 +101,7 @@ export function JobsClient({ initialJobs, translations: t }: { initialJobs: Job[
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

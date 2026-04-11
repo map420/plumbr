@@ -34,7 +34,7 @@ export function TeamClient({ initialTechnicians }: { initialTechnicians: Technic
   }
 
   return (
-    <div className="p-8 max-w-3xl">
+    <div className="p-4 md:p-8 max-w-3xl">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-slate-900">Team</h1>
         <button onClick={() => setShowForm(v => !v)} className="btn-primary flex items-center gap-2 text-sm">
