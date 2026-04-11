@@ -1,21 +1,27 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createJob, updateJob } from '@/lib/actions/jobs'
+import { Search, X } from 'lucide-react'
 
 type JobStatus = 'lead' | 'active' | 'on_hold' | 'completed' | 'cancelled'
 type Job = { id: string; name: string; clientName: string; clientEmail: string | null; clientPhone: string | null; address: string | null; status: string; budgetedCost: string | null; actualCost: string | null; startDate: Date | null; endDate: Date | null; notes: string | null }
+type Client = { id: string; name: string; email: string | null; phone: string | null; address: string | null }
 type FormTranslations = { save: string; cancel: string; fields: Record<string, string>; status: Record<JobStatus, string> }
 
 const STATUS_OPTIONS: JobStatus[] = ['lead', 'active', 'on_hold', 'completed', 'cancelled']
 
-export function JobForm({ translations: t, job }: { translations: FormTranslations; job?: Job }) {
+export function JobForm({ translations: t, job, clients = [] }: { translations: FormTranslations; job?: Job; clients?: Client[] }) {
   const router = useRouter()
   const params = useParams()
   const locale = params.locale as string
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [clientSearch, setClientSearch] = useState('')
+  const [showDropdown, setShowDropdown] = useState(false)
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   const [form, setForm] = useState({
     name: job?.name ?? '',
@@ -30,6 +36,41 @@ export function JobForm({ translations: t, job }: { translations: FormTranslatio
     endDate: job?.endDate ? new Date(job.endDate).toISOString().split('T')[0] : '',
     notes: job?.notes ?? '',
   })
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  const filteredClients = clients.filter(c =>
+    c.name.toLowerCase().includes(clientSearch.toLowerCase()) ||
+    (c.email ?? '').toLowerCase().includes(clientSearch.toLowerCase())
+  )
+
+  function selectClient(client: Client) {
+    setSelectedClientId(client.id)
+    setForm(f => ({
+      ...f,
+      clientName: client.name,
+      clientEmail: client.email ?? '',
+      clientPhone: client.phone ?? '',
+      address: client.address ?? f.address,
+    }))
+    setClientSearch(client.name)
+    setShowDropdown(false)
+  }
+
+  function clearClient() {
+    setSelectedClientId(null)
+    setClientSearch('')
+    setForm(f => ({ ...f, clientName: '', clientEmail: '', clientPhone: '' }))
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -71,8 +112,50 @@ export function JobForm({ translations: t, job }: { translations: FormTranslatio
           <a href={`/${locale}/pricing`} className="ml-auto font-semibold underline whitespace-nowrap">Upgrade to Pro</a>
         </div>
       )}
+
       {field('name', t.fields.name)}
-      <div className="grid grid-cols-2 gap-4">
+
+      {/* Client autocomplete */}
+      {clients.length > 0 && (
+        <div ref={dropdownRef} className="relative">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
+            Client <span className="text-slate-400 font-normal">(search existing or type below)</span>
+          </label>
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={clientSearch}
+              onChange={e => { setClientSearch(e.target.value); setShowDropdown(true); if (!e.target.value) clearClient() }}
+              onFocus={() => setShowDropdown(true)}
+              placeholder="Search clients..."
+              className="w-full border border-slate-200 rounded-lg pl-8 pr-8 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30"
+            />
+            {selectedClientId && (
+              <button type="button" onClick={clearClient} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                <X size={14} />
+              </button>
+            )}
+          </div>
+          {showDropdown && filteredClients.length > 0 && (
+            <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+              {filteredClients.map(c => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => selectClient(c)}
+                  className="w-full text-left px-4 py-2.5 hover:bg-slate-50 border-b border-slate-100 last:border-0"
+                >
+                  <p className="text-sm font-medium text-slate-800">{c.name}</p>
+                  {c.email && <p className="text-xs text-slate-400">{c.email}</p>}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {field('clientName', t.fields.clientName)}
         {field('clientPhone', t.fields.clientPhone, 'tel')}
       </div>
@@ -85,7 +168,7 @@ export function JobForm({ translations: t, job }: { translations: FormTranslatio
           {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{t.status[s]}</option>)}
         </select>
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {field('startDate', t.fields.startDate, 'date')}
         {field('endDate', t.fields.endDate, 'date')}
       </div>
