@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { deleteClient } from '@/lib/actions/clients'
+import { ConfirmModal } from '@/components/ConfirmModal'
 import { Users, Plus, Trash2, Mail, Phone, Briefcase, DollarSign } from 'lucide-react'
 
 type Client = { id: string; name: string; email: string | null; phone: string | null; address: string | null }
@@ -15,6 +16,7 @@ export function ClientsClient({ initialClients, clientStats = {} }: { initialCli
   const router = useRouter()
   const [search, setSearch] = useState('')
   const [isPending, startTransition] = useTransition()
+  const [deleteId, setDeleteId] = useState<string | null>(null)
 
   const filtered = initialClients.filter(c =>
     c.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -22,16 +24,22 @@ export function ClientsClient({ initialClients, clientStats = {} }: { initialCli
     c.phone?.includes(search)
   )
 
-  function handleDelete(id: string) {
-    if (!confirm('Delete this client?')) return
-    startTransition(async () => {
-      await deleteClient(id)
-      router.refresh()
-    })
+  function handleDelete() {
+    if (!deleteId) return
+    startTransition(async () => { await deleteClient(deleteId); router.refresh() })
+    setDeleteId(null)
   }
 
   return (
     <div className="p-4 md:p-8">
+      {deleteId && (
+        <ConfirmModal
+          title="Delete Client"
+          message="Are you sure you want to delete this client? This action cannot be undone."
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteId(null)}
+        />
+      )}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-slate-900">Clients</h1>
         <Link href={`/${locale}/clients/new`} className="btn-primary flex items-center gap-2 text-sm">
@@ -67,7 +75,7 @@ export function ClientsClient({ initialClients, clientStats = {} }: { initialCli
               <div className="flex items-start justify-between">
                 <span className="font-semibold text-[#1E3A5F] text-base">{client.name}</span>
                 <button
-                  onClick={(e) => { e.preventDefault(); handleDelete(client.id) }}
+                  onClick={(e) => { e.preventDefault(); setDeleteId(client.id) }}
                   className="relative z-10 text-slate-400 hover:text-red-500 transition-colors ml-2 shrink-0"
                 >
                   <Trash2 size={15} />

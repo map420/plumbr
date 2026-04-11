@@ -57,7 +57,7 @@ export function DashboardStats({ stats, chartData, translations: t }: {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {statCards.map(({ label, value, icon: Icon, color }) => (
           <div key={label} className="plumbr-card p-5">
             <div className="flex items-center justify-between mb-3">
@@ -70,9 +70,9 @@ export function DashboardStats({ stats, chartData, translations: t }: {
       </div>
 
       {/* Charts row */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Revenue by month */}
-        <div className="col-span-2 plumbr-card p-5">
+        <div className="col-span-1 md:col-span-2 plumbr-card p-5">
           <h2 className="text-sm font-semibold text-slate-700 mb-4">Revenue — Last 6 Months</h2>
           {hasRevenueData ? (
             <ResponsiveContainer width="100%" height={200}>
@@ -111,7 +111,7 @@ export function DashboardStats({ stats, chartData, translations: t }: {
       </div>
 
       {/* Bottom row */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Conversion rate */}
         <div className="plumbr-card p-5 flex flex-col items-center justify-center text-center">
           <Target size={28} className="text-[#1E3A5F] mb-3" />
@@ -120,7 +120,7 @@ export function DashboardStats({ stats, chartData, translations: t }: {
         </div>
 
         {/* Top clients */}
-        <div className="col-span-2 plumbr-card p-5">
+        <div className="col-span-1 md:col-span-2 plumbr-card p-5">
           <h2 className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2"><Users size={15} /> Top 5 Clients by Revenue</h2>
           {hasClientData ? (
             <div className="space-y-3">

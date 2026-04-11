@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { deleteJob } from '@/lib/actions/jobs'
 import { JobStatusBadge } from '@/components/jobs/JobStatusBadge'
 import { PlanLimitBanner } from '@/components/PlanLimitBanner'
+import { ConfirmModal } from '@/components/ConfirmModal'
 import { Briefcase, Plus, Trash2 } from 'lucide-react'
 
 type Job = { id: string; name: string; clientName: string; status: string; startDate: Date | null; budgetedCost: string | null }
@@ -24,19 +25,26 @@ export function JobsClient({ initialJobs, planInfo, translations: t }: { initial
   const router = useRouter()
   const [filter, setFilter] = useState<JobStatus | 'all'>('all')
   const [isPending, startTransition] = useTransition()
+  const [deleteId, setDeleteId] = useState<string | null>(null)
 
   const filtered = filter === 'all' ? initialJobs : initialJobs.filter((j) => j.status === filter)
 
-  function handleDelete(id: string) {
-    if (!confirm('Delete this job?')) return
-    startTransition(async () => {
-      await deleteJob(id)
-      router.refresh()
-    })
+  function handleDelete() {
+    if (!deleteId) return
+    startTransition(async () => { await deleteJob(deleteId); router.refresh() })
+    setDeleteId(null)
   }
 
   return (
     <div className="p-4 md:p-8">
+      {deleteId && (
+        <ConfirmModal
+          title="Delete Job"
+          message="Are you sure you want to delete this job? This action cannot be undone."
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteId(null)}
+        />
+      )}
       {planInfo && <PlanLimitBanner current={planInfo.current} limit={planInfo.limit} resource="jobs" />}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-slate-900">{t.title}</h1>
@@ -95,7 +103,7 @@ export function JobsClient({ initialJobs, planInfo, translations: t }: { initial
                     {job.budgetedCost && parseFloat(job.budgetedCost) > 0 ? `$${parseFloat(job.budgetedCost).toLocaleString()}` : '—'}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <button onClick={() => handleDelete(job.id)} className="text-slate-400 hover:text-red-500 transition-colors">
+                    <button onClick={() => setDeleteId(job.id)} className="text-slate-400 hover:text-red-500 transition-colors">
                       <Trash2 size={15} />
                     </button>
                   </td>

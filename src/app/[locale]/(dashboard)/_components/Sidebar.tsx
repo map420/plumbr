@@ -37,20 +37,23 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
         )}
       </div>
       <nav className="flex-1 px-3 py-4 space-y-1">
-        {nav.map(({ href, label, icon: Icon }) => (
-          <Link
-            key={href}
-            href={href}
-            onClick={onClose}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-          >
-            <Icon size={18} />
-            {label}
-          </Link>
-        ))}
+        {nav.map(({ href, label, icon: Icon }) => {
+          const isActive = pathname === href || pathname.startsWith(href + '/')
+          return (
+            <Link
+              key={href}
+              href={href}
+              onClick={onClose}
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
+            >
+              <Icon size={18} />
+              {label}
+            </Link>
+          )
+        })}
       </nav>
       <div className="px-3 pb-2">
-        <Link href={`/${locale}/settings`} onClick={onClose} className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-colors">
+        <Link href={`/${locale}/settings`} onClick={onClose} className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${pathname.startsWith(`/${locale}/settings`) ? 'bg-white/15 text-white' : 'text-white/70 hover:text-white hover:bg-white/10'}`}>
           <Settings size={18} />
           Settings
         </Link>
