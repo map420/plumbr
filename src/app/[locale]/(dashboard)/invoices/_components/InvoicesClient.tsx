@@ -1,6 +1,6 @@
 'use client'
 
-import { useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
@@ -17,14 +17,21 @@ function effectiveStatus(inv: Invoice): InvoiceStatus {
   return inv.status as InvoiceStatus
 }
 
+const FILTER_OPTIONS: Array<InvoiceStatus | 'all'> = ['all', 'draft', 'sent', 'overdue', 'paid', 'cancelled']
+
 export function InvoicesClient({ initialInvoices, translations: t }: { initialInvoices: Invoice[]; translations: T }) {
   const locale = useLocale()
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
+  const [filter, setFilter] = useState<InvoiceStatus | 'all'>('all')
 
   function handleMarkPaid(id: string) {
     startTransition(async () => { await updateInvoice(id, { status: 'paid', paidAt: new Date().toISOString() }); router.refresh() })
   }
+
+  const filteredInvoices = filter === 'all'
+    ? initialInvoices
+    : initialInvoices.filter(inv => effectiveStatus(inv) === filter)
 
   return (
     <div className="p-4 md:p-8">
@@ -33,8 +40,17 @@ export function InvoicesClient({ initialInvoices, translations: t }: { initialIn
         <Link href={`/${locale}/invoices/new`} className="btn-primary flex items-center gap-2 text-sm"><Plus size={16} /> {t.new}</Link>
       </div>
 
-      {initialInvoices.length === 0 ? (
-        <div className="plumbr-card p-12 text-center"><Receipt size={40} className="mx-auto text-slate-300 mb-3" /><p className="text-slate-500">{t.empty}</p></div>
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
+        {FILTER_OPTIONS.map(f => (
+          <button key={f} onClick={() => setFilter(f)}
+            className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${filter === f ? 'bg-[#1E3A5F] text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+            {f === 'all' ? 'All' : t.status[f]}
+          </button>
+        ))}
+      </div>
+
+      {filteredInvoices.length === 0 ? (
+        <div className="plumbr-card p-12 text-center"><Receipt size={40} className="mx-auto text-slate-300 mb-3" /><p className="text-slate-500">{filter === 'all' ? t.empty : `No ${filter} invoices.`}</p></div>
       ) : (
         <div className={`plumbr-card overflow-hidden ${isPending ? 'opacity-50' : ''}`}>
           <div className="overflow-x-auto">
@@ -50,7 +66,7 @@ export function InvoicesClient({ initialInvoices, translations: t }: { initialIn
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {initialInvoices.map((inv) => {
+              {filteredInvoices.map((inv) => {
                 const status = effectiveStatus(inv)
                 return (
                   <tr key={inv.id} className="hover:bg-slate-50 transition-colors">

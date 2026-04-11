@@ -5,11 +5,12 @@ import Link from 'next/link'
 import { useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { deleteClient } from '@/lib/actions/clients'
-import { Users, Plus, Trash2, Mail, Phone } from 'lucide-react'
+import { Users, Plus, Trash2, Mail, Phone, Briefcase, DollarSign } from 'lucide-react'
 
 type Client = { id: string; name: string; email: string | null; phone: string | null; address: string | null }
+type ClientStats = { jobCount: number; revenue: number }
 
-export function ClientsClient({ initialClients }: { initialClients: Client[] }) {
+export function ClientsClient({ initialClients, clientStats = {} }: { initialClients: Client[]; clientStats?: Record<string, ClientStats> }) {
   const locale = useLocale()
   const router = useRouter()
   const [search, setSearch] = useState('')
@@ -84,6 +85,20 @@ export function ClientsClient({ initialClients }: { initialClients: Client[] }) 
               )}
               {client.address && (
                 <p className="text-xs text-slate-400 truncate">{client.address}</p>
+              )}
+              {(clientStats[client.id]?.jobCount > 0 || clientStats[client.id]?.revenue > 0) && (
+                <div className="flex items-center gap-3 pt-1 border-t border-slate-100 mt-1">
+                  {clientStats[client.id]?.jobCount > 0 && (
+                    <div className="flex items-center gap-1 text-xs text-slate-500">
+                      <Briefcase size={11} /> {clientStats[client.id].jobCount} job{clientStats[client.id].jobCount !== 1 ? 's' : ''}
+                    </div>
+                  )}
+                  {clientStats[client.id]?.revenue > 0 && (
+                    <div className="flex items-center gap-1 text-xs text-green-600 font-medium">
+                      <DollarSign size={11} /> ${clientStats[client.id].revenue.toLocaleString()}
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           ))}

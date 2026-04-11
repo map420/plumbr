@@ -13,7 +13,7 @@
     "subtitle": "Esto es lo que está pasando con tu negocio hoy.",
     "stats": {
       "activeJobs": "Trabajos Activos",
-      "openEstimates": "Presupuestos Abiertos",
+      "openEstimates": "Facturas Sin Pagar",
       "revenueThisMonth": "Ingresos Este Mes",
       "avgJobMargin": "Margen Promedio"
     },

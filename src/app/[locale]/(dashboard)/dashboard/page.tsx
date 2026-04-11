@@ -25,7 +25,9 @@ export default async function DashboardPage() {
 
     // KPI stats
     const activeJobs = allJobs.filter(j => j.status === 'active').length
-    const openEstimates = allEstimates.filter(e => ['draft', 'sent'].includes(e.status)).length
+    const openEstimates = allInvoices.filter(i =>
+      i.status !== 'paid' && i.status !== 'cancelled'
+    ).length
 
     const monthStart = new Date()
     monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0)

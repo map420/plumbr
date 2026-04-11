@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import { useRouter, useSearchParams, useParams } from 'next/navigation'
 import { createEstimate } from '@/lib/actions/estimates'
 import { getJobs } from '@/lib/actions/jobs'
 import { createInvoice } from '@/lib/actions/invoices'
 import { updateEstimate } from '@/lib/actions/estimates'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Search, X } from 'lucide-react'
 
 type LineItemType = 'labor' | 'material' | 'subcontractor' | 'other'
 type LI = { type: LineItemType; description: string; quantity: number; unitPrice: number; total: number }
@@ -44,20 +44,58 @@ export function EstimateFormClient({ translations: t, estimate }: { translations
 
   const [jobs, setJobs] = useState<Job[]>([])
   const [jobId, setJobId] = useState(estimate?.jobId ?? searchParams.get('jobId') ?? '')
+  const [jobSearch, setJobSearch] = useState('')
+  const [showJobDropdown, setShowJobDropdown] = useState(false)
+  const jobDropdownRef = useRef<HTMLDivElement>(null)
   const [clientName, setClientName] = useState(estimate?.clientName ?? '')
   const [clientEmail, setClientEmail] = useState(estimate?.clientEmail ?? '')
   const [validUntil, setValidUntil] = useState(estimate?.validUntil ? new Date(estimate.validUntil).toISOString().split('T')[0] : '')
   const [notes, setNotes] = useState(estimate?.notes ?? '')
   const [items, setItems] = useState<LI[]>([])
 
-  useEffect(() => { getJobs().then(setJobs) }, [])
+  useEffect(() => {
+    getJobs().then(loadedJobs => {
+      setJobs(loadedJobs)
+      // Pre-fill job search label if editing or pre-selected via URL
+      const preId = estimate?.jobId ?? searchParams.get('jobId') ?? ''
+      if (preId) {
+        const found = loadedJobs.find(j => j.id === preId)
+        if (found) {
+          setJobSearch(found.name)
+          setClientName(found.clientName)
+          setClientEmail(found.clientEmail ?? '')
+        }
+      }
+    })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (jobId && !clientName) {
-      const job = jobs.find((j) => j.id === jobId)
-      if (job) { setClientName(job.clientName); setClientEmail(job.clientEmail ?? '') }
+    function handleClick(e: MouseEvent) {
+      if (jobDropdownRef.current && !jobDropdownRef.current.contains(e.target as Node)) setShowJobDropdown(false)
     }
-  }, [jobId, jobs, clientName])
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  function selectJob(job: Job) {
+    setJobId(job.id)
+    setJobSearch(job.name)
+    setClientName(job.clientName)
+    setClientEmail(job.clientEmail ?? '')
+    setShowJobDropdown(false)
+  }
+
+  function clearJob() {
+    setJobId('')
+    setJobSearch('')
+    setClientName('')
+    setClientEmail('')
+  }
+
+  const filteredJobs = jobs.filter(j =>
+    j.name.toLowerCase().includes(jobSearch.toLowerCase()) ||
+    j.clientName.toLowerCase().includes(jobSearch.toLowerCase())
+  )
 
   const { subtotal, tax, total } = calcTotals(items)
 
@@ -90,12 +128,41 @@ export function EstimateFormClient({ translations: t, estimate }: { translations
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="plumbr-card p-5 space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">{t.job ?? 'Job'}</label>
-          <select value={jobId} onChange={(e) => setJobId(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none">
-            <option value="">— No job —</option>
-            {jobs.map((j) => <option key={j.id} value={j.id}>{j.name} · {j.clientName}</option>)}
-          </select>
+        <div ref={jobDropdownRef} className="relative">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
+            {t.job ?? 'Job'}
+            <span className="ml-2 text-xs font-normal text-slate-400">
+              {jobId ? '— linked to job' : '— optional'}
+            </span>
+          </label>
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={jobSearch}
+              onChange={e => { setJobSearch(e.target.value); setShowJobDropdown(true); if (!e.target.value) clearJob() }}
+              onFocus={() => { if (!jobId) setShowJobDropdown(true) }}
+              placeholder="Search jobs..."
+              readOnly={!!jobId}
+              className={`w-full border rounded-lg pl-8 pr-8 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 ${jobId ? 'border-[#1E3A5F]/40 bg-blue-50 text-[#1E3A5F] font-medium cursor-default' : 'border-slate-200'}`}
+            />
+            {jobId && (
+              <button type="button" onClick={clearJob} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                <X size={14} />
+              </button>
+            )}
+          </div>
+          {showJobDropdown && !jobId && filteredJobs.length > 0 && (
+            <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+              {filteredJobs.map(j => (
+                <button key={j.id} type="button" onClick={() => selectJob(j)}
+                  className="w-full text-left px-4 py-2.5 hover:bg-slate-50 border-b border-slate-100 last:border-0">
+                  <p className="text-sm font-medium text-slate-800">{j.name}</p>
+                  <p className="text-xs text-slate-400">{j.clientName}</p>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>

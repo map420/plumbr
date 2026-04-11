@@ -13,7 +13,7 @@
     "subtitle": "Here's what's happening with your business today.",
     "stats": {
       "activeJobs": "Active Jobs",
-      "openEstimates": "Open Estimates",
+      "openEstimates": "Unpaid Invoices",
       "revenueThisMonth": "Revenue This Month",
       "avgJobMargin": "Avg. Job Margin"
     },
