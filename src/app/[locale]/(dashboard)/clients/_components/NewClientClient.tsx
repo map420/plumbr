@@ -1,14 +1,16 @@
 'use client'
 
-import { useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLocale } from 'next-intl'
 import { createClient } from '@/lib/actions/clients'
+import { Toast } from '@/components/Toast'
 
 export function NewClientClient() {
   const locale = useLocale()
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
+  const [saved, setSaved] = useState(false)
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -21,12 +23,14 @@ export function NewClientClient() {
         address: fd.get('address') as string,
         notes: fd.get('notes') as string,
       })
+      setSaved(true)
       router.push(`/${locale}/clients/${client.id}`)
     })
   }
 
   return (
     <div className="p-4 md:p-8 max-w-2xl">
+      {saved && <Toast message="Client saved successfully!" onDone={() => setSaved(false)} />}
       <h1 className="text-2xl font-bold text-slate-900 mb-6">New Client</h1>
       <form onSubmit={handleSubmit} className="plumbr-card p-6 space-y-4">
         <div>

@@ -3,6 +3,7 @@
 import { useState, useTransition, useRef, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createJob, updateJob } from '@/lib/actions/jobs'
+import { Toast } from '@/components/Toast'
 import { Search, X } from 'lucide-react'
 
 type JobStatus = 'lead' | 'active' | 'on_hold' | 'completed' | 'cancelled'
@@ -18,6 +19,7 @@ export function JobForm({ translations: t, job, clients = [] }: { translations: 
   const locale = params.locale as string
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [saved, setSaved] = useState(false)
 
   // Initialize search with existing client name if editing a linked job
   const existingClient = job?.clientId ? clients.find(c => c.id === job.clientId) : null
@@ -83,9 +85,11 @@ export function JobForm({ translations: t, job, clients = [] }: { translations: 
         const payload = { ...form, clientId: selectedClientId ?? '' }
         if (job) {
           await updateJob(job.id, payload)
+          setSaved(true)
           router.push(`/${locale}/jobs/${job.id}`)
         } else {
           const created = await createJob(payload)
+          setSaved(true)
           router.push(`/${locale}/jobs/${created.id}`)
         }
         router.refresh()
@@ -109,6 +113,8 @@ export function JobForm({ translations: t, job, clients = [] }: { translations: 
   )
 
   return (
+    <>
+    {saved && <Toast message="Job saved successfully!" onDone={() => setSaved(false)} />}
     <form onSubmit={handleSubmit} className="plumbr-card p-6 space-y-5">
       {error && (
         <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 flex items-center gap-2">
@@ -202,5 +208,6 @@ export function JobForm({ translations: t, job, clients = [] }: { translations: 
         <button type="button" onClick={() => router.back()} className="btn-secondary text-sm">{t.cancel}</button>
       </div>
     </form>
+    </>
   )
 }

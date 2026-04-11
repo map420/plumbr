@@ -5,7 +5,10 @@ import Link from 'next/link'
 import { useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { updateClient } from '@/lib/actions/clients'
+import { EstimateStatusBadge } from '@/components/estimates/EstimateStatusBadge'
+import { Toast } from '@/components/Toast'
 import { Mail, Phone, MapPin, FileText, Briefcase, Receipt, Edit2, Check, X } from 'lucide-react'
+import type { EstimateStatus } from '@/lib/store/estimates'
 
 type Client = { id: string; name: string; email: string | null; phone: string | null; address: string | null; notes: string | null }
 type Job = { id: string; name: string; status: string; budgetedCost: string }
@@ -19,6 +22,7 @@ export function ClientDetailClient({ client, jobs, estimates, invoices }: {
   const router = useRouter()
   const [editing, setEditing] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const [saved, setSaved] = useState(false)
   const [form, setForm] = useState({ name: client.name, email: client.email ?? '', phone: client.phone ?? '', address: client.address ?? '', notes: client.notes ?? '' })
 
   const totalRevenue = invoices.filter(i => i.status === 'paid').reduce((s, i) => s + parseFloat(i.total), 0)
@@ -27,6 +31,7 @@ export function ClientDetailClient({ client, jobs, estimates, invoices }: {
     startTransition(async () => {
       await updateClient(client.id, form)
       setEditing(false)
+      setSaved(true)
       router.refresh()
     })
   }
@@ -41,6 +46,7 @@ export function ClientDetailClient({ client, jobs, estimates, invoices }: {
 
   return (
     <div className="p-4 md:p-8 max-w-4xl space-y-6">
+      {saved && <Toast message="Client updated successfully!" onDone={() => setSaved(false)} />}
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
@@ -135,7 +141,7 @@ export function ClientDetailClient({ client, jobs, estimates, invoices }: {
               {estimates.map(e => (
                 <tr key={e.id} className="hover:bg-slate-50">
                   <td className="px-4 py-3"><Link href={`/${locale}/estimates/${e.id}`} className="font-medium text-[#1E3A5F] hover:underline">{e.number}</Link></td>
-                  <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[e.status] ?? ''}`}>{e.status}</span></td>
+                  <td className="px-4 py-3"><EstimateStatusBadge status={e.status as EstimateStatus} label={e.status.charAt(0).toUpperCase() + e.status.slice(1)} /></td>
                   <td className="px-4 py-3 text-right text-slate-600">${parseFloat(e.total).toLocaleString()}</td>
                 </tr>
               ))}

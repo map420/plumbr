@@ -61,12 +61,14 @@ export function ClientsClient({ initialClients }: { initialClients: Client[] }) 
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" style={{ opacity: isPending ? 0.5 : 1 }}>
           {filtered.map(client => (
-            <div key={client.id} className="plumbr-card p-5 flex flex-col gap-3">
+            <div key={client.id} className="plumbr-card p-5 flex flex-col gap-3 relative group hover:shadow-md transition-shadow cursor-pointer">
+              <Link href={`/${locale}/clients/${client.id}`} className="absolute inset-0 rounded-xl" aria-label={`View ${client.name}`} />
               <div className="flex items-start justify-between">
-                <Link href={`/${locale}/clients/${client.id}`} className="font-semibold text-[#1E3A5F] hover:underline text-base">
-                  {client.name}
-                </Link>
-                <button onClick={() => handleDelete(client.id)} className="text-slate-400 hover:text-red-500 transition-colors ml-2 shrink-0">
+                <span className="font-semibold text-[#1E3A5F] text-base">{client.name}</span>
+                <button
+                  onClick={(e) => { e.preventDefault(); handleDelete(client.id) }}
+                  className="relative z-10 text-slate-400 hover:text-red-500 transition-colors ml-2 shrink-0"
+                >
                   <Trash2 size={15} />
                 </button>
               </div>

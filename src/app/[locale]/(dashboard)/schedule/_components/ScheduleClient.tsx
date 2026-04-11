@@ -7,7 +7,7 @@ import { JobStatusBadge } from '@/components/jobs/JobStatusBadge'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 type JobStatus = 'lead' | 'active' | 'on_hold' | 'completed' | 'cancelled'
-type Job = { id: string; name: string; clientName: string; status: string; startDate: Date | null }
+type Job = { id: string; name: string; clientName: string; status: string; startDate: Date | null; endDate: Date | null }
 type T = { title: string; today: string; noJobs: string; status: Record<JobStatus, string> }
 
 function startOfWeek(date: Date) {
@@ -34,7 +34,17 @@ export function ScheduleClient({ initialJobs, translations: t }: { initialJobs: 
   })
 
   function jobsForDay(day: Date) {
-    return initialJobs.filter((j) => j.startDate && sameDay(new Date(j.startDate), day))
+    return initialJobs.filter((j) => {
+      if (!j.startDate) return false
+      const start = new Date(j.startDate)
+      start.setHours(0, 0, 0, 0)
+      if (j.endDate) {
+        const end = new Date(j.endDate)
+        end.setHours(23, 59, 59, 999)
+        return day >= start && day <= end
+      }
+      return sameDay(start, day)
+    })
   }
 
   return (
