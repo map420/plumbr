@@ -10,7 +10,7 @@ import { Plus, Trash2 } from 'lucide-react'
 
 type LineItemType = 'labor' | 'material' | 'subcontractor' | 'other'
 type LI = { type: LineItemType; description: string; quantity: number; unitPrice: number; total: number }
-type Job = { id: string; name: string; clientName: string; clientEmail: string | null }
+type Job = { id: string; name: string; clientName: string; clientEmail: string | null; clientId: string | null }
 type Estimate = { id: string; jobId: string | null; clientName: string; clientEmail: string | null; notes: string | null; validUntil: Date | null }
 type T = { save: string; cancel: string; convertToInvoice?: string; job?: string; fields: Record<string, string>; lineItems: { title: string; add: string; type: Record<LineItemType, string>; fields: Record<string, string> } }
 
@@ -73,7 +73,9 @@ export function EstimateFormClient({ translations: t, estimate }: { translations
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     startTransition(async () => {
-      const data = { jobId, clientName, clientEmail, status: 'draft', subtotal, tax, total, notes, validUntil: validUntil ? new Date(validUntil).toISOString() : '' }
+      const selectedJob = jobs.find(j => j.id === jobId)
+      const clientId = selectedJob?.clientId ?? ''
+      const data = { jobId, clientId, clientName, clientEmail, status: 'draft', subtotal, tax, total, notes, validUntil: validUntil ? new Date(validUntil).toISOString() : '' }
       if (estimate) {
         await updateEstimate(estimate.id, { notes, status: 'draft' })
         router.push(`/${locale}/estimates/${estimate.id}`)

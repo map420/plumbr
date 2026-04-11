@@ -17,8 +17,10 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
   if (!client) notFound()
 
   const jobs = allJobs.filter(j => j.clientId === id)
-  const estimates = allEstimates.filter(e => e.clientId === id)
-  const invoices = allInvoices.filter(i => jobs.some(j => j.id === i.jobId))
+  const jobIds = new Set(jobs.map(j => j.id))
+  // Include estimates linked by clientId OR by jobId (via jobs belonging to this client)
+  const estimates = allEstimates.filter(e => e.clientId === id || (e.jobId && jobIds.has(e.jobId)))
+  const invoices = allInvoices.filter(i => i.jobId && jobIds.has(i.jobId))
 
   return <ClientDetailClient client={client} jobs={jobs} estimates={estimates} invoices={invoices} />
 }
