@@ -1,8 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
-
+// Intentionally empty — print is triggered via the button in the page header
 export function PrintButton() {
-  useEffect(() => { setTimeout(() => window.print(), 400) }, [])
   return null
 }

@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createTechnician, deleteTechnician } from '@/lib/actions/technicians'
+import { ConfirmModal } from '@/components/ConfirmModal'
 import { Users, Plus, Trash2, Mail, Phone, X, Lock } from 'lucide-react'
 
 type Technician = { id: string; name: string; email: string; phone: string | null }
@@ -14,6 +15,7 @@ export function TeamClient({ initialTechnicians, isPro, locale }: { initialTechn
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ name: '', email: '', phone: '' })
   const [isPending, startTransition] = useTransition()
+  const [deleteId, setDeleteId] = useState<string | null>(null)
 
   function handleAdd(e: React.FormEvent) {
     e.preventDefault()
@@ -25,11 +27,12 @@ export function TeamClient({ initialTechnicians, isPro, locale }: { initialTechn
     })
   }
 
-  function handleDelete(id: string) {
-    if (!confirm('Remove this technician?')) return
+  function handleDelete() {
+    if (!deleteId) return
     startTransition(async () => {
-      await deleteTechnician(id)
-      setTechnicians(prev => prev.filter(t => t.id !== id))
+      await deleteTechnician(deleteId)
+      setTechnicians(prev => prev.filter(t => t.id !== deleteId))
+      setDeleteId(null)
       router.refresh()
     })
   }
@@ -58,6 +61,14 @@ export function TeamClient({ initialTechnicians, isPro, locale }: { initialTechn
 
   return (
     <div className="p-4 md:p-8 max-w-3xl">
+      {deleteId && (
+        <ConfirmModal
+          title="Remove Technician"
+          message="Are you sure you want to remove this technician? They will be unassigned from all jobs."
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteId(null)}
+        />
+      )}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-slate-900">Team</h1>
         <button onClick={() => setShowForm(v => !v)} className="btn-primary flex items-center gap-2 text-sm">
@@ -116,7 +127,7 @@ export function TeamClient({ initialTechnicians, isPro, locale }: { initialTechn
                   </div>
                 </div>
               </div>
-              <button onClick={() => handleDelete(t.id)} className="text-slate-300 hover:text-red-500 transition-colors">
+              <button onClick={() => setDeleteId(t.id)} className="text-slate-300 hover:text-red-500 transition-colors">
                 <Trash2 size={15} />
               </button>
             </div>

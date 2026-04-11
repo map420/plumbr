@@ -23,11 +23,16 @@ const ALL_STATUSES: JobStatus[] = ['lead', 'active', 'on_hold', 'completed', 'ca
 export function JobsClient({ initialJobs, planInfo, translations: t }: { initialJobs: Job[]; planInfo: { current: number; limit: number } | null; translations: Translations }) {
   const locale = useLocale()
   const router = useRouter()
+  const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<JobStatus | 'all'>('all')
   const [isPending, startTransition] = useTransition()
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
-  const filtered = filter === 'all' ? initialJobs : initialJobs.filter((j) => j.status === filter)
+  const filtered = initialJobs.filter(j => {
+    const matchesSearch = j.name.toLowerCase().includes(search.toLowerCase()) || j.clientName.toLowerCase().includes(search.toLowerCase())
+    const matchesFilter = filter === 'all' || j.status === filter
+    return matchesSearch && matchesFilter
+  })
 
   function handleDelete() {
     if (!deleteId) return
@@ -53,7 +58,16 @@ export function JobsClient({ initialJobs, planInfo, translations: t }: { initial
         </Link>
       </div>
 
-      <div className="flex gap-2 mb-6 flex-wrap">
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <input
+          type="text"
+          placeholder="Search by job or client..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="plumbr-input max-w-xs"
+        />
+      </div>
+      <div className="flex gap-2 mb-4 flex-wrap">
         <button onClick={() => setFilter('all')} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filter === 'all' ? 'bg-[#1E3A5F] text-white' : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'}`}>
           All
         </button>
@@ -64,7 +78,7 @@ export function JobsClient({ initialJobs, planInfo, translations: t }: { initial
         ))}
       </div>
 
-      {filtered.length === 0 ? (
+      {initialJobs.length === 0 ? (
         <div className="plumbr-card p-12 text-center">
           <Briefcase size={40} className="mx-auto text-slate-300 mb-3" />
           <p className="text-slate-500">{t.empty}</p>
@@ -72,6 +86,8 @@ export function JobsClient({ initialJobs, planInfo, translations: t }: { initial
             <Plus size={16} /> {t.new}
           </Link>
         </div>
+      ) : filtered.length === 0 ? (
+        <div className="plumbr-card p-8 text-center text-slate-400 text-sm">No jobs match your search.</div>
       ) : (
         <div className="plumbr-card overflow-hidden">
           <div className="overflow-x-auto">
