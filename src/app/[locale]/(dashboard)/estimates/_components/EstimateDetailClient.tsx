@@ -1,12 +1,13 @@
 'use client'
 
-import { useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { deleteEstimate, updateEstimate } from '@/lib/actions/estimates'
 import { createInvoice } from '@/lib/actions/invoices'
 import { EstimateStatusBadge } from '@/components/estimates/EstimateStatusBadge'
-import { ArrowLeft, Edit, Trash2, ArrowRight } from 'lucide-react'
+import { ConfirmModal } from '@/components/ConfirmModal'
+import { ArrowLeft, Edit, Trash2, ArrowRight, Loader2 } from 'lucide-react'
 
 type EstimateStatus = 'draft' | 'sent' | 'approved' | 'rejected' | 'converted'
 type LineItemType = 'labor' | 'material' | 'subcontractor' | 'other'
@@ -21,9 +22,10 @@ export function EstimateDetailClient({ estimate, lineItems, translations: t }: {
   const router = useRouter()
   const locale = params.locale as string
   const [isPending, startTransition] = useTransition()
+  const [isConverting, setIsConverting] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   function handleDelete() {
-    if (!confirm('Delete this estimate?')) return
     startTransition(async () => { await deleteEstimate(estimate.id); router.push(`/${locale}/estimates`) })
   }
 
@@ -33,19 +35,32 @@ export function EstimateDetailClient({ estimate, lineItems, translations: t }: {
 
   function handleConvert() {
     if (!confirm('Convert this estimate to an invoice?')) return
+    setIsConverting(true)
     startTransition(async () => {
-      const dueDate = new Date(); dueDate.setDate(dueDate.getDate() + 30)
-      const invoice = await createInvoice(
-        { jobId: estimate.jobId ?? '', estimateId: estimate.id, clientName: estimate.clientName, clientEmail: estimate.clientEmail ?? '', status: 'draft', subtotal: parseFloat(estimate.subtotal), tax: parseFloat(estimate.tax), total: parseFloat(estimate.total), dueDate: dueDate.toISOString(), notes: estimate.notes ?? '' },
-        lineItems.map((li) => ({ type: li.type, description: li.description, quantity: parseFloat(li.quantity), unitPrice: parseFloat(li.unitPrice), total: parseFloat(li.total) }))
-      )
-      await updateEstimate(estimate.id, { status: 'converted', convertedToInvoiceId: invoice.id })
-      router.push(`/${locale}/invoices/${invoice.id}`)
+      try {
+        const dueDate = new Date(); dueDate.setDate(dueDate.getDate() + 30)
+        const invoice = await createInvoice(
+          { jobId: estimate.jobId ?? '', estimateId: estimate.id, clientName: estimate.clientName, clientEmail: estimate.clientEmail ?? '', status: 'draft', subtotal: parseFloat(estimate.subtotal), tax: parseFloat(estimate.tax), total: parseFloat(estimate.total), dueDate: dueDate.toISOString(), notes: estimate.notes ?? '' },
+          lineItems.map((li) => ({ type: li.type, description: li.description, quantity: parseFloat(li.quantity), unitPrice: parseFloat(li.unitPrice), total: parseFloat(li.total) }))
+        )
+        await updateEstimate(estimate.id, { status: 'converted', convertedToInvoiceId: invoice.id })
+        router.push(`/${locale}/invoices/${invoice.id}`)
+      } finally {
+        setIsConverting(false)
+      }
     })
   }
 
   return (
     <div className="p-4 md:p-8 max-w-3xl">
+      {showDeleteModal && (
+        <ConfirmModal
+          title="Delete Estimate"
+          message={`Are you sure you want to delete ${estimate.number}? This action cannot be undone.`}
+          onConfirm={handleDelete}
+          onCancel={() => setShowDeleteModal(false)}
+        />
+      )}
       <div className="flex items-start justify-between mb-6">
         <div>
           <Link href={`/${locale}/estimates`} className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-2"><ArrowLeft size={14} /> {t.back}</Link>
@@ -54,12 +69,12 @@ export function EstimateDetailClient({ estimate, lineItems, translations: t }: {
         </div>
         <div className="flex gap-2 flex-wrap justify-end">
           {estimate.status !== 'converted' && (
-            <button onClick={handleConvert} disabled={isPending} className="flex items-center gap-2 text-sm px-3 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors disabled:opacity-50">
-              <ArrowRight size={14} /> {t.convertToInvoice}
+            <button onClick={handleConvert} disabled={isPending || isConverting} className="flex items-center gap-2 text-sm px-3 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors disabled:opacity-50 min-w-[140px] justify-center">
+              {isConverting ? <><Loader2 size={14} className="animate-spin" /> Converting...</> : <><ArrowRight size={14} /> {t.convertToInvoice}</>}
             </button>
           )}
           <Link href={`/${locale}/estimates/${estimate.id}/edit`} className="btn-secondary flex items-center gap-2 text-sm"><Edit size={14} /> {t.edit}</Link>
-          <button onClick={handleDelete} disabled={isPending} className="flex items-center gap-2 text-sm px-3 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50"><Trash2 size={14} /> {t.delete}</button>
+          <button onClick={() => setShowDeleteModal(true)} disabled={isPending} className="flex items-center gap-2 text-sm px-3 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50"><Trash2 size={14} /> {t.delete}</button>
         </div>
       </div>
 

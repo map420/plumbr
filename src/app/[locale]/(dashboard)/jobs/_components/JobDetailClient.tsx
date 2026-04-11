@@ -9,6 +9,7 @@ import { assignTechnicianToJob, removeTechnicianFromJob } from '@/lib/actions/te
 import { JobStatusBadge } from '@/components/jobs/JobStatusBadge'
 import { EstimateStatusBadge } from '@/components/estimates/EstimateStatusBadge'
 import { InvoiceStatusBadge } from '@/components/invoices/InvoiceStatusBadge'
+import { ConfirmModal } from '@/components/ConfirmModal'
 import { ArrowLeft, Edit, Trash2, Plus, X } from 'lucide-react'
 
 type JobStatus = 'lead' | 'active' | 'on_hold' | 'completed' | 'cancelled'
@@ -44,6 +45,7 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
   const [assigned, setAssigned] = useState(initialAssigned)
   const [showExpenseForm, setShowExpenseForm] = useState(false)
   const [expenseForm, setExpenseForm] = useState({ description: '', type: 'labor', amount: '', date: new Date().toISOString().split('T')[0] })
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   const budget = parseFloat(job.budgetedCost ?? '0')
   const actualCost = expenses.reduce((s, e) => s + parseFloat(e.amount), 0)
@@ -54,7 +56,6 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
   const revenueMargin = revenue > 0 ? Math.round(((revenue - actualCost) / revenue) * 100) : null
 
   function handleDelete() {
-    if (!confirm('Delete this job?')) return
     startTransition(async () => {
       await deleteJob(job.id)
       router.push(`/${locale}/jobs`)
@@ -95,6 +96,14 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
 
   return (
     <div className="p-4 md:p-8 max-w-4xl">
+      {showDeleteModal && (
+        <ConfirmModal
+          title="Delete Job"
+          message={`Are you sure you want to delete "${job.name}"? This action cannot be undone.`}
+          onConfirm={handleDelete}
+          onCancel={() => setShowDeleteModal(false)}
+        />
+      )}
       <div className="flex items-start justify-between mb-6">
         <div>
           <Link href={`/${locale}/jobs`} className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-2">
@@ -107,7 +116,7 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
           <Link href={`/${locale}/jobs/${job.id}/edit`} className="btn-secondary flex items-center gap-2 text-sm">
             <Edit size={14} /> {t.edit}
           </Link>
-          <button onClick={handleDelete} disabled={isPending} className="flex items-center gap-2 text-sm px-3 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50">
+          <button onClick={() => setShowDeleteModal(true)} disabled={isPending} className="flex items-center gap-2 text-sm px-3 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50">
             <Trash2 size={14} /> {t.delete}
           </button>
         </div>
