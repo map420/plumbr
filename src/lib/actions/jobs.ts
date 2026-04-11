@@ -19,7 +19,7 @@ export async function getJob(id: string) {
 }
 
 export async function createJob(data: {
-  name: string; clientName: string; clientEmail: string; clientPhone: string
+  name: string; clientId?: string; clientName: string; clientEmail: string; clientPhone: string
   address: string; status: string; budgetedCost: string; actualCost: string
   startDate: string; endDate: string; notes: string
 }) {
@@ -34,7 +34,7 @@ export async function createJob(data: {
     }
   }
   const job = await dbAdapter.jobs.create(userId, {
-    clientId: null,
+    clientId: data.clientId || null,
     name: data.name,
     clientName: data.clientName,
     clientEmail: data.clientEmail || null,
@@ -52,7 +52,7 @@ export async function createJob(data: {
 }
 
 export async function updateJob(id: string, data: Partial<{
-  name: string; clientName: string; clientEmail: string; clientPhone: string
+  name: string; clientId: string; clientName: string; clientEmail: string; clientPhone: string
   address: string; status: string; budgetedCost: string; actualCost: string
   startDate: string; endDate: string; notes: string
 }>) {
@@ -61,6 +61,7 @@ export async function updateJob(id: string, data: Partial<{
 
   const patch: Record<string, unknown> = {}
   if (data.name !== undefined) patch.name = data.name
+  if (data.clientId !== undefined) patch.clientId = data.clientId || null
   if (data.clientName !== undefined) patch.clientName = data.clientName
   if (data.clientEmail !== undefined) patch.clientEmail = data.clientEmail || null
   if (data.clientPhone !== undefined) patch.clientPhone = data.clientPhone || null

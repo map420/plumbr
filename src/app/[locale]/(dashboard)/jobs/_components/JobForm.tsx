@@ -77,11 +77,12 @@ export function JobForm({ translations: t, job, clients = [] }: { translations: 
     setError(null)
     startTransition(async () => {
       try {
+        const payload = { ...form, clientId: selectedClientId ?? '' }
         if (job) {
-          await updateJob(job.id, form)
+          await updateJob(job.id, payload)
           router.push(`/${locale}/jobs/${job.id}`)
         } else {
-          const created = await createJob(form)
+          const created = await createJob(payload)
           router.push(`/${locale}/jobs/${created.id}`)
         }
         router.refresh()
