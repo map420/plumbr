@@ -2,8 +2,10 @@
 
 import { authAdapter } from '@/lib/adapters/auth'
 import { dbAdapter } from '@/lib/adapters/db'
+import { emailAdapter } from '@/lib/adapters/email'
 import { revalidatePath } from 'next/cache'
 import type { LineItemInput } from '@/lib/adapters/db/types'
+import { estimateSentEmail } from '@/lib/email-templates'
 
 async function requireAuth() {
   const userId = await authAdapter.getUserId()
@@ -71,11 +73,38 @@ export async function updateEstimate(id: string, data: Partial<{
   status: string; notes: string; convertedToInvoiceId: string
 }>) {
   const userId = await requireAuth()
+  const previous = await dbAdapter.estimates.findById(id, userId)
+
   const estimate = await dbAdapter.estimates.update(id, userId, {
     ...data.status !== undefined && { status: data.status as 'draft' | 'sent' | 'approved' | 'rejected' | 'converted' },
     ...data.notes !== undefined && { notes: data.notes },
     ...data.convertedToInvoiceId !== undefined && { convertedToInvoiceId: data.convertedToInvoiceId || null },
   })
+
+  // Automation #1 — Estimate marked Sent → email to client
+  if (data.status === 'sent' && previous?.status !== 'sent' && estimate.clientEmail) {
+    const contractorUser = await dbAdapter.users.findById(userId)
+    const contractorName = contractorUser?.name ?? contractorUser?.companyName ?? 'Your Contractor'
+    await emailAdapter.send({
+      to: estimate.clientEmail,
+      subject: `Estimate ${estimate.number} from ${contractorName}`,
+      html: estimateSentEmail({
+        clientName: estimate.clientName,
+        estimateNumber: estimate.number,
+        total: estimate.total,
+        validUntil: estimate.validUntil ? estimate.validUntil.toISOString() : null,
+        notes: estimate.notes,
+        contractorName,
+      }),
+    }).catch(err => console.error('[AUTO #1] email failed:', err))
+  }
+
+  // Automation #2 — Estimate marked Approved → linked Job becomes Active
+  if (data.status === 'approved' && previous?.status !== 'approved' && estimate.jobId) {
+    await dbAdapter.jobs.update(estimate.jobId, userId, { status: 'active' })
+      .catch(err => console.error('[AUTO #2] job update failed:', err))
+  }
+
   revalidatePath('/[locale]/estimates', 'page')
   return estimate
 }

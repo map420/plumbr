@@ -2,7 +2,9 @@
 
 import { authAdapter } from '@/lib/adapters/auth'
 import { dbAdapter } from '@/lib/adapters/db'
+import { emailAdapter } from '@/lib/adapters/email'
 import { revalidatePath } from 'next/cache'
+import { jobCompletedInvoiceDueEmail } from '@/lib/email-templates'
 
 async function requireAuth() {
   const userId = await authAdapter.getUserId()
@@ -50,6 +52,8 @@ export async function updateJob(id: string, data: Partial<{
   startDate: string; endDate: string; notes: string
 }>) {
   const userId = await requireAuth()
+  const previous = await dbAdapter.jobs.findById(id, userId)
+
   const patch: Record<string, unknown> = {}
   if (data.name !== undefined) patch.name = data.name
   if (data.clientName !== undefined) patch.clientName = data.clientName
@@ -64,6 +68,31 @@ export async function updateJob(id: string, data: Partial<{
   if (data.notes !== undefined) patch.notes = data.notes || null
 
   const job = await dbAdapter.jobs.update(id, userId, patch as Parameters<typeof dbAdapter.jobs.update>[2])
+
+  // Automation #4 — Job → Completed + has Draft invoice → notify contractor
+  if (data.status === 'completed' && previous?.status !== 'completed') {
+    const contractorUser = await dbAdapter.users.findById(userId)
+    if (contractorUser?.email) {
+      const invoices = await dbAdapter.invoices.findByJob(id, userId)
+      const draftInvoice = invoices.find(inv => inv.status === 'draft')
+      if (draftInvoice) {
+        const appUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://plumbr.vercel.app'}/en/invoices/${draftInvoice.id}`
+        await emailAdapter.send({
+          to: contractorUser.email,
+          subject: `Job "${job.name}" completed — invoice ready to send`,
+          html: jobCompletedInvoiceDueEmail({
+            contractorEmail: contractorUser.email,
+            jobName: job.name,
+            clientName: job.clientName,
+            invoiceNumber: draftInvoice.number,
+            total: draftInvoice.total,
+            appUrl,
+          }),
+        }).catch(err => console.error('[AUTO #4] email failed:', err))
+      }
+    }
+  }
+
   revalidatePath('/[locale]/jobs', 'page')
   return job
 }
