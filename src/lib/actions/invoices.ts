@@ -1,9 +1,10 @@
 'use server'
 import { requireUser as requireAuth } from './auth-helpers'
 
-
 import { dbAdapter } from '@/lib/adapters/db'
+import { emailAdapter } from '@/lib/adapters/email'
 import { paymentsAdapter } from '@/lib/adapters/payments'
+import { invoiceSentEmail } from '@/lib/email-templates'
 import { revalidatePath } from 'next/cache'
 import type { LineItemInput } from '@/lib/adapters/db/types'
 
@@ -86,6 +87,42 @@ export async function createInvoicePaymentLink(id: string): Promise<{ url: strin
   }
 
   return { url }
+}
+
+export async function sendInvoiceToClient(id: string): Promise<{ sent: boolean; error?: string }> {
+  const userId = await requireAuth()
+  const [invoice, user] = await Promise.all([
+    dbAdapter.invoices.findById(id, userId),
+    dbAdapter.users.findById(userId),
+  ])
+  if (!invoice) throw new Error('Invoice not found')
+  if (!invoice.clientEmail) return { sent: false, error: 'No client email on this invoice.' }
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://plumbr.mrlabs.io'
+  const printUrl = `${appUrl}/en/invoices/${invoice.id}/print`
+  const contractorName = user?.companyName || user?.name || 'Your contractor'
+
+  await emailAdapter.send({
+    to: invoice.clientEmail,
+    subject: `Invoice ${invoice.number} from ${contractorName} — $${parseFloat(invoice.total).toLocaleString()}`,
+    html: invoiceSentEmail({
+      clientName: invoice.clientName,
+      invoiceNumber: invoice.number,
+      total: invoice.total,
+      dueDate: invoice.dueDate ? invoice.dueDate.toISOString() : null,
+      notes: invoice.notes,
+      contractorName,
+      printUrl,
+    }),
+  })
+
+  if (invoice.status === 'draft') {
+    await dbAdapter.invoices.update(id, userId, { status: 'sent' })
+    revalidatePath('/[locale]/invoices/[id]', 'page')
+    revalidatePath('/[locale]/invoices', 'page')
+  }
+
+  return { sent: true }
 }
 
 export async function updateInvoice(id: string, data: Partial<{

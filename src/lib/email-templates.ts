@@ -92,6 +92,36 @@ export function jobCompletedInvoiceDueEmail(opts: {
   `)
 }
 
+export function invoiceSentEmail(opts: {
+  clientName: string
+  invoiceNumber: string
+  total: string
+  dueDate: string | null
+  notes: string | null
+  contractorName: string
+  printUrl: string
+}) {
+  return layout(`
+    <h1 style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">Invoice from ${opts.contractorName}</h1>
+    <p style="color: #64748b;">Hi ${opts.clientName},</p>
+    <p>Please find your invoice details below.</p>
+
+    <div style="${CARD_STYLE}">
+      <table style="width: 100%; font-size: 14px;">
+        <tr><td style="color: #64748b; padding: 4px 0;">Invoice #</td><td style="text-align: right; font-weight: 600;">${opts.invoiceNumber}</td></tr>
+        <tr><td style="color: #64748b; padding: 4px 0;">Amount Due</td><td style="text-align: right; font-weight: 700; font-size: 20px; color: #1E3A5F;">$${parseFloat(opts.total).toLocaleString()}</td></tr>
+        ${opts.dueDate ? `<tr><td style="color: #64748b; padding: 4px 0;">Due Date</td><td style="text-align: right;">${new Date(opts.dueDate).toLocaleDateString()}</td></tr>` : ''}
+      </table>
+    </div>
+
+    ${opts.notes ? `<p style="color: #64748b; font-size: 14px;"><strong>Notes:</strong> ${opts.notes}</p>` : ''}
+
+    <a href="${opts.printUrl}" style="${BUTTON_STYLE}">View Invoice →</a>
+
+    <p style="color: #94a3b8; font-size: 13px; margin-top: 24px;">If you have questions, please reply to this email. Thank you for your business!</p>
+  `)
+}
+
 export function invoiceReminderEmail(opts: {
   clientName: string
   invoiceNumber: string

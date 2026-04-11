@@ -1,12 +1,13 @@
 'use client'
 
-import { useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { updateInvoice } from '@/lib/actions/invoices'
+import { updateInvoice, sendInvoiceToClient } from '@/lib/actions/invoices'
 import { InvoiceStatusBadge } from '@/components/invoices/InvoiceStatusBadge'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
-import { Printer } from 'lucide-react'
+import { Toast } from '@/components/Toast'
+import { Printer, Send, Loader2 } from 'lucide-react'
 
 type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
 type LineItemType = 'labor' | 'material' | 'subcontractor' | 'other'
@@ -26,7 +27,23 @@ export function InvoiceDetailClient({ invoice, lineItems, translations: t }: { i
   const router = useRouter()
   const locale = params.locale as string
   const [isPending, startTransition] = useTransition()
+  const [isSending, setIsSending] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
   const status = effectiveStatus(invoice)
+
+  function handleSend() {
+    setIsSending(true)
+    startTransition(async () => {
+      const result = await sendInvoiceToClient(invoice.id)
+      setIsSending(false)
+      if (result.sent) {
+        setToast(`Invoice sent to ${invoice.clientEmail}`)
+        router.refresh()
+      } else {
+        setToast(result.error ?? 'Could not send email.')
+      }
+    })
+  }
 
   function handleStatusChange(newStatus: InvoiceStatus) {
     const update: Record<string, unknown> = { status: newStatus }
@@ -36,6 +53,7 @@ export function InvoiceDetailClient({ invoice, lineItems, translations: t }: { i
 
   return (
     <div className="p-4 md:p-8 max-w-3xl">
+      {toast && <Toast message={toast} onDone={() => setToast(null)} />}
       <div className="flex items-start justify-between mb-6">
         <div>
           <Breadcrumbs items={[{ label: 'Invoices', href: `/${locale}/invoices` }, { label: invoice.number }]} />
@@ -43,6 +61,12 @@ export function InvoiceDetailClient({ invoice, lineItems, translations: t }: { i
           <div className="mt-1"><InvoiceStatusBadge status={status} label={t.status[status]} /></div>
         </div>
         <div className="flex gap-2 flex-wrap justify-end">
+          {(status === 'draft' || status === 'sent' || status === 'overdue') && invoice.clientEmail && (
+            <button onClick={handleSend} disabled={isPending || isSending}
+              className="flex items-center gap-2 text-sm px-3 py-2 rounded-lg bg-[#1E3A5F] text-white hover:bg-[#16304f] transition-colors disabled:opacity-50">
+              {isSending ? <><Loader2 size={14} className="animate-spin" /> Sending...</> : <><Send size={14} /> Send to Client</>}
+            </button>
+          )}
           {(status === 'sent' || status === 'overdue') && (
             <button onClick={() => handleStatusChange('paid')} disabled={isPending}
               className="text-sm px-3 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors disabled:opacity-50">

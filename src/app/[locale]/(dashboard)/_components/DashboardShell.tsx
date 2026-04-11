@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
 import Sidebar from './Sidebar'
+import BottomNav from './BottomNav'
 
 export default function DashboardShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
@@ -34,9 +35,11 @@ export default function DashboardShell({ children }: { children: React.ReactNode
           <span className="font-bold text-[#1E3A5F] text-lg">Plumbr</span>
         </header>
 
-        <main className="flex-1 overflow-auto bg-slate-50">
+        <main className="flex-1 overflow-auto bg-slate-50 pb-16 md:pb-0">
           {children}
         </main>
+
+        <BottomNav />
       </div>
     </div>
   )
