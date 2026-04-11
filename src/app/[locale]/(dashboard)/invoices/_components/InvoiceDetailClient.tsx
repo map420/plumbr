@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useTransition } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { updateInvoice, createInvoicePaymentLink } from '@/lib/actions/invoices'
+import { updateInvoice } from '@/lib/actions/invoices'
 import { InvoiceStatusBadge } from '@/components/invoices/InvoiceStatusBadge'
-import { ArrowLeft, Printer, LinkIcon } from 'lucide-react'
+import { ArrowLeft, Printer } from 'lucide-react'
 
 type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
 type LineItemType = 'labor' | 'material' | 'subcontractor' | 'other'
@@ -25,19 +25,7 @@ export function InvoiceDetailClient({ invoice, lineItems, translations: t }: { i
   const router = useRouter()
   const locale = params.locale as string
   const [isPending, startTransition] = useTransition()
-  const [paymentUrl, setPaymentUrl] = useState<string | null>(null)
-  const [generatingLink, setGeneratingLink] = useState(false)
   const status = effectiveStatus(invoice)
-
-  function handlePaymentLink() {
-    setGeneratingLink(true)
-    startTransition(async () => {
-      const { url } = await createInvoicePaymentLink(invoice.id)
-      setPaymentUrl(url)
-      setGeneratingLink(false)
-      router.refresh()
-    })
-  }
 
   function handleStatusChange(newStatus: InvoiceStatus) {
     const update: Record<string, unknown> = { status: newStatus }
@@ -54,12 +42,6 @@ export function InvoiceDetailClient({ invoice, lineItems, translations: t }: { i
           <div className="mt-1"><InvoiceStatusBadge status={status} label={t.status[status]} /></div>
         </div>
         <div className="flex gap-2 flex-wrap justify-end">
-          {status !== 'paid' && status !== 'cancelled' && (
-            <button onClick={handlePaymentLink} disabled={isPending || generatingLink}
-              className="btn-primary flex items-center gap-2 text-sm disabled:opacity-50">
-              <LinkIcon size={14} /> {generatingLink ? 'Generating...' : 'Send Payment Link'}
-            </button>
-          )}
           {(status === 'sent' || status === 'overdue') && (
             <button onClick={() => handleStatusChange('paid')} disabled={isPending}
               className="text-sm px-3 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors disabled:opacity-50">
@@ -70,26 +52,7 @@ export function InvoiceDetailClient({ invoice, lineItems, translations: t }: { i
         </div>
       </div>
 
-      {paymentUrl && (
-        <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold text-green-800">Payment link generated</p>
-            <p className="text-xs text-green-600 mt-0.5 truncate max-w-md">{paymentUrl}</p>
-          </div>
-          <div className="flex gap-2 shrink-0">
-            <button onClick={() => navigator.clipboard.writeText(paymentUrl)}
-              className="text-xs px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors">
-              Copy Link
-            </button>
-            <a href={paymentUrl} target="_blank" rel="noopener noreferrer"
-              className="text-xs px-3 py-1.5 rounded-lg border border-green-300 text-green-700 hover:bg-green-100 transition-colors">
-              Open
-            </a>
-          </div>
-        </div>
-      )}
-
-      <div className="plumbr-card p-4 mb-4">
+<div className="plumbr-card p-4 mb-4">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm text-slate-500 mr-1">Status:</span>
           {STATUS_OPTIONS.map((s) => (
