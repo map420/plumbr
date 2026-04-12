@@ -184,6 +184,77 @@ export function estimateApprovedEmail(opts: {
   `)
 }
 
+export function invoicePaidEmail(opts: {
+  contractorName: string
+  clientName: string
+  invoiceNumber: string
+  total: string
+  appUrl: string
+}) {
+  return layout(`
+    <h1 style="font-size: 24px; font-weight: 700; margin-bottom: 8px; color: #16a34a;">Payment Received 💰</h1>
+    <p><strong>${opts.clientName}</strong> paid invoice <strong>${opts.invoiceNumber}</strong>.</p>
+
+    <div style="${CARD_STYLE} border-left: 4px solid #22c55e;">
+      <table style="width: 100%; font-size: 14px;">
+        <tr><td style="color: #64748b; padding: 4px 0;">Client</td><td style="text-align: right; font-weight: 600;">${opts.clientName}</td></tr>
+        <tr><td style="color: #64748b; padding: 4px 0;">Invoice #</td><td style="text-align: right; font-weight: 600;">${opts.invoiceNumber}</td></tr>
+        <tr><td style="color: #64748b; padding: 4px 0;">Amount</td><td style="text-align: right; font-weight: 700; font-size: 20px; color: #16a34a;">$${parseFloat(opts.total).toLocaleString()}</td></tr>
+      </table>
+    </div>
+
+    <a href="${opts.appUrl}" style="${BUTTON_STYLE}">View Invoice →</a>
+  `)
+}
+
+export function estimateRejectedEmail(opts: {
+  contractorName: string
+  clientName: string
+  estimateNumber: string
+  total: string
+  appUrl: string
+}) {
+  return layout(`
+    <h1 style="font-size: 22px; font-weight: 700; margin-bottom: 8px; color: #dc2626;">Estimate Declined</h1>
+    <p><strong>${opts.clientName}</strong> declined estimate <strong>${opts.estimateNumber}</strong>.</p>
+
+    <div style="${CARD_STYLE} border-left: 4px solid #dc2626;">
+      <table style="width: 100%; font-size: 14px;">
+        <tr><td style="color: #64748b; padding: 4px 0;">Client</td><td style="text-align: right; font-weight: 600;">${opts.clientName}</td></tr>
+        <tr><td style="color: #64748b; padding: 4px 0;">Estimate #</td><td style="text-align: right; font-weight: 600;">${opts.estimateNumber}</td></tr>
+        <tr><td style="color: #64748b; padding: 4px 0;">Amount</td><td style="text-align: right; font-weight: 600;">$${parseFloat(opts.total).toLocaleString()}</td></tr>
+      </table>
+    </div>
+
+    <p style="color: #64748b; font-size: 14px;">You may want to follow up with the client to understand their concerns or offer a revised estimate.</p>
+    <a href="${opts.appUrl}" style="${BUTTON_STYLE}">View Estimate →</a>
+  `)
+}
+
+export function jobUnbilledEmail(opts: {
+  contractorName: string
+  jobName: string
+  clientName: string
+  daysSinceCompleted: number
+  appUrl: string
+}) {
+  return layout(`
+    <h1 style="font-size: 22px; font-weight: 700; margin-bottom: 8px; color: #d97706;">Job Completed — No Invoice Yet</h1>
+    <p>Hi ${opts.contractorName},</p>
+    <p>The job <strong>${opts.jobName}</strong> was completed ${opts.daysSinceCompleted} days ago but has no paid invoice yet.</p>
+
+    <div style="${CARD_STYLE} border-left: 4px solid #f59e0b;">
+      <table style="width: 100%; font-size: 14px;">
+        <tr><td style="color: #64748b; padding: 4px 0;">Job</td><td style="text-align: right; font-weight: 600;">${opts.jobName}</td></tr>
+        <tr><td style="color: #64748b; padding: 4px 0;">Client</td><td style="text-align: right; font-weight: 600;">${opts.clientName}</td></tr>
+        <tr><td style="color: #64748b; padding: 4px 0;">Days since completed</td><td style="text-align: right; font-weight: 600; color: #d97706;">${opts.daysSinceCompleted}</td></tr>
+      </table>
+    </div>
+
+    <a href="${opts.appUrl}" style="${BUTTON_STYLE}">Create Invoice →</a>
+  `)
+}
+
 export function invoiceReminderEmail(opts: {
   clientName: string
   invoiceNumber: string

@@ -4,7 +4,7 @@ import { requireUser as requireAuth } from './auth-helpers'
 import { dbAdapter } from '@/lib/adapters/db'
 import { emailAdapter } from '@/lib/adapters/email'
 import { paymentsAdapter } from '@/lib/adapters/payments'
-import { invoiceSentEmail } from '@/lib/email-templates'
+import { invoiceSentEmail, invoicePaidEmail } from '@/lib/email-templates'
 import { revalidatePath } from 'next/cache'
 import type { LineItemInput } from '@/lib/adapters/db/types'
 
@@ -142,7 +142,7 @@ export async function updateInvoice(id: string, data: Partial<{
     ...data.paidAt !== undefined && { paidAt: data.paidAt ? new Date(data.paidAt) : null },
   })
 
-  // Notification — Invoice marked Paid
+  // Notification + Email — Invoice marked Paid
   if (data.status === 'paid' && previous?.status !== 'paid') {
     await dbAdapter.notifications.create(userId, {
       type: 'invoice_paid',
@@ -151,6 +151,22 @@ export async function updateInvoice(id: string, data: Partial<{
       href: `/en/invoices/${invoice.id}`,
       read: false,
     }).catch(err => console.error('[NOTIF] invoice_paid failed:', err))
+
+    const contractorUser = await dbAdapter.users.findById(userId)
+    if (contractorUser?.email) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://plumbr.mrlabs.io'
+      await emailAdapter.send({
+        to: contractorUser.email,
+        subject: `💰 ${invoice.clientName} paid invoice ${invoice.number}`,
+        html: invoicePaidEmail({
+          contractorName: contractorUser.name ?? contractorUser.companyName ?? 'there',
+          clientName: invoice.clientName,
+          invoiceNumber: invoice.number,
+          total: invoice.total,
+          appUrl: `${appUrl}/en/invoices/${invoice.id}`,
+        }),
+      }).catch(err => console.error('[NOTIF] invoice_paid email failed:', err))
+    }
   }
 
   revalidatePath('/[locale]/invoices', 'page')

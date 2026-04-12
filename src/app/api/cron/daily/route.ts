@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { dbAdapter } from '@/lib/adapters/db'
 import { emailAdapter } from '@/lib/adapters/email'
-import { estimateFollowUpEmail, invoiceReminderEmail, invoiceOverdueEmail } from '@/lib/email-templates'
+import { estimateFollowUpEmail, invoiceReminderEmail, invoiceOverdueEmail, jobUnbilledEmail } from '@/lib/email-templates'
 
 // Vercel Cron — runs daily at 8am UTC
 // Configure in vercel.json: { "crons": [{ "path": "/api/cron/daily", "schedule": "0 8 * * *" }] }
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const results = { overdueMarked: 0, overdueEmailsSent: 0, estimatesExpired: 0, followUpsSent: 0, remindersSent: 0, errors: 0 }
+  const results = { overdueMarked: 0, overdueEmailsSent: 0, estimatesExpired: 0, followUpsSent: 0, remindersSent: 0, unbilledAlerts: 0, errors: 0 }
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://plumbr.mrlabs.io'
   const now = new Date()
 
@@ -163,6 +163,47 @@ export async function GET(req: NextRequest) {
           }),
         })
         results.followUpsSent++
+      } catch {
+        results.errors++
+      }
+    }
+
+    // ── Unbilled completed jobs (3+ days without a paid invoice) ────────────
+    const { jobs } = await import('@/db/schema/jobs')
+    const threeDaysAgoDate = new Date(now)
+    threeDaysAgoDate.setDate(threeDaysAgoDate.getDate() - 3)
+
+    const completedJobs = await db.select().from(jobs)
+      .where(and(eq(jobs.status, 'completed'), lte(jobs.updatedAt, threeDaysAgoDate)))
+
+    for (const job of completedJobs) {
+      try {
+        // Check if job has any paid invoice
+        const jobInvoices = await db.select().from(invoices)
+          .where(and(eq(invoices.jobId, job.id), eq(invoices.status, 'paid')))
+        if (jobInvoices.length > 0) continue
+
+        const contractor = await db.select().from(users).where(eq(users.id, job.userId)).then(r => r[0])
+        if (!contractor?.email) continue
+
+        const contractorName = [contractor.name, contractor.companyName].filter(Boolean).join(' · ') || 'there'
+        const daysSinceCompleted = Math.floor((now.getTime() - new Date(job.updatedAt).getTime()) / (1000 * 60 * 60 * 24))
+
+        // Only alert once (on day 3, not every day after)
+        if (daysSinceCompleted !== 3) continue
+
+        await emailAdapter.send({
+          to: contractor.email,
+          subject: `⚠️ Job "${job.name}" completed ${daysSinceCompleted} days ago — no invoice sent`,
+          html: jobUnbilledEmail({
+            contractorName,
+            jobName: job.name,
+            clientName: job.clientName,
+            daysSinceCompleted,
+            appUrl: `${appUrl}/en/jobs/${job.id}`,
+          }),
+        }).catch(() => null)
+        results.unbilledAlerts++
       } catch {
         results.errors++
       }

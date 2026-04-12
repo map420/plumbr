@@ -4,7 +4,7 @@ import { dbAdapter } from '@/lib/adapters/db'
 import { emailAdapter } from '@/lib/adapters/email'
 import { revalidatePath } from 'next/cache'
 import type { LineItemInput } from '@/lib/adapters/db/types'
-import { estimateSentEmail, estimateApprovedEmail } from '@/lib/email-templates'
+import { estimateSentEmail, estimateApprovedEmail, estimateRejectedEmail } from '@/lib/email-templates'
 import { isPro, STARTER_LIMITS } from '@/lib/stripe'
 import { getUserPlan } from './billing'
 import { requireUser as requireAuth } from './auth-helpers'
@@ -153,6 +153,25 @@ export async function updateEstimate(id: string, data: Partial<{
       href: `/en/estimates/${estimate.id}`,
       read: false,
     }).catch(err => console.error('[NOTIF] estimate_approved failed:', err))
+  }
+
+  // Email contractor when estimate rejected
+  if (data.status === 'rejected' && previous?.status !== 'rejected') {
+    const contractorUser = await dbAdapter.users.findById(userId)
+    if (contractorUser?.email) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://plumbr.mrlabs.io'
+      await emailAdapter.send({
+        to: contractorUser.email,
+        subject: `❌ ${estimate.clientName} declined estimate ${estimate.number}`,
+        html: estimateRejectedEmail({
+          contractorName: contractorUser.name ?? contractorUser.companyName ?? 'there',
+          clientName: estimate.clientName,
+          estimateNumber: estimate.number,
+          total: estimate.total,
+          appUrl: `${appUrl}/en/estimates/${estimate.id}`,
+        }),
+      }).catch(err => console.error('[NOTIF] estimate_rejected email failed:', err))
+    }
   }
 
   revalidatePath('/[locale]/estimates', 'page')
