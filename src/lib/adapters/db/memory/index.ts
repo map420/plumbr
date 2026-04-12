@@ -66,6 +66,11 @@ export const memoryAdapter: DbAdapter = {
         .filter(e => e.jobId === jobId && e.userId === userId)
         .sort((a, b) => b.date.getTime() - a.date.getTime())
     },
+    async findByTechnician(technicianId, userId) {
+      return [...store.expenses.values()]
+        .filter(e => e.technicianId === technicianId && e.userId === userId)
+        .sort((a, b) => b.date.getTime() - a.date.getTime())
+    },
     async create(userId, data) {
       const expense: Expense = { ...data, id: uuid(), userId, createdAt: now() }
       store.expenses.set(expense.id, expense)

@@ -20,8 +20,8 @@ type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
 type Job = { id: string; clientId: string | null; name: string; clientName: string; clientEmail: string | null; clientPhone: string | null; address: string | null; status: string; budgetedCost: string; actualCost: string; startDate: Date | null; notes: string | null }
 type Estimate = { id: string; number: string; status: string; total: string }
 type Invoice = { id: string; number: string; status: string; total: string }
-type Expense = { id: string; description: string; type: string; amount: string; date: Date }
-type Technician = { id: string; name: string; email: string; phone: string | null }
+type Expense = { id: string; description: string; type: string; amount: string; date: Date; technicianId: string | null; hours: string | null; ratePerHour: string | null }
+type Technician = { id: string; name: string; email: string; phone: string | null; hourlyRate: string | null }
 
 type T = {
   edit: string; back: string; delete: string
@@ -45,7 +45,7 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
   const [expenses, setExpenses] = useState(initialExpenses)
   const [assigned, setAssigned] = useState(initialAssigned)
   const [showExpenseForm, setShowExpenseForm] = useState(false)
-  const [expenseForm, setExpenseForm] = useState({ description: '', type: 'labor', amount: '', date: new Date().toISOString().split('T')[0] })
+  const [expenseForm, setExpenseForm] = useState({ description: '', type: 'labor', amount: '', date: new Date().toISOString().split('T')[0], technicianId: '', hours: '', ratePerHour: '' })
   const [expenseFilter, setExpenseFilter] = useState<string>('all')
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
@@ -85,7 +85,24 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
       const created = await createExpense(job.id, expenseForm)
       setExpenses(prev => [created, ...prev])
       setShowExpenseForm(false)
-      setExpenseForm({ description: '', type: 'labor', amount: '', date: new Date().toISOString().split('T')[0] })
+      setExpenseForm({ description: '', type: 'labor', amount: '', date: new Date().toISOString().split('T')[0], technicianId: '', hours: '', ratePerHour: '' })
+    })
+  }
+
+  function handleLaborTechChange(techId: string) {
+    const tech = allTechnicians.find(t => t.id === techId)
+    const rate = tech?.hourlyRate ?? ''
+    const hrs = expenseForm.hours
+    const total = rate && hrs ? (parseFloat(hrs) * parseFloat(rate)).toFixed(2) : ''
+    setExpenseForm(f => ({ ...f, technicianId: techId, ratePerHour: rate, amount: total, description: tech ? `${tech.name} · labor` : f.description }))
+  }
+
+  function handleLaborFieldChange(field: 'hours' | 'ratePerHour', value: string) {
+    setExpenseForm(f => {
+      const hrs = field === 'hours' ? value : f.hours
+      const rate = field === 'ratePerHour' ? value : f.ratePerHour
+      const total = hrs && rate ? (parseFloat(hrs) * parseFloat(rate)).toFixed(2) : ''
+      return { ...f, [field]: value, amount: total }
     })
   }
 
@@ -205,24 +222,56 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
           <form onSubmit={handleAddExpense} className="bg-slate-50 rounded-lg p-4 mb-4 space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-slate-500">Description *</label>
-                <input required value={expenseForm.description} onChange={e => setExpenseForm(f => ({ ...f, description: e.target.value }))} className="plumbr-input mt-1 text-sm" placeholder="Labor hours, materials..." />
-              </div>
-              <div>
                 <label className="text-xs text-slate-500">Type</label>
-                <select value={expenseForm.type} onChange={e => setExpenseForm(f => ({ ...f, type: e.target.value }))} className="plumbr-input mt-1 text-sm">
+                <select value={expenseForm.type} onChange={e => setExpenseForm(f => ({ ...f, type: e.target.value, technicianId: '', hours: '', ratePerHour: '', amount: '' }))} className="plumbr-input mt-1 text-sm">
                   {EXPENSE_TYPES.map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
                 </select>
-              </div>
-              <div>
-                <label className="text-xs text-slate-500">Amount *</label>
-                <input required type="number" step="0.01" min="0" value={expenseForm.amount} onChange={e => setExpenseForm(f => ({ ...f, amount: e.target.value }))} className="plumbr-input mt-1 text-sm" placeholder="0.00" />
               </div>
               <div>
                 <label className="text-xs text-slate-500">Date</label>
                 <input type="date" value={expenseForm.date} onChange={e => setExpenseForm(f => ({ ...f, date: e.target.value }))} className="plumbr-input mt-1 text-sm" />
               </div>
             </div>
+
+            {expenseForm.type === 'labor' ? (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="text-xs text-slate-500">Technician *</label>
+                  <select required value={expenseForm.technicianId} onChange={e => handleLaborTechChange(e.target.value)} className="plumbr-input mt-1 text-sm">
+                    <option value="">Select technician</option>
+                    {(assigned.length > 0 ? assigned : allTechnicians).map(t => (
+                      <option key={t.id} value={t.id}>{t.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-slate-500">Hours *</label>
+                  <input required type="number" min="0.25" step="0.25" value={expenseForm.hours} onChange={e => handleLaborFieldChange('hours', e.target.value)} className="plumbr-input mt-1 text-sm" placeholder="4.5" />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-500">Rate $/hr *</label>
+                  <input required type="number" min="0" step="0.01" value={expenseForm.ratePerHour} onChange={e => handleLaborFieldChange('ratePerHour', e.target.value)} className="plumbr-input mt-1 text-sm" placeholder="75.00" />
+                </div>
+                {expenseForm.amount && (
+                  <div className="sm:col-span-3 flex items-center gap-2 text-sm font-semibold text-slate-700 bg-white rounded-lg px-3 py-2 border border-slate-200">
+                    <span className="text-slate-400 font-normal">{expenseForm.hours}h × ${expenseForm.ratePerHour}/hr =</span>
+                    <span className="text-[#1E3A5F]">${parseFloat(expenseForm.amount).toFixed(2)}</span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-slate-500">Description *</label>
+                  <input required value={expenseForm.description} onChange={e => setExpenseForm(f => ({ ...f, description: e.target.value }))} className="plumbr-input mt-1 text-sm" placeholder="Materials, tools..." />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-500">Amount *</label>
+                  <input required type="number" step="0.01" min="0" value={expenseForm.amount} onChange={e => setExpenseForm(f => ({ ...f, amount: e.target.value }))} className="plumbr-input mt-1 text-sm" placeholder="0.00" />
+                </div>
+              </div>
+            )}
+
             <div className="flex gap-2">
               <button type="submit" disabled={isPending} className="btn-primary text-xs">{isPending ? 'Saving...' : 'Save'}</button>
               <button type="button" onClick={() => setShowExpenseForm(false)} className="btn-secondary text-xs">Cancel</button>
@@ -246,17 +295,23 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
           <div className="space-y-1">
             {expenses.filter(e => expenseFilter === 'all' || e.type === expenseFilter).map(exp => (
               <div key={exp.id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0 text-sm">
-                <div className="flex items-center gap-3">
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full font-medium ${
                     exp.type === 'labor' ? 'bg-blue-100 text-blue-700' :
                     exp.type === 'material' ? 'bg-orange-100 text-orange-700' :
                     exp.type === 'subcontractor' ? 'bg-purple-100 text-purple-700' :
                     'bg-slate-100 text-slate-600'
                   }`}>{exp.type}</span>
-                  <span className="text-slate-700">{exp.description}</span>
-                  <span className="text-xs text-slate-400">{new Date(exp.date).toLocaleDateString()}</span>
+                  {exp.type === 'labor' && exp.hours && exp.ratePerHour ? (
+                    <span className="text-slate-700 truncate">
+                      {exp.description} · <span className="text-slate-500">{parseFloat(exp.hours).toFixed(1)} hrs @ ${parseFloat(exp.ratePerHour).toFixed(0)}/hr</span>
+                    </span>
+                  ) : (
+                    <span className="text-slate-700 truncate">{exp.description}</span>
+                  )}
+                  <span className="shrink-0 text-xs text-slate-400">{new Date(exp.date).toLocaleDateString()}</span>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 shrink-0">
                   <span className="font-semibold">${parseFloat(exp.amount).toLocaleString()}</span>
                   <button onClick={() => handleDeleteExpense(exp.id)} className="text-slate-300 hover:text-red-500 transition-colors"><X size={14} /></button>
                 </div>

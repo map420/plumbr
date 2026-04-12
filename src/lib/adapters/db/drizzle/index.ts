@@ -69,6 +69,11 @@ export const drizzleAdapter: DbAdapter = {
         .where(and(eq(expenses.jobId, jobId), eq(expenses.userId, userId)))
         .orderBy(desc(expenses.date))
     },
+    async findByTechnician(technicianId, userId) {
+      return db.select().from(expenses)
+        .where(and(eq(expenses.userId, userId), eq(expenses.technicianId, technicianId)))
+        .orderBy(desc(expenses.date))
+    },
     async create(userId, data) {
       const [expense] = await db.insert(expenses).values({ ...data, userId }).returning()
       return expense

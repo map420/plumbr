@@ -10,6 +10,7 @@ export type ExpenseType = 'labor' | 'material' | 'subcontractor' | 'other'
 export interface Expense {
   id: string; userId: string; jobId: string
   description: string; type: ExpenseType; amount: string
+  technicianId: string | null; hours: string | null; ratePerHour: string | null
   date: Date; createdAt: Date
 }
 
@@ -91,6 +92,7 @@ export interface DbAdapter {
   }
   expenses: {
     findByJob(jobId: string, userId: string): Promise<Expense[]>
+    findByTechnician(technicianId: string, userId: string): Promise<Expense[]>
     create(userId: string, data: ExpenseInput): Promise<Expense>
     delete(id: string, userId: string): Promise<void>
   }

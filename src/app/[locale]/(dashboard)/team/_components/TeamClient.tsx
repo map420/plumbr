@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useLocale } from 'next-intl'
 import { createTechnician, updateTechnician, deleteTechnician } from '@/lib/actions/technicians'
 import { ConfirmModal } from '@/components/ConfirmModal'
 import { Users, Plus, Trash2, Mail, Phone, X, Lock, Check, DollarSign } from 'lucide-react'
@@ -14,6 +15,8 @@ const emptyForm: FormState = { name: '', email: '', phone: '', hourlyRate: '' }
 
 export function TeamClient({ initialTechnicians, isPro, locale }: { initialTechnicians: Technician[]; isPro: boolean; locale: string }) {
   const router = useRouter()
+  const currentLocale = useLocale()
+  void locale
   const [technicians, setTechnicians] = useState(initialTechnicians)
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState<FormState>(emptyForm)
@@ -141,8 +144,8 @@ export function TeamClient({ initialTechnicians, isPro, locale }: { initialTechn
                   </div>
                 </form>
               ) : (
-                /* Card view — entire card clickable to edit */
-                <div onClick={() => startEdit(t)} className="p-4 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-colors">
+                /* Card view — entire card navigates to profile */
+                <div onClick={() => router.push(`/${currentLocale}/team/${t.id}`)} className="p-4 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-colors">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white font-bold text-sm shrink-0">
                       {t.name.charAt(0).toUpperCase()}

@@ -14,6 +14,7 @@ export async function getExpensesByJob(jobId: string) {
 
 export async function createExpense(jobId: string, data: {
   description: string; type: string; amount: string; date: string
+  technicianId?: string; hours?: string; ratePerHour?: string
 }) {
   const userId = await requireAuth()
   const expense = await dbAdapter.expenses.create(userId, {
@@ -21,10 +22,18 @@ export async function createExpense(jobId: string, data: {
     description: data.description,
     type: data.type as ExpenseType,
     amount: data.amount,
+    technicianId: data.technicianId || null,
+    hours: data.hours || null,
+    ratePerHour: data.ratePerHour || null,
     date: data.date ? new Date(data.date) : new Date(),
   })
   revalidatePath('/[locale]/jobs/[id]', 'page')
   return expense
+}
+
+export async function getExpensesByTechnician(technicianId: string) {
+  const userId = await requireAuth()
+  return dbAdapter.expenses.findByTechnician(technicianId, userId)
 }
 
 export async function deleteExpense(id: string) {
