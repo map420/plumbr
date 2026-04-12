@@ -88,14 +88,18 @@ export function SettingsClient({ locale, plan, hasSubscription, profile: initial
           {isPro ? 'Pro plan — active' : 'Starter (free)'}
         </div>
 
-        {isPro && hasSubscription ? (
-          <button
-            onClick={() => startTransition(() => createPortalSession(locale))}
-            disabled={isPending}
-            className="btn-secondary text-sm disabled:opacity-50"
-          >
-            {isPending ? '...' : 'Manage subscription'}
-          </button>
+        {isPro ? (
+          hasSubscription ? (
+            <button
+              onClick={() => startTransition(() => createPortalSession(locale))}
+              disabled={isPending}
+              className="btn-secondary text-sm disabled:opacity-50"
+            >
+              {isPending ? '...' : 'Manage subscription'}
+            </button>
+          ) : (
+            <p className="text-sm text-slate-500">Your Pro plan is active.</p>
+          )
         ) : (
           <div className="space-y-3">
             <p className="text-sm text-slate-500">Upgrade to Pro for $49/month — includes a 14-day free trial.</p>

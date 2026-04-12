@@ -1,7 +1,9 @@
 'use client'
 
+import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { Mail, Phone, DollarSign, Clock, ArrowLeft, Briefcase } from 'lucide-react'
+import { Mail, Phone, DollarSign, Clock, ArrowLeft, Briefcase, Edit2, Check, X } from 'lucide-react'
+import { updateTechnician } from '@/lib/actions/technicians'
 
 type Technician = { id: string; name: string; email: string; phone: string | null; hourlyRate: string | null }
 type Expense = { id: string; jobId: string; description: string; type: string; amount: string; date: Date; hours: string | null; ratePerHour: string | null }
@@ -18,6 +20,19 @@ export function TechnicianProfileClient({ technician, laborExpenses, jobs, local
   jobs: Job[]
   locale: string
 }) {
+  const [editingRate, setEditingRate] = useState(false)
+  const [rateValue, setRateValue] = useState(technician.hourlyRate ?? '')
+  const [currentRate, setCurrentRate] = useState(technician.hourlyRate)
+  const [isPending, startTransition] = useTransition()
+
+  function handleSaveRate() {
+    startTransition(async () => {
+      await updateTechnician(technician.id, { hourlyRate: rateValue || undefined })
+      setCurrentRate(rateValue || null)
+      setEditingRate(false)
+    })
+  }
+
   const jobMap = Object.fromEntries(jobs.map(j => [j.id, j]))
 
   const totalHours = laborExpenses.reduce((s, e) => s + parseFloat(e.hours ?? '0'), 0)
@@ -54,11 +69,39 @@ export function TechnicianProfileClient({ technician, laborExpenses, jobs, local
                   <Phone size={13} className="text-slate-400" /> {technician.phone}
                 </div>
               )}
-              {technician.hourlyRate && (
-                <div className="flex items-center gap-2 text-sm font-medium text-emerald-600">
-                  <DollarSign size={13} /> ${parseFloat(technician.hourlyRate).toFixed(0)}/hr base rate
-                </div>
-              )}
+              <div className="flex items-center gap-2 text-sm">
+                {editingRate ? (
+                  <div className="flex items-center gap-1">
+                    <DollarSign size={13} className="text-emerald-600" />
+                    <input
+                      type="number" min="0" step="0.01"
+                      value={rateValue}
+                      onChange={e => setRateValue(e.target.value)}
+                      className="plumbr-input w-20 py-0.5 text-sm"
+                      placeholder="75"
+                      autoFocus
+                    />
+                    <span className="text-slate-400 text-xs">/hr</span>
+                    <button onClick={handleSaveRate} disabled={isPending} className="p-1 text-emerald-600 hover:text-emerald-700">
+                      <Check size={14} />
+                    </button>
+                    <button onClick={() => { setEditingRate(false); setRateValue(currentRate ?? '') }} className="p-1 text-slate-400 hover:text-slate-600">
+                      <X size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <button onClick={() => setEditingRate(true)} className="flex items-center gap-1.5 group">
+                    {currentRate ? (
+                      <span className="font-medium text-emerald-600 flex items-center gap-1">
+                        <DollarSign size={13} />${parseFloat(currentRate).toFixed(0)}/hr base rate
+                      </span>
+                    ) : (
+                      <span className="text-slate-400">No rate set</span>
+                    )}
+                    <Edit2 size={11} className="text-slate-300 group-hover:text-slate-500 transition-colors" />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
           <Link href={`/${locale}/team`} className="text-xs text-slate-400 hover:text-[#1E3A5F] transition-colors border border-slate-200 rounded-lg px-3 py-1.5">

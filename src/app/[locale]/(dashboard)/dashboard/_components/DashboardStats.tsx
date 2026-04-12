@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useLocale } from 'next-intl'
-import { DollarSign, Briefcase, FileText, TrendingUp, Target, Users } from 'lucide-react'
+import { DollarSign, Briefcase, FileText, TrendingUp, Target, Users, AlertTriangle } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, Label,
@@ -36,8 +36,8 @@ function niceYTicks(maxVal: number): number[] {
   return Array.from({ length: count }, (_, i) => i * step)
 }
 
-export function DashboardStats({ stats, chartData, userName, translations: t }: {
-  stats: Stats; chartData: ChartData; userName: string | null; translations: T
+export function DashboardStats({ stats, chartData, negativeMarginJobs, userName, translations: t }: {
+  stats: Stats; chartData: ChartData; negativeMarginJobs: { id: string; name: string; margin: number }[]; userName: string | null; translations: T
 }) {
   const locale = useLocale()
   const greeting = t.greeting.replace('{name}', userName ?? 'there')
@@ -62,6 +62,25 @@ export function DashboardStats({ stats, chartData, userName, translations: t }: 
         <h1 className="text-2xl font-bold text-slate-900">{greeting} 👷</h1>
         <p className="text-slate-500 mt-1">{t.subtitle}</p>
       </div>
+
+      {/* Negative margin alert */}
+      {negativeMarginJobs.length > 0 && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 flex items-start gap-3">
+          <AlertTriangle size={18} className="text-red-500 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-red-800">
+              {negativeMarginJobs.length === 1 ? '1 job is losing money' : `${negativeMarginJobs.length} jobs are losing money`}
+            </p>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {negativeMarginJobs.map(j => (
+                <Link key={j.id} href={`/${locale}/jobs/${j.id}`} className="text-xs bg-white border border-red-200 text-red-700 px-2.5 py-1 rounded-full hover:bg-red-100 transition-colors font-medium">
+                  {j.name} · {j.margin}%
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

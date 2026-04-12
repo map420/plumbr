@@ -28,6 +28,7 @@ export function FieldClient({ initialJobs, technicians, selectedTechId, translat
   const active = initialJobs.filter(j => j.status === 'active')
   const todayJobs = active.filter(j => j.startDate && isToday(new Date(j.startDate)))
   const upcomingJobs = active.filter(j => !j.startDate || !isToday(new Date(j.startDate))).slice(0, 5)
+  const selectedTech = selectedTechId ? technicians.find(t => t.id === selectedTechId) : null
 
   function handleTechFilter(techId: string) {
     const params = techId ? `?tech=${techId}` : ''
@@ -69,7 +70,9 @@ export function FieldClient({ initialJobs, technicians, selectedTechId, translat
           <span className="text-xs text-slate-400">{new Date().toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
         </div>
         {todayJobs.length === 0 ? (
-          <div className="plumbr-card p-6 text-center text-slate-400 text-sm">{t.noJobs}</div>
+          <div className="plumbr-card p-6 text-center text-slate-400 text-sm">
+            {selectedTech ? `No active jobs assigned to ${selectedTech.name} today.` : t.noJobs}
+          </div>
         ) : (
           <div className="space-y-3">
             {todayJobs.map(job => (

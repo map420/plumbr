@@ -8,6 +8,7 @@ export default async function DashboardPage() {
   const userId = await authAdapter.getUserId()
 
   let stats = { activeJobs: 0, openEstimates: 0, revenueThisMonth: 0, avgMargin: null as number | null }
+  let negativeMarginJobs: { id: string; name: string; margin: number }[] = []
   let chartData = {
     revenueByMonth: [] as { month: string; revenue: number }[],
     jobsByStatus: [] as { status: string; count: number }[],
@@ -18,11 +19,12 @@ export default async function DashboardPage() {
   let userName: string | null = null
 
   if (userId) {
-    const [allJobs, allEstimates, allInvoices, allClients, userProfile] = await Promise.all([
+    const [allJobs, allEstimates, allInvoices, allClients, allExpenses, userProfile] = await Promise.all([
       dbAdapter.jobs.findAll(userId),
       dbAdapter.estimates.findAll(userId),
       dbAdapter.invoices.findAll(userId),
       dbAdapter.clients.findAll(userId),
+      dbAdapter.expenses.findAll(userId),
       dbAdapter.users.findById(userId),
     ])
 
@@ -40,14 +42,18 @@ export default async function DashboardPage() {
       .filter(i => i.status === 'paid' && i.paidAt && new Date(i.paidAt) >= monthStart)
       .reduce((sum, i) => sum + parseFloat(i.total), 0)
 
-    const jobsWithBudget = allJobs.filter(j => parseFloat(j.budgetedCost) > 0)
-    const avgMargin = jobsWithBudget.length > 0
-      ? jobsWithBudget.reduce((sum, j) => {
-          const budget = parseFloat(j.budgetedCost)
-          const actual = parseFloat(j.actualCost)
-          return sum + ((budget - actual) / budget) * 100
-        }, 0) / jobsWithBudget.length
+    // Real margin per job: paid invoices vs actual expenses
+    const jobMarginData = allJobs.map(j => {
+      const revenue = allInvoices.filter(i => i.jobId === j.id && i.status === 'paid').reduce((s, i) => s + parseFloat(i.total), 0)
+      const cost = allExpenses.filter(e => e.jobId === j.id).reduce((s, e) => s + parseFloat(e.amount), 0)
+      return { id: j.id, name: j.name, revenue, cost, margin: revenue > 0 ? ((revenue - cost) / revenue) * 100 : null }
+    })
+    const jobsWithRevenue = jobMarginData.filter(j => j.revenue > 0)
+    const avgMargin = jobsWithRevenue.length > 0
+      ? jobsWithRevenue.reduce((s, j) => s + j.margin!, 0) / jobsWithRevenue.length
       : null
+    negativeMarginJobs = jobMarginData.filter(j => j.margin !== null && j.margin < 0)
+      .map(j => ({ id: j.id, name: j.name, margin: Math.round(j.margin!) }))
 
     stats = { activeJobs, openEstimates, revenueThisMonth, avgMargin }
 
@@ -105,6 +111,7 @@ export default async function DashboardPage() {
     <DashboardStats
       stats={stats}
       chartData={chartData}
+      negativeMarginJobs={negativeMarginJobs}
       userName={userName}
       translations={{
         greeting: t('greeting', { name: '{name}' }),

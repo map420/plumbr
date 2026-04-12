@@ -8,7 +8,7 @@ import { createInvoice } from '@/lib/actions/invoices'
 import { EstimateStatusBadge } from '@/components/estimates/EstimateStatusBadge'
 import { ConfirmModal } from '@/components/ConfirmModal'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
-import { Edit, Trash2, ArrowRight, Loader2 } from 'lucide-react'
+import { Edit, Trash2, ArrowRight, Loader2, Briefcase } from 'lucide-react'
 
 type EstimateStatus = 'draft' | 'sent' | 'approved' | 'rejected' | 'converted'
 type LineItemType = 'labor' | 'material' | 'subcontractor' | 'other'
@@ -18,7 +18,7 @@ type T = { back: string; edit: string; delete: string; convertToInvoice: string;
 
 const STATUS_OPTIONS: EstimateStatus[] = ['draft', 'sent', 'approved', 'rejected', 'converted']
 
-export function EstimateDetailClient({ estimate, lineItems, translations: t }: { estimate: Estimate; lineItems: LineItem[]; translations: T }) {
+export function EstimateDetailClient({ estimate, lineItems, job, translations: t }: { estimate: Estimate; lineItems: LineItem[]; job: { id: string; name: string } | null; translations: T }) {
   const params = useParams()
   const router = useRouter()
   const locale = params.locale as string
@@ -66,7 +66,14 @@ export function EstimateDetailClient({ estimate, lineItems, translations: t }: {
         <div>
           <Breadcrumbs items={[{ label: 'Estimates', href: `/${locale}/estimates` }, { label: estimate.number }]} />
           <h1 className="text-2xl font-bold text-slate-900">{estimate.number}</h1>
-          <div className="mt-1"><EstimateStatusBadge status={estimate.status as EstimateStatus} label={t.status[estimate.status as EstimateStatus]} /></div>
+          <div className="flex items-center gap-3 mt-1 flex-wrap">
+            <EstimateStatusBadge status={estimate.status as EstimateStatus} label={t.status[estimate.status as EstimateStatus]} />
+            {job && (
+              <Link href={`/${locale}/jobs/${job.id}`} className="flex items-center gap-1 text-xs text-slate-500 hover:text-[#1E3A5F] transition-colors">
+                <Briefcase size={11} />{job.name} →
+              </Link>
+            )}
+          </div>
         </div>
         <div className="flex gap-2 flex-wrap justify-end">
           {estimate.status !== 'converted' && (

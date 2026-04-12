@@ -239,9 +239,22 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
                   <label className="text-xs text-slate-500">Technician *</label>
                   <select required value={expenseForm.technicianId} onChange={e => handleLaborTechChange(e.target.value)} className="plumbr-input mt-1 text-sm">
                     <option value="">Select technician</option>
-                    {(assigned.length > 0 ? assigned : allTechnicians).map(t => (
-                      <option key={t.id} value={t.id}>{t.name}</option>
-                    ))}
+                    {assigned.length > 0 ? (
+                      <>
+                        <optgroup label="Assigned to this job">
+                          {assigned.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                        </optgroup>
+                        {allTechnicians.filter(t => !assigned.find(a => a.id === t.id)).length > 0 && (
+                          <optgroup label="Other technicians">
+                            {allTechnicians.filter(t => !assigned.find(a => a.id === t.id)).map(t => (
+                              <option key={t.id} value={t.id}>{t.name}</option>
+                            ))}
+                          </optgroup>
+                        )}
+                      </>
+                    ) : (
+                      allTechnicians.map(t => <option key={t.id} value={t.id}>{t.name}</option>)
+                    )}
                   </select>
                 </div>
                 <div>
