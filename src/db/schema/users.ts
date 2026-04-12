@@ -9,6 +9,9 @@ export const users = pgTable('users', {
   plan: varchar('plan', { length: 20 }).default('starter'), // starter | growth | pro
   stripeCustomerId: text('stripe_customer_id'),
   stripeSubscriptionId: text('stripe_subscription_id'),
+  logoUrl: text('logo_url'),
+  taxRate: varchar('tax_rate', { length: 10 }),
+  documentFooter: text('document_footer'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })

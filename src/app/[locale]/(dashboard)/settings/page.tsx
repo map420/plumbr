@@ -16,7 +16,14 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
         locale={locale}
         plan={userPlan?.plan ?? 'starter'}
         hasSubscription={!!userPlan?.stripeSubscriptionId}
-        profile={{ name: user?.name ?? '', companyName: user?.companyName ?? '', phone: user?.phone ?? '' }}
+        profile={{
+          name: user?.name ?? '',
+          companyName: user?.companyName ?? '',
+          phone: user?.phone ?? '',
+          logoUrl: user?.logoUrl ?? '',
+          taxRate: user?.taxRate ?? '',
+          documentFooter: user?.documentFooter ?? '',
+        }}
       />
     </div>
   )

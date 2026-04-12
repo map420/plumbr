@@ -70,8 +70,13 @@ export function FieldClient({ initialJobs, technicians, selectedTechId, translat
           <span className="text-xs text-slate-400">{new Date().toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
         </div>
         {todayJobs.length === 0 ? (
-          <div className="plumbr-card p-6 text-center text-slate-400 text-sm">
-            {selectedTech ? `No active jobs assigned to ${selectedTech.name} today.` : t.noJobs}
+          <div className="plumbr-card p-6 text-center">
+            <p className="text-slate-400 text-sm mb-3">
+              {selectedTech ? `No active jobs assigned to ${selectedTech.name} today.` : t.noJobs}
+            </p>
+            <Link href={`/${locale}/jobs/new`} className="inline-flex items-center gap-1.5 text-xs font-medium text-[#1E3A5F] border border-[#1E3A5F]/30 rounded-lg px-3 py-1.5 hover:bg-[#1E3A5F]/5 transition-colors">
+              + Schedule a job
+            </Link>
           </div>
         ) : (
           <div className="space-y-3">

@@ -17,16 +17,39 @@ export default function Sidebar({ onClose, pro }: { onClose?: () => void; pro?: 
   const otherLocale = locale === 'en' ? 'es' : 'en'
   const switchHref = pathname.replace(`/${locale}`, `/${otherLocale}`)
 
-  const nav: { href: string; label: string; icon: React.ElementType; locked?: boolean }[] = [
-    { href: `/${locale}/dashboard`, label: t('dashboard'), icon: LayoutDashboard },
-    { href: `/${locale}/clients`, label: 'Clients', icon: Users },
-    { href: `/${locale}/jobs`, label: t('jobs'), icon: Briefcase },
-    { href: `/${locale}/estimates`, label: t('estimates'), icon: FileText },
-    { href: `/${locale}/invoices`, label: t('invoices'), icon: Receipt },
-    { href: `/${locale}/expenses`, label: 'Expenses', icon: CreditCard },
-    { href: `/${locale}/schedule`, label: t('schedule'), icon: Calendar },
-    { href: `/${locale}/field`, label: t('field'), icon: Wrench },
-    { href: `/${locale}/team`, label: 'Team', icon: Users, locked: !pro },
+  type NavItem = { href: string; label: string; icon: React.ElementType; locked?: boolean }
+  type NavGroup = { label: string | null; items: NavItem[] }
+
+  const navGroups: NavGroup[] = [
+    {
+      label: null,
+      items: [
+        { href: `/${locale}/dashboard`, label: t('dashboard'), icon: LayoutDashboard },
+      ],
+    },
+    {
+      label: 'Operations',
+      items: [
+        { href: `/${locale}/clients`, label: 'Clients', icon: Users },
+        { href: `/${locale}/jobs`, label: t('jobs'), icon: Briefcase },
+      ],
+    },
+    {
+      label: 'Finance',
+      items: [
+        { href: `/${locale}/estimates`, label: t('estimates'), icon: FileText },
+        { href: `/${locale}/invoices`, label: t('invoices'), icon: Receipt },
+        { href: `/${locale}/expenses`, label: 'Expenses', icon: CreditCard },
+      ],
+    },
+    {
+      label: 'Field & Team',
+      items: [
+        { href: `/${locale}/schedule`, label: t('schedule'), icon: Calendar },
+        { href: `/${locale}/field`, label: t('field'), icon: Wrench },
+        { href: `/${locale}/team`, label: 'Team', icon: Users, locked: !pro },
+      ],
+    },
   ]
 
   return (
@@ -42,22 +65,33 @@ export default function Sidebar({ onClose, pro }: { onClose?: () => void; pro?: 
           )}
         </div>
       </div>
-      <nav className="flex-1 px-3 py-4 space-y-1">
-        {nav.map(({ href, label, icon: Icon, locked }) => {
-          const isActive = pathname === href || pathname.startsWith(href + '/')
-          return (
-            <Link
-              key={href}
-              href={href}
-              onClick={onClose}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
-            >
-              <Icon size={18} />
-              <span className="flex-1">{label}</span>
-              {locked && <Lock size={12} className="text-white/30" />}
-            </Link>
-          )
-        })}
+      <nav className="flex-1 px-3 py-4 overflow-y-auto">
+        {navGroups.map((group, gi) => (
+          <div key={gi} className={gi > 0 ? 'mt-4' : ''}>
+            {group.label && (
+              <p className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-widest text-white/30">
+                {group.label}
+              </p>
+            )}
+            <div className="space-y-0.5">
+              {group.items.map(({ href, label, icon: Icon, locked }) => {
+                const isActive = pathname === href || pathname.startsWith(href + '/')
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={onClose}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
+                  >
+                    <Icon size={18} />
+                    <span className="flex-1">{label}</span>
+                    {locked && <Lock size={12} className="text-white/30" />}
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
       <div className="px-3 pb-2">
         <Link href={`/${locale}/settings`} onClick={onClose} className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${pathname.startsWith(`/${locale}/settings`) ? 'bg-white/15 text-white' : 'text-white/70 hover:text-white hover:bg-white/10'}`}>

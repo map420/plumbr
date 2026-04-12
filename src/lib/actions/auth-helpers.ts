@@ -30,6 +30,7 @@ export async function requireUser(): Promise<string> {
       id: userId, email, name,
       companyName: null, phone: null,
       plan: null, stripeCustomerId: null, stripeSubscriptionId: null,
+      logoUrl: null, taxRate: null, documentFooter: null,
     })
   }
 

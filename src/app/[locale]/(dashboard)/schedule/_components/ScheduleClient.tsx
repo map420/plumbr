@@ -127,7 +127,7 @@ export function ScheduleClient({ initialJobs, translations: t }: { initialJobs: 
                 ) : (
                   <div className="space-y-1.5">
                     {dayJobs.map((job) => (
-                      <Link key={job.id} href={`/${locale}/jobs/${job.id}`} className="block p-2 rounded-lg bg-[#1E3A5F]/5 hover:bg-[#1E3A5F]/10 transition-colors">
+                      <Link key={job.id} href={`/${locale}/jobs/${job.id}`} title={`${job.name} — ${job.clientName}`} className="block p-2 rounded-lg bg-[#1E3A5F]/5 hover:bg-[#1E3A5F]/10 transition-colors">
                         <p className="text-xs font-medium text-[#1E3A5F] truncate">{job.name}</p>
                         <p className="text-xs text-slate-400 truncate">{job.clientName}</p>
                         <div className="mt-1">
@@ -167,6 +167,7 @@ export function ScheduleClient({ initialJobs, translations: t }: { initialJobs: 
                   <div className="space-y-0.5">
                     {dayJobs.slice(0, 2).map(job => (
                       <Link key={job.id} href={`/${locale}/jobs/${job.id}`}
+                        title={`${job.name} — ${job.clientName}`}
                         className="block text-[10px] font-medium text-white bg-[#1E3A5F] rounded px-1 py-0.5 truncate hover:bg-[#16304f]">
                         {job.name}
                       </Link>

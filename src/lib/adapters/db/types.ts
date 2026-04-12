@@ -60,7 +60,9 @@ export interface LineItem {
 export interface User {
   id: string; email: string; name: string | null; companyName: string | null
   phone: string | null; plan: string | null; stripeCustomerId: string | null
-  stripeSubscriptionId: string | null; createdAt: Date; updatedAt: Date
+  stripeSubscriptionId: string | null; logoUrl: string | null
+  taxRate: string | null; documentFooter: string | null
+  createdAt: Date; updatedAt: Date
 }
 
 export type NotificationType = 'invoice_overdue' | 'invoice_paid' | 'estimate_approved' | 'job_completed_no_invoice'

@@ -37,6 +37,7 @@ export async function POST(req: Request) {
         name: [first_name, last_name].filter(Boolean).join(' ') || null,
         companyName: null, phone: null, plan: null,
         stripeCustomerId: null, stripeSubscriptionId: null,
+        logoUrl: null, taxRate: null, documentFooter: null,
       })
     }
   }
