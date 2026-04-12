@@ -128,8 +128,14 @@ export function DashboardStats({ stats, chartData, userName, translations: t }: 
         {/* Conversion rate */}
         <div className="plumbr-card p-5 flex flex-col items-center justify-center text-center">
           <Target size={28} className="text-[#1E3A5F] mb-3" />
-          <p className="text-3xl font-bold text-slate-900">{chartData.conversionRate}%</p>
+          <p className={`text-3xl font-bold ${chartData.conversionRate >= 40 ? 'text-green-600' : chartData.conversionRate >= 20 ? 'text-amber-500' : 'text-red-500'}`}>
+            {chartData.conversionRate}%
+          </p>
           <p className="text-sm text-slate-500 mt-1">Lead → Active Conversion</p>
+          <p className="text-xs text-slate-400 mt-2">Industry avg: 40–60%</p>
+          <span className={`mt-2 text-xs px-2 py-0.5 rounded-full font-medium ${chartData.conversionRate >= 40 ? 'bg-green-100 text-green-700' : chartData.conversionRate >= 20 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-600'}`}>
+            {chartData.conversionRate >= 40 ? 'On track' : chartData.conversionRate >= 20 ? 'Below avg' : 'Needs attention'}
+          </span>
         </div>
 
         {/* Top clients */}

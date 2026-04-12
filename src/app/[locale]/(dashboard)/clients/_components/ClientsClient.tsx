@@ -6,23 +6,41 @@ import { useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { deleteClient } from '@/lib/actions/clients'
 import { ConfirmModal } from '@/components/ConfirmModal'
-import { Users, Plus, Trash2, Mail, Phone, Briefcase, DollarSign } from 'lucide-react'
+import { Users, Plus, Trash2, Mail, Phone, Briefcase, DollarSign, LayoutGrid, List, ArrowUpDown } from 'lucide-react'
 
 type Client = { id: string; name: string; email: string | null; phone: string | null; address: string | null }
 type ClientStats = { jobCount: number; revenue: number }
+type SortKey = 'name' | 'jobs' | 'revenue'
+type View = 'grid' | 'table'
 
 export function ClientsClient({ initialClients, clientStats = {} }: { initialClients: Client[]; clientStats?: Record<string, ClientStats> }) {
   const locale = useLocale()
   const router = useRouter()
   const [search, setSearch] = useState('')
+  const [view, setView] = useState<View>('grid')
+  const [sortKey, setSortKey] = useState<SortKey>('name')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
   const [isPending, startTransition] = useTransition()
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
-  const filtered = initialClients.filter(c =>
-    c.name.toLowerCase().includes(search.toLowerCase()) ||
-    c.email?.toLowerCase().includes(search.toLowerCase()) ||
-    c.phone?.includes(search)
-  )
+  function toggleSort(key: SortKey) {
+    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    else { setSortKey(key); setSortDir('asc') }
+  }
+
+  const filtered = initialClients
+    .filter(c =>
+      c.name.toLowerCase().includes(search.toLowerCase()) ||
+      c.email?.toLowerCase().includes(search.toLowerCase()) ||
+      c.phone?.includes(search)
+    )
+    .sort((a, b) => {
+      let av = 0, bv = 0
+      if (sortKey === 'name') return sortDir === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
+      if (sortKey === 'jobs') { av = clientStats[a.id]?.jobCount ?? 0; bv = clientStats[b.id]?.jobCount ?? 0 }
+      if (sortKey === 'revenue') { av = clientStats[a.id]?.revenue ?? 0; bv = clientStats[b.id]?.revenue ?? 0 }
+      return sortDir === 'asc' ? av - bv : bv - av
+    })
 
   function handleDelete() {
     if (!deleteId) return
@@ -47,7 +65,7 @@ export function ClientsClient({ initialClients, clientStats = {} }: { initialCli
         </Link>
       </div>
 
-      <div className="mb-6">
+      <div className="flex items-center gap-3 mb-6 flex-wrap">
         <input
           type="text"
           placeholder="Search clients..."
@@ -55,6 +73,20 @@ export function ClientsClient({ initialClients, clientStats = {} }: { initialCli
           onChange={e => setSearch(e.target.value)}
           className="plumbr-input max-w-sm"
         />
+        <div className="flex items-center gap-1 ml-auto">
+          <select value={sortKey} onChange={e => setSortKey(e.target.value as SortKey)} className="plumbr-input text-sm py-1.5 pr-8 max-w-[140px]">
+            <option value="name">Sort: Name</option>
+            <option value="jobs">Sort: Jobs</option>
+            <option value="revenue">Sort: Revenue</option>
+          </select>
+          <button onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')} className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50" title={sortDir === 'asc' ? 'Ascending' : 'Descending'}>
+            <ArrowUpDown size={14} className={`text-slate-500 ${sortDir === 'desc' ? 'rotate-180' : ''} transition-transform`} />
+          </button>
+          <div className="flex border border-slate-200 rounded-lg overflow-hidden ml-1">
+            <button onClick={() => setView('grid')} className={`p-2 ${view === 'grid' ? 'bg-[#1E3A5F] text-white' : 'hover:bg-slate-50 text-slate-500'}`}><LayoutGrid size={14} /></button>
+            <button onClick={() => setView('table')} className={`p-2 ${view === 'table' ? 'bg-[#1E3A5F] text-white' : 'hover:bg-slate-50 text-slate-500'}`}><List size={14} /></button>
+          </div>
+        </div>
       </div>
 
       {filtered.length === 0 ? (
@@ -66,6 +98,47 @@ export function ClientsClient({ initialClients, clientStats = {} }: { initialCli
               <Plus size={16} /> New Client
             </Link>
           )}
+        </div>
+      ) : view === 'table' ? (
+        <div className={`plumbr-card overflow-hidden ${isPending ? 'opacity-50' : ''}`}>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm min-w-[520px]">
+              <thead className="bg-slate-50 border-b border-slate-200">
+                <tr>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500 cursor-pointer hover:text-slate-800" onClick={() => toggleSort('name')}>
+                    <span className="flex items-center gap-1">Name <ArrowUpDown size={11} /></span>
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500">Email</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500">Phone</th>
+                  <th className="text-center px-4 py-3 font-medium text-slate-500 cursor-pointer hover:text-slate-800" onClick={() => toggleSort('jobs')}>
+                    <span className="flex items-center justify-center gap-1">Jobs <ArrowUpDown size={11} /></span>
+                  </th>
+                  <th className="text-right px-4 py-3 font-medium text-slate-500 cursor-pointer hover:text-slate-800" onClick={() => toggleSort('revenue')}>
+                    <span className="flex items-center justify-end gap-1">Revenue <ArrowUpDown size={11} /></span>
+                  </th>
+                  <th className="px-4 py-3" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filtered.map(client => (
+                  <tr key={client.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-4 py-3">
+                      <Link href={`/${locale}/clients/${client.id}`} className="font-medium text-[#1E3A5F] hover:underline">{client.name}</Link>
+                    </td>
+                    <td className="px-4 py-3 text-slate-500">{client.email || '—'}</td>
+                    <td className="px-4 py-3 text-slate-500">{client.phone || '—'}</td>
+                    <td className="px-4 py-3 text-center text-slate-600">{clientStats[client.id]?.jobCount ?? 0}</td>
+                    <td className="px-4 py-3 text-right font-medium text-slate-700">
+                      {clientStats[client.id]?.revenue ? `$${clientStats[client.id].revenue.toLocaleString()}` : '—'}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <button onClick={() => setDeleteId(client.id)} className="text-slate-400 hover:text-red-500 transition-colors"><Trash2 size={14} /></button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" style={{ opacity: isPending ? 0.5 : 1 }}>
