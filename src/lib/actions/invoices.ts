@@ -129,10 +129,23 @@ export async function updateInvoice(id: string, data: Partial<{
   status: string; paidAt: string
 }>) {
   const userId = await requireAuth()
+  const previous = await dbAdapter.invoices.findById(id, userId)
   const invoice = await dbAdapter.invoices.update(id, userId, {
     ...data.status !== undefined && { status: data.status as 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled' },
     ...data.paidAt !== undefined && { paidAt: data.paidAt ? new Date(data.paidAt) : null },
   })
+
+  // Notification — Invoice marked Paid
+  if (data.status === 'paid' && previous?.status !== 'paid') {
+    await dbAdapter.notifications.create(userId, {
+      type: 'invoice_paid',
+      title: `Invoice ${invoice.number} paid`,
+      body: `${invoice.clientName} paid $${parseFloat(invoice.total).toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
+      href: `/en/invoices/${invoice.id}`,
+      read: false,
+    }).catch(err => console.error('[NOTIF] invoice_paid failed:', err))
+  }
+
   revalidatePath('/[locale]/invoices', 'page')
   return invoice
 }

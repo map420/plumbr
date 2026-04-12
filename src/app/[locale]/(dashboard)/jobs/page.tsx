@@ -14,7 +14,7 @@ export default async function JobsPage() {
       translations={{
         title: t('title'), new: t('new'), empty: t('empty'),
         status: { lead: t('status.lead'), active: t('status.active'), on_hold: t('status.on_hold'), completed: t('status.completed'), cancelled: t('status.cancelled') },
-        fields: { name: t('fields.name'), clientName: t('fields.clientName'), startDate: t('fields.startDate'), budgetedCost: t('fields.budgetedCost') },
+        fields: { name: t('fields.name'), clientName: t('fields.clientName'), startDate: t('fields.startDate'), endDate: t('fields.endDate'), budgetedCost: t('fields.budgetedCost') },
       }}
     />
   )

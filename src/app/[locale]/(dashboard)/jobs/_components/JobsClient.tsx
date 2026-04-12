@@ -15,7 +15,7 @@ type JobStatus = 'lead' | 'active' | 'on_hold' | 'completed' | 'cancelled'
 type Translations = {
   title: string; new: string; empty: string
   status: Record<JobStatus, string>
-  fields: { name: string; clientName: string; startDate: string; budgetedCost: string }
+  fields: { name: string; clientName: string; startDate: string; endDate: string; budgetedCost: string }
 }
 
 const ALL_STATUSES: JobStatus[] = ['lead', 'active', 'on_hold', 'completed', 'cancelled']

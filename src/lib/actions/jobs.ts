@@ -83,9 +83,10 @@ export async function updateJob(id: string, data: Partial<{
   // Automation #4 — Job → Completed + has Draft invoice → notify contractor
   if (data.status === 'completed' && previous?.status !== 'completed') {
     const contractorUser = await dbAdapter.users.findById(userId)
+    const jobInvoices = await dbAdapter.invoices.findByJob(id, userId)
+
     if (contractorUser?.email) {
-      const invoices = await dbAdapter.invoices.findByJob(id, userId)
-      const draftInvoice = invoices.find(inv => inv.status === 'draft')
+      const draftInvoice = jobInvoices.find(inv => inv.status === 'draft')
       if (draftInvoice) {
         const appUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://plumbr.vercel.app'}/en/invoices/${draftInvoice.id}`
         await emailAdapter.send({
@@ -101,6 +102,17 @@ export async function updateJob(id: string, data: Partial<{
           }),
         }).catch(err => console.error('[AUTO #4] email failed:', err))
       }
+    }
+
+    // Notification — Job completed with no invoice
+    if (jobInvoices.length === 0) {
+      await dbAdapter.notifications.create(userId, {
+        type: 'job_completed_no_invoice',
+        title: `Job "${job.name}" completed`,
+        body: `No invoice created yet for ${job.clientName}. Create one now.`,
+        href: `/en/jobs/${id}`,
+        read: false,
+      }).catch(err => console.error('[NOTIF] job_completed_no_invoice failed:', err))
     }
   }
 

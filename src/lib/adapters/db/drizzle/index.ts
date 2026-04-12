@@ -7,7 +7,8 @@ import { estimates } from '@/db/schema/estimates'
 import { invoices } from '@/db/schema/invoices'
 import { lineItems } from '@/db/schema/line-items'
 import { users } from '@/db/schema/users'
-import { eq, and, desc } from 'drizzle-orm'
+import { notifications } from '@/db/schema/notifications'
+import { eq, and, desc, count } from 'drizzle-orm'
 import type { DbAdapter, Job, JobInput, EstimateInput, InvoiceInput, LineItemInput } from '../types'
 
 // Drizzle infers budgetedCost/actualCost as string|null (no notNull in schema); coerce to default
@@ -201,6 +202,32 @@ export const drizzleAdapter: DbAdapter = {
       const [user] = await db.update(users).set({ ...data, updatedAt: new Date() })
         .where(eq(users.id, id)).returning()
       return user
+    },
+  },
+
+  notifications: {
+    async findByUser(userId, limit = 30) {
+      return db.select().from(notifications)
+        .where(eq(notifications.userId, userId))
+        .orderBy(desc(notifications.createdAt))
+        .limit(limit)
+    },
+    async countUnread(userId) {
+      const rows = await db.select({ cnt: count() }).from(notifications)
+        .where(and(eq(notifications.userId, userId), eq(notifications.read, false)))
+      return rows[0]?.cnt ?? 0
+    },
+    async create(userId, data) {
+      const [n] = await db.insert(notifications).values({ ...data, userId }).returning()
+      return n
+    },
+    async markRead(id, userId) {
+      await db.update(notifications).set({ read: true })
+        .where(and(eq(notifications.id, id), eq(notifications.userId, userId)))
+    },
+    async markAllRead(userId) {
+      await db.update(notifications).set({ read: true })
+        .where(eq(notifications.userId, userId))
     },
   },
 }

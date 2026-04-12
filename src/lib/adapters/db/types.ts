@@ -60,6 +60,14 @@ export interface User {
   stripeSubscriptionId: string | null; createdAt: Date; updatedAt: Date
 }
 
+export type NotificationType = 'invoice_overdue' | 'invoice_paid' | 'estimate_approved' | 'job_completed_no_invoice'
+
+export interface Notification {
+  id: string; userId: string; type: NotificationType
+  title: string; body: string; href: string
+  read: boolean; createdAt: Date
+}
+
 // Input types
 export type ExpenseInput = Omit<Expense, 'id' | 'userId' | 'createdAt'>
 export type ClientInput = Omit<Client, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
@@ -122,5 +130,12 @@ export interface DbAdapter {
     findById(id: string): Promise<User | null>
     upsert(data: Omit<User, 'createdAt' | 'updatedAt'>): Promise<User>
     update(id: string, data: Partial<User>): Promise<User>
+  }
+  notifications: {
+    findByUser(userId: string, limit?: number): Promise<Notification[]>
+    countUnread(userId: string): Promise<number>
+    create(userId: string, data: Omit<Notification, 'id' | 'userId' | 'createdAt'>): Promise<Notification>
+    markRead(id: string, userId: string): Promise<void>
+    markAllRead(userId: string): Promise<void>
   }
 }

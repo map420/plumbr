@@ -1,4 +1,4 @@
-import type { DbAdapter, Technician, Expense, Client, Job, Estimate, Invoice, LineItem, User, TechnicianInput, ExpenseInput, ClientInput, JobInput, EstimateInput, InvoiceInput, LineItemInput } from '../types'
+import type { DbAdapter, Technician, Expense, Client, Job, Estimate, Invoice, LineItem, User, Notification, TechnicianInput, ExpenseInput, ClientInput, JobInput, EstimateInput, InvoiceInput, LineItemInput } from '../types'
 
 // In-memory store — persists for the Node.js process lifetime
 const store = {
@@ -11,6 +11,7 @@ const store = {
   invoices: new Map<string, Invoice>(),
   lineItems: new Map<string, LineItem>(),
   users: new Map<string, User>(),
+  notifications: new Map<string, Notification>(),
   counters: { est: 0, inv: 0 },
 }
 
@@ -229,6 +230,32 @@ export const memoryAdapter: DbAdapter = {
       const updated = { ...existing, ...data, updatedAt: now() }
       store.users.set(id, updated)
       return updated
+    },
+  },
+
+  notifications: {
+    async findByUser(userId, limit = 30) {
+      return [...store.notifications.values()]
+        .filter(n => n.userId === userId)
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .slice(0, limit)
+    },
+    async countUnread(userId) {
+      return [...store.notifications.values()].filter(n => n.userId === userId && !n.read).length
+    },
+    async create(userId, data) {
+      const n: Notification = { ...data, id: uuid(), userId, createdAt: now() }
+      store.notifications.set(n.id, n)
+      return n
+    },
+    async markRead(id, userId) {
+      const n = store.notifications.get(id)
+      if (n?.userId === userId) store.notifications.set(id, { ...n, read: true })
+    },
+    async markAllRead(userId) {
+      for (const [id, n] of store.notifications) {
+        if (n.userId === userId) store.notifications.set(id, { ...n, read: true })
+      }
     },
   },
 }

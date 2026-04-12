@@ -115,6 +115,17 @@ export async function updateEstimate(id: string, data: Partial<{
       .catch(err => console.error('[AUTO #2] job update failed:', err))
   }
 
+  // Notification — Estimate marked Approved
+  if (data.status === 'approved' && previous?.status !== 'approved') {
+    await dbAdapter.notifications.create(userId, {
+      type: 'estimate_approved',
+      title: `Estimate ${estimate.number} approved`,
+      body: `${estimate.clientName} approved $${parseFloat(estimate.total).toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
+      href: `/en/estimates/${estimate.id}`,
+      read: false,
+    }).catch(err => console.error('[NOTIF] estimate_approved failed:', err))
+  }
+
   revalidatePath('/[locale]/estimates', 'page')
   return estimate
 }
