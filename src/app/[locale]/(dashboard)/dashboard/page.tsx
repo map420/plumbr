@@ -15,13 +15,18 @@ export default async function DashboardPage() {
     topClients: [] as { name: string; revenue: number }[],
   }
 
+  let userName: string | null = null
+
   if (userId) {
-    const [allJobs, allEstimates, allInvoices, allClients] = await Promise.all([
+    const [allJobs, allEstimates, allInvoices, allClients, userProfile] = await Promise.all([
       dbAdapter.jobs.findAll(userId),
       dbAdapter.estimates.findAll(userId),
       dbAdapter.invoices.findAll(userId),
       dbAdapter.clients.findAll(userId),
+      dbAdapter.users.findById(userId),
     ])
+
+    userName = userProfile?.name?.split(' ')[0] ?? null
 
     // KPI stats
     const activeJobs = allJobs.filter(j => j.status === 'active').length
@@ -100,6 +105,7 @@ export default async function DashboardPage() {
     <DashboardStats
       stats={stats}
       chartData={chartData}
+      userName={userName}
       translations={{
         greeting: t('greeting', { name: '{name}' }),
         subtitle: t('subtitle'),

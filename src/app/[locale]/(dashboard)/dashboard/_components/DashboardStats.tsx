@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { useUser } from '@clerk/nextjs'
 import { useLocale } from 'next-intl'
 import { DollarSign, Briefcase, FileText, TrendingUp, Target, Users } from 'lucide-react'
 import {
@@ -29,13 +28,19 @@ const STATUS_COLORS: Record<string, string> = {
 
 const CHART_COLORS = ['#1E3A5F', '#3b82f6', '#22c55e', '#f59e0b', '#8b5cf6']
 
-export function DashboardStats({ stats, chartData, translations: t }: {
-  stats: Stats; chartData: ChartData; translations: T
+function niceYTicks(maxVal: number): number[] {
+  if (maxVal <= 0) return [0, 1000, 2000, 3000]
+  const step = maxVal <= 4000 ? 1000 : maxVal <= 10000 ? 2000 : maxVal <= 25000 ? 5000 : 10000
+  const top = Math.ceil(maxVal / step) * step
+  const count = Math.min(Math.floor(top / step) + 1, 5)
+  return Array.from({ length: count }, (_, i) => i * step)
+}
+
+export function DashboardStats({ stats, chartData, userName, translations: t }: {
+  stats: Stats; chartData: ChartData; userName: string | null; translations: T
 }) {
   const locale = useLocale()
-  const { user } = useUser()
-  const firstName = user?.firstName ?? 'there'
-  const greeting = t.greeting.replace('{name}', firstName)
+  const greeting = t.greeting.replace('{name}', userName ?? 'there')
 
   const statCards = [
     { label: t.stats.activeJobs, value: String(stats.activeJobs), icon: Briefcase, color: 'text-blue-600' },
@@ -44,6 +49,8 @@ export function DashboardStats({ stats, chartData, translations: t }: {
     { label: t.stats.avgJobMargin, value: stats.avgMargin !== null ? `${Math.round(stats.avgMargin)}%` : '—', icon: TrendingUp, color: 'text-purple-600' },
   ]
 
+  const maxRevenue = Math.max(...chartData.revenueByMonth.map(m => m.revenue), 0)
+  const yTicks = niceYTicks(maxRevenue)
   const hasRevenueData = chartData.revenueByMonth.some(m => m.revenue > 0)
   const hasJobData = chartData.jobsByStatus.length > 0
   const hasClientData = chartData.topClients.length > 0
@@ -79,7 +86,7 @@ export function DashboardStats({ stats, chartData, translations: t }: {
               <BarChart data={chartData.revenueByMonth} barSize={32}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                 <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} allowDecimals={false} tickCount={5} domain={[0, 'auto']} tickFormatter={v => `$${v >= 1000 ? `${(v/1000).toFixed(0)}k` : v}`} />
+                <YAxis tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} ticks={yTicks} domain={[0, yTicks[yTicks.length - 1]]} tickFormatter={v => v >= 1000 ? `$${v / 1000}k` : `$${v}`} />
                 <Tooltip formatter={(v) => [`$${Number(v).toLocaleString()}`, 'Revenue']} contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }} />
                 <Bar dataKey="revenue" fill="#1E3A5F" radius={[4, 4, 0, 0]} />
               </BarChart>
