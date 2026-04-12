@@ -37,8 +37,10 @@ export function NotificationBell() {
   useEffect(() => {
     let cancelled = false
     async function poll() {
-      const cnt = await getUnreadCount()
-      if (!cancelled) setUnread(cnt)
+      try {
+        const cnt = await getUnreadCount()
+        if (!cancelled) setUnread(cnt)
+      } catch { /* table may not exist yet */ }
     }
     poll()
     const interval = setInterval(poll, 60_000)
@@ -85,11 +87,16 @@ export function NotificationBell() {
     }
 
     setFetching(true)
-    const list = await getNotifications()
-    setNotifications(list)
-    setLoaded(true)
-    setFetching(false)
-    setOpen(true)
+    try {
+      const list = await getNotifications()
+      setNotifications(list)
+      setLoaded(true)
+    } catch {
+      setLoaded(true) // show empty state instead of infinite spinner
+    } finally {
+      setFetching(false)
+      setOpen(true)
+    }
   }
 
   function handleMarkRead(id: string) {
