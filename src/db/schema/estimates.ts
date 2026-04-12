@@ -23,6 +23,7 @@ export const estimates = pgTable('estimates', {
   notes: text('notes'),
   validUntil: timestamp('valid_until'),
   convertedToInvoiceId: text('converted_to_invoice_id'),
+  shareToken: text('share_token').unique(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })

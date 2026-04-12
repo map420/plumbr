@@ -61,6 +61,11 @@ export const memoryAdapter: DbAdapter = {
     },
   },
   expenses: {
+    async findAll(userId) {
+      return [...store.expenses.values()]
+        .filter(e => e.userId === userId)
+        .sort((a, b) => b.date.getTime() - a.date.getTime())
+    },
     async findByJob(jobId, userId) {
       return [...store.expenses.values()]
         .filter(e => e.jobId === jobId && e.userId === userId)
@@ -149,6 +154,9 @@ export const memoryAdapter: DbAdapter = {
     async findByJob(jobId, userId) {
       return [...store.estimates.values()].filter(e => e.jobId === jobId && e.userId === userId)
     },
+    async findByToken(token) {
+      return [...store.estimates.values()].find(e => e.shareToken === token) ?? null
+    },
     async create(userId, data, items) {
       store.counters.est++
       const number = `EST-${String(store.counters.est).padStart(3, '0')}`
@@ -190,6 +198,9 @@ export const memoryAdapter: DbAdapter = {
     },
     async findByJob(jobId, userId) {
       return [...store.invoices.values()].filter(i => i.jobId === jobId && i.userId === userId)
+    },
+    async findByToken(token) {
+      return [...store.invoices.values()].find(i => i.shareToken === token) ?? null
     },
     async create(userId, data, items) {
       store.counters.inv++

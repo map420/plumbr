@@ -5,8 +5,9 @@ import Link from 'next/link'
 import { useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { updateInvoice } from '@/lib/actions/invoices'
+import { generateInvoiceShareToken } from '@/lib/actions/portal'
 import { InvoiceStatusBadge } from '@/components/invoices/InvoiceStatusBadge'
-import { Receipt, Plus } from 'lucide-react'
+import { Receipt, Plus, Share2, Check } from 'lucide-react'
 
 type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
 type Invoice = { id: string; number: string; clientName: string; status: string; dueDate: Date | null; total: string; paidAt: Date | null }
@@ -25,6 +26,15 @@ export function InvoicesClient({ initialInvoices, translations: t }: { initialIn
   const [isPending, startTransition] = useTransition()
   const [filter, setFilter] = useState<InvoiceStatus | 'all'>('all')
   const [search, setSearch] = useState('')
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+
+  async function handleShare(e: React.MouseEvent, id: string) {
+    e.stopPropagation()
+    const url = await generateInvoiceShareToken(id)
+    await navigator.clipboard.writeText(url)
+    setCopiedId(id)
+    setTimeout(() => setCopiedId(null), 2000)
+  }
 
   function handleMarkPaid(id: string) {
     startTransition(async () => { await updateInvoice(id, { status: 'paid', paidAt: new Date().toISOString() }); router.refresh() })
@@ -91,9 +101,14 @@ export function InvoicesClient({ initialInvoices, translations: t }: { initialIn
                     <td className="px-4 py-3 text-slate-500">{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '—'}</td>
                     <td className="px-4 py-3 text-right font-semibold">${parseFloat(inv.total).toLocaleString()}</td>
                     <td className="px-4 py-3 text-right">
-                      {(status === 'sent' || status === 'overdue') && (
-                        <button onClick={e => { e.stopPropagation(); handleMarkPaid(inv.id) }} className="text-xs px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200 font-medium">{t.markAsPaid}</button>
-                      )}
+                      <div className="flex items-center justify-end gap-2">
+                        <button onClick={e => handleShare(e, inv.id)} className="text-slate-400 hover:text-[#1E3A5F] transition-colors" title="Copy client link">
+                          {copiedId === inv.id ? <Check size={14} className="text-emerald-500" /> : <Share2 size={14} />}
+                        </button>
+                        {(status === 'sent' || status === 'overdue') && (
+                          <button onClick={e => { e.stopPropagation(); handleMarkPaid(inv.id) }} className="text-xs px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200 font-medium">{t.markAsPaid}</button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 )

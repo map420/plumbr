@@ -38,6 +38,7 @@ export interface Estimate {
   clientName: string; clientEmail: string | null; clientPhone: string | null; status: EstimateStatus
   subtotal: string; tax: string; total: string; notes: string | null
   validUntil: Date | null; convertedToInvoiceId: string | null
+  shareToken: string | null
   createdAt: Date; updatedAt: Date
 }
 
@@ -46,7 +47,8 @@ export interface Invoice {
   number: string; clientName: string; clientEmail: string | null
   status: InvoiceStatus; subtotal: string; tax: string; total: string
   dueDate: Date | null; paidAt: Date | null; notes: string | null
-  stripePaymentIntentId: string | null; createdAt: Date; updatedAt: Date
+  stripePaymentIntentId: string | null; shareToken: string | null
+  createdAt: Date; updatedAt: Date
 }
 
 export interface LineItem {
@@ -91,6 +93,7 @@ export interface DbAdapter {
     findJobsByTechnician(technicianId: string): Promise<string[]>
   }
   expenses: {
+    findAll(userId: string): Promise<Expense[]>
     findByJob(jobId: string, userId: string): Promise<Expense[]>
     findByTechnician(technicianId: string, userId: string): Promise<Expense[]>
     create(userId: string, data: ExpenseInput): Promise<Expense>
@@ -114,6 +117,7 @@ export interface DbAdapter {
     findAll(userId: string): Promise<Estimate[]>
     findById(id: string, userId: string): Promise<Estimate | null>
     findByJob(jobId: string, userId: string): Promise<Estimate[]>
+    findByToken(token: string): Promise<Estimate | null>
     create(userId: string, data: EstimateInput, items: LineItemInput[]): Promise<Estimate>
     update(id: string, userId: string, data: Partial<EstimateInput>): Promise<Estimate>
     delete(id: string, userId: string): Promise<void>
@@ -122,6 +126,7 @@ export interface DbAdapter {
     findAll(userId: string): Promise<Invoice[]>
     findById(id: string, userId: string): Promise<Invoice | null>
     findByJob(jobId: string, userId: string): Promise<Invoice[]>
+    findByToken(token: string): Promise<Invoice | null>
     create(userId: string, data: InvoiceInput, items: LineItemInput[]): Promise<Invoice>
     update(id: string, userId: string, data: Partial<InvoiceInput>): Promise<Invoice>
   }

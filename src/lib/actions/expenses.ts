@@ -7,6 +7,11 @@ import { revalidatePath } from 'next/cache'
 import type { ExpenseType } from '@/lib/adapters/db/types'
 
 
+export async function getAllExpenses() {
+  const userId = await requireAuth()
+  return dbAdapter.expenses.findAll(userId)
+}
+
 export async function getExpensesByJob(jobId: string) {
   const userId = await requireAuth()
   return dbAdapter.expenses.findByJob(jobId, userId)

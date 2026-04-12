@@ -21,6 +21,7 @@ export const invoices = pgTable('invoices', {
   dueDate: timestamp('due_date'),
   paidAt: timestamp('paid_at'),
   stripePaymentIntentId: text('stripe_payment_intent_id'),
+  shareToken: text('share_token').unique(),
   notes: text('notes'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

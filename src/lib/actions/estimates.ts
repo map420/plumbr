@@ -73,6 +73,7 @@ export async function createEstimate(data: {
     notes: data.notes || null,
     validUntil: data.validUntil ? new Date(data.validUntil) : null,
     convertedToInvoiceId: null,
+    shareToken: null,
   }, lineItems)
 
   revalidatePath('/[locale]/estimates', 'page')

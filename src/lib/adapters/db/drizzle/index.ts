@@ -64,6 +64,11 @@ export const drizzleAdapter: DbAdapter = {
     },
   },
   expenses: {
+    async findAll(userId) {
+      return db.select().from(expenses)
+        .where(eq(expenses.userId, userId))
+        .orderBy(desc(expenses.date))
+    },
     async findByJob(jobId, userId) {
       return db.select().from(expenses)
         .where(and(eq(expenses.jobId, jobId), eq(expenses.userId, userId)))
@@ -137,6 +142,10 @@ export const drizzleAdapter: DbAdapter = {
     async findByJob(jobId, userId) {
       return db.select().from(estimates).where(and(eq(estimates.jobId, jobId), eq(estimates.userId, userId)))
     },
+    async findByToken(token) {
+      const rows = await db.select().from(estimates).where(eq(estimates.shareToken, token))
+      return rows[0] ?? null
+    },
     async create(userId, data, items) {
       const rows = await db.select({ number: estimates.number }).from(estimates).where(eq(estimates.userId, userId))
       const number = nextNumber(rows, 'EST')
@@ -167,6 +176,10 @@ export const drizzleAdapter: DbAdapter = {
     },
     async findByJob(jobId, userId) {
       return db.select().from(invoices).where(and(eq(invoices.jobId, jobId), eq(invoices.userId, userId)))
+    },
+    async findByToken(token) {
+      const rows = await db.select().from(invoices).where(eq(invoices.shareToken, token))
+      return rows[0] ?? null
     },
     async create(userId, data, items) {
       const rows = await db.select({ number: invoices.number }).from(invoices).where(eq(invoices.userId, userId))

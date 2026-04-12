@@ -8,6 +8,16 @@ export const metadata: Metadata = {
   title: { default: 'Plumbr', template: '%s · Plumbr' },
   description: 'Your construction business, straight. Estimates, job costing, crew scheduling — all in one place.',
   keywords: ['construction management', 'contractor software', 'job costing', 'estimates', 'crew scheduling'],
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Plumbr',
+    startupImage: '/icons/icon-512.png',
+  },
+  icons: {
+    apple: '/icons/apple-touch-icon.png',
+  },
   openGraph: {
     title: 'Plumbr',
     description: 'Your construction business, straight.',

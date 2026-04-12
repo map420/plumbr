@@ -61,6 +61,7 @@ export async function createInvoice(data: {
     paidAt: null,
     notes: data.notes || null,
     stripePaymentIntentId: null,
+    shareToken: null,
   }, lineItems)
 
   revalidatePath('/[locale]/invoices', 'page')

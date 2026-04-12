@@ -5,10 +5,11 @@ import Link from 'next/link'
 import { useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { deleteEstimate } from '@/lib/actions/estimates'
+import { generateEstimateShareToken } from '@/lib/actions/portal'
 import { EstimateStatusBadge } from '@/components/estimates/EstimateStatusBadge'
 import { PlanLimitBanner } from '@/components/PlanLimitBanner'
 import { ConfirmModal } from '@/components/ConfirmModal'
-import { FileText, Plus, Trash2 } from 'lucide-react'
+import { FileText, Plus, Trash2, Share2, Check } from 'lucide-react'
 
 type EstimateStatus = 'draft' | 'sent' | 'approved' | 'rejected' | 'converted'
 type Estimate = { id: string; number: string; clientName: string; status: string; total: string; createdAt: Date }
@@ -23,6 +24,15 @@ export function EstimatesClient({ initialEstimates, planInfo, translations: t }:
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<EstimateStatus | 'all'>('all')
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+
+  async function handleShare(e: React.MouseEvent, id: string) {
+    e.stopPropagation()
+    const url = await generateEstimateShareToken(id)
+    await navigator.clipboard.writeText(url)
+    setCopiedId(id)
+    setTimeout(() => setCopiedId(null), 2000)
+  }
 
   const visible = initialEstimates.filter(e => {
     const matchesSearch = e.clientName.toLowerCase().includes(search.toLowerCase()) || e.number.toLowerCase().includes(search.toLowerCase())
@@ -100,7 +110,14 @@ export function EstimatesClient({ initialEstimates, planInfo, translations: t }:
                   <td className="px-4 py-3"><EstimateStatusBadge status={est.status as EstimateStatus} label={t.status[est.status as EstimateStatus]} /></td>
                   <td className="px-4 py-3 text-slate-500">{new Date(est.createdAt).toLocaleDateString()}</td>
                   <td className="px-4 py-3 text-right font-semibold">${parseFloat(est.total).toLocaleString()}</td>
-                  <td className="px-4 py-3 text-right"><button onClick={e => { e.stopPropagation(); setDeleteId(est.id) }} className="text-slate-400 hover:text-red-500 transition-colors"><Trash2 size={15} /></button></td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <button onClick={e => handleShare(e, est.id)} className="text-slate-400 hover:text-[#1E3A5F] transition-colors" title="Copy client link">
+                        {copiedId === est.id ? <Check size={14} className="text-emerald-500" /> : <Share2 size={14} />}
+                      </button>
+                      <button onClick={e => { e.stopPropagation(); setDeleteId(est.id) }} className="text-slate-400 hover:text-red-500 transition-colors"><Trash2 size={15} /></button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
