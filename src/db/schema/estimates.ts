@@ -15,6 +15,7 @@ export const estimates = pgTable('estimates', {
   number: varchar('number', { length: 50 }).notNull(), // EST-001
   clientName: varchar('client_name', { length: 255 }).notNull(),
   clientEmail: varchar('client_email', { length: 255 }),
+  clientPhone: varchar('client_phone', { length: 50 }),
   status: estimateStatusEnum('status').default('draft').notNull(),
   subtotal: numeric('subtotal', { precision: 12, scale: 2 }).default('0').notNull(),
   tax: numeric('tax', { precision: 12, scale: 2 }).default('0').notNull(),

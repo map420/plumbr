@@ -31,7 +31,7 @@ export async function getLineItems(estimateId: string) {
 type RawLineItem = { type: string; description: string; quantity: number; unitPrice: number; total: number }
 
 export async function createEstimate(data: {
-  jobId: string; clientId?: string; clientName: string; clientEmail: string; status: string
+  jobId: string; clientId?: string; clientName: string; clientEmail: string; clientPhone?: string; status: string
   subtotal: number; tax: number; total: number; notes: string; validUntil: string
 }, items: RawLineItem[]) {
   const userId = await requireAuth()
@@ -61,6 +61,7 @@ export async function createEstimate(data: {
     number: '',
     clientName: data.clientName,
     clientEmail: data.clientEmail || null,
+    clientPhone: data.clientPhone || null,
     status: data.status as 'draft',
     subtotal: String(data.subtotal),
     tax: String(data.tax),

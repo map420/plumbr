@@ -34,7 +34,7 @@ export interface Job {
 
 export interface Estimate {
   id: string; userId: string; jobId: string | null; clientId: string | null; number: string
-  clientName: string; clientEmail: string | null; status: EstimateStatus
+  clientName: string; clientEmail: string | null; clientPhone: string | null; status: EstimateStatus
   subtotal: string; tax: string; total: string; notes: string | null
   validUntil: Date | null; convertedToInvoiceId: string | null
   createdAt: Date; updatedAt: Date

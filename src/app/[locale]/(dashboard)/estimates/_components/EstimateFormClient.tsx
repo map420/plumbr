@@ -10,7 +10,7 @@ import { Plus, Trash2, Search, X } from 'lucide-react'
 
 type LineItemType = 'labor' | 'material' | 'subcontractor' | 'other'
 type LI = { type: LineItemType; description: string; quantity: number; unitPrice: number; total: number }
-type Job = { id: string; name: string; clientName: string; clientEmail: string | null; clientId: string | null }
+type Job = { id: string; name: string; clientName: string; clientEmail: string | null; clientPhone: string | null; clientId: string | null }
 type Estimate = { id: string; jobId: string | null; clientName: string; clientEmail: string | null; notes: string | null; validUntil: Date | null }
 type T = { save: string; cancel: string; convertToInvoice?: string; job?: string; fields: Record<string, string>; lineItems: { title: string; add: string; type: Record<LineItemType, string>; fields: Record<string, string> } }
 
@@ -49,6 +49,7 @@ export function EstimateFormClient({ translations: t, estimate }: { translations
   const jobDropdownRef = useRef<HTMLDivElement>(null)
   const [clientName, setClientName] = useState(estimate?.clientName ?? '')
   const [clientEmail, setClientEmail] = useState(estimate?.clientEmail ?? '')
+  const [clientPhone, setClientPhone] = useState('')
   const [validUntil, setValidUntil] = useState(estimate?.validUntil ? new Date(estimate.validUntil).toISOString().split('T')[0] : '')
   const [notes, setNotes] = useState(estimate?.notes ?? '')
   const [items, setItems] = useState<LI[]>([])
@@ -82,6 +83,7 @@ export function EstimateFormClient({ translations: t, estimate }: { translations
     setJobSearch(job.name)
     setClientName(job.clientName)
     setClientEmail(job.clientEmail ?? '')
+    setClientPhone(job.clientPhone ?? '')
     setShowJobDropdown(false)
   }
 
@@ -90,6 +92,7 @@ export function EstimateFormClient({ translations: t, estimate }: { translations
     setJobSearch('')
     setClientName('')
     setClientEmail('')
+    setClientPhone('')
   }
 
   const filteredJobs = jobs.filter(j =>
@@ -113,7 +116,7 @@ export function EstimateFormClient({ translations: t, estimate }: { translations
     startTransition(async () => {
       const selectedJob = jobs.find(j => j.id === jobId)
       const clientId = selectedJob?.clientId ?? ''
-      const data = { jobId, clientId, clientName, clientEmail, status: 'draft', subtotal, tax, total, notes, validUntil: validUntil ? new Date(validUntil).toISOString() : '' }
+      const data = { jobId, clientId, clientName, clientEmail, clientPhone, status: 'draft', subtotal, tax, total, notes, validUntil: validUntil ? new Date(validUntil).toISOString() : '' }
       if (estimate) {
         await updateEstimate(estimate.id, { notes, status: 'draft' })
         router.push(`/${locale}/estimates/${estimate.id}`)
@@ -172,6 +175,10 @@ export function EstimateFormClient({ translations: t, estimate }: { translations
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">{t.fields.clientEmail}</label>
             <input type="email" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Client Phone</label>
+            <input type="tel" value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" placeholder="(555) 000-0000" />
           </div>
         </div>
         <div>

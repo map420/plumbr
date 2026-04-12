@@ -10,7 +10,7 @@ import { PlanLimitBanner } from '@/components/PlanLimitBanner'
 import { ConfirmModal } from '@/components/ConfirmModal'
 import { Briefcase, Plus, Trash2 } from 'lucide-react'
 
-type Job = { id: string; name: string; clientName: string; status: string; startDate: Date | null; budgetedCost: string | null }
+type Job = { id: string; name: string; clientName: string; status: string; startDate: Date | null; endDate: Date | null; budgetedCost: string | null }
 type JobStatus = 'lead' | 'active' | 'on_hold' | 'completed' | 'cancelled'
 type Translations = {
   title: string; new: string; empty: string
@@ -102,6 +102,7 @@ export function JobsClient({ initialJobs, planInfo, translations: t }: { initial
                 <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.clientName}</th>
                 <th className="text-left px-4 py-3 font-medium text-slate-500">Status</th>
                 <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.startDate}</th>
+                <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.endDate}</th>
                 <th className="text-right px-4 py-3 font-medium text-slate-500">{t.fields.budgetedCost}</th>
                 <th className="px-4 py-3" />
               </tr>
@@ -118,6 +119,9 @@ export function JobsClient({ initialJobs, planInfo, translations: t }: { initial
                   </td>
                   <td className="px-4 py-3 text-slate-500">
                     {job.startDate ? new Date(job.startDate).toLocaleDateString() : '—'}
+                  </td>
+                  <td className="px-4 py-3 text-slate-500">
+                    {job.endDate ? new Date(job.endDate).toLocaleDateString() : '—'}
                   </td>
                   <td className="px-4 py-3 text-right font-medium text-slate-700">
                     {job.budgetedCost && parseFloat(job.budgetedCost) > 0 ? `$${parseFloat(job.budgetedCost).toLocaleString()}` : '—'}
