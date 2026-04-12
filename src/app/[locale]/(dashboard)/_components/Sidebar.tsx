@@ -32,11 +32,14 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
     <aside className="w-60 h-full plumbr-nav flex flex-col">
       <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between">
         <span className="text-xl font-bold tracking-tight">Plumbr</span>
-        {onClose && (
-          <button onClick={onClose} className="md:hidden text-white/60 hover:text-white">
-            <X size={18} />
-          </button>
-        )}
+        <div className="flex items-center gap-1">
+          <NotificationBell />
+          {onClose && (
+            <button onClick={onClose} className="md:hidden p-1.5 text-white/60 hover:text-white">
+              <X size={18} />
+            </button>
+          )}
+        </div>
       </div>
       <nav className="flex-1 px-3 py-4 space-y-1">
         {nav.map(({ href, label, icon: Icon, locked }) => {
@@ -66,18 +69,15 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
           <UserButton />
           <span className="text-sm text-white/60">{t('account')}</span>
         </div>
-        <div className="flex items-center gap-2">
-          <NotificationBell />
-          <Link
-            href={switchHref}
-            className="flex items-center gap-1 text-xs font-medium text-white/50 hover:text-white/90 transition-colors border border-white/20 hover:border-white/40 rounded px-2 py-0.5"
-            title={`Switch to ${otherLocale === 'en' ? 'English' : 'Español'}`}
-          >
-            <span className="uppercase tracking-wide">{locale}</span>
-            <span className="text-white/30">→</span>
-            <span className="uppercase tracking-wide text-white/30 hover:text-white/70">{otherLocale}</span>
-          </Link>
-        </div>
+        <Link
+          href={switchHref}
+          className="flex items-center gap-1 text-xs font-medium text-white/50 hover:text-white/90 transition-colors border border-white/20 hover:border-white/40 rounded px-2 py-0.5"
+          title={`Switch to ${otherLocale === 'en' ? 'English' : 'Español'}`}
+        >
+          <span className="uppercase tracking-wide">{locale}</span>
+          <span className="text-white/30">→</span>
+          <span className="uppercase tracking-wide text-white/30 hover:text-white/70">{otherLocale}</span>
+        </Link>
       </div>
     </aside>
   )

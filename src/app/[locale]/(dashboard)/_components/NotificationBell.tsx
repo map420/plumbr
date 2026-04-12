@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, useTransition } from 'react'
-import { Bell, X, CheckCheck, FileText, Briefcase, Receipt, AlertCircle } from 'lucide-react'
+import { Bell, X, CheckCheck, FileText, Briefcase, Receipt, AlertCircle, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { getNotifications, getUnreadCount, markNotificationRead, markAllNotificationsRead } from '@/lib/actions/notifications'
 import type { Notification } from '@/lib/adapters/db/types'
@@ -24,9 +24,13 @@ function timeAgo(date: Date) {
 export function NotificationBell() {
   const [unread, setUnread] = useState(0)
   const [open, setOpen] = useState(false)
+  const [visible, setVisible] = useState(false)
+  const [fetching, setFetching] = useState(false)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loaded, setLoaded] = useState(false)
+  const [panelPos, setPanelPos] = useState({ top: 0, left: 0 })
   const [, startTransition] = useTransition()
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
 
   // Poll unread count every 60s
@@ -43,20 +47,49 @@ export function NotificationBell() {
 
   // Close on outside click
   useEffect(() => {
+    if (!open) return
     function handleClick(e: MouseEvent) {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) setOpen(false)
+      if (
+        panelRef.current && !panelRef.current.contains(e.target as Node) &&
+        buttonRef.current && !buttonRef.current.contains(e.target as Node)
+      ) closePanel()
     }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
-  }, [])
+  }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Animate in after mount
+  useEffect(() => {
+    if (open) {
+      const t = setTimeout(() => setVisible(true), 10)
+      return () => clearTimeout(t)
+    } else {
+      setVisible(false)
+    }
+  }, [open])
+
+  function closePanel() {
+    setVisible(false)
+    setTimeout(() => setOpen(false), 150)
+  }
 
   async function toggleOpen() {
-    if (!open) {
-      const list = await getNotifications()
-      setNotifications(list)
-      setLoaded(true)
+    if (open) { closePanel(); return }
+
+    // Calculate fixed position from button rect
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect()
+      const panelWidth = 320
+      const left = Math.min(rect.left, window.innerWidth - panelWidth - 8)
+      setPanelPos({ top: rect.bottom + 8, left })
     }
-    setOpen(o => !o)
+
+    setFetching(true)
+    const list = await getNotifications()
+    setNotifications(list)
+    setLoaded(true)
+    setFetching(false)
+    setOpen(true)
   }
 
   function handleMarkRead(id: string) {
@@ -75,15 +108,23 @@ export function NotificationBell() {
     })
   }
 
+  const ariaLabel = unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'
+
   return (
-    <div ref={panelRef} className="relative">
+    <>
       <button
+        ref={buttonRef}
         onClick={toggleOpen}
-        className="relative p-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
-        title="Notifications"
+        aria-expanded={open}
+        aria-haspopup="true"
+        aria-label={ariaLabel}
+        className={`relative p-1.5 rounded-lg transition-colors ${open || fetching ? 'text-white bg-white/15' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
       >
-        <Bell size={18} />
-        {unread > 0 && (
+        {fetching
+          ? <Loader2 size={18} className="animate-spin" />
+          : <Bell size={18} />
+        }
+        {unread > 0 && !fetching && (
           <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-[#F97316] text-white text-[10px] font-bold flex items-center justify-center leading-none">
             {unread > 9 ? '9+' : unread}
           </span>
@@ -91,7 +132,11 @@ export function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute bottom-full left-0 mb-2 w-80 bg-white rounded-xl shadow-2xl border border-slate-200 z-50 overflow-hidden">
+        <div
+          ref={panelRef}
+          style={{ top: panelPos.top, left: panelPos.left }}
+          className={`fixed z-[9999] w-80 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden transition-all duration-150 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1'}`}
+        >
           <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
             <h3 className="text-sm font-semibold text-slate-800">Notifications</h3>
             <div className="flex items-center gap-2">
@@ -100,16 +145,14 @@ export function NotificationBell() {
                   <CheckCheck size={15} />
                 </button>
               )}
-              <button onClick={() => setOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={closePanel} className="text-slate-400 hover:text-slate-600">
                 <X size={15} />
               </button>
             </div>
           </div>
 
           <div className="max-h-96 overflow-y-auto">
-            {!loaded ? (
-              <div className="px-4 py-6 text-center text-sm text-slate-400">Loading…</div>
-            ) : notifications.length === 0 ? (
+            {notifications.length === 0 ? (
               <div className="px-4 py-8 text-center">
                 <Bell size={24} className="mx-auto text-slate-200 mb-2" />
                 <p className="text-sm text-slate-400">No notifications yet</p>
@@ -122,7 +165,7 @@ export function NotificationBell() {
                     <div className={`mt-0.5 p-1.5 rounded-lg flex-shrink-0 ${n.read ? 'bg-slate-100 text-slate-400' : 'bg-[#1E3A5F]/10 text-[#1E3A5F]'}`}>
                       <Icon size={13} />
                     </div>
-                    <Link href={n.href} onClick={() => { handleMarkRead(n.id); setOpen(false) }} className="flex-1 min-w-0">
+                    <Link href={n.href} onClick={() => { handleMarkRead(n.id); closePanel() }} className="flex-1 min-w-0">
                       <p className={`text-sm leading-snug ${n.read ? 'text-slate-600' : 'text-slate-800 font-medium'}`}>{n.title}</p>
                       <p className="text-xs text-slate-400 mt-0.5 truncate">{n.body}</p>
                       <p className="text-[10px] text-slate-300 mt-1">{timeAgo(n.createdAt)}</p>
@@ -137,6 +180,6 @@ export function NotificationBell() {
           </div>
         </div>
       )}
-    </div>
+    </>
   )
 }
