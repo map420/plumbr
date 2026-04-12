@@ -10,7 +10,7 @@ function getResend() {
 export const resendAdapter: EmailAdapter = {
   async send({ to, subject, html, from }) {
     const { data, error } = await getResend().emails.send({
-      from: from ?? `Plumbr <noreply@${process.env.NEXT_PUBLIC_APP_DOMAIN ?? 'plumbr.vercel.app'}>`,
+      from: from ?? 'Plumbr <noreply@mrlabs.io>',
       to,
       subject,
       html,
