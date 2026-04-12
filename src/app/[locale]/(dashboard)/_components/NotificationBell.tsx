@@ -85,13 +85,18 @@ export function NotificationBell() {
   async function toggleOpen() {
     if (open) { closePanel(); return }
 
-    // Anchor panel to the right of the sidebar, aligned with button vertically
+    // Anchor panel: desktop → right of sidebar; mobile → below header
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect()
-      // Find sidebar right edge (button's parent aside)
       const sidebar = buttonRef.current.closest('aside')
-      const sidebarRight = sidebar ? sidebar.getBoundingClientRect().right : rect.right
-      setPanelPos({ top: rect.top, left: sidebarRight + 8 })
+      if (sidebar) {
+        // Desktop: right of sidebar
+        const sidebarRight = sidebar.getBoundingClientRect().right
+        setPanelPos({ top: rect.top, left: sidebarRight + 8 })
+      } else {
+        // Mobile header: top-right aligned
+        setPanelPos({ top: rect.bottom + 8, left: Math.max(8, rect.right - 360) })
+      }
     }
 
     setFetching(true)
@@ -150,7 +155,7 @@ export function NotificationBell() {
         <div
           ref={panelRef}
           style={{ top: panelPos.top, left: panelPos.left }}
-          className={`fixed z-[9999] w-[360px] bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden transition-all duration-150 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1'}`}
+          className={`fixed z-[9999] w-[calc(100vw-16px)] sm:w-[360px] bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden transition-all duration-150 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1'}`}
         >
           <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
             <h3 className="text-sm font-semibold text-slate-800">Notifications</h3>

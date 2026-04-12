@@ -65,10 +65,10 @@ export function InvoicesClient({ initialInvoices, translations: t }: { initialIn
         />
       </div>
 
-      <div className="flex items-center gap-2 mb-4 flex-wrap">
+      <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1 scrollbar-none">
         {FILTER_OPTIONS.map(f => (
           <button key={f} onClick={() => setFilter(f)}
-            className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${filter === f ? 'bg-[#1E3A5F] text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+            className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors shrink-0 ${filter === f ? 'bg-[#1E3A5F] text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
             {f === 'all' ? 'All' : t.status[f]}
           </button>
         ))}
@@ -77,46 +77,83 @@ export function InvoicesClient({ initialInvoices, translations: t }: { initialIn
       {filteredInvoices.length === 0 ? (
         <div className="plumbr-card p-12 text-center"><Receipt size={40} className="mx-auto text-slate-300 mb-3" /><p className="text-slate-500">{filter === 'all' ? t.empty : `No ${filter} invoices.`}</p></div>
       ) : (
-        <div className={`plumbr-card overflow-hidden ${isPending ? 'opacity-50' : ''}`}>
-          <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[560px]">
-            <thead className="bg-slate-50 border-b border-slate-200">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.number}</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.clientName}</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500">Status</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.dueDate}</th>
-                <th className="text-right px-4 py-3 font-medium text-slate-500">{t.fields.total}</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filteredInvoices.map((inv) => {
-                const status = effectiveStatus(inv)
-                return (
-                  <tr key={inv.id} onClick={() => router.push(`/${locale}/invoices/${inv.id}`)} className="hover:bg-slate-50 transition-colors cursor-pointer">
-                    <td className="px-4 py-3 font-medium text-slate-800">{inv.number}</td>
-                    <td className="px-4 py-3 text-slate-600">{inv.clientName}</td>
-                    <td className="px-4 py-3"><InvoiceStatusBadge status={status} label={t.status[status]} /></td>
-                    <td className="px-4 py-3 text-slate-500">{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '—'}</td>
-                    <td className="px-4 py-3 text-right font-semibold">${parseFloat(inv.total).toLocaleString()}</td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button onClick={e => handleShare(e, inv.id)} className="text-slate-400 hover:text-[#1E3A5F] transition-colors" title="Copy client link">
-                          {copiedId === inv.id ? <Check size={14} className="text-emerald-500" /> : <Share2 size={14} />}
+        <>
+          {/* Mobile cards */}
+          <div className={`md:hidden space-y-2 ${isPending ? 'opacity-50' : ''}`}>
+            {filteredInvoices.map((inv) => {
+              const status = effectiveStatus(inv)
+              return (
+                <div key={inv.id} onClick={() => router.push(`/${locale}/invoices/${inv.id}`)} className="plumbr-card p-4 cursor-pointer active:bg-slate-50">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-slate-800">{inv.number}</p>
+                      <p className="text-sm text-slate-500 mt-0.5 truncate">{inv.clientName}</p>
+                    </div>
+                    <InvoiceStatusBadge status={status} label={t.status[status]} />
+                  </div>
+                  <div className="flex items-center justify-between mt-3">
+                    <div className="text-xs text-slate-400">
+                      {inv.dueDate ? `Due ${new Date(inv.dueDate).toLocaleDateString()}` : '—'}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="font-semibold text-slate-800">${parseFloat(inv.total).toLocaleString()}</span>
+                      <button onClick={e => handleShare(e, inv.id)} className="text-slate-400 hover:text-[#1E3A5F] p-1" title="Copy client link">
+                        {copiedId === inv.id ? <Check size={14} className="text-emerald-500" /> : <Share2 size={14} />}
+                      </button>
+                      {(status === 'sent' || status === 'overdue') && (
+                        <button onClick={e => { e.stopPropagation(); handleMarkPaid(inv.id) }} className="text-xs px-2 py-1 rounded bg-green-100 text-green-700 font-medium">
+                          {t.markAsPaid}
                         </button>
-                        {(status === 'sent' || status === 'overdue') && (
-                          <button onClick={e => { e.stopPropagation(); handleMarkPaid(inv.id) }} className="text-xs px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200 font-medium">{t.markAsPaid}</button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
           </div>
-        </div>
+
+          {/* Desktop table */}
+          <div className={`hidden md:block plumbr-card overflow-hidden ${isPending ? 'opacity-50' : ''}`}>
+            <div className="overflow-x-auto">
+            <table className="w-full text-sm min-w-[560px]">
+              <thead className="bg-slate-50 border-b border-slate-200">
+                <tr>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.number}</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.clientName}</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500">Status</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.dueDate}</th>
+                  <th className="text-right px-4 py-3 font-medium text-slate-500">{t.fields.total}</th>
+                  <th className="px-4 py-3" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredInvoices.map((inv) => {
+                  const status = effectiveStatus(inv)
+                  return (
+                    <tr key={inv.id} onClick={() => router.push(`/${locale}/invoices/${inv.id}`)} className="hover:bg-slate-50 transition-colors cursor-pointer">
+                      <td className="px-4 py-3 font-medium text-slate-800">{inv.number}</td>
+                      <td className="px-4 py-3 text-slate-600">{inv.clientName}</td>
+                      <td className="px-4 py-3"><InvoiceStatusBadge status={status} label={t.status[status]} /></td>
+                      <td className="px-4 py-3 text-slate-500">{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '—'}</td>
+                      <td className="px-4 py-3 text-right font-semibold">${parseFloat(inv.total).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button onClick={e => handleShare(e, inv.id)} className="text-slate-400 hover:text-[#1E3A5F] transition-colors" title="Copy client link">
+                            {copiedId === inv.id ? <Check size={14} className="text-emerald-500" /> : <Share2 size={14} />}
+                          </button>
+                          {(status === 'sent' || status === 'overdue') && (
+                            <button onClick={e => { e.stopPropagation(); handleMarkPaid(inv.id) }} className="text-xs px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200 font-medium">{t.markAsPaid}</button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+            </div>
+          </div>
+        </>
       )}
     </div>
   )

@@ -194,9 +194,9 @@ export function DashboardStats({ stats, chartData, negativeMarginJobs, userName,
       {/* Quick actions */}
       <div className="plumbr-card p-6">
         <h2 className="text-base font-semibold text-slate-900 mb-4">{t.quickActions.title}</h2>
-        <div className="flex gap-3">
-          <Link href={`/${locale}/estimates/new`} className="btn-primary text-sm">{t.quickActions.newEstimate}</Link>
-          <Link href={`/${locale}/jobs/new`} className="btn-secondary text-sm">{t.quickActions.newJob}</Link>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Link href={`/${locale}/estimates/new`} className="btn-primary text-sm text-center">{t.quickActions.newEstimate}</Link>
+          <Link href={`/${locale}/jobs/new`} className="btn-secondary text-sm text-center">{t.quickActions.newJob}</Link>
         </div>
       </div>
     </div>

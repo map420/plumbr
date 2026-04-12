@@ -70,14 +70,14 @@ export function EstimatesClient({ initialEstimates, planInfo, translations: t }:
           onChange={e => setSearch(e.target.value)}
           className="plumbr-input max-w-xs"
         />
-        <div className="flex items-center gap-2 flex-wrap">
-          <button onClick={() => setFilter('all')} className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${filter === 'all' ? 'bg-[#1E3A5F] text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>All</button>
-          {ALL_STATUSES.map(s => (
-            <button key={s} onClick={() => setFilter(s)} className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${filter === s ? 'bg-[#1E3A5F] text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-              {t.status[s]}
-            </button>
-          ))}
-        </div>
+      </div>
+      <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1 scrollbar-none">
+        <button onClick={() => setFilter('all')} className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors shrink-0 ${filter === 'all' ? 'bg-[#1E3A5F] text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>All</button>
+        {ALL_STATUSES.map(s => (
+          <button key={s} onClick={() => setFilter(s)} className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors shrink-0 ${filter === s ? 'bg-[#1E3A5F] text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+            {t.status[s]}
+          </button>
+        ))}
       </div>
 
       {initialEstimates.length === 0 ? (
@@ -89,41 +89,71 @@ export function EstimatesClient({ initialEstimates, planInfo, translations: t }:
       ) : visible.length === 0 ? (
         <div className="plumbr-card p-8 text-center text-slate-400 text-sm">No estimates match your search.</div>
       ) : (
-        <div className={`plumbr-card overflow-hidden ${isPending ? 'opacity-50' : ''}`}>
-          <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[560px]">
-            <thead className="bg-slate-50 border-b border-slate-200">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.number}</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.clientName}</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500">Status</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500">Date</th>
-                <th className="text-right px-4 py-3 font-medium text-slate-500">{t.fields.total}</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {visible.map((est) => (
-                <tr key={est.id} onClick={() => router.push(`/${locale}/estimates/${est.id}`)} className="hover:bg-slate-50 transition-colors cursor-pointer">
-                  <td className="px-4 py-3 font-medium text-slate-800">{est.number}</td>
-                  <td className="px-4 py-3 text-slate-600">{est.clientName}</td>
-                  <td className="px-4 py-3"><EstimateStatusBadge status={est.status as EstimateStatus} label={t.status[est.status as EstimateStatus]} /></td>
-                  <td className="px-4 py-3 text-slate-500">{new Date(est.createdAt).toLocaleDateString()}</td>
-                  <td className="px-4 py-3 text-right font-semibold">${parseFloat(est.total).toLocaleString()}</td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button onClick={e => handleShare(e, est.id)} className="text-slate-400 hover:text-[#1E3A5F] transition-colors" title="Copy client link">
-                        {copiedId === est.id ? <Check size={14} className="text-emerald-500" /> : <Share2 size={14} />}
-                      </button>
-                      <button onClick={e => { e.stopPropagation(); setDeleteId(est.id) }} className="text-slate-400 hover:text-red-500 transition-colors"><Trash2 size={15} /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <>
+          {/* Mobile cards */}
+          <div className={`md:hidden space-y-2 ${isPending ? 'opacity-50' : ''}`}>
+            {visible.map((est) => (
+              <div key={est.id} onClick={() => router.push(`/${locale}/estimates/${est.id}`)} className="plumbr-card p-4 cursor-pointer active:bg-slate-50">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-slate-800">{est.number}</p>
+                    <p className="text-sm text-slate-500 mt-0.5 truncate">{est.clientName}</p>
+                  </div>
+                  <EstimateStatusBadge status={est.status as EstimateStatus} label={t.status[est.status as EstimateStatus]} />
+                </div>
+                <div className="flex items-center justify-between mt-3">
+                  <span className="text-xs text-slate-400">{new Date(est.createdAt).toLocaleDateString()}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="font-semibold text-slate-800">${parseFloat(est.total).toLocaleString()}</span>
+                    <button onClick={e => handleShare(e, est.id)} className="text-slate-400 hover:text-[#1E3A5F] p-1" title="Copy client link">
+                      {copiedId === est.id ? <Check size={14} className="text-emerald-500" /> : <Share2 size={14} />}
+                    </button>
+                    <button onClick={e => { e.stopPropagation(); setDeleteId(est.id) }} className="text-slate-300 hover:text-red-500 p-1">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
+
+          {/* Desktop table */}
+          <div className={`hidden md:block plumbr-card overflow-hidden ${isPending ? 'opacity-50' : ''}`}>
+            <div className="overflow-x-auto">
+            <table className="w-full text-sm min-w-[560px]">
+              <thead className="bg-slate-50 border-b border-slate-200">
+                <tr>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.number}</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.clientName}</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500">Status</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500">Date</th>
+                  <th className="text-right px-4 py-3 font-medium text-slate-500">{t.fields.total}</th>
+                  <th className="px-4 py-3" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {visible.map((est) => (
+                  <tr key={est.id} onClick={() => router.push(`/${locale}/estimates/${est.id}`)} className="hover:bg-slate-50 transition-colors cursor-pointer">
+                    <td className="px-4 py-3 font-medium text-slate-800">{est.number}</td>
+                    <td className="px-4 py-3 text-slate-600">{est.clientName}</td>
+                    <td className="px-4 py-3"><EstimateStatusBadge status={est.status as EstimateStatus} label={t.status[est.status as EstimateStatus]} /></td>
+                    <td className="px-4 py-3 text-slate-500">{new Date(est.createdAt).toLocaleDateString()}</td>
+                    <td className="px-4 py-3 text-right font-semibold">${parseFloat(est.total).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button onClick={e => handleShare(e, est.id)} className="text-slate-400 hover:text-[#1E3A5F] transition-colors" title="Copy client link">
+                          {copiedId === est.id ? <Check size={14} className="text-emerald-500" /> : <Share2 size={14} />}
+                        </button>
+                        <button onClick={e => { e.stopPropagation(); setDeleteId(est.id) }} className="text-slate-400 hover:text-red-500 transition-colors"><Trash2 size={15} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            </div>
+          </div>
+        </>
       )}
     </div>
   )

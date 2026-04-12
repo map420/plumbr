@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
 import Sidebar from './Sidebar'
 import BottomNav from './BottomNav'
+import { NotificationBell } from './NotificationBell'
 
 export default function DashboardShell({ children, pro }: { children: React.ReactNode; pro: boolean }) {
   const [open, setOpen] = useState(false)
@@ -32,7 +33,10 @@ export default function DashboardShell({ children, pro }: { children: React.Reac
           <button onClick={() => setOpen(true)} className="text-slate-600 hover:text-slate-900">
             <Menu size={22} />
           </button>
-          <span className="font-bold text-[#1E3A5F] text-lg">Plumbr</span>
+          <span className="font-bold text-[#1E3A5F] text-lg flex-1">Plumbr</span>
+          <div className="[&_button]:text-slate-600 [&_button]:hover:text-slate-900 [&_button]:bg-transparent [&_button]:hover:bg-slate-100">
+            <NotificationBell />
+          </div>
         </header>
 
         <main className="flex-1 overflow-auto bg-slate-50 pb-16 md:pb-0">

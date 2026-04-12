@@ -25,10 +25,12 @@ export default function BottomNav() {
           <Link
             key={href}
             href={href}
-            className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors ${isActive ? 'text-[#1E3A5F]' : 'text-slate-400 hover:text-slate-600'}`}
+            className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors"
           >
-            <Icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
-            {label}
+            <span className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-colors ${isActive ? 'bg-[#1E3A5F]/10 text-[#1E3A5F]' : 'text-slate-400'}`}>
+              <Icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
+              {label}
+            </span>
           </Link>
         )
       })}

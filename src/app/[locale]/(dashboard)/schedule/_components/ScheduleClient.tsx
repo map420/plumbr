@@ -76,11 +76,19 @@ export function ScheduleClient({ initialJobs, translations: t }: { initialJobs: 
     ? `${weekDays[0].toLocaleString('en', { month: 'short', day: 'numeric' })} – ${weekDays[6].toLocaleString('en', { month: 'short', day: 'numeric', year: 'numeric' })}`
     : `${MONTH_NAMES[monthDate.getMonth()]} ${monthDate.getFullYear()}`
 
+  // Mobile: flat list of days with jobs, only show days that have jobs or are today/upcoming (next 7)
+  const mobileDays = Array.from({ length: 14 }, (_, i) => {
+    const d = new Date()
+    d.setDate(d.getDate() + i - 1)
+    d.setHours(0, 0, 0, 0)
+    return d
+  })
+
   return (
     <div className="p-4 md:p-8">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <h1 className="text-2xl font-bold text-slate-900">{t.title}</h1>
-        <div className="flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-2">
           {/* View toggle */}
           <div className="flex border border-slate-200 rounded-lg overflow-hidden mr-1">
             <button onClick={() => setView('week')} title="Week view" className={`p-2 ${view === 'week' ? 'bg-[#1E3A5F] text-white' : 'hover:bg-slate-50 text-slate-500'}`}>
@@ -108,9 +116,44 @@ export function ScheduleClient({ initialJobs, translations: t }: { initialJobs: 
         </div>
       </div>
 
-      {/* Week view */}
+      {/* Mobile list view */}
+      <div className="md:hidden space-y-3">
+        {mobileDays.map((day, i) => {
+          const dayJobs = jobsForDay(initialJobs, day)
+          const isToday = sameDay(day, new Date())
+          if (dayJobs.length === 0 && !isToday) return null
+          return (
+            <div key={i}>
+              <div className={`flex items-center gap-2 mb-1.5 ${isToday ? 'text-[#F97316]' : 'text-slate-500'}`}>
+                <span className="text-xs font-bold uppercase tracking-wide">
+                  {isToday ? 'Today' : day.toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric' })}
+                </span>
+              </div>
+              {dayJobs.length === 0 ? (
+                <p className="text-xs text-slate-300 pl-1">{t.noJobs}</p>
+              ) : (
+                <div className="space-y-2">
+                  {dayJobs.map(job => (
+                    <Link key={job.id} href={`/${locale}/jobs/${job.id}`} className="plumbr-card p-3 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-slate-800 truncate">{job.name}</p>
+                        <p className="text-xs text-slate-400 mt-0.5 truncate">{job.clientName}</p>
+                      </div>
+                      <div className="shrink-0 ml-3">
+                        <JobStatusBadge status={job.status as JobStatus} label={t.status[job.status as JobStatus]} />
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Week view — desktop only */}
       {view === 'week' && (
-        <div className="grid grid-cols-7 gap-3">
+        <div className="hidden md:grid grid-cols-7 gap-3">
           {weekDays.map((day, i) => {
             const dayJobs = jobsForDay(initialJobs, day)
             const isToday = sameDay(day, new Date())
@@ -143,9 +186,9 @@ export function ScheduleClient({ initialJobs, translations: t }: { initialJobs: 
         </div>
       )}
 
-      {/* Month view */}
+      {/* Month view — desktop only */}
       {view === 'month' && (
-        <div>
+        <div className="hidden md:block">
           <div className="grid grid-cols-7 mb-1">
             {DAY_NAMES.map(d => (
               <div key={d} className="text-center text-xs font-semibold text-slate-400 py-2">{d}</div>

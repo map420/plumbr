@@ -68,15 +68,15 @@ export function JobsClient({ initialJobs, jobAssignments, planInfo, translations
           className="plumbr-input max-w-xs"
         />
       </div>
-      <div className="flex gap-2 mb-4 flex-wrap">
-        <button onClick={() => setFilter('all')} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filter === 'all' ? 'bg-[#1E3A5F] text-white' : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'}`}>
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-1 scrollbar-none">
+        <button onClick={() => setFilter('all')} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors shrink-0 ${filter === 'all' ? 'bg-[#1E3A5F] text-white' : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'}`}>
           All <span className={`ml-1 text-xs px-1.5 py-0.5 rounded-full ${filter === 'all' ? 'bg-white/20' : 'bg-slate-100'}`}>{initialJobs.length}</span>
         </button>
         {ALL_STATUSES.map((s) => {
           const count = initialJobs.filter(j => j.status === s).length
           if (count === 0) return null
           return (
-            <button key={s} onClick={() => setFilter(s)} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filter === s ? 'bg-[#1E3A5F] text-white' : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'}`}>
+            <button key={s} onClick={() => setFilter(s)} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors shrink-0 ${filter === s ? 'bg-[#1E3A5F] text-white' : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'}`}>
               {t.status[s]} <span className={`ml-1 text-xs px-1.5 py-0.5 rounded-full ${filter === s ? 'bg-white/20' : 'bg-slate-100'}`}>{count}</span>
             </button>
           )
@@ -94,52 +94,84 @@ export function JobsClient({ initialJobs, jobAssignments, planInfo, translations
       ) : filtered.length === 0 ? (
         <div className="plumbr-card p-8 text-center text-slate-400 text-sm">No jobs match your search.</div>
       ) : (
-        <div className="plumbr-card overflow-hidden">
-          <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[560px]">
-            <thead className="bg-slate-50 border-b border-slate-200">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.name}</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.clientName}</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500">Status</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.startDate}</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.endDate}</th>
-                <th className="text-right px-4 py-3 font-medium text-slate-500">{t.fields.budgetedCost}</th>
-                <th className="px-4 py-3 font-medium text-slate-500">Team</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody className={`divide-y divide-slate-100 ${isPending ? 'opacity-50' : ''}`}>
-              {filtered.map((job) => (
-                <tr key={job.id} onClick={() => router.push(`/${locale}/jobs/${job.id}`)} className="hover:bg-slate-50 transition-colors cursor-pointer">
-                  <td className="px-4 py-3 font-medium text-slate-800">{job.name}</td>
-                  <td className="px-4 py-3 text-slate-600">{job.clientName}</td>
-                  <td className="px-4 py-3">
+        <>
+          {/* Mobile cards */}
+          <div className={`md:hidden space-y-2 ${isPending ? 'opacity-50' : ''}`}>
+            {filtered.map((job) => (
+              <div key={job.id} onClick={() => router.push(`/${locale}/jobs/${job.id}`)} className="plumbr-card p-4 cursor-pointer active:bg-slate-50">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-slate-800 truncate">{job.name}</p>
+                    <p className="text-sm text-slate-500 mt-0.5">{job.clientName}</p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
                     <JobStatusBadge status={job.status as JobStatus} label={t.status[job.status as JobStatus]} />
-                  </td>
-                  <td className="px-4 py-3 text-slate-500">
-                    {job.startDate ? new Date(job.startDate).toLocaleDateString() : '—'}
-                  </td>
-                  <td className="px-4 py-3 text-slate-500">
-                    {job.endDate ? new Date(job.endDate).toLocaleDateString() : '—'}
-                  </td>
-                  <td className="px-4 py-3 text-right font-medium text-slate-700">
-                    {job.budgetedCost && parseFloat(job.budgetedCost) > 0 ? `$${parseFloat(job.budgetedCost).toLocaleString()}` : '—'}
-                  </td>
-                  <td className="px-4 py-3">
-                    <TechAvatars techs={jobAssignments.filter(a => a.jobId === job.id)} />
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <button onClick={e => { e.stopPropagation(); setDeleteId(job.id) }} className="text-slate-400 hover:text-red-500 transition-colors">
-                      <Trash2 size={15} />
+                    <button onClick={e => { e.stopPropagation(); setDeleteId(job.id) }} className="text-slate-300 hover:text-red-500 p-1">
+                      <Trash2 size={14} />
                     </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between mt-3">
+                  <div className="flex items-center gap-3 text-xs text-slate-400">
+                    {job.startDate && <span>{new Date(job.startDate).toLocaleDateString()}</span>}
+                    {job.budgetedCost && parseFloat(job.budgetedCost) > 0 && (
+                      <span className="font-medium text-slate-600">${parseFloat(job.budgetedCost).toLocaleString()}</span>
+                    )}
+                  </div>
+                  <TechAvatars techs={jobAssignments.filter(a => a.jobId === job.id)} />
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
+
+          {/* Desktop table */}
+          <div className={`hidden md:block plumbr-card overflow-hidden ${isPending ? 'opacity-50' : ''}`}>
+            <div className="overflow-x-auto">
+            <table className="w-full text-sm min-w-[560px]">
+              <thead className="bg-slate-50 border-b border-slate-200">
+                <tr>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.name}</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.clientName}</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500">Status</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.startDate}</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.endDate}</th>
+                  <th className="text-right px-4 py-3 font-medium text-slate-500">{t.fields.budgetedCost}</th>
+                  <th className="px-4 py-3 font-medium text-slate-500">Team</th>
+                  <th className="px-4 py-3" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filtered.map((job) => (
+                  <tr key={job.id} onClick={() => router.push(`/${locale}/jobs/${job.id}`)} className="hover:bg-slate-50 transition-colors cursor-pointer">
+                    <td className="px-4 py-3 font-medium text-slate-800">{job.name}</td>
+                    <td className="px-4 py-3 text-slate-600">{job.clientName}</td>
+                    <td className="px-4 py-3">
+                      <JobStatusBadge status={job.status as JobStatus} label={t.status[job.status as JobStatus]} />
+                    </td>
+                    <td className="px-4 py-3 text-slate-500">
+                      {job.startDate ? new Date(job.startDate).toLocaleDateString() : '—'}
+                    </td>
+                    <td className="px-4 py-3 text-slate-500">
+                      {job.endDate ? new Date(job.endDate).toLocaleDateString() : '—'}
+                    </td>
+                    <td className="px-4 py-3 text-right font-medium text-slate-700">
+                      {job.budgetedCost && parseFloat(job.budgetedCost) > 0 ? `$${parseFloat(job.budgetedCost).toLocaleString()}` : '—'}
+                    </td>
+                    <td className="px-4 py-3">
+                      <TechAvatars techs={jobAssignments.filter(a => a.jobId === job.id)} />
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <button onClick={e => { e.stopPropagation(); setDeleteId(job.id) }} className="text-slate-400 hover:text-red-500 transition-colors">
+                        <Trash2 size={15} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            </div>
+          </div>
+        </>
       )}
     </div>
   )

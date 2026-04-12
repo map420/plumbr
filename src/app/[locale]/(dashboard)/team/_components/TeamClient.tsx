@@ -163,10 +163,14 @@ export function TeamClient({ initialTechnicians, isPro, locale }: { initialTechn
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-400 transition-colors" />
-                    <button onClick={e => { e.stopPropagation(); setDeleteId(t.id) }} className="p-1.5 text-slate-300 hover:text-red-500 transition-colors" title="Remove">
-                      <Trash2 size={14} />
+                  <div className="flex items-center shrink-0">
+                    <ChevronRight size={16} className="text-slate-300 group-hover:text-slate-400 transition-colors mr-2" />
+                    <button
+                      onClick={e => { e.stopPropagation(); setDeleteId(t.id) }}
+                      className="w-10 h-10 flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Remove"
+                    >
+                      <Trash2 size={15} />
                     </button>
                   </div>
                 </div>
