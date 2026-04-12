@@ -92,13 +92,20 @@ export async function updateEstimate(id: string, data: Partial<{
     ...data.convertedToInvoiceId !== undefined && { convertedToInvoiceId: data.convertedToInvoiceId || null },
   })
 
-  // Automation #1 — Estimate marked Sent → email to client
+  // Automation #1 — Estimate marked Sent → email to client with portal link
   if (data.status === 'sent' && previous?.status !== 'sent' && estimate.clientEmail) {
     const contractorUser = await dbAdapter.users.findById(userId)
     const contractorName = contractorUser?.name ?? contractorUser?.companyName ?? 'Your Contractor'
+    // Generate share token so client can approve/reject online
+    const token = estimate.shareToken ?? crypto.randomUUID()
+    if (!estimate.shareToken) {
+      await dbAdapter.estimates.update(estimate.id, userId, { shareToken: token }).catch(() => null)
+    }
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://plumbr.mrlabs.io'
+    const portalUrl = `${appUrl}/en/portal/${token}`
     await emailAdapter.send({
       to: estimate.clientEmail,
-      subject: `Estimate ${estimate.number} from ${contractorName}`,
+      subject: `Estimate ${estimate.number} from ${contractorName} — $${parseFloat(estimate.total).toLocaleString()}`,
       html: estimateSentEmail({
         clientName: estimate.clientName,
         estimateNumber: estimate.number,
@@ -106,6 +113,7 @@ export async function updateEstimate(id: string, data: Partial<{
         validUntil: estimate.validUntil ? estimate.validUntil.toISOString() : null,
         notes: estimate.notes,
         contractorName,
+        portalUrl,
       }),
     }).catch(err => console.error('[AUTO #1] email failed:', err))
   }

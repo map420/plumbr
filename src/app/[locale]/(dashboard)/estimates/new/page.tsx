@@ -1,14 +1,19 @@
 import { getTranslations } from 'next-intl/server'
+import { getClients } from '@/lib/actions/clients'
 import { EstimateFormClient } from '../_components/EstimateFormClient'
 
 export default async function NewEstimatePage() {
-  const te = await getTranslations('estimates')
-  const tc = await getTranslations('common')
-  const tj = await getTranslations('jobs')
+  const [te, tc, tj, clients] = await Promise.all([
+    getTranslations('estimates'),
+    getTranslations('common'),
+    getTranslations('jobs'),
+    getClients(),
+  ])
   return (
     <div className="p-4 md:p-8 max-w-3xl">
       <h1 className="text-2xl font-bold text-slate-900 mb-6">{te('new')}</h1>
       <EstimateFormClient
+        clients={clients}
         translations={{
           save: tc('save'), cancel: tc('cancel'),
           fields: {

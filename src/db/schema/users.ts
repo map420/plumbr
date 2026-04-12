@@ -12,6 +12,7 @@ export const users = pgTable('users', {
   logoUrl: text('logo_url'),
   taxRate: varchar('tax_rate', { length: 10 }),
   documentFooter: text('document_footer'),
+  paymentTerms: varchar('payment_terms', { length: 20 }).default('net30'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })

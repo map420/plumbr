@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { dbAdapter } from '@/lib/adapters/db'
 import { emailAdapter } from '@/lib/adapters/email'
-import { estimateFollowUpEmail, invoiceReminderEmail } from '@/lib/email-templates'
+import { estimateFollowUpEmail, invoiceReminderEmail, invoiceOverdueEmail } from '@/lib/email-templates'
 
 // Vercel Cron — runs daily at 8am UTC
 // Configure in vercel.json: { "crons": [{ "path": "/api/cron/daily", "schedule": "0 8 * * *" }] }
@@ -13,7 +13,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const results = { overdueMarked: 0, followUpsSent: 0, remindersSent: 0, errors: 0 }
+  const results = { overdueMarked: 0, overdueEmailsSent: 0, estimatesExpired: 0, followUpsSent: 0, remindersSent: 0, errors: 0 }
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://plumbr.mrlabs.io'
   const now = new Date()
 
   try {
@@ -25,7 +26,7 @@ export async function GET(req: NextRequest) {
     const { users } = await import('@/db/schema/users')
     const { eq, and, lte, gte } = await import('drizzle-orm')
 
-    // ── Automation #6: Mark overdue invoices ─────────────────────────────────
+    // ── Automation #6: Mark overdue invoices + email client ─────────────────
     const sentInvoices = await db.select().from(invoices)
       .where(and(eq(invoices.status, 'sent'), lte(invoices.dueDate, now)))
 
@@ -33,6 +34,58 @@ export async function GET(req: NextRequest) {
       try {
         await db.update(invoices).set({ status: 'overdue', updatedAt: now }).where(eq(invoices.id, inv.id))
         results.overdueMarked++
+
+        // Email client when invoice goes overdue
+        if (inv.clientEmail && inv.dueDate) {
+          const contractor = await db.select().from(users).where(eq(users.id, inv.userId)).then(r => r[0])
+          const contractorName = contractor?.name ?? contractor?.companyName ?? 'Your Contractor'
+          const token = inv.shareToken ?? crypto.randomUUID()
+          if (!inv.shareToken) {
+            await db.update(invoices).set({ shareToken: token }).where(eq(invoices.id, inv.id)).catch(() => null)
+          }
+          const portalUrl = `${appUrl}/en/portal/${token}`
+          await emailAdapter.send({
+            to: inv.clientEmail,
+            subject: `Invoice ${inv.number} is overdue — $${parseFloat(inv.total).toLocaleString()}`,
+            html: invoiceOverdueEmail({
+              clientName: inv.clientName,
+              invoiceNumber: inv.number,
+              total: inv.total,
+              dueDate: inv.dueDate.toISOString(),
+              contractorName,
+              portalUrl,
+            }),
+          }).catch(() => null)
+          results.overdueEmailsSent++
+        }
+      } catch {
+        results.errors++
+      }
+    }
+
+    // ── Automation #7: Expire stale estimates past validUntil ────────────────
+    const expiredEstimates = await db.select().from(estimates)
+      .where(and(
+        eq(estimates.status, 'sent'),
+        lte(estimates.validUntil, now),
+      ))
+
+    for (const est of expiredEstimates) {
+      try {
+        await db.update(estimates).set({ status: 'rejected', updatedAt: now }).where(eq(estimates.id, est.id))
+        // Notify contractor
+        const { notifications } = await import('@/db/schema/notifications')
+        await db.insert(notifications).values({
+          id: crypto.randomUUID(),
+          userId: est.userId,
+          type: 'estimate_approved', // reuse closest type
+          title: `Estimate ${est.number} expired`,
+          body: `${est.clientName}'s estimate expired without a response.`,
+          href: `/en/estimates/${est.id}`,
+          read: false,
+          createdAt: now,
+        }).catch(() => null)
+        results.estimatesExpired++
       } catch {
         results.errors++
       }

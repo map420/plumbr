@@ -8,7 +8,7 @@ import { updateProfile } from '@/lib/actions/profile'
 import { Toast } from '@/components/Toast'
 import { CheckCircle2, CreditCard, Zap, User, Building2, FileText } from 'lucide-react'
 
-type Profile = { name: string; companyName: string; phone: string; logoUrl: string; taxRate: string; documentFooter: string }
+type Profile = { name: string; companyName: string; phone: string; logoUrl: string; taxRate: string; documentFooter: string; paymentTerms: string }
 
 export function SettingsClient({ locale, plan, hasSubscription, profile: initialProfile }: {
   locale: string; plan: string; hasSubscription: boolean; profile: Profile
@@ -120,6 +120,20 @@ export function SettingsClient({ locale, plan, hasSubscription, profile: initial
           <h2 className="font-semibold text-slate-900">Document Defaults</h2>
         </div>
         <form onSubmit={handleSaveProfile} className="space-y-3">
+          <div>
+            <label className="block text-xs font-medium text-slate-500 mb-1">Default Payment Terms</label>
+            <select
+              value={profile.paymentTerms}
+              onChange={e => setProfile(p => ({ ...p, paymentTerms: e.target.value }))}
+              className="plumbr-input text-sm max-w-[180px]"
+            >
+              <option value="net15">Net 15 (due in 15 days)</option>
+              <option value="net30">Net 30 (due in 30 days)</option>
+              <option value="net45">Net 45 (due in 45 days)</option>
+              <option value="due_on_receipt">Due on receipt</option>
+            </select>
+            <p className="text-xs text-slate-400 mt-1">Applied automatically when creating new invoices.</p>
+          </div>
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1">Footer / Terms</label>
             <textarea

@@ -25,6 +25,7 @@ export function estimateSentEmail(opts: {
   validUntil: string | null
   notes: string | null
   contractorName: string
+  portalUrl?: string
 }) {
   return layout(`
     <h1 style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">Your Estimate is Ready</h1>
@@ -41,7 +42,12 @@ export function estimateSentEmail(opts: {
 
     ${opts.notes ? `<p style="color: #64748b; font-size: 14px;"><strong>Notes:</strong> ${opts.notes}</p>` : ''}
 
-    <p style="color: #64748b; font-size: 14px;">Please review and contact us if you have any questions.</p>
+    ${opts.portalUrl ? `
+    <div style="margin: 24px 0; text-align: center;">
+      <a href="${opts.portalUrl}" style="${BUTTON_STYLE}">Review &amp; Approve Estimate →</a>
+    </div>
+    <p style="color: #94a3b8; font-size: 12px; text-align: center;">Or copy this link: ${opts.portalUrl}</p>
+    ` : `<p style="color: #64748b; font-size: 14px;">Please review and contact us if you have any questions.</p>`}
   `)
 }
 
@@ -99,7 +105,7 @@ export function invoiceSentEmail(opts: {
   dueDate: string | null
   notes: string | null
   contractorName: string
-  printUrl: string
+  portalUrl: string
 }) {
   return layout(`
     <h1 style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">Invoice from ${opts.contractorName}</h1>
@@ -116,9 +122,41 @@ export function invoiceSentEmail(opts: {
 
     ${opts.notes ? `<p style="color: #64748b; font-size: 14px;"><strong>Notes:</strong> ${opts.notes}</p>` : ''}
 
-    <a href="${opts.printUrl}" style="${BUTTON_STYLE}">View Invoice →</a>
+    <div style="margin: 24px 0; text-align: center;">
+      <a href="${opts.portalUrl}" style="${BUTTON_STYLE}">View Invoice →</a>
+    </div>
 
     <p style="color: #94a3b8; font-size: 13px; margin-top: 24px;">If you have questions, please reply to this email. Thank you for your business!</p>
+  `)
+}
+
+export function invoiceOverdueEmail(opts: {
+  clientName: string
+  invoiceNumber: string
+  total: string
+  dueDate: string
+  contractorName: string
+  portalUrl: string
+}) {
+  return layout(`
+    <h1 style="font-size: 22px; font-weight: 700; margin-bottom: 8px; color: #dc2626;">Invoice Overdue</h1>
+    <p>Hi ${opts.clientName},</p>
+    <p>This is a notice that invoice <strong>${opts.invoiceNumber}</strong> from <strong>${opts.contractorName}</strong> was due on <strong>${new Date(opts.dueDate).toLocaleDateString()}</strong> and remains unpaid.</p>
+
+    <div style="${CARD_STYLE} border-left: 4px solid #dc2626;">
+      <table style="width: 100%; font-size: 14px;">
+        <tr><td style="color: #64748b; padding: 4px 0;">Invoice #</td><td style="text-align: right; font-weight: 600;">${opts.invoiceNumber}</td></tr>
+        <tr><td style="color: #64748b; padding: 4px 0;">Amount Due</td><td style="text-align: right; font-weight: 700; font-size: 18px; color: #dc2626;">$${parseFloat(opts.total).toLocaleString()}</td></tr>
+        <tr><td style="color: #64748b; padding: 4px 0;">Was Due</td><td style="text-align: right;">${new Date(opts.dueDate).toLocaleDateString()}</td></tr>
+      </table>
+    </div>
+
+    <div style="margin: 24px 0; text-align: center;">
+      <a href="${opts.portalUrl}" style="${BUTTON_STYLE}">View Invoice →</a>
+    </div>
+
+    <p style="color: #64748b; font-size: 14px;">Please arrange payment at your earliest convenience. If you have any questions, please reply to this email.</p>
+    <p style="color: #64748b; font-size: 14px;">— ${opts.contractorName}</p>
   `)
 }
 

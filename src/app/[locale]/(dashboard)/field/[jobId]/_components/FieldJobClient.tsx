@@ -4,9 +4,10 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { updateJob } from '@/lib/actions/jobs'
+import { createExpense } from '@/lib/actions/expenses'
 import { JobStatusBadge } from '@/components/jobs/JobStatusBadge'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
-import { CheckSquare, Square, Camera, MapPin, ExternalLink } from 'lucide-react'
+import { CheckSquare, Square, Camera, MapPin, ExternalLink, Clock, CheckCircle2 } from 'lucide-react'
 
 type JobStatus = 'lead' | 'active' | 'on_hold' | 'completed' | 'cancelled'
 type Job = { id: string; name: string; clientName: string; status: string; address: string | null }
@@ -24,6 +25,10 @@ const DEFAULT_TASKS = [
 export function FieldJobClient({ job, locale, translations: t }: { job: Job; locale: string; translations: T }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
+  const [hours, setHours] = useState('')
+  const [rate, setRate] = useState('')
+  const [hoursLogged, setHoursLogged] = useState(false)
+  const [isLoggingHours, startLoggingHours] = useTransition()
   const storageKey = `plumbr_checklist_${job.id}`
   const [checklist, setChecklist] = useState<Record<string, boolean>>(() => {
     if (typeof window === 'undefined') return {}
@@ -38,6 +43,27 @@ export function FieldJobClient({ job, locale, translations: t }: { job: Job; loc
 
   function markComplete() {
     startTransition(async () => { await updateJob(job.id, { status: 'completed' }); router.push(`/${locale}/field`) })
+  }
+
+  function logHours(e: React.FormEvent) {
+    e.preventDefault()
+    const h = parseFloat(hours)
+    const r = parseFloat(rate)
+    if (!h || h <= 0) return
+    const amount = r > 0 ? (h * r).toFixed(2) : '0.00'
+    startLoggingHours(async () => {
+      await createExpense(job.id, {
+        description: `${h}h labor`,
+        type: 'labor',
+        amount,
+        date: new Date().toISOString(),
+        hours: String(h),
+        ratePerHour: r > 0 ? String(r) : undefined,
+      })
+      setHours('')
+      setRate('')
+      setHoursLogged(true)
+    })
   }
 
   const completedCount = DEFAULT_TASKS.filter((task) => checklist[task]).length
@@ -86,6 +112,52 @@ export function FieldJobClient({ job, locale, translations: t }: { job: Job; loc
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Log Hours */}
+      <div className="plumbr-card p-4 mb-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Clock size={16} className="text-[#1E3A5F]" />
+          <h2 className="font-semibold text-slate-800">Log Hours</h2>
+        </div>
+        {hoursLogged ? (
+          <div className="flex items-center gap-2 text-green-600 text-sm py-2">
+            <CheckCircle2 size={16} /> Hours logged as labor expense
+          </div>
+        ) : (
+          <form onSubmit={logHours} className="flex flex-col gap-3">
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="block text-xs text-slate-500 mb-1">Hours worked</label>
+                <input
+                  type="number"
+                  min="0.25"
+                  step="0.25"
+                  value={hours}
+                  onChange={e => setHours(e.target.value)}
+                  placeholder="e.g. 4"
+                  className="plumbr-input text-sm w-full"
+                  required
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs text-slate-500 mb-1">Rate/hr (optional)</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={rate}
+                  onChange={e => setRate(e.target.value)}
+                  placeholder="e.g. 75"
+                  className="plumbr-input text-sm w-full"
+                />
+              </div>
+            </div>
+            <button type="submit" disabled={isLoggingHours} className="btn-secondary text-sm disabled:opacity-50">
+              {isLoggingHours ? 'Logging...' : 'Log as Labor Expense'}
+            </button>
+          </form>
+        )}
       </div>
 
       <div className="plumbr-card p-4 mb-4">

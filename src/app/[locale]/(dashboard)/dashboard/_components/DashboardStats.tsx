@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useLocale } from 'next-intl'
-import { DollarSign, Briefcase, FileText, TrendingUp, Target, Users, AlertTriangle, X } from 'lucide-react'
+import { DollarSign, Briefcase, FileText, TrendingUp, Target, Users, AlertTriangle, Clock, X } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, Label,
@@ -37,12 +37,16 @@ function niceYTicks(maxVal: number): number[] {
   return Array.from({ length: count }, (_, i) => i * step)
 }
 
-export function DashboardStats({ stats, chartData, negativeMarginJobs, userName, translations: t }: {
-  stats: Stats; chartData: ChartData; negativeMarginJobs: { id: string; name: string; margin: number }[]; userName: string | null; translations: T
+export function DashboardStats({ stats, chartData, negativeMarginJobs, staleEstimates, userName, translations: t }: {
+  stats: Stats; chartData: ChartData
+  negativeMarginJobs: { id: string; name: string; margin: number }[]
+  staleEstimates: { id: string; number: string; clientName: string; daysSinceSent: number }[]
+  userName: string | null; translations: T
 }) {
   const locale = useLocale()
   const greeting = t.greeting.replace('{name}', userName ?? 'there')
   const [alertDismissed, setAlertDismissed] = useState(false)
+  const [staleAlertDismissed, setStaleAlertDismissed] = useState(false)
 
   const statCards = [
     { label: t.stats.activeJobs, value: String(stats.activeJobs), icon: Briefcase, color: 'text-blue-600' },
@@ -64,6 +68,28 @@ export function DashboardStats({ stats, chartData, negativeMarginJobs, userName,
         <h1 className="text-2xl font-bold text-slate-900">{greeting} 👷</h1>
         <p className="text-slate-500 mt-1">{t.subtitle}</p>
       </div>
+
+      {/* Stale estimates alert */}
+      {staleEstimates.length > 0 && !staleAlertDismissed && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
+          <Clock size={18} className="text-amber-500 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-amber-800">
+              {staleEstimates.length === 1 ? '1 estimate has no response in 7+ days' : `${staleEstimates.length} estimates have no response in 7+ days`}
+            </p>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {staleEstimates.map(e => (
+                <Link key={e.id} href={`/${locale}/estimates/${e.id}`} className="text-xs bg-white border border-amber-200 text-amber-700 px-2.5 py-1 rounded-full hover:bg-amber-100 transition-colors font-medium">
+                  #{e.number} · {e.clientName} · {e.daysSinceSent}d ago
+                </Link>
+              ))}
+            </div>
+          </div>
+          <button onClick={() => setStaleAlertDismissed(true)} className="text-amber-300 hover:text-amber-500 transition-colors shrink-0 -mt-0.5">
+            <X size={16} />
+          </button>
+        </div>
+      )}
 
       {/* Negative margin alert */}
       {negativeMarginJobs.length > 0 && !alertDismissed && (

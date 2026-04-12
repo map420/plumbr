@@ -3,7 +3,7 @@
 import { dbAdapter } from '@/lib/adapters/db'
 import { requireUser } from './auth-helpers'
 
-export async function updateProfile(data: { name: string; companyName: string; phone: string; logoUrl?: string; taxRate?: string; documentFooter?: string }) {
+export async function updateProfile(data: { name: string; companyName: string; phone: string; logoUrl?: string; taxRate?: string; documentFooter?: string; paymentTerms?: string }) {
   const userId = await requireUser()
   await dbAdapter.users.update(userId, {
     name: data.name || null,
@@ -12,5 +12,6 @@ export async function updateProfile(data: { name: string; companyName: string; p
     logoUrl: data.logoUrl || null,
     taxRate: data.taxRate || null,
     documentFooter: data.documentFooter || null,
+    paymentTerms: data.paymentTerms || 'net30',
   })
 }

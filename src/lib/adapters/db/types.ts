@@ -61,7 +61,7 @@ export interface User {
   id: string; email: string; name: string | null; companyName: string | null
   phone: string | null; plan: string | null; stripeCustomerId: string | null
   stripeSubscriptionId: string | null; logoUrl: string | null
-  taxRate: string | null; documentFooter: string | null
+  taxRate: string | null; documentFooter: string | null; paymentTerms: string | null
   createdAt: Date; updatedAt: Date
 }
 

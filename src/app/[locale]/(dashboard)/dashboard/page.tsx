@@ -9,6 +9,7 @@ export default async function DashboardPage() {
 
   let stats = { activeJobs: 0, openEstimates: 0, revenueThisMonth: 0, avgMargin: null as number | null }
   let negativeMarginJobs: { id: string; name: string; margin: number }[] = []
+  let staleEstimates: { id: string; number: string; clientName: string; daysSinceSent: number }[] = []
   let chartData = {
     revenueByMonth: [] as { month: string; revenue: number }[],
     jobsByStatus: [] as { status: string; count: number }[],
@@ -29,6 +30,8 @@ export default async function DashboardPage() {
     ])
 
     userName = userProfile?.name?.split(' ')[0] ?? null
+
+    const now = new Date()
 
     // KPI stats
     const activeJobs = allJobs.filter(j => j.status === 'active').length
@@ -55,10 +58,20 @@ export default async function DashboardPage() {
     negativeMarginJobs = jobMarginData.filter(j => j.margin !== null && j.margin < 0)
       .map(j => ({ id: j.id, name: j.name, margin: Math.round(j.margin!) }))
 
+    // Stale estimates: sent >7 days ago without response
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+    staleEstimates = allEstimates
+      .filter(e => e.status === 'sent' && new Date(e.updatedAt) < sevenDaysAgo)
+      .map(e => ({
+        id: e.id,
+        number: e.number,
+        clientName: e.clientName,
+        daysSinceSent: Math.floor((now.getTime() - new Date(e.updatedAt).getTime()) / (1000 * 60 * 60 * 24)),
+      }))
+
     stats = { activeJobs, openEstimates, revenueThisMonth, avgMargin }
 
     // Revenue by month — last 6 months
-    const now = new Date()
     const revenueByMonth = Array.from({ length: 6 }, (_, i) => {
       const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1)
       const end = new Date(d.getFullYear(), d.getMonth() + 1, 1)
@@ -112,6 +125,7 @@ export default async function DashboardPage() {
       stats={stats}
       chartData={chartData}
       negativeMarginJobs={negativeMarginJobs}
+      staleEstimates={staleEstimates}
       userName={userName}
       translations={{
         greeting: t('greeting', { name: '{name}' }),

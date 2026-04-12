@@ -23,6 +23,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
           logoUrl: user?.logoUrl ?? '',
           taxRate: user?.taxRate ?? '',
           documentFooter: user?.documentFooter ?? '',
+          paymentTerms: user?.paymentTerms ?? 'net30',
         }}
       />
     </div>

@@ -11,6 +11,7 @@ import { Plus, Trash2, Search, X } from 'lucide-react'
 type LineItemType = 'labor' | 'material' | 'subcontractor' | 'other'
 type LI = { type: LineItemType; description: string; quantity: number; unitPrice: number; total: number }
 type Job = { id: string; name: string; clientName: string; clientEmail: string | null; clientPhone: string | null; clientId: string | null }
+type Client = { id: string; name: string; email: string | null; phone: string | null }
 type Estimate = { id: string; jobId: string | null; clientName: string; clientEmail: string | null; notes: string | null; validUntil: Date | null }
 type T = { save: string; cancel: string; convertToInvoice?: string; job?: string; fields: Record<string, string>; lineItems: { title: string; add: string; type: Record<LineItemType, string>; fields: Record<string, string> } }
 
@@ -35,7 +36,7 @@ function calcTotals(items: LI[]) {
   return { subtotal, tax, total: subtotal + tax }
 }
 
-export function EstimateFormClient({ translations: t, estimate }: { translations: T; estimate?: Estimate }) {
+export function EstimateFormClient({ translations: t, estimate, clients = [] }: { translations: T; estimate?: Estimate; clients?: Client[] }) {
   const router = useRouter()
   const params = useParams()
   const searchParams = useSearchParams()
@@ -48,6 +49,10 @@ export function EstimateFormClient({ translations: t, estimate }: { translations
   const [jobSearch, setJobSearch] = useState('')
   const [showJobDropdown, setShowJobDropdown] = useState(false)
   const jobDropdownRef = useRef<HTMLDivElement>(null)
+  const [clientSearch, setClientSearch] = useState(estimate?.clientName ?? '')
+  const [showClientDropdown, setShowClientDropdown] = useState(false)
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null)
+  const clientDropdownRef = useRef<HTMLDivElement>(null)
   const [clientName, setClientName] = useState(estimate?.clientName ?? '')
   const [clientEmail, setClientEmail] = useState(estimate?.clientEmail ?? '')
   const [clientPhone, setClientPhone] = useState('')
@@ -74,6 +79,7 @@ export function EstimateFormClient({ translations: t, estimate }: { translations
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (jobDropdownRef.current && !jobDropdownRef.current.contains(e.target as Node)) setShowJobDropdown(false)
+      if (clientDropdownRef.current && !clientDropdownRef.current.contains(e.target as Node)) setShowClientDropdown(false)
     }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
@@ -85,6 +91,8 @@ export function EstimateFormClient({ translations: t, estimate }: { translations
     setClientName(job.clientName)
     setClientEmail(job.clientEmail ?? '')
     setClientPhone(job.clientPhone ?? '')
+    setClientSearch(job.clientName)
+    setSelectedClientId(job.clientId)
     setShowJobDropdown(false)
   }
 
@@ -94,7 +102,31 @@ export function EstimateFormClient({ translations: t, estimate }: { translations
     setClientName('')
     setClientEmail('')
     setClientPhone('')
+    setClientSearch('')
+    setSelectedClientId(null)
   }
+
+  function selectClient(client: Client) {
+    setSelectedClientId(client.id)
+    setClientName(client.name)
+    setClientEmail(client.email ?? '')
+    setClientPhone(client.phone ?? '')
+    setClientSearch(client.name)
+    setShowClientDropdown(false)
+  }
+
+  function clearClient() {
+    setSelectedClientId(null)
+    setClientSearch('')
+    setClientName('')
+    setClientEmail('')
+    setClientPhone('')
+  }
+
+  const filteredClients = clients.filter(c =>
+    c.name.toLowerCase().includes(clientSearch.toLowerCase()) ||
+    (c.email ?? '').toLowerCase().includes(clientSearch.toLowerCase())
+  )
 
   const filteredJobs = jobs.filter(j =>
     j.name.toLowerCase().includes(jobSearch.toLowerCase()) ||
@@ -118,7 +150,7 @@ export function EstimateFormClient({ translations: t, estimate }: { translations
     if (!estimate && items.length === 0) { setFormError('Add at least one line item.'); return }
     startTransition(async () => {
       const selectedJob = jobs.find(j => j.id === jobId)
-      const clientId = selectedJob?.clientId ?? ''
+      const clientId = selectedClientId ?? selectedJob?.clientId ?? ''
       const data = { jobId, clientId, clientName, clientEmail, clientPhone, status: 'draft', subtotal, tax, total, notes, validUntil: validUntil ? new Date(validUntil).toISOString() : '' }
       if (estimate) {
         await updateEstimate(estimate.id, { notes, status: 'draft' })
@@ -173,11 +205,47 @@ export function EstimateFormClient({ translations: t, estimate }: { translations
             </div>
           )}
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">{t.fields.clientName}</label>
-            <input required value={clientName} onChange={(e) => setClientName(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+        {/* Client autocomplete */}
+        <div ref={clientDropdownRef} className="relative">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
+            {t.fields.clientName}
+            {clients.length > 0 && <span className="ml-2 text-xs font-normal text-slate-400">— search existing or type new</span>}
+          </label>
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              required
+              value={clientSearch}
+              onChange={e => {
+                setClientSearch(e.target.value)
+                setClientName(e.target.value)
+                setShowClientDropdown(true)
+                if (!e.target.value) clearClient()
+              }}
+              onFocus={() => { if (!selectedClientId && clients.length > 0) setShowClientDropdown(true) }}
+              placeholder="Client name..."
+              className={`w-full border rounded-lg pl-8 pr-8 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 ${selectedClientId ? 'border-[#1E3A5F]/40 bg-blue-50 text-[#1E3A5F] font-medium' : 'border-slate-200'}`}
+            />
+            {selectedClientId && (
+              <button type="button" onClick={clearClient} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                <X size={14} />
+              </button>
+            )}
           </div>
+          {showClientDropdown && !selectedClientId && filteredClients.length > 0 && (
+            <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+              {filteredClients.map(c => (
+                <button key={c.id} type="button" onClick={() => selectClient(c)}
+                  className="w-full text-left px-4 py-2.5 hover:bg-slate-50 border-b border-slate-100 last:border-0">
+                  <p className="text-sm font-medium text-slate-800">{c.name}</p>
+                  {c.email && <p className="text-xs text-slate-400">{c.email}</p>}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">{t.fields.clientEmail}</label>
             <input type="email" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
