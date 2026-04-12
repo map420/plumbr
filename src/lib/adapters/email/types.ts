@@ -4,5 +4,6 @@ export interface EmailAdapter {
     subject: string
     html: string
     from?: string
+    replyTo?: string
   }): Promise<{ id: string }>
 }

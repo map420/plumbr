@@ -46,6 +46,7 @@ export async function GET(req: NextRequest) {
           const portalUrl = `${appUrl}/en/portal/${token}`
           await emailAdapter.send({
             to: inv.clientEmail,
+            replyTo: contractor?.email,
             subject: `Invoice ${inv.number} is overdue — $${parseFloat(inv.total).toLocaleString()}`,
             html: invoiceOverdueEmail({
               clientName: inv.clientName,
@@ -113,6 +114,7 @@ export async function GET(req: NextRequest) {
         const contractorName = contractor?.name ?? contractor?.companyName ?? 'Your Contractor'
         await emailAdapter.send({
           to: inv.clientEmail,
+          replyTo: contractor?.email,
           subject: `Payment reminder — Invoice ${inv.number} due in 3 days`,
           html: invoiceReminderEmail({
             clientName: inv.clientName,
@@ -150,6 +152,7 @@ export async function GET(req: NextRequest) {
         const contractorName = contractor?.name ?? contractor?.companyName ?? 'Your Contractor'
         await emailAdapter.send({
           to: est.clientEmail,
+          replyTo: contractor?.email,
           subject: `Following up on your estimate ${est.number}`,
           html: estimateFollowUpEmail({
             clientName: est.clientName,

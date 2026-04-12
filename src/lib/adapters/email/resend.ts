@@ -8,12 +8,13 @@ function getResend() {
 }
 
 export const resendAdapter: EmailAdapter = {
-  async send({ to, subject, html, from }) {
+  async send({ to, subject, html, from, replyTo }) {
     const { data, error } = await getResend().emails.send({
       from: from ?? 'Plumbr <noreply@mrlabs.io>',
       to,
       subject,
       html,
+      ...replyTo && { reply_to: replyTo },
     })
     if (error) throw new Error(`[EMAIL] Resend error: ${error.message}`)
     return { id: data!.id }

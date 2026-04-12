@@ -110,6 +110,7 @@ export async function sendInvoiceToClient(id: string): Promise<{ sent: boolean; 
 
   await emailAdapter.send({
     to: invoice.clientEmail,
+    replyTo: user?.email,
     subject: `Invoice ${invoice.number} from ${contractorName} — $${parseFloat(invoice.total).toLocaleString()}`,
     html: invoiceSentEmail({
       clientName: invoice.clientName,

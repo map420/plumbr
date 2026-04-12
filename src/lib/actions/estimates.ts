@@ -105,6 +105,7 @@ export async function updateEstimate(id: string, data: Partial<{
     const portalUrl = `${appUrl}/en/portal/${token}`
     await emailAdapter.send({
       to: estimate.clientEmail,
+      replyTo: contractorUser?.email,
       subject: `Estimate ${estimate.number} from ${contractorName} — $${parseFloat(estimate.total).toLocaleString()}`,
       html: estimateSentEmail({
         clientName: estimate.clientName,
