@@ -1,8 +1,9 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { useLocale } from 'next-intl'
-import { DollarSign, Briefcase, FileText, TrendingUp, Target, Users, AlertTriangle } from 'lucide-react'
+import { DollarSign, Briefcase, FileText, TrendingUp, Target, Users, AlertTriangle, X } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, Label,
@@ -41,6 +42,7 @@ export function DashboardStats({ stats, chartData, negativeMarginJobs, userName,
 }) {
   const locale = useLocale()
   const greeting = t.greeting.replace('{name}', userName ?? 'there')
+  const [alertDismissed, setAlertDismissed] = useState(false)
 
   const statCards = [
     { label: t.stats.activeJobs, value: String(stats.activeJobs), icon: Briefcase, color: 'text-blue-600' },
@@ -64,7 +66,7 @@ export function DashboardStats({ stats, chartData, negativeMarginJobs, userName,
       </div>
 
       {/* Negative margin alert */}
-      {negativeMarginJobs.length > 0 && (
+      {negativeMarginJobs.length > 0 && !alertDismissed && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 flex items-start gap-3">
           <AlertTriangle size={18} className="text-red-500 shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
@@ -79,6 +81,9 @@ export function DashboardStats({ stats, chartData, negativeMarginJobs, userName,
               ))}
             </div>
           </div>
+          <button onClick={() => setAlertDismissed(true)} className="text-red-300 hover:text-red-500 transition-colors shrink-0 -mt-0.5">
+            <X size={16} />
+          </button>
         </div>
       )}
 
