@@ -5,7 +5,7 @@ import { Menu, X } from 'lucide-react'
 import Sidebar from './Sidebar'
 import BottomNav from './BottomNav'
 
-export default function DashboardShell({ children }: { children: React.ReactNode }) {
+export default function DashboardShell({ children, pro }: { children: React.ReactNode; pro: boolean }) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -23,7 +23,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
         fixed inset-y-0 left-0 z-30 w-60 transform transition-transform duration-200 md:relative md:translate-x-0 md:flex md:shrink-0
         ${open ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        <Sidebar onClose={() => setOpen(false)} />
+        <Sidebar onClose={() => setOpen(false)} pro={pro} />
       </div>
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">

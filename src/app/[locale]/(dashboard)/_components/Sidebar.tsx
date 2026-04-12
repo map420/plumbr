@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 import { NotificationBell } from './NotificationBell'
 
-export default function Sidebar({ onClose }: { onClose?: () => void }) {
+export default function Sidebar({ onClose, pro }: { onClose?: () => void; pro?: boolean }) {
   const t = useTranslations('nav')
   const locale = useLocale()
   const pathname = usePathname()
@@ -25,7 +25,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
     { href: `/${locale}/invoices`, label: t('invoices'), icon: Receipt },
     { href: `/${locale}/schedule`, label: t('schedule'), icon: Calendar },
     { href: `/${locale}/field`, label: t('field'), icon: Wrench },
-    { href: `/${locale}/team`, label: 'Team', icon: Users, locked: true },
+    { href: `/${locale}/team`, label: 'Team', icon: Users, locked: !pro },
   ]
 
   return (
