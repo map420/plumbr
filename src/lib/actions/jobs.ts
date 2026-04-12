@@ -25,6 +25,11 @@ export async function createJob(data: {
 }) {
   const userId = await requireAuth()
 
+  // Validation
+  if (!data.name?.trim() || data.name.trim().length < 2) throw new Error('Job name must be at least 2 characters.')
+  if (!data.clientName?.trim() || data.clientName.trim().length < 2) throw new Error('Client name must be at least 2 characters.')
+  if (data.endDate && data.startDate && new Date(data.endDate) < new Date(data.startDate)) throw new Error('End date cannot be before start date.')
+
   // Plan enforcement
   const planData = await getUserPlan()
   if (!isPro(planData?.plan)) {

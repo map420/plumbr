@@ -104,10 +104,11 @@ export function JobForm({ translations: t, job, clients = [] }: { translations: 
     })
   }
 
-  const field = (id: keyof typeof form, label: string, type = 'text') => (
+  const field = (id: keyof typeof form, label: string, type = 'text', required = false, minLen?: number) => (
     <div>
-      <label className="block text-sm font-medium text-slate-700 mb-1">{label}</label>
+      <label className="block text-sm font-medium text-slate-700 mb-1">{label}{required && <span className="text-red-400 ml-0.5">*</span>}</label>
       <input type={type} value={form[id] as string} onChange={(e) => setForm({ ...form, [id]: e.target.value })}
+        required={required} minLength={minLen}
         className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30" />
     </div>
   )
@@ -123,7 +124,7 @@ export function JobForm({ translations: t, job, clients = [] }: { translations: 
         </div>
       )}
 
-      {field('name', t.fields.name)}
+      {field('name', t.fields.name, 'text', true, 2)}
 
       {/* Client autocomplete */}
       {clients.length > 0 && (
@@ -195,7 +196,12 @@ export function JobForm({ translations: t, job, clients = [] }: { translations: 
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {field('startDate', t.fields.startDate, 'date')}
-        {field('endDate', t.fields.endDate, 'date')}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">{t.fields.endDate}</label>
+          <input type="date" value={form.endDate} min={form.startDate || undefined}
+            onChange={(e) => setForm({ ...form, endDate: e.target.value })}
+            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30" />
+        </div>
       </div>
       {field('budgetedCost', t.fields.budgetedCost, 'number')}
       <div>

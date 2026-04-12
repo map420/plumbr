@@ -36,6 +36,10 @@ export async function createEstimate(data: {
 }, items: RawLineItem[]) {
   const userId = await requireAuth()
 
+  // Validation
+  if (!data.clientName?.trim() || data.clientName.trim().length < 2) throw new Error('Client name must be at least 2 characters.')
+  if (items.length === 0) throw new Error('Add at least one line item to the estimate.')
+
   // Plan enforcement
   const planData = await getUserPlan()
   if (!isPro(planData?.plan)) {

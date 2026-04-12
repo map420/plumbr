@@ -41,6 +41,7 @@ export function EstimateFormClient({ translations: t, estimate }: { translations
   const searchParams = useSearchParams()
   const locale = params.locale as string
   const [isPending, startTransition] = useTransition()
+  const [formError, setFormError] = useState<string | null>(null)
 
   const [jobs, setJobs] = useState<Job[]>([])
   const [jobId, setJobId] = useState(estimate?.jobId ?? searchParams.get('jobId') ?? '')
@@ -113,6 +114,8 @@ export function EstimateFormClient({ translations: t, estimate }: { translations
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setFormError(null)
+    if (!estimate && items.length === 0) { setFormError('Add at least one line item.'); return }
     startTransition(async () => {
       const selectedJob = jobs.find(j => j.id === jobId)
       const clientId = selectedJob?.clientId ?? ''
@@ -130,6 +133,9 @@ export function EstimateFormClient({ translations: t, estimate }: { translations
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {formError && (
+        <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{formError}</div>
+      )}
       <div className="plumbr-card p-5 space-y-4">
         <div ref={jobDropdownRef} className="relative">
           <label className="block text-sm font-medium text-slate-700 mb-1">
