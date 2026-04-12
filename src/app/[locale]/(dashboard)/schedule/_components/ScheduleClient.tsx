@@ -74,7 +74,10 @@ export function ScheduleClient({ initialJobs, translations: t }: { initialJobs: 
                 {DAY_NAMES[day.getDay()]} {day.getDate()}
               </div>
               {dayJobs.length === 0 ? (
-                <p className="text-xs text-slate-300">{t.noJobs}</p>
+                <Link href={`/${locale}/jobs/new`} className="block text-xs text-slate-300 hover:text-[#F97316] transition-colors group/add">
+                  <span>{t.noJobs}</span>
+                  <span className="block mt-1 opacity-0 group-hover/add:opacity-100 text-[#F97316]">+ Add job</span>
+                </Link>
               ) : (
                 <div className="space-y-1.5">
                   {dayJobs.map((job) => (

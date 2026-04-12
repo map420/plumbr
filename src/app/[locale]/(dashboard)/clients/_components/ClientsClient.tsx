@@ -70,44 +70,46 @@ export function ClientsClient({ initialClients, clientStats = {} }: { initialCli
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" style={{ opacity: isPending ? 0.5 : 1 }}>
           {filtered.map(client => (
-            <div key={client.id} className="plumbr-card p-5 flex flex-col gap-3 relative group hover:shadow-md transition-shadow cursor-pointer">
-              <Link href={`/${locale}/clients/${client.id}`} className="absolute inset-0 rounded-xl" aria-label={`View ${client.name}`} />
-              <div className="flex items-start justify-between">
-                <span className="font-semibold text-[#1E3A5F] text-base">{client.name}</span>
-                <button
-                  onClick={(e) => { e.preventDefault(); setDeleteId(client.id) }}
-                  className="relative z-10 text-slate-400 hover:text-red-500 transition-colors ml-2 shrink-0"
-                >
-                  <Trash2 size={15} />
-                </button>
-              </div>
-              {client.email && (
-                <div className="flex items-center gap-2 text-sm text-slate-500">
-                  <Mail size={13} /> {client.email}
+            <div key={client.id} className="plumbr-card group hover:shadow-md transition-shadow relative">
+              <Link href={`/${locale}/clients/${client.id}`} className="block p-5 space-y-3">
+                <div className="flex items-start justify-between">
+                  <span className="font-semibold text-[#1E3A5F] text-base">{client.name}</span>
+                  <span className="w-6 shrink-0" />
                 </div>
-              )}
-              {client.phone && (
-                <div className="flex items-center gap-2 text-sm text-slate-500">
-                  <Phone size={13} /> {client.phone}
-                </div>
-              )}
-              {client.address && (
-                <p className="text-xs text-slate-400 truncate">{client.address}</p>
-              )}
-              {(clientStats[client.id]?.jobCount > 0 || clientStats[client.id]?.revenue > 0) && (
-                <div className="flex items-center gap-3 pt-1 border-t border-slate-100 mt-1">
-                  {clientStats[client.id]?.jobCount > 0 && (
-                    <div className="flex items-center gap-1 text-xs text-slate-500">
-                      <Briefcase size={11} /> {clientStats[client.id].jobCount} job{clientStats[client.id].jobCount !== 1 ? 's' : ''}
-                    </div>
-                  )}
-                  {clientStats[client.id]?.revenue > 0 && (
-                    <div className="flex items-center gap-1 text-xs text-green-600 font-medium">
-                      <DollarSign size={11} /> ${clientStats[client.id].revenue.toLocaleString()}
-                    </div>
-                  )}
-                </div>
-              )}
+                {client.email && (
+                  <div className="flex items-center gap-2 text-sm text-slate-500">
+                    <Mail size={13} /> {client.email}
+                  </div>
+                )}
+                {client.phone && (
+                  <div className="flex items-center gap-2 text-sm text-slate-500">
+                    <Phone size={13} /> {client.phone}
+                  </div>
+                )}
+                {client.address && (
+                  <p className="text-xs text-slate-400 truncate">{client.address}</p>
+                )}
+                {(clientStats[client.id]?.jobCount > 0 || clientStats[client.id]?.revenue > 0) && (
+                  <div className="flex items-center gap-3 pt-1 border-t border-slate-100">
+                    {clientStats[client.id]?.jobCount > 0 && (
+                      <div className="flex items-center gap-1 text-xs text-slate-500">
+                        <Briefcase size={11} /> {clientStats[client.id].jobCount} job{clientStats[client.id].jobCount !== 1 ? 's' : ''}
+                      </div>
+                    )}
+                    {clientStats[client.id]?.revenue > 0 && (
+                      <div className="flex items-center gap-1 text-xs text-green-600 font-medium">
+                        <DollarSign size={11} /> ${clientStats[client.id].revenue.toLocaleString()}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </Link>
+              <button
+                onClick={() => setDeleteId(client.id)}
+                className="absolute top-4 right-4 z-10 text-slate-400 hover:text-red-500 transition-colors"
+              >
+                <Trash2 size={15} />
+              </button>
             </div>
           ))}
         </div>

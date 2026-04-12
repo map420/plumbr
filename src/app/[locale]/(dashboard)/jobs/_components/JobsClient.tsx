@@ -69,13 +69,17 @@ export function JobsClient({ initialJobs, planInfo, translations: t }: { initial
       </div>
       <div className="flex gap-2 mb-4 flex-wrap">
         <button onClick={() => setFilter('all')} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filter === 'all' ? 'bg-[#1E3A5F] text-white' : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'}`}>
-          All
+          All <span className={`ml-1 text-xs px-1.5 py-0.5 rounded-full ${filter === 'all' ? 'bg-white/20' : 'bg-slate-100'}`}>{initialJobs.length}</span>
         </button>
-        {ALL_STATUSES.map((s) => (
-          <button key={s} onClick={() => setFilter(s)} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filter === s ? 'bg-[#1E3A5F] text-white' : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'}`}>
-            {t.status[s]}
-          </button>
-        ))}
+        {ALL_STATUSES.map((s) => {
+          const count = initialJobs.filter(j => j.status === s).length
+          if (count === 0) return null
+          return (
+            <button key={s} onClick={() => setFilter(s)} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filter === s ? 'bg-[#1E3A5F] text-white' : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-300'}`}>
+              {t.status[s]} <span className={`ml-1 text-xs px-1.5 py-0.5 rounded-full ${filter === s ? 'bg-white/20' : 'bg-slate-100'}`}>{count}</span>
+            </button>
+          )
+        })}
       </div>
 
       {initialJobs.length === 0 ? (

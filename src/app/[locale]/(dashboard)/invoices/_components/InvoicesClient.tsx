@@ -24,20 +24,35 @@ export function InvoicesClient({ initialInvoices, translations: t }: { initialIn
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [filter, setFilter] = useState<InvoiceStatus | 'all'>('all')
+  const [search, setSearch] = useState('')
 
   function handleMarkPaid(id: string) {
     startTransition(async () => { await updateInvoice(id, { status: 'paid', paidAt: new Date().toISOString() }); router.refresh() })
   }
 
-  const filteredInvoices = filter === 'all'
-    ? initialInvoices
-    : initialInvoices.filter(inv => effectiveStatus(inv) === filter)
+  const filteredInvoices = initialInvoices.filter(inv => {
+    const matchesFilter = filter === 'all' || effectiveStatus(inv) === filter
+    const matchesSearch = !search ||
+      inv.number.toLowerCase().includes(search.toLowerCase()) ||
+      inv.clientName.toLowerCase().includes(search.toLowerCase())
+    return matchesFilter && matchesSearch
+  })
 
   return (
     <div className="p-4 md:p-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-slate-900">{t.title}</h1>
         <Link href={`/${locale}/invoices/new`} className="btn-primary flex items-center gap-2 text-sm"><Plus size={16} /> {t.new}</Link>
+      </div>
+
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Search by client or invoice number..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="plumbr-input max-w-xs"
+        />
       </div>
 
       <div className="flex items-center gap-2 mb-4 flex-wrap">

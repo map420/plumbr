@@ -17,7 +17,7 @@ type JobStatus = 'lead' | 'active' | 'on_hold' | 'completed' | 'cancelled'
 type EstimateStatus = 'draft' | 'sent' | 'approved' | 'rejected' | 'converted'
 type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
 
-type Job = { id: string; name: string; clientName: string; clientEmail: string | null; clientPhone: string | null; address: string | null; status: string; budgetedCost: string; actualCost: string; startDate: Date | null; notes: string | null }
+type Job = { id: string; clientId: string | null; name: string; clientName: string; clientEmail: string | null; clientPhone: string | null; address: string | null; status: string; budgetedCost: string; actualCost: string; startDate: Date | null; notes: string | null }
 type Estimate = { id: string; number: string; status: string; total: string }
 type Invoice = { id: string; number: string; status: string; total: string }
 type Expense = { id: string; description: string; type: string; amount: string; date: Date }
@@ -125,6 +125,16 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div className="md:col-span-2 plumbr-card p-5 space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div>
+              <span className="text-slate-500">Client</span>
+              {job.clientId ? (
+                <Link href={`/${locale}/clients/${job.clientId}`} className="font-medium mt-0.5 text-[#1E3A5F] hover:underline flex items-center gap-1">
+                  {job.clientName}
+                </Link>
+              ) : (
+                <p className="font-medium mt-0.5">{job.clientName}</p>
+              )}
+            </div>
             <div><span className="text-slate-500">{t.fields.clientEmail}</span><p className="font-medium mt-0.5">{job.clientEmail || '—'}</p></div>
             <div><span className="text-slate-500">{t.fields.clientPhone}</span><p className="font-medium mt-0.5">{job.clientPhone || '—'}</p></div>
             <div><span className="text-slate-500">{t.fields.address}</span><p className="font-medium mt-0.5">{job.address || '—'}</p></div>
@@ -141,8 +151,14 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
             {revenue > 0 && <div className="flex justify-between"><span className="text-slate-500">Revenue</span><span className="font-semibold text-green-600">${revenue.toLocaleString()}</span></div>}
             {budget > 0 && (
               <>
-                <div className="w-full bg-slate-100 rounded-full h-2">
-                  <div className={`h-2 rounded-full ${actualCost > budget ? 'bg-red-500' : 'bg-green-500'}`} style={{ width: `${Math.min((actualCost / budget) * 100, 100)}%` }} />
+                <div>
+                  <div className="flex justify-between text-xs text-slate-400 mb-1">
+                    <span>Actual cost vs. budget</span>
+                    <span>{Math.round(Math.min((actualCost / budget) * 100, 100))}%</span>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-2">
+                    <div className={`h-2 rounded-full ${actualCost > budget ? 'bg-red-500' : 'bg-green-500'}`} style={{ width: `${Math.min((actualCost / budget) * 100, 100)}%` }} />
+                  </div>
                 </div>
                 {margin !== null && <p className={`text-xs font-medium ${margin >= 0 ? 'text-green-600' : 'text-red-600'}`}>{margin}% budget margin</p>}
               </>

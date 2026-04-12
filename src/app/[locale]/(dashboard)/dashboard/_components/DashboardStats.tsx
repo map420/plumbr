@@ -88,7 +88,7 @@ export function DashboardStats({ stats, chartData, userName, translations: t }: 
                 <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} ticks={yTicks} domain={[0, yTicks[yTicks.length - 1]]} tickFormatter={v => v >= 1000 ? `$${v / 1000}k` : `$${v}`} />
                 <Tooltip formatter={(v) => [`$${Number(v).toLocaleString()}`, 'Revenue']} contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }} />
-                <Bar dataKey="revenue" fill="#1E3A5F" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="revenue" fill="#1E3A5F" radius={[4, 4, 0, 0]} minPointSize={3} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -128,7 +128,7 @@ export function DashboardStats({ stats, chartData, userName, translations: t }: 
 
         {/* Top clients */}
         <div className="col-span-1 md:col-span-2 plumbr-card p-5">
-          <h2 className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2"><Users size={15} /> Top 5 Clients by Revenue</h2>
+          <h2 className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2"><Users size={15} /> Top Clients by Revenue</h2>
           {hasClientData ? (
             <div className="space-y-3">
               {chartData.topClients.map((c, i) => {

@@ -1,11 +1,12 @@
 'use client'
 
+import React from 'react'
 import { UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, FileText, Briefcase, Calendar, Wrench, Receipt, Settings, Users, X
+  LayoutDashboard, FileText, Briefcase, Calendar, Wrench, Receipt, Settings, Users, X, Lock
 } from 'lucide-react'
 
 export default function Sidebar({ onClose }: { onClose?: () => void }) {
@@ -15,7 +16,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const otherLocale = locale === 'en' ? 'es' : 'en'
   const switchHref = pathname.replace(`/${locale}`, `/${otherLocale}`)
 
-  const nav = [
+  const nav: { href: string; label: string; icon: React.ElementType; locked?: boolean }[] = [
     { href: `/${locale}/dashboard`, label: t('dashboard'), icon: LayoutDashboard },
     { href: `/${locale}/clients`, label: 'Clients', icon: Users },
     { href: `/${locale}/jobs`, label: t('jobs'), icon: Briefcase },
@@ -23,7 +24,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
     { href: `/${locale}/invoices`, label: t('invoices'), icon: Receipt },
     { href: `/${locale}/schedule`, label: t('schedule'), icon: Calendar },
     { href: `/${locale}/field`, label: t('field'), icon: Wrench },
-    { href: `/${locale}/team`, label: 'Team', icon: Users },
+    { href: `/${locale}/team`, label: 'Team', icon: Users, locked: true },
   ]
 
   return (
@@ -37,7 +38,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
         )}
       </div>
       <nav className="flex-1 px-3 py-4 space-y-1">
-        {nav.map(({ href, label, icon: Icon }) => {
+        {nav.map(({ href, label, icon: Icon, locked }) => {
           const isActive = pathname === href || pathname.startsWith(href + '/')
           return (
             <Link
@@ -47,7 +48,8 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
               className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
             >
               <Icon size={18} />
-              {label}
+              <span className="flex-1">{label}</span>
+              {locked && <Lock size={12} className="text-white/30" />}
             </Link>
           )
         })}

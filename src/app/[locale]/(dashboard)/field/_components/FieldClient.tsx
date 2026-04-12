@@ -64,7 +64,10 @@ export function FieldClient({ initialJobs, technicians, selectedTechId, translat
       )}
 
       <div className="mb-6">
-        <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">{t.todaysJobs}</h2>
+        <div className="flex items-baseline gap-2 mb-3">
+          <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">{t.todaysJobs}</h2>
+          <span className="text-xs text-slate-400">{new Date().toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+        </div>
         {todayJobs.length === 0 ? (
           <div className="plumbr-card p-6 text-center text-slate-400 text-sm">{t.noJobs}</div>
         ) : (
