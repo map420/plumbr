@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, varchar, pgEnum } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, varchar, pgEnum, numeric } from 'drizzle-orm/pg-core'
 import { users } from './users'
 
 export const userRoleEnum = pgEnum('user_role', ['admin', 'technician'])
@@ -9,6 +9,7 @@ export const technicians = pgTable('technicians', {
   name: varchar('name', { length: 255 }).notNull(),
   email: varchar('email', { length: 255 }).notNull(),
   phone: varchar('phone', { length: 50 }),
+  hourlyRate: numeric('hourly_rate', { precision: 10, scale: 2 }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })

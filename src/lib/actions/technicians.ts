@@ -11,23 +11,25 @@ export async function getTechnicians() {
   return dbAdapter.technicians.findAll(userId)
 }
 
-export async function createTechnician(data: { name: string; email: string; phone: string }) {
+export async function createTechnician(data: { name: string; email: string; phone: string; hourlyRate: string }) {
   const userId = await requireAuth()
   const t = await dbAdapter.technicians.create(userId, {
     name: data.name,
     email: data.email,
     phone: data.phone || null,
+    hourlyRate: data.hourlyRate || null,
   })
   revalidatePath('/[locale]/team', 'page')
   return t
 }
 
-export async function updateTechnician(id: string, data: Partial<{ name: string; email: string; phone: string }>) {
+export async function updateTechnician(id: string, data: Partial<{ name: string; email: string; phone: string; hourlyRate: string }>) {
   const userId = await requireAuth()
   const t = await dbAdapter.technicians.update(id, userId, {
     ...data.name !== undefined && { name: data.name },
     ...data.email !== undefined && { email: data.email },
     ...data.phone !== undefined && { phone: data.phone || null },
+    ...data.hourlyRate !== undefined && { hourlyRate: data.hourlyRate || null },
   })
   revalidatePath('/[locale]/team', 'page')
   return t

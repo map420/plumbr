@@ -1,7 +1,7 @@
 // Shared domain types (independent of Drizzle)
 export interface Technician {
   id: string; userId: string; name: string; email: string
-  phone: string | null; createdAt: Date; updatedAt: Date
+  phone: string | null; hourlyRate: string | null; createdAt: Date; updatedAt: Date
 }
 export type TechnicianInput = Omit<Technician, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
 
