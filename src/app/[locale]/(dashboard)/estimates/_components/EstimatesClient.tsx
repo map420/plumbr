@@ -94,13 +94,13 @@ export function EstimatesClient({ initialEstimates, planInfo, translations: t }:
             </thead>
             <tbody className="divide-y divide-slate-100">
               {visible.map((est) => (
-                <tr key={est.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-4 py-3"><Link href={`/${locale}/estimates/${est.id}`} className="font-medium text-[#1E3A5F] hover:underline">{est.number}</Link></td>
+                <tr key={est.id} onClick={() => router.push(`/${locale}/estimates/${est.id}`)} className="hover:bg-slate-50 transition-colors cursor-pointer">
+                  <td className="px-4 py-3 font-medium text-slate-800">{est.number}</td>
                   <td className="px-4 py-3 text-slate-600">{est.clientName}</td>
                   <td className="px-4 py-3"><EstimateStatusBadge status={est.status as EstimateStatus} label={t.status[est.status as EstimateStatus]} /></td>
                   <td className="px-4 py-3 text-slate-500">{new Date(est.createdAt).toLocaleDateString()}</td>
                   <td className="px-4 py-3 text-right font-semibold">${parseFloat(est.total).toLocaleString()}</td>
-                  <td className="px-4 py-3 text-right"><button onClick={() => setDeleteId(est.id)} className="text-slate-400 hover:text-red-500 transition-colors"><Trash2 size={15} /></button></td>
+                  <td className="px-4 py-3 text-right"><button onClick={e => { e.stopPropagation(); setDeleteId(est.id) }} className="text-slate-400 hover:text-red-500 transition-colors"><Trash2 size={15} /></button></td>
                 </tr>
               ))}
             </tbody>

@@ -109,10 +109,8 @@ export function JobsClient({ initialJobs, planInfo, translations: t }: { initial
             </thead>
             <tbody className={`divide-y divide-slate-100 ${isPending ? 'opacity-50' : ''}`}>
               {filtered.map((job) => (
-                <tr key={job.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-4 py-3">
-                    <Link href={`/${locale}/jobs/${job.id}`} className="font-medium text-[#1E3A5F] hover:underline">{job.name}</Link>
-                  </td>
+                <tr key={job.id} onClick={() => router.push(`/${locale}/jobs/${job.id}`)} className="hover:bg-slate-50 transition-colors cursor-pointer">
+                  <td className="px-4 py-3 font-medium text-slate-800">{job.name}</td>
                   <td className="px-4 py-3 text-slate-600">{job.clientName}</td>
                   <td className="px-4 py-3">
                     <JobStatusBadge status={job.status as JobStatus} label={t.status[job.status as JobStatus]} />
@@ -127,7 +125,7 @@ export function JobsClient({ initialJobs, planInfo, translations: t }: { initial
                     {job.budgetedCost && parseFloat(job.budgetedCost) > 0 ? `$${parseFloat(job.budgetedCost).toLocaleString()}` : '—'}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <button onClick={() => setDeleteId(job.id)} className="text-slate-400 hover:text-red-500 transition-colors">
+                    <button onClick={e => { e.stopPropagation(); setDeleteId(job.id) }} className="text-slate-400 hover:text-red-500 transition-colors">
                       <Trash2 size={15} />
                     </button>
                   </td>

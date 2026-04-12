@@ -121,10 +121,8 @@ export function ClientsClient({ initialClients, clientStats = {} }: { initialCli
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filtered.map(client => (
-                  <tr key={client.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-4 py-3">
-                      <Link href={`/${locale}/clients/${client.id}`} className="font-medium text-[#1E3A5F] hover:underline">{client.name}</Link>
-                    </td>
+                  <tr key={client.id} onClick={() => router.push(`/${locale}/clients/${client.id}`)} className="hover:bg-slate-50 transition-colors cursor-pointer">
+                    <td className="px-4 py-3 font-medium text-slate-800">{client.name}</td>
                     <td className="px-4 py-3 text-slate-500">{client.email || '—'}</td>
                     <td className="px-4 py-3 text-slate-500">{client.phone || '—'}</td>
                     <td className="px-4 py-3 text-center text-slate-600">{clientStats[client.id]?.jobCount ?? 0}</td>
@@ -132,7 +130,7 @@ export function ClientsClient({ initialClients, clientStats = {} }: { initialCli
                       {clientStats[client.id]?.revenue ? `$${clientStats[client.id].revenue.toLocaleString()}` : '—'}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <button onClick={() => setDeleteId(client.id)} className="text-slate-400 hover:text-red-500 transition-colors"><Trash2 size={14} /></button>
+                      <button onClick={e => { e.stopPropagation(); setDeleteId(client.id) }} className="text-slate-400 hover:text-red-500 transition-colors"><Trash2 size={14} /></button>
                     </td>
                   </tr>
                 ))}

@@ -84,15 +84,15 @@ export function InvoicesClient({ initialInvoices, translations: t }: { initialIn
               {filteredInvoices.map((inv) => {
                 const status = effectiveStatus(inv)
                 return (
-                  <tr key={inv.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-4 py-3"><Link href={`/${locale}/invoices/${inv.id}`} className="font-medium text-[#1E3A5F] hover:underline">{inv.number}</Link></td>
+                  <tr key={inv.id} onClick={() => router.push(`/${locale}/invoices/${inv.id}`)} className="hover:bg-slate-50 transition-colors cursor-pointer">
+                    <td className="px-4 py-3 font-medium text-slate-800">{inv.number}</td>
                     <td className="px-4 py-3 text-slate-600">{inv.clientName}</td>
                     <td className="px-4 py-3"><InvoiceStatusBadge status={status} label={t.status[status]} /></td>
                     <td className="px-4 py-3 text-slate-500">{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '—'}</td>
                     <td className="px-4 py-3 text-right font-semibold">${parseFloat(inv.total).toLocaleString()}</td>
                     <td className="px-4 py-3 text-right">
                       {(status === 'sent' || status === 'overdue') && (
-                        <button onClick={() => handleMarkPaid(inv.id)} className="text-xs px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200 font-medium">{t.markAsPaid}</button>
+                        <button onClick={e => { e.stopPropagation(); handleMarkPaid(inv.id) }} className="text-xs px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200 font-medium">{t.markAsPaid}</button>
                       )}
                     </td>
                   </tr>

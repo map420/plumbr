@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createTechnician, updateTechnician, deleteTechnician } from '@/lib/actions/technicians'
 import { ConfirmModal } from '@/components/ConfirmModal'
-import { Users, Plus, Trash2, Mail, Phone, X, Lock, Pencil, Check, DollarSign } from 'lucide-react'
+import { Users, Plus, Trash2, Mail, Phone, X, Lock, Check, DollarSign } from 'lucide-react'
 
 type Technician = { id: string; name: string; email: string; phone: string | null; hourlyRate: string | null }
 type FormState = { name: string; email: string; phone: string; hourlyRate: string }
@@ -141,8 +141,8 @@ export function TeamClient({ initialTechnicians, isPro, locale }: { initialTechn
                   </div>
                 </form>
               ) : (
-                /* Card view */
-                <div className="p-4 flex items-center justify-between">
+                /* Card view — entire card clickable to edit */
+                <div onClick={() => startEdit(t)} className="p-4 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-colors">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white font-bold text-sm shrink-0">
                       {t.name.charAt(0).toUpperCase()}
@@ -160,14 +160,9 @@ export function TeamClient({ initialTechnicians, isPro, locale }: { initialTechn
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <button onClick={() => startEdit(t)} className="p-1.5 text-slate-300 hover:text-[#1E3A5F] transition-colors" title="Edit">
-                      <Pencil size={14} />
-                    </button>
-                    <button onClick={() => setDeleteId(t.id)} className="p-1.5 text-slate-300 hover:text-red-500 transition-colors" title="Remove">
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
+                  <button onClick={e => { e.stopPropagation(); setDeleteId(t.id) }} className="p-1.5 text-slate-300 hover:text-red-500 transition-colors shrink-0" title="Remove">
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               )}
             </div>
