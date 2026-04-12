@@ -1,7 +1,10 @@
 'use client'
 
+'use client'
+
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Mail, Phone, DollarSign, Clock, ArrowLeft, Briefcase, Edit2, Check, X } from 'lucide-react'
 import { updateTechnician } from '@/lib/actions/technicians'
 
@@ -20,10 +23,22 @@ export function TechnicianProfileClient({ technician, laborExpenses, jobs, local
   jobs: Job[]
   locale: string
 }) {
+  const router = useRouter()
   const [editingRate, setEditingRate] = useState(false)
   const [rateValue, setRateValue] = useState(technician.hourlyRate ?? '')
   const [currentRate, setCurrentRate] = useState(technician.hourlyRate)
+  const [editingProfile, setEditingProfile] = useState(false)
+  const [profileForm, setProfileForm] = useState({ name: technician.name, email: technician.email, phone: technician.phone ?? '' })
   const [isPending, startTransition] = useTransition()
+
+  function handleSaveProfile(e: React.FormEvent) {
+    e.preventDefault()
+    startTransition(async () => {
+      await updateTechnician(technician.id, { name: profileForm.name, email: profileForm.email, phone: profileForm.phone || undefined })
+      setEditingProfile(false)
+      router.refresh()
+    })
+  }
 
   function handleSaveRate() {
     startTransition(async () => {
@@ -104,26 +119,51 @@ export function TechnicianProfileClient({ technician, laborExpenses, jobs, local
               </div>
             </div>
           </div>
-          <Link href={`/${locale}/team`} className="text-xs text-slate-400 hover:text-[#1E3A5F] transition-colors border border-slate-200 rounded-lg px-3 py-1.5">
-            Edit in Team
-          </Link>
+          <button onClick={() => setEditingProfile(v => !v)} className="text-xs text-slate-400 hover:text-[#1E3A5F] transition-colors border border-slate-200 rounded-lg px-3 py-1.5 flex items-center gap-1.5">
+            <Edit2 size={11} /> Edit
+          </button>
         </div>
       </div>
+
+      {/* Inline profile edit */}
+      {editingProfile && (
+        <form onSubmit={handleSaveProfile} className="plumbr-card p-5 mb-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium text-slate-500 mb-1 block">Name *</label>
+              <input required value={profileForm.name} onChange={e => setProfileForm(f => ({ ...f, name: e.target.value }))} className="plumbr-input" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-500 mb-1 block">Email *</label>
+              <input required type="email" value={profileForm.email} onChange={e => setProfileForm(f => ({ ...f, email: e.target.value }))} className="plumbr-input" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-500 mb-1 block">Phone</label>
+              <input value={profileForm.phone} onChange={e => setProfileForm(f => ({ ...f, phone: e.target.value }))} className="plumbr-input" placeholder="(555) 000-0000" />
+            </div>
+          </div>
+          <div className="flex gap-2 mt-4">
+            <button type="submit" disabled={isPending} className="btn-primary text-sm">{isPending ? 'Saving…' : 'Save changes'}</button>
+            <button type="button" onClick={() => setEditingProfile(false)} className="btn-secondary text-sm">Cancel</button>
+          </div>
+        </form>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
         {[
-          { label: 'Hours this month', value: `${monthHours.toFixed(1)}h`, icon: Clock, color: 'text-blue-600 bg-blue-50' },
-          { label: 'Cost this month', value: `$${monthCost.toLocaleString()}`, icon: DollarSign, color: 'text-emerald-600 bg-emerald-50' },
-          { label: 'Total hours', value: `${totalHours.toFixed(1)}h`, icon: Clock, color: 'text-slate-600 bg-slate-100' },
-          { label: 'Total labor cost', value: `$${totalCost.toLocaleString()}`, icon: DollarSign, color: 'text-slate-600 bg-slate-100' },
+          { label: 'Hours', value: `${monthHours.toFixed(1)}h`, sub: new Date().toLocaleString('en-US', { month: 'short', year: 'numeric' }), icon: Clock, color: 'text-blue-600 bg-blue-50' },
+          { label: 'Labor cost', value: `$${monthCost.toLocaleString()}`, sub: new Date().toLocaleString('en-US', { month: 'short', year: 'numeric' }), icon: DollarSign, color: 'text-emerald-600 bg-emerald-50' },
+          { label: 'Hours', value: `${totalHours.toFixed(1)}h`, sub: 'All time', icon: Clock, color: 'text-slate-600 bg-slate-100' },
+          { label: 'Labor cost', value: `$${totalCost.toLocaleString()}`, sub: 'All time', icon: DollarSign, color: 'text-slate-600 bg-slate-100' },
         ].map(stat => (
-          <div key={stat.label} className="plumbr-card p-4">
+          <div key={stat.label + stat.sub} className="plumbr-card p-4">
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 ${stat.color}`}>
               <stat.icon size={15} />
             </div>
             <p className="text-lg font-bold text-slate-800">{stat.value}</p>
-            <p className="text-xs text-slate-400 mt-0.5">{stat.label}</p>
+            <p className="text-xs text-slate-500 mt-0.5">{stat.label}</p>
+            <p className="text-xs text-slate-400">{stat.sub}</p>
           </div>
         ))}
       </div>

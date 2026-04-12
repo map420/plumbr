@@ -59,6 +59,16 @@ export const memoryAdapter: DbAdapter = {
         .filter(([, ids]) => ids.has(technicianId))
         .map(([jobId]) => jobId)
     },
+    async findAllJobAssignments(userId) {
+      const result: { jobId: string; technicianId: string; technicianName: string }[] = []
+      for (const [jobId, techIds] of store.jobTechnicians) {
+        for (const techId of techIds) {
+          const tech = store.technicians.get(techId)
+          if (tech?.userId === userId) result.push({ jobId, technicianId: techId, technicianName: tech.name })
+        }
+      }
+      return result
+    },
   },
   expenses: {
     async findAll(userId) {

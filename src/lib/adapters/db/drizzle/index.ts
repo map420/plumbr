@@ -62,6 +62,13 @@ export const drizzleAdapter: DbAdapter = {
         .where(eq(jobTechnicians.technicianId, technicianId))
       return rows.map(r => r.jobId)
     },
+    async findAllJobAssignments(userId) {
+      const rows = await db.select({ jobId: jobTechnicians.jobId, technicianId: technicians.id, technicianName: technicians.name })
+        .from(jobTechnicians)
+        .innerJoin(technicians, eq(jobTechnicians.technicianId, technicians.id))
+        .where(eq(technicians.userId, userId))
+      return rows
+    },
   },
   expenses: {
     async findAll(userId) {

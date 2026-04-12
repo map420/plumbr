@@ -91,6 +91,7 @@ export interface DbAdapter {
     removeFromJob(jobId: string, technicianId: string): Promise<void>
     findByJob(jobId: string): Promise<Technician[]>
     findJobsByTechnician(technicianId: string): Promise<string[]>
+    findAllJobAssignments(userId: string): Promise<{ jobId: string; technicianId: string; technicianName: string }[]>
   }
   expenses: {
     findAll(userId: string): Promise<Expense[]>

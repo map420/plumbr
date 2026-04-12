@@ -12,6 +12,7 @@ import { Briefcase, Plus, Trash2 } from 'lucide-react'
 
 type Job = { id: string; name: string; clientName: string; status: string; startDate: Date | null; endDate: Date | null; budgetedCost: string | null }
 type JobStatus = 'lead' | 'active' | 'on_hold' | 'completed' | 'cancelled'
+type Assignment = { jobId: string; technicianId: string; technicianName: string }
 type Translations = {
   title: string; new: string; empty: string
   status: Record<JobStatus, string>
@@ -20,7 +21,7 @@ type Translations = {
 
 const ALL_STATUSES: JobStatus[] = ['lead', 'active', 'on_hold', 'completed', 'cancelled']
 
-export function JobsClient({ initialJobs, planInfo, translations: t }: { initialJobs: Job[]; planInfo: { current: number; limit: number } | null; translations: Translations }) {
+export function JobsClient({ initialJobs, jobAssignments, planInfo, translations: t }: { initialJobs: Job[]; jobAssignments: Assignment[]; planInfo: { current: number; limit: number } | null; translations: Translations }) {
   const locale = useLocale()
   const router = useRouter()
   const [search, setSearch] = useState('')
@@ -104,6 +105,7 @@ export function JobsClient({ initialJobs, planInfo, translations: t }: { initial
                 <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.startDate}</th>
                 <th className="text-left px-4 py-3 font-medium text-slate-500">{t.fields.endDate}</th>
                 <th className="text-right px-4 py-3 font-medium text-slate-500">{t.fields.budgetedCost}</th>
+                <th className="px-4 py-3 font-medium text-slate-500">Team</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
@@ -124,6 +126,9 @@ export function JobsClient({ initialJobs, planInfo, translations: t }: { initial
                   <td className="px-4 py-3 text-right font-medium text-slate-700">
                     {job.budgetedCost && parseFloat(job.budgetedCost) > 0 ? `$${parseFloat(job.budgetedCost).toLocaleString()}` : '—'}
                   </td>
+                  <td className="px-4 py-3">
+                    <TechAvatars techs={jobAssignments.filter(a => a.jobId === job.id)} />
+                  </td>
                   <td className="px-4 py-3 text-right">
                     <button onClick={e => { e.stopPropagation(); setDeleteId(job.id) }} className="text-slate-400 hover:text-red-500 transition-colors">
                       <Trash2 size={15} />
@@ -134,6 +139,28 @@ export function JobsClient({ initialJobs, planInfo, translations: t }: { initial
             </tbody>
           </table>
           </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function TechAvatars({ techs }: { techs: Assignment[] }) {
+  if (techs.length === 0) return <span className="text-slate-300 text-xs">—</span>
+  const visible = techs.slice(0, 3)
+  const extra = techs.length - visible.length
+  return (
+    <div className="flex items-center">
+      {visible.map((t, i) => (
+        <div key={t.technicianId} title={t.technicianName}
+          className="w-6 h-6 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-[10px] font-bold border-2 border-white"
+          style={{ marginLeft: i > 0 ? '-6px' : 0 }}>
+          {t.technicianName.charAt(0).toUpperCase()}
+        </div>
+      ))}
+      {extra > 0 && (
+        <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 text-[10px] font-bold border-2 border-white" style={{ marginLeft: '-6px' }}>
+          +{extra}
         </div>
       )}
     </div>

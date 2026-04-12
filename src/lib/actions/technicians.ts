@@ -57,3 +57,8 @@ export async function getTechniciansByJob(jobId: string) {
   await requireAuth()
   return dbAdapter.technicians.findByJob(jobId)
 }
+
+export async function getAllJobAssignments() {
+  const userId = await requireAuth()
+  return dbAdapter.technicians.findAllJobAssignments(userId)
+}
