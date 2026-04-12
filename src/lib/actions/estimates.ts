@@ -4,7 +4,7 @@ import { dbAdapter } from '@/lib/adapters/db'
 import { emailAdapter } from '@/lib/adapters/email'
 import { revalidatePath } from 'next/cache'
 import type { LineItemInput } from '@/lib/adapters/db/types'
-import { estimateSentEmail } from '@/lib/email-templates'
+import { estimateSentEmail, estimateApprovedEmail } from '@/lib/email-templates'
 import { isPro, STARTER_LIMITS } from '@/lib/stripe'
 import { getUserPlan } from './billing'
 import { requireUser as requireAuth } from './auth-helpers'
@@ -123,6 +123,25 @@ export async function updateEstimate(id: string, data: Partial<{
   if (data.status === 'approved' && previous?.status !== 'approved' && estimate.jobId) {
     await dbAdapter.jobs.update(estimate.jobId, userId, { status: 'active' })
       .catch(err => console.error('[AUTO #2] job update failed:', err))
+  }
+
+  // Email contractor when estimate approved
+  if (data.status === 'approved' && previous?.status !== 'approved') {
+    const contractorUser = await dbAdapter.users.findById(userId)
+    if (contractorUser?.email) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://plumbr.mrlabs.io'
+      await emailAdapter.send({
+        to: contractorUser.email,
+        subject: `✅ ${estimate.clientName} approved estimate ${estimate.number}`,
+        html: estimateApprovedEmail({
+          contractorName: contractorUser.name ?? contractorUser.companyName ?? 'there',
+          clientName: estimate.clientName,
+          estimateNumber: estimate.number,
+          total: estimate.total,
+          appUrl: `${appUrl}/en/estimates/${estimate.id}`,
+        }),
+      }).catch(err => console.error('[NOTIF] estimate_approved email failed:', err))
+    }
   }
 
   // Notification — Estimate marked Approved

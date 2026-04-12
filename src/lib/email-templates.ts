@@ -160,6 +160,30 @@ export function invoiceOverdueEmail(opts: {
   `)
 }
 
+export function estimateApprovedEmail(opts: {
+  contractorName: string
+  clientName: string
+  estimateNumber: string
+  total: string
+  appUrl: string
+}) {
+  return layout(`
+    <h1 style="font-size: 24px; font-weight: 700; margin-bottom: 8px; color: #16a34a;">Estimate Approved! 🎉</h1>
+    <p><strong>${opts.clientName}</strong> just approved estimate <strong>${opts.estimateNumber}</strong>.</p>
+
+    <div style="${CARD_STYLE} border-left: 4px solid #22c55e;">
+      <table style="width: 100%; font-size: 14px;">
+        <tr><td style="color: #64748b; padding: 4px 0;">Client</td><td style="text-align: right; font-weight: 600;">${opts.clientName}</td></tr>
+        <tr><td style="color: #64748b; padding: 4px 0;">Estimate #</td><td style="text-align: right; font-weight: 600;">${opts.estimateNumber}</td></tr>
+        <tr><td style="color: #64748b; padding: 4px 0;">Amount</td><td style="text-align: right; font-weight: 700; font-size: 20px; color: #16a34a;">$${parseFloat(opts.total).toLocaleString()}</td></tr>
+      </table>
+    </div>
+
+    <a href="${opts.appUrl}" style="${BUTTON_STYLE}">View in Plumbr →</a>
+    <p style="color: #64748b; font-size: 14px; margin-top: 24px;">The linked job has been automatically set to Active.</p>
+  `)
+}
+
 export function invoiceReminderEmail(opts: {
   clientName: string
   invoiceNumber: string
