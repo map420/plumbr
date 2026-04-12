@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, FileText, Briefcase, Calendar, Wrench, Receipt, Settings, Users, X, Lock, CreditCard, BarChart2
+  LayoutDashboard, FileText, Briefcase, Calendar, Wrench, Receipt, Settings, Users, X, Lock, CreditCard
 } from 'lucide-react'
 import { NotificationBell } from './NotificationBell'
 
@@ -24,7 +24,6 @@ export default function Sidebar({ onClose, pro }: { onClose?: () => void; pro?: 
     { href: `/${locale}/estimates`, label: t('estimates'), icon: FileText },
     { href: `/${locale}/invoices`, label: t('invoices'), icon: Receipt },
     { href: `/${locale}/expenses`, label: 'Expenses', icon: CreditCard },
-    { href: `/${locale}/reports`, label: 'Reports', icon: BarChart2 },
     { href: `/${locale}/schedule`, label: t('schedule'), icon: Calendar },
     { href: `/${locale}/field`, label: t('field'), icon: Wrench },
     { href: `/${locale}/team`, label: 'Team', icon: Users, locked: !pro },
