@@ -183,7 +183,8 @@ export function EstimateFormClient({ translations: t, estimate }: { translations
       <div className="plumbr-card p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-slate-800">{t.lineItems.title}</h3>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-slate-400 font-medium">Templates:</span>
             {Object.keys(TEMPLATES).map((name) => (
               <button key={name} type="button" onClick={() => setItems(TEMPLATES[name])} className="text-xs px-2 py-1 rounded border border-[#F97316]/40 text-[#F97316] hover:bg-orange-50">{name}</button>
             ))}

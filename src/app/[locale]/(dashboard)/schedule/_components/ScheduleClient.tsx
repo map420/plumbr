@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useLocale } from 'next-intl'
 import { JobStatusBadge } from '@/components/jobs/JobStatusBadge'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 
 type JobStatus = 'lead' | 'active' | 'on_hold' | 'completed' | 'cancelled'
 type Job = { id: string; name: string; clientName: string; status: string; startDate: Date | null; endDate: Date | null }
@@ -69,15 +69,15 @@ export function ScheduleClient({ initialJobs, translations: t }: { initialJobs: 
           const dayJobs = jobsForDay(day)
           const isToday = sameDay(day, new Date())
           return (
-            <div key={i} className={`plumbr-card p-3 min-h-[200px] ${isToday ? 'ring-2 ring-[#F97316]' : ''}`}>
-              <div className={`text-xs font-semibold mb-2 ${isToday ? 'text-[#F97316]' : 'text-slate-500'}`}>
-                {DAY_NAMES[day.getDay()]} {day.getDate()}
+            <div key={i} className={`plumbr-card p-3 min-h-[200px] group/day ${isToday ? 'ring-2 ring-[#F97316]' : ''}`}>
+              <div className={`flex items-center justify-between mb-2 ${isToday ? 'text-[#F97316]' : 'text-slate-500'}`}>
+                <span className="text-xs font-semibold">{DAY_NAMES[day.getDay()]} {day.getDate()}</span>
+                <Link href={`/${locale}/jobs/new`} className="opacity-0 group-hover/day:opacity-100 transition-opacity p-0.5 rounded hover:bg-slate-100" title="Add job">
+                  <Plus size={12} className="text-slate-400 hover:text-[#F97316]" />
+                </Link>
               </div>
               {dayJobs.length === 0 ? (
-                <Link href={`/${locale}/jobs/new`} className="block text-xs text-slate-300 hover:text-[#F97316] transition-colors group/add">
-                  <span>{t.noJobs}</span>
-                  <span className="block mt-1 opacity-0 group-hover/add:opacity-100 text-[#F97316]">+ Add job</span>
-                </Link>
+                <p className="text-xs text-slate-300">{t.noJobs}</p>
               ) : (
                 <div className="space-y-1.5">
                   {dayJobs.map((job) => (

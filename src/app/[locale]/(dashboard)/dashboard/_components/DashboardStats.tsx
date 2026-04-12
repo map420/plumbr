@@ -5,7 +5,7 @@ import { useLocale } from 'next-intl'
 import { DollarSign, Briefcase, FileText, TrendingUp, Target, Users } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend,
+  PieChart, Pie, Cell, Legend, Label,
 } from 'recharts'
 
 type T = {
@@ -102,10 +102,16 @@ export function DashboardStats({ stats, chartData, userName, translations: t }: 
           {hasJobData ? (
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
-                <Pie data={chartData.jobsByStatus} dataKey="count" nameKey="status" cx="50%" cy="50%" outerRadius={70} innerRadius={40}>
+                <Pie data={chartData.jobsByStatus} dataKey="count" nameKey="status" cx="50%" cy="50%" outerRadius={70} innerRadius={45}>
                   {chartData.jobsByStatus.map((entry) => (
                     <Cell key={entry.status} fill={STATUS_COLORS[entry.status] ?? '#94a3b8'} />
                   ))}
+                  <Label
+                    value={chartData.jobsByStatus.reduce((s, e) => s + e.count, 0)}
+                    position="center"
+                    className="text-2xl font-bold fill-slate-900"
+                    style={{ fontSize: 22, fontWeight: 700, fill: '#0f172a' }}
+                  />
                 </Pie>
                 <Tooltip formatter={(v, name) => [v, name]} contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }} />
                 <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />

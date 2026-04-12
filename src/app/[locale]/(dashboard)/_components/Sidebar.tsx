@@ -67,9 +67,12 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
         </div>
         <Link
           href={switchHref}
-          className="text-xs font-medium text-white/40 hover:text-white/80 transition-colors uppercase tracking-wide"
+          className="flex items-center gap-1 text-xs font-medium text-white/50 hover:text-white/90 transition-colors border border-white/20 hover:border-white/40 rounded px-2 py-0.5"
+          title={`Switch to ${otherLocale === 'en' ? 'English' : 'Español'}`}
         >
-          {otherLocale}
+          <span className="uppercase tracking-wide">{locale}</span>
+          <span className="text-white/30">→</span>
+          <span className="uppercase tracking-wide text-white/30 hover:text-white/70">{otherLocale}</span>
         </Link>
       </div>
     </aside>
