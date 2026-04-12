@@ -25,6 +25,22 @@
     background-color: #1E3A5F;
     color: white;
   }
+  .plumbr-input {
+    width: 100%;
+    border: 1px solid rgb(226 232 240);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: rgb(15 23 42);
+    outline: none;
+    transition: box-shadow 0.15s, border-color 0.15s;
+  }
+  .plumbr-input:focus {
+    border-color: rgb(30 58 95 / 0.4);
+    box-shadow: 0 0 0 3px rgb(30 58 95 / 0.1);
+  }
+  .plumbr-input::placeholder { color: rgb(148 163 184); }
   .btn-primary {
     background-color: #F97316;
     color: white;
