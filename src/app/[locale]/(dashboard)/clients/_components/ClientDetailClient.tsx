@@ -6,10 +6,12 @@ import { useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { updateClient } from '@/lib/actions/clients'
 import { EstimateStatusBadge } from '@/components/estimates/EstimateStatusBadge'
+import { JobStatusBadge } from '@/components/jobs/JobStatusBadge'
 import { Toast } from '@/components/Toast'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { Mail, Phone, MapPin, FileText, Briefcase, Receipt, Edit2, Check, X } from 'lucide-react'
 import type { EstimateStatus } from '@/lib/store/estimates'
+import type { JobStatus } from '@/lib/store/jobs'
 
 type Client = { id: string; name: string; email: string | null; phone: string | null; address: string | null; notes: string | null }
 type Job = { id: string; name: string; status: string; budgetedCost: string }
@@ -122,7 +124,7 @@ export function ClientDetailClient({ client, jobs, estimates, invoices }: {
               {jobs.map(j => (
                 <tr key={j.id} className="hover:bg-slate-50">
                   <td className="px-4 py-3"><Link href={`/${locale}/jobs/${j.id}`} className="font-medium text-[#1E3A5F] hover:underline">{j.name}</Link></td>
-                  <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[j.status] ?? ''}`}>{j.status}</span></td>
+                  <td className="px-4 py-3"><JobStatusBadge status={j.status as JobStatus} label={j.status.charAt(0).toUpperCase() + j.status.slice(1)} /></td>
                   <td className="px-4 py-3 text-right text-slate-600">${parseFloat(j.budgetedCost).toLocaleString()}</td>
                 </tr>
               ))}
