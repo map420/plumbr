@@ -100,7 +100,7 @@ export async function sendInvoiceToClient(id: string): Promise<{ sent: boolean; 
   if (!invoice.clientEmail) return { sent: false, error: 'No client email on this invoice.' }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://plumbr.mrlabs.io'
-  const contractorName = user?.companyName || user?.name || 'Your contractor'
+  const contractorName = [user?.name, user?.companyName].filter(Boolean).join(' · ') || 'Your contractor'
   // Generate share token so client can view invoice online
   const token = invoice.shareToken ?? crypto.randomUUID()
   if (!invoice.shareToken) {

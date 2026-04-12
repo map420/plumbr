@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
         // Email client when invoice goes overdue
         if (inv.clientEmail && inv.dueDate) {
           const contractor = await db.select().from(users).where(eq(users.id, inv.userId)).then(r => r[0])
-          const contractorName = contractor?.name ?? contractor?.companyName ?? 'Your Contractor'
+          const contractorName = [contractor?.name, contractor?.companyName].filter(Boolean).join(' · ') || 'Your Contractor'
           const token = inv.shareToken ?? crypto.randomUUID()
           if (!inv.shareToken) {
             await db.update(invoices).set({ shareToken: token }).where(eq(invoices.id, inv.id)).catch(() => null)
@@ -111,7 +111,7 @@ export async function GET(req: NextRequest) {
       if (!inv.clientEmail || !inv.dueDate) continue
       try {
         const contractor = await db.select().from(users).where(eq(users.id, inv.userId)).then(r => r[0])
-        const contractorName = contractor?.name ?? contractor?.companyName ?? 'Your Contractor'
+        const contractorName = [contractor?.name, contractor?.companyName].filter(Boolean).join(' · ') || 'Your Contractor'
         await emailAdapter.send({
           to: inv.clientEmail,
           replyTo: contractor?.email,
@@ -149,7 +149,7 @@ export async function GET(req: NextRequest) {
       if (!est.clientEmail) continue
       try {
         const contractor = await db.select().from(users).where(eq(users.id, est.userId)).then(r => r[0])
-        const contractorName = contractor?.name ?? contractor?.companyName ?? 'Your Contractor'
+        const contractorName = [contractor?.name, contractor?.companyName].filter(Boolean).join(' · ') || 'Your Contractor'
         await emailAdapter.send({
           to: est.clientEmail,
           replyTo: contractor?.email,

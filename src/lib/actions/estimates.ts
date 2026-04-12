@@ -95,7 +95,7 @@ export async function updateEstimate(id: string, data: Partial<{
   // Automation #1 — Estimate marked Sent → email to client with portal link
   if (data.status === 'sent' && previous?.status !== 'sent' && estimate.clientEmail) {
     const contractorUser = await dbAdapter.users.findById(userId)
-    const contractorName = contractorUser?.name ?? contractorUser?.companyName ?? 'Your Contractor'
+    const contractorName = [contractorUser?.name, contractorUser?.companyName].filter(Boolean).join(' · ') || 'Your Contractor'
     // Generate share token so client can approve/reject online
     const token = estimate.shareToken ?? crypto.randomUUID()
     if (!estimate.shareToken) {
