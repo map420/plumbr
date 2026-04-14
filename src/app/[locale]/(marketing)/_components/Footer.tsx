@@ -55,8 +55,9 @@ export function Footer({ locale }: { locale: string }) {
           <div>
             <h3 className="text-white font-semibold text-sm mb-4">Product</h3>
             <ul className="space-y-2.5 text-sm">
-              <li><Link href={`/${locale}#features`} className="hover:text-white transition-colors">Features</Link></li>
+              <li><Link href={`/${locale}/features`} className="hover:text-white transition-colors">Features</Link></li>
               <li><Link href={`/${locale}/pricing`} className="hover:text-white transition-colors">Pricing</Link></li>
+              <li><Link href={`/${locale}/blog`} className="hover:text-white transition-colors">Blog</Link></li>
               <li><Link href={`/${locale}/sign-up`} className="hover:text-white transition-colors">Start free trial</Link></li>
               <li><Link href={`/${locale}/sign-in`} className="hover:text-white transition-colors">Sign in</Link></li>
             </ul>

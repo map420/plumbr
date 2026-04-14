@@ -91,6 +91,9 @@ export function Navbar({ locale, isSignedIn }: { locale: string; isSignedIn: boo
           <Link href={`/${locale}/pricing`} className="text-sm font-medium text-slate-600 hover:text-[#1E3A5F] transition-colors">
             Pricing
           </Link>
+          <Link href={`/${locale}/blog`} className="text-sm font-medium text-slate-600 hover:text-[#1E3A5F] transition-colors">
+            Blog
+          </Link>
         </div>
 
         {/* Desktop CTAs */}
@@ -156,6 +159,7 @@ export function Navbar({ locale, isSignedIn }: { locale: string; isSignedIn: boo
           </div>
 
           <Link href={`/${locale}/pricing`} onClick={() => setOpen(false)} className="block py-2.5 text-sm font-medium text-slate-700">Pricing</Link>
+          <Link href={`/${locale}/blog`} onClick={() => setOpen(false)} className="block py-2.5 text-sm font-medium text-slate-700">Blog</Link>
 
           <div className="pt-3 flex flex-col gap-2 border-t border-slate-100 mt-2">
             {!isSignedIn && (
