@@ -12,7 +12,7 @@ export default async function TermsPage() {
             <div className="w-7 h-7 bg-[#1E3A5F] rounded-lg flex items-center justify-center">
               <Wrench size={14} className="text-white" />
             </div>
-            <span className="text-xl font-extrabold text-[#1E3A5F]">Plumbr</span>
+            <span className="text-xl font-extrabold text-[#1E3A5F]">WorkPilot</span>
           </Link>
         </div>
       </header>
@@ -23,11 +23,11 @@ export default async function TermsPage() {
         <div className="prose prose-slate max-w-none space-y-8 text-slate-700 leading-relaxed">
           <section>
             <h2 className="text-xl font-bold text-[#1E3A5F] mb-3">1. Acceptance of Terms</h2>
-            <p>By accessing or using Plumbr, you agree to be bound by these Terms of Service. If you do not agree, do not use the service.</p>
+            <p>By accessing or using WorkPilot, you agree to be bound by these Terms of Service. If you do not agree, do not use the service.</p>
           </section>
           <section>
             <h2 className="text-xl font-bold text-[#1E3A5F] mb-3">2. Description of Service</h2>
-            <p>Plumbr is a field service management platform for contractors. We provide tools for estimates, invoicing, job costing, scheduling, and field operations.</p>
+            <p>WorkPilot is a field service management platform for contractors. We provide tools for estimates, invoicing, job costing, scheduling, and field operations.</p>
           </section>
           <section>
             <h2 className="text-xl font-bold text-[#1E3A5F] mb-3">3. Accounts and Billing</h2>
@@ -39,7 +39,7 @@ export default async function TermsPage() {
           </section>
           <section>
             <h2 className="text-xl font-bold text-[#1E3A5F] mb-3">5. Limitation of Liability</h2>
-            <p>Plumbr is provided "as is." We are not liable for any indirect, incidental, or consequential damages arising from your use of the service.</p>
+            <p>WorkPilot is provided "as is." We are not liable for any indirect, incidental, or consequential damages arising from your use of the service.</p>
           </section>
           <section>
             <h2 className="text-xl font-bold text-[#1E3A5F] mb-3">6. Changes to Terms</h2>

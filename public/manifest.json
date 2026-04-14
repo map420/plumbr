@@ -1,6 +1,6 @@
 {
-  "name": "Plumbr",
-  "short_name": "Plumbr",
+  "name": "WorkPilot",
+  "short_name": "WorkPilot",
   "description": "Your construction business, straight.",
   "start_url": "/en/dashboard",
   "display": "standalone",

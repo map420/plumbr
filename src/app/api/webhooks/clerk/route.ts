@@ -2,6 +2,11 @@ import { headers } from 'next/headers'
 import { WebhookEvent } from '@clerk/nextjs/server'
 import { Webhook } from 'svix'
 import { dbAdapter } from '@/lib/adapters/db'
+import { addNotionUser } from '@/lib/notion'
+import { Resend } from 'resend'
+
+const APP_NAME = 'WorkPilot'
+const OWNER_EMAIL = 'moisesap498@gmail.com'
 
 export async function POST(req: Request) {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET
@@ -39,6 +44,31 @@ export async function POST(req: Request) {
         stripeCustomerId: null, stripeSubscriptionId: null,
         logoUrl: null, taxRate: null, documentFooter: null, paymentTerms: null,
       })
+
+      const name = [first_name, last_name].filter(Boolean).join(' ') || null
+      const now = new Date()
+      const fecha = now.toLocaleDateString('es-PE', { timeZone: 'America/Lima', day: '2-digit', month: 'long', year: 'numeric' })
+      const hora = now.toLocaleTimeString('es-PE', { timeZone: 'America/Lima', hour: '2-digit', minute: '2-digit' })
+
+      await Promise.all([
+        addNotionUser({ id, name, email, plan: null }),
+        new Resend(process.env.RESEND_API_KEY).emails.send({
+          from: `${APP_NAME} <noreply@mrlabs.io>`,
+          to: OWNER_EMAIL,
+          subject: `🆕 Nuevo usuario en ${APP_NAME}`,
+          html: `
+            <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
+              <h2 style="margin:0 0 16px">🆕 Nuevo registro en <strong>${APP_NAME}</strong></h2>
+              <table style="width:100%;border-collapse:collapse">
+                <tr><td style="padding:8px 0;color:#888;width:120px">Nombre</td><td style="padding:8px 0"><strong>${name || '—'}</strong></td></tr>
+                <tr><td style="padding:8px 0;color:#888">Email</td><td style="padding:8px 0"><strong>${email}</strong></td></tr>
+                <tr><td style="padding:8px 0;color:#888">Fecha</td><td style="padding:8px 0">${fecha}</td></tr>
+                <tr><td style="padding:8px 0;color:#888">Hora</td><td style="padding:8px 0">${hora} (Lima)</td></tr>
+              </table>
+            </div>
+          `,
+        }),
+      ])
     }
   }
 

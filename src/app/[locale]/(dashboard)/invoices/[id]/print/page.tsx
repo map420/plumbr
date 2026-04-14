@@ -14,7 +14,7 @@ export default async function PrintInvoicePage({ params }: { params: Promise<{ i
   ])
   if (!invoice) notFound()
 
-  const companyName = user?.companyName || 'Plumbr'
+  const companyName = user?.companyName || 'WorkPilot'
   const companyPhone = user?.phone || ''
   const companyEmail = user?.email || ''
 

@@ -10,7 +10,7 @@ function getResend() {
 export const resendAdapter: EmailAdapter = {
   async send({ to, subject, html, from, replyTo }) {
     const { data, error } = await getResend().emails.send({
-      from: from ?? 'Plumbr <noreply@mrlabs.io>',
+      from: from ?? 'WorkPilot <noreply@mrlabs.io>',
       to,
       subject,
       html,

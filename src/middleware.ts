@@ -18,6 +18,7 @@ const isPublicRoute = createRouteMatcher([
 ])
 
 export default clerkMiddleware(async (auth, req: NextRequest) => {
+  if (req.nextUrl.pathname.startsWith('/api/')) return
   if (!isPublicRoute(req)) await auth.protect()
   return intlMiddleware(req)
 })

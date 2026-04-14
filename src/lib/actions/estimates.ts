@@ -101,7 +101,7 @@ export async function updateEstimate(id: string, data: Partial<{
     if (!estimate.shareToken) {
       await dbAdapter.estimates.update(estimate.id, userId, { shareToken: token }).catch(() => null)
     }
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://plumbr.mrlabs.io'
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://workpilot.mrlabs.io'
     const portalUrl = `${appUrl}/en/portal/${token}`
     await emailAdapter.send({
       to: estimate.clientEmail,
@@ -129,7 +129,7 @@ export async function updateEstimate(id: string, data: Partial<{
   if (data.status === 'approved' && previous?.status !== 'approved') {
     const contractorUser = await dbAdapter.users.findById(userId)
     if (contractorUser?.email) {
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://plumbr.mrlabs.io'
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://workpilot.mrlabs.io'
       await emailAdapter.send({
         to: contractorUser.email,
         subject: `✅ ${estimate.clientName} approved estimate ${estimate.number}`,
@@ -159,7 +159,7 @@ export async function updateEstimate(id: string, data: Partial<{
   if (data.status === 'rejected' && previous?.status !== 'rejected') {
     const contractorUser = await dbAdapter.users.findById(userId)
     if (contractorUser?.email) {
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://plumbr.mrlabs.io'
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://workpilot.mrlabs.io'
       await emailAdapter.send({
         to: contractorUser.email,
         subject: `❌ ${estimate.clientName} declined estimate ${estimate.number}`,

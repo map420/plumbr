@@ -1,4 +1,4 @@
-// All email HTML templates for Plumbr automations
+// All email HTML templates for WorkPilot automations
 
 const BASE_STYLE = `font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #1e293b; line-height: 1.6;`
 const BUTTON_STYLE = `display: inline-block; background: #1E3A5F; color: #fff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;`
@@ -8,11 +8,11 @@ function layout(content: string) {
   return `
     <div style="${BASE_STYLE} max-width: 600px; margin: 0 auto; padding: 32px 16px;">
       <div style="margin-bottom: 32px;">
-        <span style="font-size: 20px; font-weight: 700; color: #1E3A5F;">Plumbr</span>
+        <span style="font-size: 20px; font-weight: 700; color: #1E3A5F;">WorkPilot</span>
       </div>
       ${content}
       <div style="margin-top: 48px; padding-top: 24px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #94a3b8;">
-        Plumbr — Field Service Management
+        WorkPilot — Field Service Management
       </div>
     </div>
   `
@@ -179,7 +179,7 @@ export function estimateApprovedEmail(opts: {
       </table>
     </div>
 
-    <a href="${opts.appUrl}" style="${BUTTON_STYLE}">View in Plumbr →</a>
+    <a href="${opts.appUrl}" style="${BUTTON_STYLE}">View in WorkPilot →</a>
     <p style="color: #64748b; font-size: 14px; margin-top: 24px;">The linked job has been automatically set to Active.</p>
   `)
 }

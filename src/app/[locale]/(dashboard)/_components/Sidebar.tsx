@@ -55,7 +55,7 @@ export default function Sidebar({ onClose, pro }: { onClose?: () => void; pro?: 
   return (
     <aside className="w-60 h-full plumbr-nav flex flex-col">
       <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between">
-        <span className="text-xl font-bold tracking-tight">Plumbr</span>
+        <span className="text-xl font-bold tracking-tight">WorkPilot</span>
         <div className="flex items-center gap-1">
           <span className="hidden md:block"><NotificationBell /></span>
           {onClose && (

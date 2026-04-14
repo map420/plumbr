@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
   }
 
   const results = { overdueMarked: 0, overdueEmailsSent: 0, estimatesExpired: 0, followUpsSent: 0, remindersSent: 0, unbilledAlerts: 0, errors: 0 }
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://plumbr.mrlabs.io'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://workpilot.mrlabs.io'
   const now = new Date()
 
   try {

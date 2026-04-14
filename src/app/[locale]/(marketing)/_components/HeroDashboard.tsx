@@ -21,7 +21,7 @@ export function HeroDashboard() {
           <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
           <div className="w-3 h-3 rounded-full bg-green-500/80" />
           <div className="flex-1 mx-3 bg-white/10 rounded-md h-5 flex items-center px-3">
-            <span className="text-white/40 text-[10px]">plumbr.mrlabs.io/en/dashboard</span>
+            <span className="text-white/40 text-[10px]">workpilot.mrlabs.io/en/dashboard</span>
           </div>
         </div>
 

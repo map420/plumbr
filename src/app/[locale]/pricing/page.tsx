@@ -11,7 +11,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-8">
       <div className="max-w-lg w-full">
         <div className="text-center mb-10">
-          <h1 className="text-3xl font-bold text-[#1E3A5F]">Plumbr Pro</h1>
+          <h1 className="text-3xl font-bold text-[#1E3A5F]">WorkPilot Pro</h1>
           <p className="text-slate-500 mt-2">Everything you need to run your construction business</p>
         </div>
 

@@ -5,7 +5,9 @@ import {
   ArrowRight, CheckCircle2, X, FileText, BarChart2, Calendar,
   Smartphone, Users, Receipt, Star, Wrench,
 } from 'lucide-react'
+// Note: Wrench is used in the pricing section below
 import { Navbar } from './_components/Navbar'
+import { Footer } from './_components/Footer'
 import { HeroDashboard } from './_components/HeroDashboard'
 import { VideoModal } from './_components/VideoModal'
 import { DemoTabs } from './_components/DemoTabs'
@@ -119,7 +121,7 @@ export default async function LandingPage() {
                 Stop juggling 5 different tools.
               </h2>
               <p className="text-slate-500 mt-4 text-lg max-w-xl mx-auto">
-                Most contractors manage their business across apps that don't talk to each other. Plumbr fixes that.
+                Most contractors manage their business across apps that don't talk to each other. WorkPilot fixes that.
               </p>
             </ScrollReveal>
 
@@ -148,12 +150,12 @@ export default async function LandingPage() {
                 </div>
               </ScrollReveal>
 
-              {/* With Plumbr */}
+              {/* With WorkPilot */}
               <ScrollReveal delay={200}>
                 <div className="bg-green-50 border border-green-100 rounded-2xl p-8 h-full">
                   <div className="flex items-center gap-2 mb-6">
                     <span className="text-lg">✅</span>
-                    <h3 className="font-bold text-green-700 text-base uppercase tracking-wide" style={{ letterSpacing: '0.05em' }}>With Plumbr</h3>
+                    <h3 className="font-bold text-green-700 text-base uppercase tracking-wide" style={{ letterSpacing: '0.05em' }}>With WorkPilot</h3>
                   </div>
                   <div className="space-y-4">
                     {[
@@ -252,7 +254,7 @@ export default async function LandingPage() {
             <ScrollReveal className="text-center mb-12">
               <span className="text-xs font-bold uppercase tracking-widest text-[#F97316] mb-3 block" style={{ letterSpacing: '0.08em' }}>Product</span>
               <h2 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4">
-                See Plumbr in action.
+                See WorkPilot in action.
               </h2>
               <p className="text-white/50 text-lg">From estimate to paid invoice in under 10 minutes.</p>
             </ScrollReveal>
@@ -266,7 +268,7 @@ export default async function LandingPage() {
             <ScrollReveal className="text-center mb-14">
               <span className="text-xs font-bold uppercase tracking-widest text-[#F97316] mb-3 block" style={{ letterSpacing: '0.08em' }}>Testimonials</span>
               <h2 className="text-4xl md:text-5xl font-extrabold text-[#1E3A5F] tracking-tight">
-                Contractors love Plumbr.
+                Contractors love WorkPilot.
               </h2>
             </ScrollReveal>
 
@@ -344,7 +346,7 @@ export default async function LandingPage() {
                   <div className="text-center mb-8 mt-2">
                     <div className="flex items-center justify-center gap-1 mb-1">
                       <Wrench size={18} className="text-[#1E3A5F]" />
-                      <span className="font-bold text-[#1E3A5F] text-lg">Plumbr Pro</span>
+                      <span className="font-bold text-[#1E3A5F] text-lg">WorkPilot Pro</span>
                     </div>
                     <div className="mt-4 mb-1">
                       <span className="text-6xl font-extrabold text-[#1E3A5F]">$49</span>
@@ -438,45 +440,7 @@ export default async function LandingPage() {
         </section>
       </main>
 
-      {/* ── [11] FOOTER ──────────────────────────────────────────────────── */}
-      <footer className="bg-[#0F2440] text-white/40 py-14">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 mb-10">
-            {/* Logo + tagline */}
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-7 h-7 bg-white/10 rounded-lg flex items-center justify-center">
-                  <Wrench size={14} className="text-white" />
-                </div>
-                <span className="text-xl font-extrabold text-white">Plumbr</span>
-              </div>
-              <p className="text-white/30 text-sm">Your construction business, straight.</p>
-            </div>
-
-            {/* Links */}
-            <div className="flex flex-wrap gap-6 text-sm">
-              <Link href={`/${locale}/privacy`} className="hover:text-white transition-colors">Privacy Policy</Link>
-              <Link href={`/${locale}/terms`} className="hover:text-white transition-colors">Terms of Service</Link>
-              <a href="mailto:hello@mrlabs.io" className="hover:text-white transition-colors">Contact</a>
-            </div>
-
-            {/* Socials */}
-            <div className="flex items-center gap-3">
-              <a href="#" aria-label="Twitter/X" className="w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors text-white/50 text-xs font-bold">
-                𝕏
-              </a>
-              <a href="#" aria-label="LinkedIn" className="w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors text-white/50 text-xs font-bold">
-                in
-              </a>
-            </div>
-          </div>
-
-          <div className="border-t border-white/5 pt-8 text-xs text-white/20 text-center">
-            © 2025 Plumbr. Built by{' '}
-            <a href="https://mrlabs.io" className="hover:text-white/40 transition-colors">Mr Labs</a>.
-          </div>
-        </div>
-      </footer>
+      <Footer locale={locale} />
     </div>
   )
 }

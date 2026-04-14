@@ -99,7 +99,7 @@ export async function sendInvoiceToClient(id: string): Promise<{ sent: boolean; 
   if (!invoice) throw new Error('Invoice not found')
   if (!invoice.clientEmail) return { sent: false, error: 'No client email on this invoice.' }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://plumbr.mrlabs.io'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://workpilot.mrlabs.io'
   const contractorName = [user?.name, user?.companyName].filter(Boolean).join(' · ') || 'Your contractor'
   // Generate share token so client can view invoice online
   const token = invoice.shareToken ?? crypto.randomUUID()
@@ -154,7 +154,7 @@ export async function updateInvoice(id: string, data: Partial<{
 
     const contractorUser = await dbAdapter.users.findById(userId)
     if (contractorUser?.email) {
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://plumbr.mrlabs.io'
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://workpilot.mrlabs.io'
       await emailAdapter.send({
         to: contractorUser.email,
         subject: `💰 ${invoice.clientName} paid invoice ${invoice.number}`,

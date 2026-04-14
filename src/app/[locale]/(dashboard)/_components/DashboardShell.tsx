@@ -33,7 +33,7 @@ export default function DashboardShell({ children, pro }: { children: React.Reac
           <button onClick={() => setOpen(true)} className="text-slate-600 hover:text-slate-900">
             <Menu size={22} />
           </button>
-          <span className="font-bold text-[#1E3A5F] text-lg flex-1">Plumbr</span>
+          <span className="font-bold text-[#1E3A5F] text-lg flex-1">WorkPilot</span>
           <div className="[&_button]:text-slate-600 [&_button]:hover:text-slate-900 [&_button]:bg-transparent [&_button]:hover:bg-slate-100">
             <NotificationBell />
           </div>

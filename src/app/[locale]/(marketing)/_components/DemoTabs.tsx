@@ -32,7 +32,7 @@ function EstimatesMockup() {
         <div className="w-3 h-3 rounded-full bg-red-500" />
         <div className="w-3 h-3 rounded-full bg-yellow-500" />
         <div className="w-3 h-3 rounded-full bg-green-500" />
-        <span className="ml-2 text-slate-500 text-[11px]">plumbr.mrlabs.io/en/estimates/new</span>
+        <span className="ml-2 text-slate-500 text-[11px]">workpilot.mrlabs.io/en/estimates/new</span>
       </div>
       <div className="bg-white/5 rounded-lg p-3 space-y-2">
         <div className="text-slate-400 text-[11px] uppercase tracking-wider mb-2">New Estimate — EST-042</div>

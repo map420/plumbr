@@ -44,7 +44,7 @@ export function VideoModal() {
               className="w-full h-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
-              title="Plumbr product demo"
+              title="WorkPilot product demo"
             />
             <div className="absolute inset-0 flex items-center justify-center text-white/40 text-sm pointer-events-none">
               Add your demo video URL to VideoModal.tsx

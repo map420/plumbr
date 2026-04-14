@@ -13,8 +13,8 @@ const FAQS = [
     a: 'You choose to subscribe at $49/month or cancel — no charges happen automatically. We\'ll send you a reminder before the trial ends.',
   },
   {
-    q: 'Is Plumbr only for plumbers?',
-    a: 'Not at all. Plumbr works for any trade contractor: electricians, roofers, HVAC technicians, general contractors, landscapers, and more.',
+    q: 'Is WorkPilot only for plumbers?',
+    a: 'Not at all. WorkPilot works for any trade contractor: electricians, roofers, HVAC technicians, general contractors, landscapers, and more.',
   },
   {
     q: 'Can my field crew use it on their phones?',
@@ -26,7 +26,7 @@ const FAQS = [
   },
   {
     q: 'Does it integrate with QuickBooks?',
-    a: 'Not yet, but it\'s on our roadmap. Plumbr handles estimates, invoicing, and job costing natively — most contractors find they no longer need QuickBooks for day-to-day operations.',
+    a: 'Not yet, but it\'s on our roadmap. WorkPilot handles estimates, invoicing, and job costing natively — most contractors find they no longer need QuickBooks for day-to-day operations.',
   },
 ]
 

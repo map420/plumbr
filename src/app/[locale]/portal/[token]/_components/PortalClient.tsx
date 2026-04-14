@@ -201,7 +201,7 @@ export function PortalClient({ token, data }: { token: string; data: PortalData 
           </div>
         )}
 
-        <p className="text-center text-xs text-slate-300 mt-8">Powered by Plumbr</p>
+        <p className="text-center text-xs text-slate-300 mt-8">Powered by WorkPilot</p>
       </div>
     </div>
   )

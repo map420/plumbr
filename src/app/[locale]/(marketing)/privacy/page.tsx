@@ -12,7 +12,7 @@ export default async function PrivacyPage() {
             <div className="w-7 h-7 bg-[#1E3A5F] rounded-lg flex items-center justify-center">
               <Wrench size={14} className="text-white" />
             </div>
-            <span className="text-xl font-extrabold text-[#1E3A5F]">Plumbr</span>
+            <span className="text-xl font-extrabold text-[#1E3A5F]">WorkPilot</span>
           </Link>
         </div>
       </header>

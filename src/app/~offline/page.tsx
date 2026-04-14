@@ -17,7 +17,7 @@ export default function OfflinePage() {
         </div>
         <h1 className="text-xl font-bold text-slate-900 mb-2">You&#39;re offline</h1>
         <p className="text-slate-500 text-sm mb-6">
-          Connect to the internet to access Plumbr.
+          Connect to the internet to access WorkPilot.
         </p>
         <button
           onClick={() => window.location.reload()}

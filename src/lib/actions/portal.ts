@@ -4,7 +4,7 @@ import { dbAdapter } from '@/lib/adapters/db'
 import { requireUser as requireAuth } from './auth-helpers'
 import { revalidatePath } from 'next/cache'
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://plumbr.mrlabs.io'
+const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://workpilot.mrlabs.io'
 
 export async function generateEstimateShareToken(id: string): Promise<string> {
   const userId = await requireAuth()
