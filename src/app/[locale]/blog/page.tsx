@@ -7,6 +7,7 @@ import { getAllPosts } from '@/lib/blog'
 import { siteConfig } from '@/lib/config'
 import { Navbar } from '@/app/[locale]/(marketing)/_components/Navbar'
 import { Footer } from '@/app/[locale]/(marketing)/_components/Footer'
+import { NewsletterForm } from './_components/NewsletterForm'
 
 export const metadata: Metadata = {
   title: 'Blog — WorkPilot Contractor Software',
@@ -122,19 +123,7 @@ export default async function BlogPage() {
               Tips for contractors, every week
             </h2>
             <p className="text-slate-500 mb-6">Estimating, invoicing, crew management and growth. No fluff.</p>
-            <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onSubmit={() => {}}>
-              <input
-                type="email"
-                placeholder="your@email.com"
-                className="flex-1 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#F97316]/30"
-              />
-              <button
-                type="submit"
-                className="bg-[#F97316] text-white font-semibold px-6 py-3 rounded-xl text-sm hover:bg-[#ea6c0a] transition-colors"
-              >
-                Subscribe
-              </button>
-            </form>
+            <NewsletterForm />
           </div>
         </section>
       </main>

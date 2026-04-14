@@ -53,12 +53,12 @@ export default async function LandingPage() {
                 </div>
 
                 <h1 className="text-5xl md:text-6xl xl:text-7xl font-extrabold text-white leading-[1.08] tracking-tight mb-6">
-                  Run your contracting<br />
-                  <span className="text-[#F97316]">business like a pro.</span>
+                  The contractor software<br />
+                  <span className="text-[#F97316]">that runs your business.</span>
                 </h1>
 
                 <p className="text-lg md:text-xl text-white/60 max-w-xl mb-10 leading-relaxed">
-                  Estimates, job costing, invoicing and crew scheduling — all in one place. Built for contractors under $5M revenue.
+                  Estimates, job costing, invoicing and crew scheduling — all in one app. Built for contractors under $5M revenue. No per-user fees.
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-8">
@@ -118,10 +118,10 @@ export default async function LandingPage() {
           <div className="max-w-7xl mx-auto px-6">
             <ScrollReveal className="text-center mb-14">
               <h2 className="text-4xl md:text-5xl font-extrabold text-[#1E3A5F] tracking-tight">
-                Stop juggling 5 different tools.
+                Stop juggling 5 different apps.
               </h2>
               <p className="text-slate-500 mt-4 text-lg max-w-xl mx-auto">
-                Most contractors manage their business across apps that don't talk to each other. WorkPilot fixes that.
+                Most contractors manage estimates in Excel, invoices in QuickBooks and crews via text. WorkPilot replaces all of them.
               </p>
             </ScrollReveal>
 
@@ -183,7 +183,7 @@ export default async function LandingPage() {
             <ScrollReveal className="text-center mb-16">
               <span className="text-xs font-bold uppercase tracking-widest text-[#F97316] mb-3 block" style={{ letterSpacing: '0.08em' }}>Features</span>
               <h2 className="text-4xl md:text-5xl font-extrabold text-[#1E3A5F] tracking-tight">
-                Everything you need.<br />Nothing you don't.
+                Contractor software features<br />built for the field.
               </h2>
             </ScrollReveal>
 
@@ -328,7 +328,7 @@ export default async function LandingPage() {
             <ScrollReveal className="text-center mb-14">
               <span className="text-xs font-bold uppercase tracking-widest text-[#F97316] mb-3 block" style={{ letterSpacing: '0.08em' }}>Pricing</span>
               <h2 className="text-4xl md:text-5xl font-extrabold text-[#1E3A5F] tracking-tight mb-4">
-                Simple pricing. No surprises.
+                Contractor software pricing.<br />Simple and flat-rate.
               </h2>
               <p className="text-slate-500 text-lg">One plan. Everything included. No per-user fees.</p>
             </ScrollReveal>
