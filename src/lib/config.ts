@@ -1,5 +1,5 @@
 export const siteConfig = {
-  url: process.env.NEXT_PUBLIC_APP_URL ?? 'https://workpilot.mrlabs.io',
+  url: (process.env.NEXT_PUBLIC_APP_URL ?? 'https://workpilot.mrlabs.io').trim(),
   name: 'WorkPilot',
   locale: 'en',
   tagline: 'Your construction business, straight.',

@@ -92,7 +92,7 @@ export default async function LandingPage() {
         {/* ── [3] SOCIAL PROOF BAR ─────────────────────────────────────────── */}
         <section className="bg-[#F8FAFC] border-y border-slate-100 py-10">
           <div className="max-w-7xl mx-auto px-6">
-            <p className="text-center text-xs font-semibold uppercase tracking-widest text-slate-400 mb-8">
+            <p className="text-center text-xs font-semibold uppercase tracking-widest text-slate-500 mb-8">
               Trusted by contractors across the US
             </p>
             <div className="flex flex-wrap justify-center items-center gap-8 md:gap-14">
@@ -104,7 +104,7 @@ export default async function LandingPage() {
                 { icon: '❄️', name: 'CoolAir HVAC' },
                 { icon: '🪟', name: 'Panes & Sons' },
               ].map(co => (
-                <div key={co.name} className="flex items-center gap-2 text-slate-400 font-semibold text-sm whitespace-nowrap">
+                <div key={co.name} className="flex items-center gap-2 text-slate-500 font-semibold text-sm whitespace-nowrap">
                   <span className="grayscale opacity-60 text-base">{co.icon}</span>
                   <span>{co.name}</span>
                 </div>
