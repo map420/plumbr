@@ -6,9 +6,11 @@ const str = (desc: string) => ({ type: 'string' as const, description: desc })
 const num = (desc: string) => ({ type: 'number' as const, description: desc })
 const optStr = (desc: string) => ({ type: 'string' as const, description: `(Optional) ${desc}` })
 
-// Tools that duplicate the snapshot (general reads) — excluded from default set to save tokens
+// Tools excluded from the essential set because the KPI snapshot already
+// covers their output. The read tools (get_jobs, get_estimates, etc.) are
+// now INCLUDED because the snapshot no longer dumps individual records —
+// the AI must call them to look up specific data.
 const SNAPSHOT_TOOLS = new Set([
-  'get_jobs', 'get_estimates', 'get_invoices', 'get_clients',
   'get_dashboard_stats', 'get_technicians', 'get_catalog_items',
   'get_overdue_invoices', 'get_pending_estimates',
 ])
@@ -17,37 +19,49 @@ export const assistantTools = [
   // ===== READ OPERATIONS =====
   {
     name: 'get_jobs',
-    description: 'Get all jobs. Can filter by status. Returns job name, client, status, dates, budget, actual cost.',
+    description: 'Get jobs. Can filter by status and limit results. Returns job name, client, status, dates, budget, actual cost.',
     input_schema: {
       type: 'object' as const,
-      properties: { status: optStr('Filter: lead, active, on_hold, completed, cancelled') },
+      properties: {
+        status: optStr('Filter: lead, active, on_hold, completed, cancelled'),
+        limit: { type: 'number' as const, description: '(Optional) Max results to return (default 15)' },
+      },
       required: [],
     },
   },
   {
     name: 'get_estimates',
-    description: 'Get all estimates. Can filter by status. Returns number, client, status, total.',
+    description: 'Get estimates. Can filter by status and limit results. Returns number, client, status, total.',
     input_schema: {
       type: 'object' as const,
-      properties: { status: optStr('Filter: draft, sent, approved, rejected, converted') },
+      properties: {
+        status: optStr('Filter: draft, sent, approved, rejected, converted'),
+        limit: { type: 'number' as const, description: '(Optional) Max results to return (default 15)' },
+      },
       required: [],
     },
   },
   {
     name: 'get_invoices',
-    description: 'Get all invoices with revenue summary. Can filter by status.',
+    description: 'Get invoices with revenue summary. Can filter by status and limit results.',
     input_schema: {
       type: 'object' as const,
-      properties: { status: optStr('Filter: draft, sent, paid, overdue, cancelled') },
+      properties: {
+        status: optStr('Filter: draft, sent, paid, overdue, cancelled'),
+        limit: { type: 'number' as const, description: '(Optional) Max results to return (default 15)' },
+      },
       required: [],
     },
   },
   {
     name: 'get_clients',
-    description: 'Get all clients with contact info, or search by name.',
+    description: 'Get clients with contact info. Can search by name and limit results.',
     input_schema: {
       type: 'object' as const,
-      properties: { search: optStr('Search by client name') },
+      properties: {
+        search: optStr('Search by client name'),
+        limit: { type: 'number' as const, description: '(Optional) Max results to return (default 15)' },
+      },
       required: [],
     },
   },

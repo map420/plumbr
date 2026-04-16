@@ -60,33 +60,47 @@ export async function handleToolCall(
       case 'get_jobs': {
         const jobs = await dbAdapter.jobs.findAll(userId)
         const filtered = toolInput.status ? jobs.filter(j => j.status === toolInput.status) : jobs
-        return JSON.stringify(filtered.map(j => ({
-          id: j.id, name: j.name, client: j.clientName, status: j.status,
-          budgeted: j.budgetedCost, actual: j.actualCost,
-          start: j.startDate, end: j.endDate, address: j.address,
-        })))
+        const limit = Math.min(toolInput.limit || 15, 50)
+        const limited = filtered.slice(0, limit)
+        return JSON.stringify({
+          jobs: limited.map(j => ({
+            id: j.id, name: j.name, client: j.clientName, status: j.status,
+            budgeted: j.budgetedCost, actual: j.actualCost,
+            start: j.startDate, end: j.endDate, address: j.address,
+          })),
+          total: filtered.length,
+          showing: limited.length,
+        })
       }
 
       case 'get_estimates': {
         const estimates = await dbAdapter.estimates.findAll(userId)
         const filtered = toolInput.status ? estimates.filter(e => e.status === toolInput.status) : estimates
-        return JSON.stringify(filtered.map(e => ({
-          id: e.id, number: e.number, client: e.clientName, status: e.status,
-          total: e.total, validUntil: e.validUntil, createdAt: e.createdAt,
-        })))
+        const limit = Math.min(toolInput.limit || 15, 50)
+        const limited = filtered.slice(0, limit)
+        return JSON.stringify({
+          estimates: limited.map(e => ({
+            id: e.id, number: e.number, client: e.clientName, status: e.status,
+            total: e.total, validUntil: e.validUntil, createdAt: e.createdAt,
+          })),
+          total: filtered.length,
+          showing: limited.length,
+        })
       }
 
       case 'get_invoices': {
         const invoices = await dbAdapter.invoices.findAll(userId)
         const filtered = toolInput.status ? invoices.filter(i => i.status === toolInput.status) : invoices
+        const limit = Math.min(toolInput.limit || 15, 50)
+        const limited = filtered.slice(0, limit)
         const paidTotal = filtered.filter(i => i.status === 'paid').reduce((s, i) => s + parseFloat(i.total), 0)
         const overdueTotal = filtered.filter(i => i.status === 'overdue').reduce((s, i) => s + parseFloat(i.total), 0)
         return JSON.stringify({
-          invoices: filtered.map(i => ({
+          invoices: limited.map(i => ({
             id: i.id, number: i.number, client: i.clientName, status: i.status,
             total: i.total, dueDate: i.dueDate, paidAt: i.paidAt,
           })),
-          summary: { count: filtered.length, paidTotal: paidTotal.toFixed(2), overdueTotal: overdueTotal.toFixed(2) },
+          summary: { total: filtered.length, showing: limited.length, paidTotal: paidTotal.toFixed(2), overdueTotal: overdueTotal.toFixed(2) },
         })
       }
 
@@ -95,9 +109,15 @@ export async function handleToolCall(
         const filtered = toolInput.search
           ? clients.filter(c => c.name.toLowerCase().includes(toolInput.search.toLowerCase()))
           : clients
-        return JSON.stringify(filtered.map(c => ({
-          id: c.id, name: c.name, email: c.email, phone: c.phone, address: c.address,
-        })))
+        const limit = Math.min(toolInput.limit || 15, 50)
+        const limited = filtered.slice(0, limit)
+        return JSON.stringify({
+          clients: limited.map(c => ({
+            id: c.id, name: c.name, email: c.email, phone: c.phone, address: c.address,
+          })),
+          total: filtered.length,
+          showing: limited.length,
+        })
       }
 
       case 'get_client_history': {
