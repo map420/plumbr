@@ -3,8 +3,9 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
-import { ChevronLeft, Copy, Check, Briefcase, MoreHorizontal, ExternalLink, Unlink, RotateCcw } from 'lucide-react'
-import { addShoppingListItem, markItemPurchased, unmarkItemPurchased, updateShoppingListJob } from '@/lib/actions/shopping-lists'
+import Link from 'next/link'
+import { ChevronLeft, Copy, Check, Briefcase, MoreHorizontal, ExternalLink, Unlink, RotateCcw, Pencil, Trash2, Printer, Save, X } from 'lucide-react'
+import { addShoppingListItem, markItemPurchased, unmarkItemPurchased, updateShoppingListJob, updateShoppingListItem, deleteShoppingListItem } from '@/lib/actions/shopping-lists'
 import { JobPicker, type JobPickerOption } from '@/components/JobPicker'
 
 type Item = { id: string; description: string; quantity: string | null; unit: string | null; estimatedCost: string; status: string; purchasedAt: Date | null }
@@ -123,6 +124,66 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
     }
   }
 
+  // ── Edit pending items ───────────────────────────────────────────────────
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState({ description: '', quantity: '', unit: '', estimatedCost: '' })
+
+  function startEdit(item: Item) {
+    setConfirming(null) // close purchase form if open on same row
+    setEditingId(item.id)
+    setEditForm({
+      description: item.description,
+      quantity: item.quantity ?? '',
+      unit: item.unit ?? '',
+      estimatedCost: item.estimatedCost,
+    })
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
+  }
+
+  async function saveEdit() {
+    if (!editingId) return
+    setSaving(true)
+    try {
+      await updateShoppingListItem(editingId, {
+        description: editForm.description,
+        quantity: editForm.quantity || undefined,
+        unit: editForm.unit || undefined,
+        estimatedCost: editForm.estimatedCost,
+      })
+      setItems(prev => prev.map(it => it.id === editingId ? {
+        ...it,
+        description: editForm.description,
+        quantity: editForm.quantity || null,
+        unit: editForm.unit || null,
+        estimatedCost: editForm.estimatedCost,
+      } : it))
+      setEditingId(null)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleDeleteItem(item: Item) {
+    const msg = item.status === 'purchased'
+      ? 'Delete this item? The linked expense will remain on the job.'
+      : 'Delete this item?'
+    if (!window.confirm(msg)) return
+    setSaving(true)
+    try {
+      await deleteShoppingListItem(item.id)
+      setItems(prev => prev.filter(it => it.id !== item.id))
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setSaving(false)
+    }
+  }
+
   async function handleShare() {
     // Generate text version
     const text = `${list.name}\n\n${items.map(it => `${it.status === 'purchased' ? '✓' : '○'} ${it.description} — $${parseFloat(it.estimatedCost).toLocaleString()}`).join('\n')}\n\nTotal: $${items.reduce((s, it) => s + parseFloat(it.estimatedCost), 0).toLocaleString()}`
@@ -158,6 +219,13 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
         <div className="hidden md:flex items-center justify-between">
           <h1 className="text-xl font-bold" style={{ color: 'var(--wp-text-primary)' }}>{list.name}</h1>
           <div className="flex gap-2">
+            <Link
+              href={`/${locale}/shopping-list/${list.id}/print`}
+              className="btn-secondary btn-sm flex items-center gap-1.5"
+              title="Print-friendly view"
+            >
+              <Printer size={13} /> Print
+            </Link>
             <button onClick={handleShare} className="btn-secondary btn-sm flex items-center gap-1.5">
               {copied ? <><Check size={13} /> {t('copied')}</> : <><Copy size={13} /> {t('copyList')}</>}
             </button>
@@ -298,45 +366,129 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
           <div className="card overflow-hidden">
             {pendingItems.map((item, i) => {
               const isActive = confirming === item.id
+              const isEditing = editingId === item.id
               return (
                 <div key={item.id} style={i > 0 ? { borderTop: '1px solid var(--wp-border-light)' } : undefined}>
-                  <div className="flex items-center gap-3 px-4 py-3 cursor-pointer"
-                    onClick={() => { setConfirming(isActive ? null : item.id); setEditAmount(''); setEditDesc('') }}>
-                    <div className="w-5 h-5 rounded border-2 shrink-0" style={{ borderColor: 'var(--wp-border)' }} />
-                    <span className="flex-1 text-sm" style={{ color: 'var(--wp-text-primary)' }}>{item.description}</span>
-                    <span className="text-sm font-mono font-medium shrink-0" style={{ color: 'var(--wp-text-primary)' }}>
-                      ${parseFloat(item.estimatedCost).toLocaleString()}
-                    </span>
-                  </div>
-                  {isActive && list.jobId && (
-                    <div className="px-4 pb-3 flex items-center gap-2 flex-wrap">
+                  {/* Edit form takes over the row when editing */}
+                  {isEditing ? (
+                    <div className="px-4 py-3 space-y-2" style={{ background: 'var(--wp-bg-secondary)' }}>
                       <input
-                        className="flex-1 min-w-[120px] px-2 py-1 rounded text-sm border"
+                        value={editForm.description}
+                        onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))}
+                        className="w-full px-2 py-1.5 rounded text-sm border"
                         style={{ borderColor: 'var(--wp-border)', color: 'var(--wp-text-primary)', background: 'var(--wp-bg-primary)' }}
-                        value={editDesc || item.description}
-                        onChange={e => setEditDesc(e.target.value)}
-                        onClick={e => e.stopPropagation()}
                         placeholder={t('descriptionPlaceholder')}
+                        autoFocus
                       />
-                      <input
-                        type="number" min="0" step="0.01"
-                        className="w-20 px-2 py-1 rounded text-sm font-mono border"
-                        style={{ borderColor: 'var(--wp-border)', color: 'var(--wp-text-primary)', background: 'var(--wp-bg-primary)' }}
-                        value={editAmount}
-                        onChange={e => setEditAmount(e.target.value)}
-                        onClick={e => e.stopPropagation()}
-                        placeholder={item.estimatedCost}
-                      />
-                      <button onClick={(e) => { e.stopPropagation(); handlePurchase(item) }} disabled={saving}
-                        className="px-3 py-1 rounded text-xs font-medium text-white"
-                        style={{ background: 'var(--wp-primary)' }}>
-                        {saving ? '...' : t('markPurchased')}
-                      </button>
-                      <button onClick={(e) => { e.stopPropagation(); setConfirming(null) }}
-                        className="px-2 py-1 text-xs" style={{ color: 'var(--wp-text-muted)' }}>
-                        ×
-                      </button>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <input
+                          type="number" min="0" step="0.01"
+                          value={editForm.quantity}
+                          onChange={e => setEditForm(f => ({ ...f, quantity: e.target.value }))}
+                          className="w-20 px-2 py-1 rounded text-xs font-mono border"
+                          style={{ borderColor: 'var(--wp-border)', color: 'var(--wp-text-primary)', background: 'var(--wp-bg-primary)' }}
+                          placeholder="Qty"
+                        />
+                        <input
+                          value={editForm.unit}
+                          onChange={e => setEditForm(f => ({ ...f, unit: e.target.value }))}
+                          className="w-24 px-2 py-1 rounded text-xs border"
+                          style={{ borderColor: 'var(--wp-border)', color: 'var(--wp-text-primary)', background: 'var(--wp-bg-primary)' }}
+                          placeholder="Unit (e.g. m²)"
+                        />
+                        <input
+                          type="number" min="0" step="0.01"
+                          value={editForm.estimatedCost}
+                          onChange={e => setEditForm(f => ({ ...f, estimatedCost: e.target.value }))}
+                          className="flex-1 min-w-[80px] px-2 py-1 rounded text-xs font-mono border"
+                          style={{ borderColor: 'var(--wp-border)', color: 'var(--wp-text-primary)', background: 'var(--wp-bg-primary)' }}
+                          placeholder="$ Cost"
+                        />
+                        <button
+                          onClick={saveEdit}
+                          disabled={saving || !editForm.description.trim() || !editForm.estimatedCost}
+                          className="px-3 py-1 rounded text-xs font-medium text-white flex items-center gap-1 disabled:opacity-50"
+                          style={{ background: 'var(--wp-primary)' }}
+                        >
+                          <Save size={12} /> {saving ? '...' : 'Save'}
+                        </button>
+                        <button
+                          onClick={cancelEdit}
+                          className="px-2 py-1 text-xs flex items-center gap-1"
+                          style={{ color: 'var(--wp-text-muted)' }}
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
                     </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-3 px-4 py-3">
+                        <button
+                          onClick={() => { setConfirming(isActive ? null : item.id); setEditAmount(''); setEditDesc('') }}
+                          className="flex-1 flex items-center gap-3 text-left cursor-pointer"
+                        >
+                          <div className="w-5 h-5 rounded border-2 shrink-0" style={{ borderColor: 'var(--wp-border)' }} />
+                          <span className="flex-1 text-sm" style={{ color: 'var(--wp-text-primary)' }}>
+                            {item.description}
+                            {item.quantity && (
+                              <span className="text-xs ml-1" style={{ color: 'var(--wp-text-muted)' }}>
+                                × {parseFloat(item.quantity).toLocaleString()}{item.unit ? ` ${item.unit}` : ''}
+                              </span>
+                            )}
+                          </span>
+                          <span className="text-sm font-mono font-medium shrink-0" style={{ color: 'var(--wp-text-primary)' }}>
+                            ${parseFloat(item.estimatedCost).toLocaleString()}
+                          </span>
+                        </button>
+                        <button
+                          onClick={() => startEdit(item)}
+                          disabled={saving}
+                          className="shrink-0 p-1 rounded hover:bg-slate-100 disabled:opacity-40"
+                          style={{ color: 'var(--wp-text-muted)' }}
+                          title="Edit item"
+                        >
+                          <Pencil size={13} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteItem(item)}
+                          disabled={saving}
+                          className="shrink-0 p-1 rounded hover:bg-red-50 disabled:opacity-40"
+                          style={{ color: 'var(--wp-error)' }}
+                          title="Delete item"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                      {isActive && list.jobId && (
+                        <div className="px-4 pb-3 flex items-center gap-2 flex-wrap">
+                          <input
+                            className="flex-1 min-w-[120px] px-2 py-1 rounded text-sm border"
+                            style={{ borderColor: 'var(--wp-border)', color: 'var(--wp-text-primary)', background: 'var(--wp-bg-primary)' }}
+                            value={editDesc || item.description}
+                            onChange={e => setEditDesc(e.target.value)}
+                            placeholder={t('descriptionPlaceholder')}
+                          />
+                          <input
+                            type="number" min="0" step="0.01"
+                            className="w-20 px-2 py-1 rounded text-sm font-mono border"
+                            style={{ borderColor: 'var(--wp-border)', color: 'var(--wp-text-primary)', background: 'var(--wp-bg-primary)' }}
+                            value={editAmount}
+                            onChange={e => setEditAmount(e.target.value)}
+                            placeholder={item.estimatedCost}
+                          />
+                          <button onClick={() => handlePurchase(item)} disabled={saving}
+                            className="px-3 py-1 rounded text-xs font-medium text-white"
+                            style={{ background: 'var(--wp-primary)' }}>
+                            {saving ? '...' : t('markPurchased')}
+                          </button>
+                          <button onClick={() => setConfirming(null)}
+                            className="px-2 py-1 text-xs" style={{ color: 'var(--wp-text-muted)' }}>
+                            ×
+                          </button>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               )
@@ -385,6 +537,15 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
                     title="Undo — revert to pending and delete the linked expense"
                   >
                     <RotateCcw size={13} />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteItem(item)}
+                    disabled={saving}
+                    className="shrink-0 p-1 rounded hover:bg-red-50 disabled:opacity-40"
+                    style={{ color: 'var(--wp-error)' }}
+                    title="Delete item (keeps the expense on the job)"
+                  >
+                    <Trash2 size={13} />
                   </button>
                 </div>
               ))}
