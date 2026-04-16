@@ -243,32 +243,30 @@ export default async function DashboardPage() {
   const revenueDrop = prevMonthRevenue > 0 && thisMonthRevenue < prevMonthRevenue * 0.7
   const pipelineEmpty = pendingCount === 0 && unpaidPipelineCount === 0
 
-  const shouldShowInsight = projectionDown || projectionZero || revenueDrop || pipelineEmpty
-
+  // Build actionable insights independently of projection health — the buttons
+  // (Create Estimate, Follow Up, Ask AI) are valuable even without a projection story.
   const insights: { text: string; href: string; label: string }[] = []
+  const overdueTotal = overdueInvs.reduce((s, i) => s + parseFloat(i.total), 0)
+  if (pendingCount < 3)
+    insights.push({ text: `Low pipeline — only ${pendingCount} proposal${pendingCount !== 1 ? 's' : ''} pending`, href: '/estimates/new', label: 'Create Estimate' })
+  if (overdueInvs.length > 0)
+    insights.push({ text: `${overdueInvs.length} invoice${overdueInvs.length > 1 ? 's' : ''} overdue ($${formatCurrencyCompact(overdueTotal)}) — recover cash flow`, href: '/invoices', label: 'Follow Up' })
+  if (allJobs.filter(j => j.status === 'lead' && new Date(j.createdAt) >= monthStart).length === 0)
+    insights.push({ text: 'No new leads this month', href: '/jobs/new', label: 'Create Job' })
+  if (winRate !== null && winRate < 40)
+    insights.push({ text: `Low win rate (${winRate}%) — proposals aren't converting`, href: '/estimates', label: 'Review Estimates' })
+
+  // Projection summary text — only emit specific claims when there's enough data.
   let projectionSummary = ''
-
-  if (shouldShowInsight) {
-    // Build summary text
-    if (projectionZero || pipelineEmpty) projectionSummary = 'Your pipeline is empty — no projected revenue ahead.'
-    else if (projectionDown) {
-      const dropPct = Math.round((1 - avgProjected / avgRecent) * 100)
-      projectionSummary = `Projected revenue is ${dropPct}% below your 3-month average.`
-    } else if (revenueDrop) {
-      const dropPct = Math.round((1 - thisMonthRevenue / prevMonthRevenue) * 100)
-      projectionSummary = `Revenue dropped ${dropPct}% compared to last month.`
-    }
-
-    // Diagnose causes (max 3)
-    const overdueTotal = overdueInvs.reduce((s, i) => s + parseFloat(i.total), 0)
-    if (pendingCount < 3)
-      insights.push({ text: `Low pipeline — only ${pendingCount} proposal${pendingCount !== 1 ? 's' : ''} pending`, href: '/estimates/new', label: 'Create Estimate' })
-    if (overdueInvs.length > 0)
-      insights.push({ text: `${overdueInvs.length} invoice${overdueInvs.length > 1 ? 's' : ''} overdue ($${formatCurrencyCompact(overdueTotal)}) — recover cash flow`, href: '/invoices', label: 'Follow Up' })
-    if (allJobs.filter(j => j.status === 'lead' && new Date(j.createdAt) >= monthStart).length === 0)
-      insights.push({ text: 'No new leads this month', href: '/jobs/new', label: 'Create Job' })
-    if (winRate !== null && winRate < 40)
-      insights.push({ text: `Low win rate (${winRate}%) — proposals aren't converting`, href: '/estimates', label: 'Review Estimates' })
+  if (projectionZero || pipelineEmpty) projectionSummary = 'Your pipeline is empty — no projected revenue ahead.'
+  else if (projectionDown) {
+    const dropPct = Math.round((1 - avgProjected / avgRecent) * 100)
+    projectionSummary = `Projected revenue is ${dropPct}% below your 3-month average.`
+  } else if (revenueDrop) {
+    const dropPct = Math.round((1 - thisMonthRevenue / prevMonthRevenue) * 100)
+    projectionSummary = `Revenue dropped ${dropPct}% compared to last month.`
+  } else if (insights.length > 0) {
+    projectionSummary = 'Here are some things that need your attention.'
   }
 
   return (
