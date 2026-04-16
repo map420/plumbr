@@ -430,7 +430,7 @@ export function EstimateDetailClient({ estimate, lineItems, job, viewCount = 0, 
       </div>
 
       {/* ── DESKTOP LAYOUT (unchanged) ─────────────────────────── */}
-      <div className="hidden md:block p-8 max-w-3xl">
+      <div className="hidden md:block p-8 max-w-5xl">
         <div className="flex items-start justify-between mb-6">
           <div>
             <Breadcrumbs items={[{ label: 'Estimates', href: `/${locale}/estimates` }, { label: estimate.number }]} />

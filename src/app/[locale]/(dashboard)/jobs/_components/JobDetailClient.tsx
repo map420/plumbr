@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { formatCurrency, formatCurrencyCompact } from '@/lib/format'
 import { deleteJob } from '@/lib/actions/jobs'
 import { createExpense, deleteExpense } from '@/lib/actions/expenses'
 import { assignTechnicianToJob, removeTechnicianFromJob } from '@/lib/actions/technicians'
@@ -235,7 +236,7 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
   }
 
   return (
-    <div className="max-w-4xl">
+    <div className="max-w-5xl">
       {showDeleteModal && (
         <ConfirmModal
           title="Delete Job"
@@ -305,9 +306,9 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
         <div className="card p-5">
           <h3 className="text-sm font-semibold text-[var(--wp-text-primary)] mb-4">Job Costing</h3>
           <div className="space-y-3 text-sm">
-            <div className="flex justify-between"><span className="text-[var(--wp-text-muted)]">Budget</span><span className="font-semibold">${budget.toLocaleString()}</span></div>
-            <div className="flex justify-between"><span className="text-[var(--wp-text-muted)]">Actual Cost</span><span className="font-semibold">${actualCost.toLocaleString()}</span></div>
-            {revenue > 0 && <div className="flex justify-between"><span className="text-[var(--wp-text-muted)]">Revenue</span><span className="font-semibold text-[var(--wp-success)]">${revenue.toLocaleString()}</span></div>}
+            <div className="flex justify-between"><span className="text-[var(--wp-text-muted)]">Budget</span><span className="font-semibold">${formatCurrency(budget)}</span></div>
+            <div className="flex justify-between"><span className="text-[var(--wp-text-muted)]">Actual Cost</span><span className="font-semibold">${formatCurrency(actualCost)}</span></div>
+            {revenue > 0 && <div className="flex justify-between"><span className="text-[var(--wp-text-muted)]">Revenue</span><span className="font-semibold text-[var(--wp-success)]">${formatCurrency(revenue)}</span></div>}
             {budget > 0 && (
               <>
                 <div>
@@ -467,14 +468,14 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
                   <span className="shrink-0 text-xs text-[var(--wp-text-muted)]">{new Date(exp.date).toLocaleDateString()}</span>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <span className="font-semibold">${parseFloat(exp.amount).toLocaleString()}</span>
+                  <span className="font-semibold">${formatCurrency(exp.amount)}</span>
                   <button onClick={() => handleDeleteExpense(exp.id)} className="text-[var(--wp-text-muted)] hover:text-red-500 transition-colors"><X size={14} /></button>
                 </div>
               </div>
             ))}
             <div className="flex justify-between pt-2 text-sm font-semibold text-[var(--wp-text-primary)]">
               <span>Total</span>
-              <span>${actualCost.toLocaleString()}</span>
+              <span>${formatCurrency(actualCost)}</span>
             </div>
           </div>
         )}
@@ -492,7 +493,7 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
                 <span className="text-sm font-medium text-[var(--wp-primary)]">{e.number}</span>
                 <div className="flex items-center gap-3">
                   <EstimateStatusBadge status={e.status as EstimateStatus} label={t.estimateStatus[e.status as EstimateStatus]} />
-                  <span className="text-sm font-semibold">${parseFloat(e.total).toLocaleString()}</span>
+                  <span className="text-sm font-semibold">${formatCurrency(e.total)}</span>
                 </div>
               </Link>
             ))}
@@ -512,7 +513,7 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
                 <span className="text-sm font-medium text-[var(--wp-primary)]">{inv.number}</span>
                 <div className="flex items-center gap-3">
                   <InvoiceStatusBadge status={inv.status as InvoiceStatus} label={t.invoiceStatus[inv.status as InvoiceStatus]} />
-                  <span className="text-sm font-semibold">${parseFloat(inv.total).toLocaleString()}</span>
+                  <span className="text-sm font-semibold">${formatCurrency(inv.total)}</span>
                 </div>
               </Link>
             ))}
@@ -550,7 +551,7 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate" style={{ color: 'var(--wp-text-primary)' }}>{list.name}</p>
                     <p className="text-[11px]" style={{ color: 'var(--wp-text-muted)' }}>
-                      {list.purchasedItems}/{list.totalItems} items · ${list.purchasedCost.toLocaleString()} of ${list.totalCost.toLocaleString()}
+                      {list.purchasedItems}/{list.totalItems} items · ${formatCurrency(list.purchasedCost)} of ${formatCurrency(list.totalCost)}
                     </p>
                     <div className="h-1 rounded-full mt-1.5 overflow-hidden" style={{ background: 'var(--wp-bg-muted)' }}>
                       <div

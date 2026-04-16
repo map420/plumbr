@@ -1,7 +1,7 @@
 'use client'
 
 import { useTransition } from 'react'
-import { createCheckoutSession } from '@/lib/actions/billing'
+import { createCheckoutSession } from '@/lib/actions/billing-actions'
 
 export function CheckoutButton({ locale }: { locale: string }) {
   const [isPending, startTransition] = useTransition()

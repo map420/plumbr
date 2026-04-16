@@ -5,7 +5,9 @@ import { dbAdapter } from '@/lib/adapters/db'
 import { dashboardTag } from '@/lib/cache-tags'
 import { db } from '@/db'
 import { shoppingLists, shoppingListItems } from '@/db/schema/shopping-lists'
-import { eq, and, inArray } from 'drizzle-orm'
+import { eq, and, inArray, isNotNull } from 'drizzle-orm'
+import { isScheduledToday } from '@/lib/schedule'
+import { formatCurrencyCompact } from '@/lib/format'
 import { DashboardStats } from './_components/DashboardStats'
 
 // Bulk fetch wrapped in unstable_cache per user. Tag-invalidated from server
@@ -38,7 +40,7 @@ function loadDashboardData(userId: string) {
 async function loadShoppingSummary(userId: string): Promise<{ activeLists: number; pendingCost: number }> {
   const lists = await db.select({ id: shoppingLists.id })
     .from(shoppingLists)
-    .where(and(eq(shoppingLists.userId, userId), eq(shoppingLists.status, 'active')))
+    .where(and(eq(shoppingLists.userId, userId), eq(shoppingLists.status, 'active'), isNotNull(shoppingLists.jobId)))
   if (lists.length === 0) return { activeLists: 0, pendingCost: 0 }
 
   // Single query across all active lists — replaces a per-list for-loop that
@@ -102,7 +104,7 @@ export default async function DashboardPage() {
 
   if (overdueInvoices.length > 0) {
     const total = overdueInvoices.reduce((s, i) => s + parseFloat(i.total), 0)
-    alerts.push({ type: 'error', label: `${overdueInvoices.length} invoice${overdueInvoices.length > 1 ? 's' : ''} overdue — $${total.toLocaleString('en', { minimumFractionDigits: 0 })}`, href: '/invoices' })
+    alerts.push({ type: 'error', label: `${overdueInvoices.length} invoice${overdueInvoices.length > 1 ? 's' : ''} overdue — $${formatCurrencyCompact(total)}`, href: '/invoices' })
   }
 
   const sevenDaysAgo = new Date(now.getTime() - 7 * 86400000)
@@ -150,16 +152,14 @@ export default async function DashboardPage() {
     const listsLabel = shopping.activeLists === 1 ? 'list' : 'lists'
     alerts.push({
       type: 'info',
-      label: `${shopping.activeLists} active shopping ${listsLabel} · $${shopping.pendingCost.toLocaleString('en', { minimumFractionDigits: 0 })} pending materials`,
+      label: `${shopping.activeLists} active shopping ${listsLabel} · $${formatCurrencyCompact(shopping.pendingCost)} pending materials`,
       href: '/shopping-list',
     })
   }
 
   // ── Today's Schedule ──
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const todayEnd = new Date(todayStart.getTime() + 86400000)
   const todayJobs = allJobs
-    .filter(j => j.status === 'active' && j.startDate && new Date(j.startDate) >= todayStart && new Date(j.startDate) < todayEnd)
+    .filter(j => isScheduledToday(j))
     .map(j => ({
       id: j.id,
       name: j.name,
@@ -231,8 +231,12 @@ export default async function DashboardPage() {
 
   // ── AI Insights (when projection is weak) ──
   const avgProjected = futureMonths.reduce((s, m) => s + m.projected, 0) / 3
-  const avgRecent = pastMonths.slice(-3).reduce((s, m) => s + m.revenue, 0) / 3
-  const projectionDown = avgRecent > 0 && avgProjected < avgRecent * 0.7
+  const recentMonths = pastMonths.slice(-3)
+  const monthsWithData = recentMonths.filter(m => m.revenue > 0).length
+  const avgRecent = recentMonths.reduce((s, m) => s + m.revenue, 0) / 3
+  // Only claim "X% below 3-month average" if there are ≥2 months with real revenue data —
+  // with only 1 month the "average" is misleading.
+  const projectionDown = monthsWithData >= 2 && avgRecent > 0 && avgProjected < avgRecent * 0.7
   const projectionZero = futureMonths.every(m => m.projected === 0)
   const prevMonthRevenue = pastMonths[pastMonths.length - 2]?.revenue || 0
   const thisMonthRevenue = pastMonths[pastMonths.length - 1]?.revenue || 0
@@ -260,7 +264,7 @@ export default async function DashboardPage() {
     if (pendingCount < 3)
       insights.push({ text: `Low pipeline — only ${pendingCount} proposal${pendingCount !== 1 ? 's' : ''} pending`, href: '/estimates/new', label: 'Create Estimate' })
     if (overdueInvs.length > 0)
-      insights.push({ text: `${overdueInvs.length} invoice${overdueInvs.length > 1 ? 's' : ''} overdue ($${overdueTotal.toLocaleString('en', { minimumFractionDigits: 0 })}) — recover cash flow`, href: '/invoices', label: 'Follow Up' })
+      insights.push({ text: `${overdueInvs.length} invoice${overdueInvs.length > 1 ? 's' : ''} overdue ($${formatCurrencyCompact(overdueTotal)}) — recover cash flow`, href: '/invoices', label: 'Follow Up' })
     if (allJobs.filter(j => j.status === 'lead' && new Date(j.createdAt) >= monthStart).length === 0)
       insights.push({ text: 'No new leads this month', href: '/jobs/new', label: 'Create Job' })
     if (winRate !== null && winRate < 40)

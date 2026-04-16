@@ -248,7 +248,7 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
   const isOverBudget = materialSpent > materialBudget && materialBudget > 0
 
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-5xl">
       {/* Mobile header */}
       <div className="flex items-center px-4 py-2.5 md:hidden" style={{ borderBottom: '1px solid var(--wp-border-light)' }}>
         <div className="flex-1 flex items-center justify-start">
