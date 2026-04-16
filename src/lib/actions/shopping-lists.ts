@@ -51,6 +51,36 @@ export async function getShoppingLists() {
   return listsWithItems
 }
 
+/** Lists associated with a specific job, including item-level stats. */
+export async function getShoppingListsByJob(jobId: string) {
+  const userId = await getUserId()
+
+  // Confirm job ownership before disclosing list metadata.
+  await assertJobOwnership(userId, jobId)
+
+  const lists = await db.select().from(shoppingLists)
+    .where(and(eq(shoppingLists.userId, userId), eq(shoppingLists.jobId, jobId)))
+    .orderBy(desc(shoppingLists.createdAt))
+
+  return Promise.all(lists.map(async (list) => {
+    const items = await db.select().from(shoppingListItems)
+      .where(eq(shoppingListItems.shoppingListId, list.id))
+    const totalItems = items.length
+    const purchasedItems = items.filter(it => it.status === 'purchased').length
+    const totalCost = items.reduce((s, it) => s + parseFloat(it.estimatedCost), 0)
+    const purchasedCost = items.filter(it => it.status === 'purchased').reduce((s, it) => s + parseFloat(it.estimatedCost), 0)
+    return {
+      id: list.id,
+      name: list.name,
+      status: list.status,
+      totalItems,
+      purchasedItems,
+      totalCost,
+      purchasedCost,
+    }
+  }))
+}
+
 export async function getShoppingList(id: string) {
   const userId = await getUserId()
   const [list] = await db.select().from(shoppingLists)

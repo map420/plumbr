@@ -97,7 +97,7 @@ export interface EstimateTemplate {
   contractId: string | null; createdAt: Date; updatedAt: Date
 }
 
-export type NotificationType = 'invoice_overdue' | 'invoice_paid' | 'estimate_approved' | 'job_completed_no_invoice' | 'document_viewed'
+export type NotificationType = 'invoice_overdue' | 'invoice_paid' | 'estimate_approved' | 'job_completed_no_invoice' | 'document_viewed' | 'shopping_list_created'
 
 export interface Notification {
   id: string; userId: string; type: NotificationType
@@ -213,6 +213,7 @@ export interface DbAdapter {
   }
   jobs: {
     findAll(userId: string): Promise<Job[]>
+    findRecent(userId: string, limit?: number): Promise<Job[]>
     findById(id: string, userId: string): Promise<Job | null>
     create(userId: string, data: JobInput): Promise<Job>
     update(id: string, userId: string, data: Partial<JobInput>): Promise<Job>
@@ -220,6 +221,7 @@ export interface DbAdapter {
   }
   estimates: {
     findAll(userId: string): Promise<Estimate[]>
+    findRecent(userId: string, limit?: number): Promise<Estimate[]>
     findById(id: string, userId: string): Promise<Estimate | null>
     findByJob(jobId: string, userId: string): Promise<Estimate[]>
     findByToken(token: string): Promise<Estimate | null>
@@ -229,6 +231,7 @@ export interface DbAdapter {
   }
   invoices: {
     findAll(userId: string): Promise<Invoice[]>
+    findRecent(userId: string, limit?: number): Promise<Invoice[]>
     findById(id: string, userId: string): Promise<Invoice | null>
     findByJob(jobId: string, userId: string): Promise<Invoice[]>
     findByToken(token: string): Promise<Invoice | null>

@@ -11,12 +11,16 @@ import { createCatalogItem } from '@/lib/actions/catalog'
 import { createShoppingList } from '@/lib/actions/shopping-lists'
 import { getAiPreferences, saveAiPreference } from '@/lib/actions/ai-preferences'
 
-// Resolve an entity by ID or human-readable number
+// Resolve an entity by ID or human-readable number. When only a number/name
+// is given we scan the recent window (200 rows) instead of the full table.
+const RESOLVE_WINDOW = 200
+
 async function resolveEstimateId(userId: string, input: Record<string, any>): Promise<string | null> {
   if (input.estimateId) return input.estimateId
   if (input.estimateNumber) {
-    const all = await dbAdapter.estimates.findAll(userId)
-    const found = all.find(e => e.number.toLowerCase() === input.estimateNumber.toLowerCase())
+    const recent = await dbAdapter.estimates.findRecent(userId, RESOLVE_WINDOW)
+    const target = input.estimateNumber.toLowerCase()
+    const found = recent.find(e => e.number.toLowerCase() === target)
     return found?.id ?? null
   }
   return null
@@ -25,8 +29,9 @@ async function resolveEstimateId(userId: string, input: Record<string, any>): Pr
 async function resolveInvoiceId(userId: string, input: Record<string, any>): Promise<string | null> {
   if (input.invoiceId) return input.invoiceId
   if (input.invoiceNumber) {
-    const all = await dbAdapter.invoices.findAll(userId)
-    const found = all.find(i => i.number.toLowerCase() === input.invoiceNumber.toLowerCase())
+    const recent = await dbAdapter.invoices.findRecent(userId, RESOLVE_WINDOW)
+    const target = input.invoiceNumber.toLowerCase()
+    const found = recent.find(i => i.number.toLowerCase() === target)
     return found?.id ?? null
   }
   return null
@@ -35,8 +40,9 @@ async function resolveInvoiceId(userId: string, input: Record<string, any>): Pro
 async function resolveJobId(userId: string, input: Record<string, any>): Promise<string | null> {
   if (input.jobId) return input.jobId
   if (input.jobName) {
-    const all = await dbAdapter.jobs.findAll(userId)
-    const found = all.find(j => j.name.toLowerCase().includes(input.jobName.toLowerCase()))
+    const recent = await dbAdapter.jobs.findRecent(userId, RESOLVE_WINDOW)
+    const target = input.jobName.toLowerCase()
+    const found = recent.find(j => j.name.toLowerCase().includes(target))
     return found?.id ?? null
   }
   return null
@@ -553,7 +559,17 @@ export async function handleToolCall(
             estimatedCost: String(item.estimatedCost),
           })),
         })
-        return JSON.stringify({ success: true, shoppingListId: list.id, name: list.name, itemCount: toolInput.items?.length || 0 })
+        // Notify the contractor in-app — when AI creates a list silently the
+        // user has no signal that something happened until they navigate.
+        const itemCount = toolInput.items?.length ?? 0
+        await dbAdapter.notifications.create(userId, {
+          type: 'shopping_list_created',
+          title: `New shopping list: ${list.name}`,
+          body: `Assistant created a list with ${itemCount} item${itemCount === 1 ? '' : 's'}.`,
+          href: `/en/shopping-list/${list.id}`,
+          read: false,
+        }).catch(err => console.error('[NOTIF] shopping_list_created failed:', err))
+        return JSON.stringify({ success: true, shoppingListId: list.id, name: list.name, itemCount })
       }
 
       case 'get_preferences': {
