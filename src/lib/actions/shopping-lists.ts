@@ -3,7 +3,8 @@
 import { auth } from '@clerk/nextjs/server'
 import { db } from '@/db'
 import { shoppingLists, shoppingListItems } from '@/db/schema/shopping-lists'
-import { eq, and, desc } from 'drizzle-orm'
+import { eq, and, desc, inArray } from 'drizzle-orm'
+import { invalidateUserData } from '@/lib/cache-tags'
 import { createExpense, deleteExpense } from './expenses'
 import {
   validateListName,
@@ -36,19 +37,30 @@ export async function getShoppingLists() {
     .where(eq(shoppingLists.userId, userId))
     .orderBy(desc(shoppingLists.createdAt))
 
-  // Get items for each list
-  const listsWithItems = await Promise.all(lists.map(async (list) => {
-    const items = await db.select().from(shoppingListItems)
-      .where(eq(shoppingListItems.shoppingListId, list.id))
-      .orderBy(shoppingListItems.sortOrder)
+  if (lists.length === 0) return []
+
+  // Single bulk query for all items instead of one per list (N+1 → 1).
+  const listIds = lists.map(l => l.id)
+  const allItems = await db.select().from(shoppingListItems)
+    .where(inArray(shoppingListItems.shoppingListId, listIds))
+    .orderBy(shoppingListItems.sortOrder)
+
+  // Group items by list id in memory.
+  const itemsByList = new Map<string, typeof allItems>()
+  for (const item of allItems) {
+    const arr = itemsByList.get(item.shoppingListId) ?? []
+    arr.push(item)
+    itemsByList.set(item.shoppingListId, arr)
+  }
+
+  return lists.map(list => {
+    const items = itemsByList.get(list.id) ?? []
     const totalItems = items.length
     const purchasedItems = items.filter(it => it.status === 'purchased').length
     const totalCost = items.reduce((s, it) => s + parseFloat(it.estimatedCost), 0)
     const purchasedCost = items.filter(it => it.status === 'purchased').reduce((s, it) => s + parseFloat(it.estimatedCost), 0)
     return { ...list, items, totalItems, purchasedItems, totalCost, purchasedCost }
-  }))
-
-  return listsWithItems
+  })
 }
 
 /** Lists associated with a specific job, including item-level stats. */
@@ -62,9 +74,22 @@ export async function getShoppingListsByJob(jobId: string) {
     .where(and(eq(shoppingLists.userId, userId), eq(shoppingLists.jobId, jobId)))
     .orderBy(desc(shoppingLists.createdAt))
 
-  return Promise.all(lists.map(async (list) => {
-    const items = await db.select().from(shoppingListItems)
-      .where(eq(shoppingListItems.shoppingListId, list.id))
+  if (lists.length === 0) return []
+
+  // Bulk fetch items across all lists, then group in memory.
+  const listIds = lists.map(l => l.id)
+  const allItems = await db.select().from(shoppingListItems)
+    .where(inArray(shoppingListItems.shoppingListId, listIds))
+
+  const itemsByList = new Map<string, typeof allItems>()
+  for (const item of allItems) {
+    const arr = itemsByList.get(item.shoppingListId) ?? []
+    arr.push(item)
+    itemsByList.set(item.shoppingListId, arr)
+  }
+
+  return lists.map(list => {
+    const items = itemsByList.get(list.id) ?? []
     const totalItems = items.length
     const purchasedItems = items.filter(it => it.status === 'purchased').length
     const totalCost = items.reduce((s, it) => s + parseFloat(it.estimatedCost), 0)
@@ -78,7 +103,7 @@ export async function getShoppingListsByJob(jobId: string) {
       totalCost,
       purchasedCost,
     }
-  }))
+  })
 }
 
 export async function getShoppingList(id: string) {
@@ -127,6 +152,7 @@ export async function createShoppingList(data: {
     )
   }
 
+  invalidateUserData(userId)
   return list
 }
 
@@ -134,6 +160,7 @@ export async function deleteShoppingList(id: string) {
   const userId = await getUserId()
   await db.delete(shoppingLists)
     .where(and(eq(shoppingLists.id, id), eq(shoppingLists.userId, userId)))
+  invalidateUserData(userId)
 }
 
 /** Mark a shopping list as completed (user closed it). */
@@ -142,6 +169,7 @@ export async function markListCompleted(listId: string) {
   await db.update(shoppingLists)
     .set({ status: 'completed', updatedAt: new Date() })
     .where(and(eq(shoppingLists.id, listId), eq(shoppingLists.userId, userId)))
+  invalidateUserData(userId)
 }
 
 /** Change or unlink the job associated with a shopping list. Validates ownership. */
@@ -153,6 +181,7 @@ export async function updateShoppingListJob(listId: string, newJobId: string | n
   await db.update(shoppingLists)
     .set({ jobId: newJobId, updatedAt: new Date() })
     .where(and(eq(shoppingLists.id, listId), eq(shoppingLists.userId, userId)))
+  invalidateUserData(userId)
 }
 
 /**
@@ -240,6 +269,7 @@ export async function addShoppingListItem(listId: string, data: {
     estimatedCost: clean.estimatedCost,
     sortOrder: existing.length,
   }).returning()
+  invalidateUserData(userId)
   return item
 }
 
@@ -349,6 +379,36 @@ export async function unmarkItemPurchased(itemId: string) {
   return { reverted: true, deletedExpenseId: item.expenseId }
 }
 
+/**
+ * Mark several pending items as purchased in one shot.
+ *
+ * Returns counts so the UI can show "Marked N · Skipped M" instead of failing
+ * silently. Each item is processed through markItemPurchased, so all the same
+ * idempotency / ownership / validation guarantees apply per row.
+ */
+export async function bulkMarkItemsPurchased(itemIds: string[], jobId: string) {
+  if (!Array.isArray(itemIds) || itemIds.length === 0) {
+    return { marked: 0, skipped: 0, failed: 0 }
+  }
+
+  let marked = 0
+  let skipped = 0
+  let failed = 0
+
+  for (const id of itemIds) {
+    try {
+      const res = await markItemPurchased(id, jobId)
+      if (res.alreadyPurchased) skipped++
+      else marked++
+    } catch (err) {
+      console.error('[bulkMarkItemsPurchased] item failed:', id, err)
+      failed++
+    }
+  }
+
+  return { marked, skipped, failed }
+}
+
 export async function updateShoppingListItem(itemId: string, data: {
   description?: string; quantity?: string; unit?: string; estimatedCost?: string
 }) {
@@ -380,6 +440,7 @@ export async function updateShoppingListItem(itemId: string, data: {
   await db.update(shoppingListItems)
     .set(updates)
     .where(eq(shoppingListItems.id, itemId))
+  invalidateUserData(userId)
 }
 
 export async function deleteShoppingListItem(itemId: string) {
@@ -394,6 +455,7 @@ export async function deleteShoppingListItem(itemId: string) {
   if (!row || row.listOwner !== userId) throw new Error('Item not found')
 
   await db.delete(shoppingListItems).where(eq(shoppingListItems.id, itemId))
+  invalidateUserData(userId)
   return row.item.expenseId ?? null
 }
 

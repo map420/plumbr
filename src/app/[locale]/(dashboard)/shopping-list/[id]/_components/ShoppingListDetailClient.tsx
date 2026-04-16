@@ -4,8 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
-import { ChevronLeft, Copy, Check, Briefcase, MoreHorizontal, ExternalLink, Unlink, RotateCcw, Pencil, Trash2, Printer, Save, X } from 'lucide-react'
-import { addShoppingListItem, markItemPurchased, unmarkItemPurchased, updateShoppingListJob, updateShoppingListItem, deleteShoppingListItem } from '@/lib/actions/shopping-lists'
+import { ChevronLeft, Copy, Check, Briefcase, MoreHorizontal, ExternalLink, Unlink, RotateCcw, Pencil, Trash2, Printer, Save, X, CheckSquare, Square } from 'lucide-react'
+import { addShoppingListItem, markItemPurchased, unmarkItemPurchased, updateShoppingListJob, updateShoppingListItem, deleteShoppingListItem, bulkMarkItemsPurchased } from '@/lib/actions/shopping-lists'
 import { JobPicker, type JobPickerOption } from '@/components/JobPicker'
 
 type Item = { id: string; description: string; quantity: string | null; unit: string | null; estimatedCost: string; status: string; purchasedAt: Date | null }
@@ -184,6 +184,58 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
     }
   }
 
+  // ── Bulk selection ──────────────────────────────────────────────────────
+  const [selectMode, setSelectMode] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+
+  function toggleSelectMode() {
+    if (selectMode) setSelectedIds(new Set())
+    setSelectMode(prev => !prev)
+    setConfirming(null)
+    setEditingId(null)
+  }
+
+  function toggleSelect(itemId: string) {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(itemId)) next.delete(itemId)
+      else next.add(itemId)
+      return next
+    })
+  }
+
+  function selectAllPending() {
+    setSelectedIds(new Set(items.filter(it => it.status === 'pending').map(it => it.id)))
+  }
+
+  async function handleBulkPurchase() {
+    if (!list.jobId || selectedIds.size === 0) return
+    const ids = Array.from(selectedIds)
+    setSaving(true)
+    try {
+      const result = await bulkMarkItemsPurchased(ids, list.jobId)
+      // Optimistic update for items that succeeded — refresh from server for source of truth.
+      const purchasedAmount = items
+        .filter(it => ids.includes(it.id) && it.status === 'pending')
+        .reduce((s, it) => s + parseFloat(it.estimatedCost), 0)
+      setItems(prev => prev.map(it => ids.includes(it.id) && it.status === 'pending'
+        ? { ...it, status: 'purchased', purchasedAt: new Date() }
+        : it
+      ))
+      setMaterialSpent(prev => prev + purchasedAmount)
+      setSelectedIds(new Set())
+      setSelectMode(false)
+      router.refresh()
+      if (result.failed > 0) {
+        window.alert(`Marked ${result.marked}, skipped ${result.skipped}, failed ${result.failed}.`)
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setSaving(false)
+    }
+  }
+
   async function handleShare() {
     // Generate text version
     const text = `${list.name}\n\n${items.map(it => `${it.status === 'purchased' ? '✓' : '○'} ${it.description} — $${parseFloat(it.estimatedCost).toLocaleString()}`).join('\n')}\n\nTotal: $${items.reduce((s, it) => s + parseFloat(it.estimatedCost), 0).toLocaleString()}`
@@ -219,6 +271,15 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
         <div className="hidden md:flex items-center justify-between">
           <h1 className="text-xl font-bold" style={{ color: 'var(--wp-text-primary)' }}>{list.name}</h1>
           <div className="flex gap-2">
+            {pendingItems.length > 1 && list.jobId && (
+              <button
+                onClick={toggleSelectMode}
+                className="btn-secondary btn-sm flex items-center gap-1.5"
+                title="Select multiple items to mark them as purchased at once"
+              >
+                {selectMode ? <><X size={13} /> Cancel</> : <><CheckSquare size={13} /> Select</>}
+              </button>
+            )}
             <Link
               href={`/${locale}/shopping-list/${list.id}/print`}
               className="btn-secondary btn-sm flex items-center gap-1.5"
@@ -424,41 +485,65 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
                   ) : (
                     <>
                       <div className="flex items-center gap-3 px-4 py-3">
-                        <button
-                          onClick={() => { setConfirming(isActive ? null : item.id); setEditAmount(''); setEditDesc('') }}
-                          className="flex-1 flex items-center gap-3 text-left cursor-pointer"
-                        >
-                          <div className="w-5 h-5 rounded border-2 shrink-0" style={{ borderColor: 'var(--wp-border)' }} />
-                          <span className="flex-1 text-sm" style={{ color: 'var(--wp-text-primary)' }}>
-                            {item.description}
-                            {item.quantity && (
-                              <span className="text-xs ml-1" style={{ color: 'var(--wp-text-muted)' }}>
-                                × {parseFloat(item.quantity).toLocaleString()}{item.unit ? ` ${item.unit}` : ''}
+                        {selectMode ? (
+                          <button
+                            onClick={() => toggleSelect(item.id)}
+                            className="flex-1 flex items-center gap-3 text-left cursor-pointer"
+                          >
+                            {selectedIds.has(item.id)
+                              ? <CheckSquare size={20} style={{ color: 'var(--wp-primary)' }} className="shrink-0" />
+                              : <Square size={20} style={{ color: 'var(--wp-border)' }} className="shrink-0" />}
+                            <span className="flex-1 text-sm" style={{ color: 'var(--wp-text-primary)' }}>
+                              {item.description}
+                              {item.quantity && (
+                                <span className="text-xs ml-1" style={{ color: 'var(--wp-text-muted)' }}>
+                                  × {parseFloat(item.quantity).toLocaleString()}{item.unit ? ` ${item.unit}` : ''}
+                                </span>
+                              )}
+                            </span>
+                            <span className="text-sm font-mono font-medium shrink-0" style={{ color: 'var(--wp-text-primary)' }}>
+                              ${parseFloat(item.estimatedCost).toLocaleString()}
+                            </span>
+                          </button>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => { setConfirming(isActive ? null : item.id); setEditAmount(''); setEditDesc('') }}
+                              className="flex-1 flex items-center gap-3 text-left cursor-pointer"
+                            >
+                              <div className="w-5 h-5 rounded border-2 shrink-0" style={{ borderColor: 'var(--wp-border)' }} />
+                              <span className="flex-1 text-sm" style={{ color: 'var(--wp-text-primary)' }}>
+                                {item.description}
+                                {item.quantity && (
+                                  <span className="text-xs ml-1" style={{ color: 'var(--wp-text-muted)' }}>
+                                    × {parseFloat(item.quantity).toLocaleString()}{item.unit ? ` ${item.unit}` : ''}
+                                  </span>
+                                )}
                               </span>
-                            )}
-                          </span>
-                          <span className="text-sm font-mono font-medium shrink-0" style={{ color: 'var(--wp-text-primary)' }}>
-                            ${parseFloat(item.estimatedCost).toLocaleString()}
-                          </span>
-                        </button>
-                        <button
-                          onClick={() => startEdit(item)}
-                          disabled={saving}
-                          className="shrink-0 p-1 rounded hover:bg-slate-100 disabled:opacity-40"
-                          style={{ color: 'var(--wp-text-muted)' }}
-                          title="Edit item"
-                        >
-                          <Pencil size={13} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteItem(item)}
-                          disabled={saving}
-                          className="shrink-0 p-1 rounded hover:bg-red-50 disabled:opacity-40"
-                          style={{ color: 'var(--wp-error)' }}
-                          title="Delete item"
-                        >
-                          <Trash2 size={13} />
-                        </button>
+                              <span className="text-sm font-mono font-medium shrink-0" style={{ color: 'var(--wp-text-primary)' }}>
+                                ${parseFloat(item.estimatedCost).toLocaleString()}
+                              </span>
+                            </button>
+                            <button
+                              onClick={() => startEdit(item)}
+                              disabled={saving}
+                              className="shrink-0 p-1 rounded hover:bg-slate-100 disabled:opacity-40"
+                              style={{ color: 'var(--wp-text-muted)' }}
+                              title="Edit item"
+                            >
+                              <Pencil size={13} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteItem(item)}
+                              disabled={saving}
+                              className="shrink-0 p-1 rounded hover:bg-red-50 disabled:opacity-40"
+                              style={{ color: 'var(--wp-error)' }}
+                              title="Delete item"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </>
+                        )}
                       </div>
                       {isActive && list.jobId && (
                         <div className="px-4 pb-3 flex items-center gap-2 flex-wrap">
@@ -554,12 +639,44 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
         )}
 
         {/* Pending total */}
-        {pendingTotal > 0 && (
+        {pendingTotal > 0 && !selectMode && (
           <p className="text-center text-xs" style={{ color: 'var(--wp-text-muted)' }}>
             {t('pending')}: <span className="font-mono font-semibold" style={{ color: 'var(--wp-text-primary)' }}>${pendingTotal.toLocaleString()}</span>
           </p>
         )}
       </div>
+
+      {/* Bulk action bar — fixed bottom on mobile, sticky on desktop */}
+      {selectMode && (
+        <div
+          className="fixed bottom-16 md:bottom-0 left-0 right-0 md:left-60 z-30 px-4 py-3 flex items-center gap-3 shadow-lg"
+          style={{ background: 'var(--wp-bg-primary)', borderTop: '1px solid var(--wp-border)' }}
+        >
+          <button
+            onClick={selectAllPending}
+            className="text-xs font-medium underline shrink-0"
+            style={{ color: 'var(--wp-accent)' }}
+          >
+            Select all ({pendingItems.length})
+          </button>
+          <span className="flex-1 text-sm" style={{ color: 'var(--wp-text-secondary)' }}>
+            {selectedIds.size} selected
+          </span>
+          <button
+            onClick={handleBulkPurchase}
+            disabled={saving || selectedIds.size === 0 || !list.jobId}
+            className="btn-primary btn-sm disabled:opacity-50"
+          >
+            {saving ? '...' : `Mark ${selectedIds.size} purchased`}
+          </button>
+          <button
+            onClick={toggleSelectMode}
+            className="btn-secondary btn-sm"
+          >
+            <X size={13} />
+          </button>
+        </div>
+      )}
     </div>
   )
 }

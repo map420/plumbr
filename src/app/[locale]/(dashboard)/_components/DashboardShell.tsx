@@ -1,46 +1,101 @@
 'use client'
 
-import { useState } from 'react'
-import { Menu, X } from 'lucide-react'
+import { Bot, Plus, Search } from 'lucide-react'
+import { PullToRefresh } from '@/components/PullToRefresh'
+import { usePathname, useRouter } from 'next/navigation'
+import { useLocale } from 'next-intl'
 import Sidebar from './Sidebar'
 import BottomNav from './BottomNav'
 import { NotificationBell } from './NotificationBell'
 
-export default function DashboardShell({ children, pro }: { children: React.ReactNode; pro: boolean }) {
-  const [open, setOpen] = useState(false)
+// Maps URL path to page title, create route (route push) OR create event
+// (window.dispatchEvent) for in-page modal creators like shopping list.
+const PAGE_CONFIG: Record<string, { title: string; titleEs?: string; createRoute?: string; createEvent?: string }> = {
+  dashboard: { title: 'Dashboard', titleEs: 'Inicio' },
+  estimates: { title: 'Estimates', titleEs: 'Presupuestos', createRoute: '/estimates/new' },
+  invoices: { title: 'Invoices', titleEs: 'Facturas', createRoute: '/invoices/new' },
+  clients: { title: 'Clients', titleEs: 'Clientes', createRoute: '/clients/new' },
+  jobs: { title: 'Jobs', titleEs: 'Trabajos', createRoute: '/jobs/new' },
+  schedule: { title: 'Schedule', titleEs: 'Calendario' },
+  field: { title: 'Field', titleEs: 'Campo' },
+  team: { title: 'Team', titleEs: 'Equipo', createRoute: '/team/new' },
+  expenses: { title: 'Expenses', titleEs: 'Gastos' },
+  payments: { title: 'Payments', titleEs: 'Pagos' },
+  settings: { title: 'Settings', titleEs: 'Configuración' },
+  assistant: { title: 'AI Assistant', titleEs: 'Asistente IA' },
+  'shopping-list': { title: 'Shopping List', titleEs: 'Lista de Compras', createEvent: 'shopping-list:new' },
+}
+
+function MobileHeader() {
+  const pathname = usePathname()
+  const locale = useLocale()
+  const router = useRouter()
+
+  const segments = pathname.split('/').filter(Boolean)
+  const pageSegment = segments.find(s => PAGE_CONFIG[s]) || 'dashboard'
+  const config = PAGE_CONFIG[pageSegment] || { title: 'WorkPilot' }
+  const title = locale === 'es' && config.titleEs ? config.titleEs : config.title
+  const createRoute = config.createRoute ? `/${locale}${config.createRoute}` : null
+  const createEvent = config.createEvent ?? null
+  const showCreate = Boolean(createRoute || createEvent)
+
+  function handleCreate() {
+    if (createRoute) router.push(createRoute)
+    else if (createEvent) window.dispatchEvent(new CustomEvent(createEvent))
+  }
+
+  // Sub-pages (detail, edit, print) use their own headers
+  const lastSegment = segments[segments.length - 1]
+  const isSubPage = segments.length > 2 && !['new'].includes(lastSegment)
+
+  if (isSubPage || pageSegment === 'assistant') return null
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      {/* Mobile overlay */}
-      {open && (
-        <div
-          className="fixed inset-0 z-20 bg-black/50 md:hidden"
-          onClick={() => setOpen(false)}
-        />
-      )}
+    <header className="flex items-center justify-between px-4 py-2.5 md:hidden" style={{ background: 'var(--wp-bg-primary)', borderBottom: '1px solid var(--wp-border-light)' }}>
+      {/* Left: AI bot */}
+      <button
+        onClick={() => router.push(`/${locale}/assistant`)}
+        className="p-1.5"
+        style={{ color: 'var(--wp-primary)' }}
+        title="AI Assistant"
+      >
+        <Bot size={22} />
+      </button>
 
-      {/* Sidebar — hidden on mobile unless open */}
-      <div className={`
-        fixed inset-y-0 left-0 z-30 w-60 transform transition-transform duration-200 md:relative md:translate-x-0 md:flex md:shrink-0
-        ${open ? 'translate-x-0' : '-translate-x-full'}
-      `}>
-        <Sidebar onClose={() => setOpen(false)} pro={pro} />
+      {/* Center: Page title */}
+      <span className="text-base font-semibold" style={{ color: 'var(--wp-text-primary)' }}>{title}</span>
+
+      {/* Right: Search + Bell + Create */}
+      <div className="flex items-center">
+        <button onClick={() => window.dispatchEvent(new CustomEvent('open-command-palette'))} className="p-1.5" style={{ color: 'var(--wp-primary)' }} title="Search">
+          <Search size={20} />
+        </button>
+        <NotificationBell variant="light" />
+        {showCreate && (
+          <button onClick={handleCreate} className="p-1.5" style={{ color: 'var(--wp-primary)' }}>
+            <Plus size={22} />
+          </button>
+        )}
+      </div>
+    </header>
+  )
+}
+
+export default function DashboardShell({ children, pro }: { children: React.ReactNode; pro: boolean }) {
+  return (
+    <div className="flex h-screen overflow-hidden">
+      {/* Sidebar — desktop only */}
+      <div className="hidden md:flex md:shrink-0">
+        <Sidebar pro={pro} />
       </div>
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        {/* Mobile header */}
-        <header className="flex items-center gap-3 px-4 py-3 border-b border-slate-200 bg-white md:hidden">
-          <button onClick={() => setOpen(true)} className="text-slate-600 hover:text-slate-900">
-            <Menu size={22} />
-          </button>
-          <span className="font-bold text-[#1E3A5F] text-lg flex-1">WorkPilot</span>
-          <div className="[&_button]:text-slate-600 [&_button]:hover:text-slate-900 [&_button]:bg-transparent [&_button]:hover:bg-slate-100">
-            <NotificationBell />
-          </div>
-        </header>
+        <MobileHeader />
 
-        <main className="flex-1 overflow-auto bg-slate-50 pb-16 md:pb-0">
-          {children}
+        <main className="flex-1 overflow-auto pb-16 md:pb-0" style={{ background: 'var(--wp-bg-secondary)' }}>
+          <PullToRefresh className="min-h-full">
+            {children}
+          </PullToRefresh>
         </main>
 
         <BottomNav />

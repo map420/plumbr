@@ -1,16 +1,18 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
-import { ShoppingCart, Plus, ChevronRight, ChevronDown } from 'lucide-react'
+import { ShoppingCart, Plus, ChevronRight } from 'lucide-react'
 import { createShoppingList } from '@/lib/actions/shopping-lists'
 
 type ListWithStats = {
   id: string; name: string; jobId: string | null; status: string
   totalItems: number; purchasedItems: number; totalCost: number; purchasedCost: number
 }
+
+type Tab = 'active' | 'drafts' | 'completed'
 
 export function ShoppingListsClient({ lists }: { lists: ListWithStats[] }) {
   const locale = useLocale()
@@ -19,11 +21,23 @@ export function ShoppingListsClient({ lists }: { lists: ListWithStats[] }) {
   const [showNew, setShowNew] = useState(false)
   const [newName, setNewName] = useState('')
   const [creating, setCreating] = useState(false)
-  const [showDrafts, setShowDrafts] = useState(false)
 
+  const draftLists = lists.filter(l => !l.jobId && l.status !== 'completed')
   const activeLists = lists.filter(l => l.status === 'active' && l.jobId)
-  const draftLists = lists.filter(l => !l.jobId)
   const completedLists = lists.filter(l => l.status === 'completed')
+
+  // Default to whichever bucket has content; prefer Active.
+  const initialTab: Tab = activeLists.length > 0 ? 'active'
+    : draftLists.length > 0 ? 'drafts'
+    : 'active'
+  const [tab, setTab] = useState<Tab>(initialTab)
+
+  // Mobile create button lives in DashboardShell — it dispatches this event.
+  useEffect(() => {
+    function open() { setShowNew(true) }
+    window.addEventListener('shopping-list:new', open)
+    return () => window.removeEventListener('shopping-list:new', open)
+  }, [])
 
   async function handleCreate() {
     if (!newName.trim()) return
@@ -34,6 +48,13 @@ export function ShoppingListsClient({ lists }: { lists: ListWithStats[] }) {
     setCreating(false)
     router.push(`/${locale}/shopping-list/${list.id}`)
   }
+
+  const visible = tab === 'active' ? activeLists : tab === 'drafts' ? draftLists : completedLists
+  const TABS: { key: Tab; label: string; count: number }[] = [
+    { key: 'active', label: locale === 'es' ? 'Activas' : 'Active', count: activeLists.length },
+    { key: 'drafts', label: t('drafts'), count: draftLists.length },
+    { key: 'completed', label: t('completedSection'), count: completedLists.length },
+  ]
 
   return (
     <div className="px-4 pt-2 pb-4 md:p-8 min-h-full max-w-3xl">
@@ -66,67 +87,65 @@ export function ShoppingListsClient({ lists }: { lists: ListWithStats[] }) {
         </div>
       )}
 
-      {/* Active lists */}
-      {activeLists.length === 0 && draftLists.length === 0 && completedLists.length === 0 ? (
+      {/* Tabs by status */}
+      <div className="flex items-center gap-1 mb-4 overflow-x-auto" role="tablist">
+        {TABS.map(it => {
+          const isActive = tab === it.key
+          return (
+            <button
+              key={it.key}
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => setTab(it.key)}
+              className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors"
+              style={{
+                background: isActive ? 'var(--wp-primary)' : 'var(--wp-bg-muted)',
+                color: isActive ? 'white' : 'var(--wp-text-secondary)',
+              }}
+            >
+              {it.label}
+              <span
+                className="ml-1.5 inline-flex items-center justify-center text-[10px] font-semibold rounded-full px-1.5"
+                style={{
+                  background: isActive ? 'rgba(255,255,255,0.25)' : 'var(--wp-bg-primary)',
+                  color: isActive ? 'white' : 'var(--wp-text-muted)',
+                  minWidth: 18,
+                }}
+              >
+                {it.count}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Visible bucket */}
+      {visible.length === 0 ? (
         <div className="card p-12 text-center">
           <ShoppingCart size={36} className="mx-auto mb-3" style={{ color: 'var(--wp-border)' }} />
-          <p className="text-sm mb-4" style={{ color: 'var(--wp-text-muted)' }}>{t('empty')}</p>
-          <button onClick={() => setShowNew(true)} className="btn-primary btn-sm inline-flex items-center gap-2">
-            <Plus size={14} /> {t('newList')}
-          </button>
+          <p className="text-sm mb-4" style={{ color: 'var(--wp-text-muted)' }}>
+            {tab === 'active' && (locale === 'es' ? 'Sin listas activas vinculadas a un job.' : 'No active lists linked to a job.')}
+            {tab === 'drafts' && (locale === 'es' ? 'Sin borradores.' : 'No drafts.')}
+            {tab === 'completed' && (locale === 'es' ? 'Sin listas completadas.' : 'No completed lists.')}
+          </p>
+          {tab !== 'completed' && (
+            <button onClick={() => setShowNew(true)} className="btn-primary btn-sm inline-flex items-center gap-2">
+              <Plus size={14} /> {t('newList')}
+            </button>
+          )}
         </div>
       ) : (
         <div className="space-y-2">
-          {activeLists.map(list => (
+          {visible.map(list => (
             <ListCard key={list.id} list={list} locale={locale} />
           ))}
         </div>
       )}
-
-      {/* Drafts (no job) — collapsible */}
-      {draftLists.length > 0 && (
-        <div className="mt-6">
-          <button onClick={() => setShowDrafts(!showDrafts)}
-            className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide mb-2"
-            style={{ color: 'var(--wp-text-muted)' }}>
-            {t('drafts')} ({draftLists.length})
-            <ChevronDown size={12} style={{ transform: showDrafts ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
-          </button>
-          {showDrafts && (
-            <div className="space-y-2">
-              {draftLists.map(list => (
-                <ListCard key={list.id} list={list} locale={locale} />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Completed */}
-      {completedLists.length > 0 && (
-        <div className="mt-6">
-          <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--wp-text-muted)' }}>
-            {t('completedSection')} ({completedLists.length})
-          </p>
-          <div className="space-y-2">
-            {completedLists.map(list => (
-              <ListCard key={list.id} list={list} locale={locale} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Mobile FAB */}
-      <button onClick={() => setShowNew(true)}
-        className="md:hidden fixed bottom-20 right-4 w-12 h-12 rounded-full flex items-center justify-center text-white shadow-lg z-10"
-        style={{ background: 'var(--wp-accent)' }}>
-        <Plus size={22} />
-      </button>
     </div>
   )
 }
 
-function ListCard({ list, locale }: { list: any; locale: string }) {
+function ListCard({ list, locale }: { list: ListWithStats; locale: string }) {
   const pct = list.totalItems > 0 ? (list.purchasedItems / list.totalItems) * 100 : 0
   const isComplete = list.purchasedItems === list.totalItems && list.totalItems > 0
 

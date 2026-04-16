@@ -1,7 +1,58 @@
 import { getTranslations } from 'next-intl/server'
+import { unstable_cache } from 'next/cache'
 import { authAdapter } from '@/lib/adapters/auth'
 import { dbAdapter } from '@/lib/adapters/db'
+import { dashboardTag } from '@/lib/cache-tags'
+import { db } from '@/db'
+import { shoppingLists, shoppingListItems } from '@/db/schema/shopping-lists'
+import { eq, and, inArray } from 'drizzle-orm'
 import { DashboardStats } from './_components/DashboardStats'
+
+// Bulk fetch wrapped in unstable_cache per user. Tag-invalidated from server
+// actions that mutate jobs/estimates/invoices/expenses via
+// revalidateTag(dashboardTag(userId)). Without this wrapper, every dashboard
+// navigation re-runs 4 full-table scans.
+function loadDashboardData(userId: string) {
+  return unstable_cache(
+    async () => {
+      const [jobs, estimates, invoices, expenses, shopping] = await Promise.all([
+        dbAdapter.jobs.findAll(userId),
+        dbAdapter.estimates.findAll(userId),
+        dbAdapter.invoices.findAll(userId),
+        dbAdapter.expenses.findAll(userId),
+        loadShoppingSummary(userId),
+      ])
+      return { jobs, estimates, invoices, expenses, shopping }
+    },
+    ['dashboard-data', userId],
+    { revalidate: 60, tags: [dashboardTag(userId)] },
+  )()
+}
+
+/**
+ * Aggregate shopping-list activity for the dashboard alert.
+ * Returns count of active lists and dollar total of pending items across them.
+ * Cheap because it scans only this user's rows and only joins on lists that
+ * are status='active'.
+ */
+async function loadShoppingSummary(userId: string): Promise<{ activeLists: number; pendingCost: number }> {
+  const lists = await db.select({ id: shoppingLists.id })
+    .from(shoppingLists)
+    .where(and(eq(shoppingLists.userId, userId), eq(shoppingLists.status, 'active')))
+  if (lists.length === 0) return { activeLists: 0, pendingCost: 0 }
+
+  // Single query across all active lists — replaces a per-list for-loop that
+  // serialized N DB round-trips.
+  const items = await db
+    .select({ estimatedCost: shoppingListItems.estimatedCost, status: shoppingListItems.status })
+    .from(shoppingListItems)
+    .where(and(
+      inArray(shoppingListItems.shoppingListId, lists.map(l => l.id)),
+      eq(shoppingListItems.status, 'pending'),
+    ))
+  const pendingCost = items.reduce((s, it) => s + parseFloat(it.estimatedCost), 0)
+  return { activeLists: lists.length, pendingCost }
+}
 
 export default async function DashboardPage() {
   const t = await getTranslations('dashboard')
@@ -23,12 +74,7 @@ export default async function DashboardPage() {
     return <DashboardStats {...empty} translations={buildTranslations(t)} />
   }
 
-  const [allJobs, allEstimates, allInvoices, allExpenses] = await Promise.all([
-    dbAdapter.jobs.findAll(userId),
-    dbAdapter.estimates.findAll(userId),
-    dbAdapter.invoices.findAll(userId),
-    dbAdapter.expenses.findAll(userId),
-  ])
+  const { jobs: allJobs, estimates: allEstimates, invoices: allInvoices, expenses: allExpenses, shopping } = await loadDashboardData(userId)
 
   const now = new Date()
 
@@ -97,6 +143,16 @@ export default async function DashboardPage() {
   })
   if (uninvoicedCompletedJobs.length > 0) {
     alerts.push({ type: 'warning', label: `${uninvoicedCompletedJobs.length} completed job${uninvoicedCompletedJobs.length > 1 ? 's' : ''} without an invoice`, href: '/jobs' })
+  }
+
+  // Shopping lists with pending materials — emergent alert (dismissable like the others)
+  if (shopping.activeLists > 0 && shopping.pendingCost > 0) {
+    const listsLabel = shopping.activeLists === 1 ? 'list' : 'lists'
+    alerts.push({
+      type: 'info',
+      label: `${shopping.activeLists} active shopping ${listsLabel} · $${shopping.pendingCost.toLocaleString('en', { minimumFractionDigits: 0 })} pending materials`,
+      href: '/shopping-list',
+    })
   }
 
   // ── Today's Schedule ──
