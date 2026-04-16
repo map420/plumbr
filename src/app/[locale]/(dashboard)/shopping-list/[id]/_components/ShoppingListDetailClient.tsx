@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
-import { ChevronLeft, Copy, Check, Briefcase, MoreHorizontal, ExternalLink, Unlink } from 'lucide-react'
-import { addShoppingListItem, markItemPurchased, updateShoppingListJob } from '@/lib/actions/shopping-lists'
+import { ChevronLeft, Copy, Check, Briefcase, MoreHorizontal, ExternalLink, Unlink, RotateCcw } from 'lucide-react'
+import { addShoppingListItem, markItemPurchased, unmarkItemPurchased, updateShoppingListJob } from '@/lib/actions/shopping-lists'
 import { JobPicker, type JobPickerOption } from '@/components/JobPicker'
 
 type Item = { id: string; description: string; quantity: string | null; unit: string | null; estimatedCost: string; status: string; purchasedAt: Date | null }
@@ -102,6 +102,20 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
       setNewDesc('')
       setNewCost('')
       setShowAdd(false)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleUndoPurchase(item: Item) {
+    setSaving(true)
+    try {
+      await unmarkItemPurchased(item.id)
+      setItems(prev => prev.map(it => it.id === item.id ? { ...it, status: 'pending', purchasedAt: null } : it))
+      // Subtract the amount we previously added when marking purchased.
+      setMaterialSpent(prev => Math.max(prev - parseFloat(item.estimatedCost), 0))
     } catch (err) {
       console.error(err)
     } finally {
@@ -363,6 +377,15 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
                   <span className="text-sm font-mono shrink-0" style={{ color: 'var(--wp-text-muted)' }}>
                     ${parseFloat(item.estimatedCost).toLocaleString()}
                   </span>
+                  <button
+                    onClick={() => handleUndoPurchase(item)}
+                    disabled={saving}
+                    className="shrink-0 p-1 rounded hover:bg-slate-100 disabled:opacity-40"
+                    style={{ color: 'var(--wp-text-muted)' }}
+                    title="Undo — revert to pending and delete the linked expense"
+                  >
+                    <RotateCcw size={13} />
+                  </button>
                 </div>
               ))}
             </div>
