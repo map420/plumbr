@@ -31,7 +31,11 @@ export async function requireUser(): Promise<string> {
       companyName: null, phone: null,
       plan: null, stripeCustomerId: null, stripeSubscriptionId: null,
       logoUrl: null, taxRate: null, documentFooter: null, paymentTerms: null,
-    })
+      acceptAch: null, coverProcessingFee: null,
+      licenseNumber: null, licenseState: null, insuranceInfo: null,
+      websiteUrl: null, socialLinks: null, showCredentialsOnDocs: null,
+      smsEnabled: null, smsPhoneNumber: null,
+    } as any)
   }
 
   return userId

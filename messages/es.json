@@ -57,7 +57,8 @@
       "sent": "Enviado",
       "approved": "Aprobado",
       "rejected": "Rechazado",
-      "converted": "Convertido"
+      "converted": "Convertido",
+      "expired": "Expirado"
     },
     "fields": {
       "number": "Presupuesto #",
@@ -122,6 +123,59 @@
     "photos": "Fotos",
     "uploadPhoto": "Subir Foto"
   },
+  "shoppingList": {
+    "title": "Lista de Compras",
+    "newList": "Nueva Lista",
+    "namePlaceholder": "Nombre de la lista...",
+    "create": "Crear",
+    "cancel": "Cancelar",
+    "empty": "No tienes listas de compras.",
+    "drafts": "Borradores",
+    "completedSection": "Completadas",
+    "backToLists": "Listas",
+    "copied": "Copiado",
+    "copyList": "Copiar lista",
+    "sinJob": "Sin job vinculado",
+    "noJobHelp": "Los items comprados no se registrarán como gastos hasta que vincules un job.",
+    "link": "Vincular",
+    "linkToJob": "Vincular a un job",
+    "changeJob": "Cambiar job",
+    "change": "Cambiar",
+    "unlink": "Desvincular",
+    "selectJobPlaceholder": "Elegir job...",
+    "spent": "Gastado",
+    "budget": "Budget",
+    "materialBudget": "Budget materiales",
+    "estimateLabel": "Estimate",
+    "used": "utilizado",
+    "overBudget": "sobre presupuesto",
+    "markPurchased": "Comprado",
+    "descriptionPlaceholder": "Descripción",
+    "costPlaceholder": "Costo",
+    "add": "Agregar",
+    "addItem": "Agregar item",
+    "purchasedHeading": "Comprados",
+    "pending": "Pendiente",
+    "of": "de"
+  },
+  "settings": {
+    "title": "Configuración",
+    "sections": {
+      "profile": "Perfil",
+      "company": "Mi Empresa",
+      "license": "Licencia y Enlaces",
+      "docSettings": "Config. Documentos",
+      "taxes": "Impuestos",
+      "markup": "Markup de Ítems",
+      "contracts": "Contratos",
+      "payments": "Pagos",
+      "financing": "Financiamiento",
+      "quickbooks": "Sincronizar QuickBooks",
+      "preferences": "Preferencias",
+      "subscription": "Suscripción",
+      "catalog": "Catálogo de Ítems"
+    }
+  },
   "common": {
     "save": "Guardar",
     "cancel": "Cancelar",
@@ -150,11 +204,13 @@
     "features": {
       "title": "Todo lo que necesitas. Nada más.",
       "items": [
-        "Crea presupuestos en minutos con plantillas de costos",
+        "Crea presupuestos en minutos con tu catálogo de ítems",
         "Convierte presupuesto a factura en 1 clic — sin doble entrada",
         "Costos de trabajo en tiempo real: conoce tus márgenes antes de terminar",
         "Calendario visual del equipo con arrastrar y soltar",
-        "App móvil para fotos y listas de tareas en campo"
+        "App móvil para fotos y listas de tareas en campo",
+        "Firmas digitales y contratos en presupuestos",
+        "Asistente IA que crea presupuestos y responde preguntas"
       ]
     },
     "pricing": {

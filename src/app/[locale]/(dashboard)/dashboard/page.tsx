@@ -7,141 +7,240 @@ export default async function DashboardPage() {
   const t = await getTranslations('dashboard')
   const userId = await authAdapter.getUserId()
 
-  let stats = { activeJobs: 0, openEstimates: 0, revenueThisMonth: 0, avgMargin: null as number | null }
-  let negativeMarginJobs: { id: string; name: string; margin: number }[] = []
-  let staleEstimates: { id: string; number: string; clientName: string; daysSinceSent: number }[] = []
-  let chartData = {
-    revenueByMonth: [] as { month: string; revenue: number }[],
-    jobsByStatus: [] as { status: string; count: number }[],
-    conversionRate: 0,
-    topClients: [] as { name: string; revenue: number }[],
+  const empty = {
+    stats: { activeJobs: 0, revenueThisMonth: 0, unpaidTotal: 0, unpaidCount: 0, winRate: null as number | null },
+    alerts: [] as { type: string; label: string; href: string }[],
+    todayJobs: [] as { id: string; name: string; clientName: string; time: string | null }[],
+    activeJobs: [] as { id: string; name: string; clientName: string }[],
+    revenueByMonth: [] as { month: string; revenue: number; projected: number }[],
+    dueThisWeek: [] as { id: string; number: string; clientName: string; total: string; dueDay: string }[],
+    pipeline: { pending: 0, unpaid: 0, paid: 0 },
+    insights: [] as { text: string; href: string; label: string }[],
+    projectionSummary: '',
   }
 
-  let userName: string | null = null
+  if (!userId) {
+    return <DashboardStats {...empty} translations={buildTranslations(t)} />
+  }
 
-  if (userId) {
-    const [allJobs, allEstimates, allInvoices, allClients, allExpenses, userProfile] = await Promise.all([
-      dbAdapter.jobs.findAll(userId),
-      dbAdapter.estimates.findAll(userId),
-      dbAdapter.invoices.findAll(userId),
-      dbAdapter.clients.findAll(userId),
-      dbAdapter.expenses.findAll(userId),
-      dbAdapter.users.findById(userId),
-    ])
+  const [allJobs, allEstimates, allInvoices, allExpenses] = await Promise.all([
+    dbAdapter.jobs.findAll(userId),
+    dbAdapter.estimates.findAll(userId),
+    dbAdapter.invoices.findAll(userId),
+    dbAdapter.expenses.findAll(userId),
+  ])
 
-    userName = userProfile?.name?.split(' ')[0] ?? null
+  const now = new Date()
 
-    const now = new Date()
+  // ── KPIs ──
+  const activeJobs = allJobs.filter(j => j.status === 'active').length
 
-    // KPI stats
-    const activeJobs = allJobs.filter(j => j.status === 'active').length
-    const openEstimates = allInvoices.filter(i =>
-      i.status !== 'paid' && i.status !== 'cancelled'
-    ).length
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+  const revenueThisMonth = allInvoices
+    .filter(i => i.status === 'paid' && i.paidAt && new Date(i.paidAt) >= monthStart)
+    .reduce((s, i) => s + parseFloat(i.total), 0)
 
-    const monthStart = new Date()
-    monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0)
-    const revenueThisMonth = allInvoices
-      .filter(i => i.status === 'paid' && i.paidAt && new Date(i.paidAt) >= monthStart)
-      .reduce((sum, i) => sum + parseFloat(i.total), 0)
+  const unpaidInvoices = allInvoices.filter(i => i.status === 'sent' || i.status === 'overdue')
+  const overdueInvoices = allInvoices.filter(i => i.status === 'overdue')
+  const unpaidTotal = unpaidInvoices.reduce((s, i) => s + parseFloat(i.total), 0)
+  const unpaidCount = unpaidInvoices.length
 
-    // Real margin per job: paid invoices vs actual expenses
-    const jobMarginData = allJobs.map(j => {
-      const revenue = allInvoices.filter(i => i.jobId === j.id && i.status === 'paid').reduce((s, i) => s + parseFloat(i.total), 0)
-      const cost = allExpenses.filter(e => e.jobId === j.id).reduce((s, e) => s + parseFloat(e.amount), 0)
-      return { id: j.id, name: j.name, revenue, cost, margin: revenue > 0 ? ((revenue - cost) / revenue) * 100 : null }
-    })
-    const jobsWithRevenue = jobMarginData.filter(j => j.revenue > 0)
-    const avgMargin = jobsWithRevenue.length > 0
-      ? jobsWithRevenue.reduce((s, j) => s + j.margin!, 0) / jobsWithRevenue.length
-      : null
-    negativeMarginJobs = jobMarginData.filter(j => j.margin !== null && j.margin < 0)
-      .map(j => ({ id: j.id, name: j.name, margin: Math.round(j.margin!) }))
+  const sentEstimates = allEstimates.filter(e => ['sent', 'approved', 'rejected', 'converted', 'expired'].includes(e.status))
+  const approvedEstimates = allEstimates.filter(e => ['approved', 'converted'].includes(e.status))
+  const winRate = sentEstimates.length > 0 ? Math.round((approvedEstimates.length / sentEstimates.length) * 100) : null
 
-    // Stale estimates: sent >7 days ago without response
-    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-    staleEstimates = allEstimates
-      .filter(e => e.status === 'sent' && new Date(e.updatedAt) < sevenDaysAgo)
-      .map(e => ({
-        id: e.id,
-        number: e.number,
-        clientName: e.clientName,
-        daysSinceSent: Math.floor((now.getTime() - new Date(e.updatedAt).getTime()) / (1000 * 60 * 60 * 24)),
-      }))
+  const stats = { activeJobs, revenueThisMonth, unpaidTotal, unpaidCount, winRate }
 
-    stats = { activeJobs, openEstimates, revenueThisMonth, avgMargin }
+  // ── Alerts ──
+  const alerts: { type: string; label: string; href: string }[] = []
 
-    // Revenue by month — last 6 months
-    const revenueByMonth = Array.from({ length: 6 }, (_, i) => {
-      const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1)
-      const end = new Date(d.getFullYear(), d.getMonth() + 1, 1)
-      const revenue = allInvoices
-        .filter(inv => inv.status === 'paid' && inv.paidAt && new Date(inv.paidAt) >= d && new Date(inv.paidAt) < end)
-        .reduce((s, inv) => s + parseFloat(inv.total), 0)
-      return {
-        month: d.toLocaleString('en', { month: 'short' }),
-        revenue: Math.round(revenue),
-      }
-    })
+  if (overdueInvoices.length > 0) {
+    const total = overdueInvoices.reduce((s, i) => s + parseFloat(i.total), 0)
+    alerts.push({ type: 'error', label: `${overdueInvoices.length} invoice${overdueInvoices.length > 1 ? 's' : ''} overdue — $${total.toLocaleString('en', { minimumFractionDigits: 0 })}`, href: '/invoices' })
+  }
 
-    // Jobs by status
-    const statusCounts: Record<string, number> = {}
-    for (const j of allJobs) statusCounts[j.status] = (statusCounts[j.status] ?? 0) + 1
-    const jobsByStatus = Object.entries(statusCounts).map(([status, count]) => ({ status, count }))
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 86400000)
+  const staleEst = allEstimates.filter(e => e.status === 'sent' && new Date(e.updatedAt) < sevenDaysAgo)
+  if (staleEst.length > 0) {
+    alerts.push({ type: 'warning', label: `${staleEst.length} estimate${staleEst.length > 1 ? 's' : ''} pending 7+ days`, href: '/estimates' })
+  }
 
-    // Conversion rate: lead → active or completed
-    const leads = allJobs.filter(j => j.status === 'lead').length
-    const converted = allJobs.filter(j => ['active', 'completed'].includes(j.status)).length
-    const total = leads + converted
-    const conversionRate = total > 0 ? Math.round((converted / total) * 100) : 0
+  const jobMargins = allJobs.map(j => {
+    const rev = allInvoices.filter(i => i.jobId === j.id && i.status === 'paid').reduce((s, i) => s + parseFloat(i.total), 0)
+    const cost = allExpenses.filter(e => e.jobId === j.id).reduce((s, e) => s + parseFloat(e.amount), 0)
+    return { name: j.name, margin: rev > 0 ? ((rev - cost) / rev) * 100 : null }
+  })
+  const negJobs = jobMargins.filter(j => j.margin !== null && j.margin < 0)
+  if (negJobs.length > 0) {
+    alerts.push({ type: 'error', label: `${negJobs.length} job${negJobs.length > 1 ? 's' : ''} losing money`, href: '/jobs' })
+  }
 
-    // Top 5 clients by revenue
-    const clientRevenue: Record<string, { name: string; revenue: number }> = {}
-    for (const inv of allInvoices) {
-      if (inv.status !== 'paid') continue
-      const job = allJobs.find(j => j.id === inv.jobId)
-      if (!job?.clientId) {
-        // fallback: group by clientName on job
-        const key = job?.clientName ?? 'Unknown'
-        if (!clientRevenue[key]) clientRevenue[key] = { name: key, revenue: 0 }
-        clientRevenue[key].revenue += parseFloat(inv.total)
-        continue
-      }
-      const client = allClients.find(c => c.id === job.clientId)
-      const name = client?.name ?? job.clientName
-      if (!clientRevenue[job.clientId]) clientRevenue[job.clientId] = { name, revenue: 0 }
-      clientRevenue[job.clientId].revenue += parseFloat(inv.total)
+  // Estimates expiring within the next 3 days
+  const threeDaysFromNow = new Date(now.getTime() + 3 * 86400000)
+  const expiringEstimates = allEstimates.filter(e =>
+    e.status === 'sent' && e.validUntil && new Date(e.validUntil) > now && new Date(e.validUntil) <= threeDaysFromNow,
+  )
+  if (expiringEstimates.length > 0) {
+    alerts.push({ type: 'warning', label: `${expiringEstimates.length} estimate${expiringEstimates.length > 1 ? 's' : ''} expiring in ≤3 days`, href: '/estimates' })
+  }
+
+  // Active jobs with no start date (unscheduled work)
+  const unscheduledJobs = allJobs.filter(j => j.status === 'active' && !j.startDate)
+  if (unscheduledJobs.length > 0) {
+    alerts.push({ type: 'warning', label: `${unscheduledJobs.length} active job${unscheduledJobs.length > 1 ? 's' : ''} without a scheduled date`, href: '/schedule' })
+  }
+
+  // Completed jobs with no invoice yet (uninvoiced work)
+  const uninvoicedCompletedJobs = allJobs.filter(j => {
+    if (j.status !== 'completed') return false
+    return !allInvoices.some(inv => inv.jobId === j.id)
+  })
+  if (uninvoicedCompletedJobs.length > 0) {
+    alerts.push({ type: 'warning', label: `${uninvoicedCompletedJobs.length} completed job${uninvoicedCompletedJobs.length > 1 ? 's' : ''} without an invoice`, href: '/jobs' })
+  }
+
+  // ── Today's Schedule ──
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const todayEnd = new Date(todayStart.getTime() + 86400000)
+  const todayJobs = allJobs
+    .filter(j => j.status === 'active' && j.startDate && new Date(j.startDate) >= todayStart && new Date(j.startDate) < todayEnd)
+    .map(j => ({
+      id: j.id,
+      name: j.name,
+      clientName: j.clientName,
+      time: j.startDate ? new Date(j.startDate).toLocaleTimeString('en', { hour: 'numeric', minute: '2-digit' }) : null,
+    }))
+    .sort((a, b) => (a.time ?? '').localeCompare(b.time ?? ''))
+
+  // ── Active Jobs (for when no today schedule) ──
+  const activeJobsList = allJobs
+    .filter(j => j.status === 'active')
+    .slice(0, 5)
+    .map(j => ({ id: j.id, name: j.name, clientName: j.clientName }))
+
+  // ── Revenue by Month (6 past + 3 projected) ──
+  const overdueInvs = allInvoices.filter(i => i.status === 'overdue')
+  const overdueSpread = overdueInvs.reduce((s, i) => s + parseFloat(i.total), 0) * 0.7 / 3
+  const approvedEstNoInvoice = allEstimates.filter(e => e.status === 'approved' && !e.convertedToInvoiceId)
+  const approvedSpread = approvedEstNoInvoice.reduce((s, e) => s + parseFloat(e.total), 0) * 0.8 / 3
+  const sentEstForProjection = allEstimates.filter(e => e.status === 'sent')
+  const sentSpread = sentEstForProjection.reduce((s, e) => s + parseFloat(e.total), 0) * ((winRate || 50) / 100) * 0.5 / 3
+
+  // Past 6 months (actual revenue)
+  const pastMonths = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1)
+    const end = new Date(d.getFullYear(), d.getMonth() + 1, 1)
+    const rev = allInvoices
+      .filter(inv => inv.status === 'paid' && inv.paidAt && new Date(inv.paidAt) >= d && new Date(inv.paidAt) < end)
+      .reduce((s, inv) => s + parseFloat(inv.total), 0)
+    return { month: d.toLocaleString('en', { month: 'short' }), revenue: Math.round(rev), projected: 0 }
+  })
+
+  // Future 3 months (projected)
+  const futureMonths = Array.from({ length: 3 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() + i + 1, 1)
+    const end = new Date(d.getFullYear(), d.getMonth() + 1, 1)
+
+    // Invoices due this month
+    const dueThisMonth = allInvoices.filter(inv =>
+      inv.status === 'sent' && inv.dueDate &&
+      new Date(inv.dueDate) >= d && new Date(inv.dueDate) < end
+    )
+    const dueTotal = dueThisMonth.reduce((s, inv) => s + parseFloat(inv.total), 0) * 0.9
+
+    const projected = Math.round(dueTotal + overdueSpread + approvedSpread + sentSpread)
+    return { month: d.toLocaleString('en', { month: 'short' }), revenue: 0, projected }
+  })
+
+  const revenueByMonth = [...pastMonths, ...futureMonths]
+
+  // ── Due This Week ──
+  const weekEnd = new Date(now.getTime() + 7 * 86400000)
+  const dueThisWeek = allInvoices
+    .filter(i => i.status === 'sent' && i.dueDate && new Date(i.dueDate) >= now && new Date(i.dueDate) <= weekEnd)
+    .map(i => ({
+      id: i.id,
+      number: i.number,
+      clientName: i.clientName,
+      total: i.total,
+      dueDay: new Date(i.dueDate!).toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric' }),
+    }))
+    .sort((a, b) => a.dueDay.localeCompare(b.dueDay))
+
+  // ── Money Pipeline: Pending → Unpaid → Paid (exclusive counts) ──
+  const pendingCount = allEstimates.filter(e => ['sent', 'approved'].includes(e.status)).length
+  const unpaidPipelineCount = allInvoices.filter(i => i.status === 'sent' || i.status === 'overdue').length
+  const paidPipelineCount = allInvoices.filter(i => i.status === 'paid').length
+  const pipeline = { pending: pendingCount, unpaid: unpaidPipelineCount, paid: paidPipelineCount }
+
+  // ── AI Insights (when projection is weak) ──
+  const avgProjected = futureMonths.reduce((s, m) => s + m.projected, 0) / 3
+  const avgRecent = pastMonths.slice(-3).reduce((s, m) => s + m.revenue, 0) / 3
+  const projectionDown = avgRecent > 0 && avgProjected < avgRecent * 0.7
+  const projectionZero = futureMonths.every(m => m.projected === 0)
+  const prevMonthRevenue = pastMonths[pastMonths.length - 2]?.revenue || 0
+  const thisMonthRevenue = pastMonths[pastMonths.length - 1]?.revenue || 0
+  const revenueDrop = prevMonthRevenue > 0 && thisMonthRevenue < prevMonthRevenue * 0.7
+  const pipelineEmpty = pendingCount === 0 && unpaidPipelineCount === 0
+
+  const shouldShowInsight = projectionDown || projectionZero || revenueDrop || pipelineEmpty
+
+  const insights: { text: string; href: string; label: string }[] = []
+  let projectionSummary = ''
+
+  if (shouldShowInsight) {
+    // Build summary text
+    if (projectionZero || pipelineEmpty) projectionSummary = 'Your pipeline is empty — no projected revenue ahead.'
+    else if (projectionDown) {
+      const dropPct = Math.round((1 - avgProjected / avgRecent) * 100)
+      projectionSummary = `Projected revenue is ${dropPct}% below your 3-month average.`
+    } else if (revenueDrop) {
+      const dropPct = Math.round((1 - thisMonthRevenue / prevMonthRevenue) * 100)
+      projectionSummary = `Revenue dropped ${dropPct}% compared to last month.`
     }
-    const topClients = Object.values(clientRevenue)
-      .sort((a, b) => b.revenue - a.revenue)
-      .slice(0, 5)
-      .map(c => ({ ...c, revenue: Math.round(c.revenue) }))
 
-    chartData = { revenueByMonth, jobsByStatus, conversionRate, topClients }
+    // Diagnose causes (max 3)
+    const overdueTotal = overdueInvs.reduce((s, i) => s + parseFloat(i.total), 0)
+    if (pendingCount < 3)
+      insights.push({ text: `Low pipeline — only ${pendingCount} proposal${pendingCount !== 1 ? 's' : ''} pending`, href: '/estimates/new', label: 'Create Estimate' })
+    if (overdueInvs.length > 0)
+      insights.push({ text: `${overdueInvs.length} invoice${overdueInvs.length > 1 ? 's' : ''} overdue ($${overdueTotal.toLocaleString('en', { minimumFractionDigits: 0 })}) — recover cash flow`, href: '/invoices', label: 'Follow Up' })
+    if (allJobs.filter(j => j.status === 'lead' && new Date(j.createdAt) >= monthStart).length === 0)
+      insights.push({ text: 'No new leads this month', href: '/jobs/new', label: 'Create Job' })
+    if (winRate !== null && winRate < 40)
+      insights.push({ text: `Low win rate (${winRate}%) — proposals aren't converting`, href: '/estimates', label: 'Review Estimates' })
   }
 
   return (
     <DashboardStats
       stats={stats}
-      chartData={chartData}
-      negativeMarginJobs={negativeMarginJobs}
-      staleEstimates={staleEstimates}
-      userName={userName}
-      translations={{
-        greeting: t('greeting', { name: '{name}' }),
-        subtitle: t('subtitle'),
-        stats: {
-          activeJobs: t('stats.activeJobs'),
-          openEstimates: t('stats.openEstimates'),
-          revenueThisMonth: t('stats.revenueThisMonth'),
-          avgJobMargin: t('stats.avgJobMargin'),
-        },
-        quickActions: {
-          title: t('quickActions.title'),
-          newEstimate: t('quickActions.newEstimate'),
-          newJob: t('quickActions.newJob'),
-        },
-      }}
+      alerts={alerts}
+      todayJobs={todayJobs}
+      activeJobs={activeJobsList}
+      revenueByMonth={revenueByMonth}
+      dueThisWeek={dueThisWeek}
+      pipeline={pipeline}
+      insights={insights.slice(0, 3)}
+      projectionSummary={projectionSummary}
+      translations={buildTranslations(t)}
     />
   )
+}
+
+function buildTranslations(t: any) {
+  return {
+    greeting: t('greeting', { name: '{name}' }),
+    subtitle: t('subtitle'),
+    stats: {
+      activeJobs: t('stats.activeJobs'),
+      openEstimates: t('stats.openEstimates'),
+      revenueThisMonth: t('stats.revenueThisMonth'),
+      avgJobMargin: t('stats.avgJobMargin'),
+    },
+    quickActions: {
+      title: t('quickActions.title'),
+      newEstimate: t('quickActions.newEstimate'),
+      newJob: t('quickActions.newJob'),
+    },
+  }
 }

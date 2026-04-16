@@ -1,20 +1,24 @@
 import { notFound } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
 import { getEstimate, getLineItems } from '@/lib/actions/estimates'
+import { getCurrentUserProfile } from '@/lib/actions/profile'
+import { parseTaxPercent } from '@/lib/tax'
 import { EstimateFormClient } from '../../_components/EstimateFormClient'
 
 export default async function EditEstimatePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const [te, tc, tj, estimate] = await Promise.all([
-    getTranslations('estimates'), getTranslations('common'), getTranslations('jobs'), getEstimate(id),
+  const [te, tc, tj, estimate, profile] = await Promise.all([
+    getTranslations('estimates'), getTranslations('common'), getTranslations('jobs'), getEstimate(id), getCurrentUserProfile(),
   ])
   if (!estimate) notFound()
+  const taxPercent = parseTaxPercent(profile?.taxRate)
 
   return (
-    <div className="p-4 md:p-8 max-w-3xl">
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">{tc('edit')} {estimate.number}</h1>
+    <div className="md:p-8 max-w-3xl">
+      <h1 className="hidden md:block page-title">{tc('edit')} {estimate.number}</h1>
       <EstimateFormClient
         estimate={estimate}
+        taxPercent={taxPercent}
         translations={{
           save: tc('save'), cancel: tc('cancel'),
           fields: {

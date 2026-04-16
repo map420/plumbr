@@ -5,6 +5,7 @@ import { dbAdapter } from '@/lib/adapters/db'
 import { emailAdapter } from '@/lib/adapters/email'
 import { paymentsAdapter } from '@/lib/adapters/payments'
 import { invoiceSentEmail, invoicePaidEmail } from '@/lib/email-templates'
+import { calculateTax } from '@/lib/tax'
 import { revalidatePath } from 'next/cache'
 import type { LineItemInput } from '@/lib/adapters/db/types'
 
@@ -31,11 +32,19 @@ export async function getInvoiceLineItems(invoiceId: string) {
 type RawLineItem = { type: string; description: string; quantity: number; unitPrice: number; total: number }
 
 export async function createInvoice(data: {
-  jobId: string; estimateId: string; clientName: string; clientEmail: string
+  jobId: string; estimateId: string; clientId?: string; clientName: string; clientEmail: string; clientPhone?: string
   status: string; subtotal: number; tax: number; total: number
   dueDate: string; notes: string
 }, items: RawLineItem[]) {
   const userId = await requireAuth()
+
+  // Recompute tax server-side with the user's configured rate — don't trust the client
+  const profile = await dbAdapter.users.findById(userId)
+  const serverSubtotal = items.reduce((acc, li) => acc + li.quantity * li.unitPrice, 0)
+  const serverSubtotalRounded = Math.round(serverSubtotal * 100) / 100
+  const serverTax = calculateTax(serverSubtotalRounded, profile?.taxRate)
+  const serverTotal = Math.round((serverSubtotalRounded + serverTax) * 100) / 100
+
   const lineItems: LineItemInput[] = items.map((item, i) => ({
     parentId: '',
     parentType: 'invoice' as const,
@@ -44,6 +53,8 @@ export async function createInvoice(data: {
     quantity: String(item.quantity),
     unitPrice: String(item.unitPrice),
     total: String(item.total),
+    markupPercent: null,
+    section: null,
     sortOrder: i,
   }))
 
@@ -54,15 +65,19 @@ export async function createInvoice(data: {
     clientName: data.clientName,
     clientEmail: data.clientEmail || null,
     status: data.status as 'draft',
-    subtotal: String(data.subtotal),
-    tax: String(data.tax),
-    total: String(data.total),
+    subtotal: String(serverSubtotalRounded),
+    tax: String(serverTax),
+    total: String(serverTotal),
     dueDate: data.dueDate ? new Date(data.dueDate) : null,
     paidAt: null,
     notes: data.notes || null,
     stripePaymentIntentId: null,
     shareToken: null,
-  }, lineItems)
+    poNumber: null,
+    privateNotes: null,
+    autoGenerateInvoice: false,
+    reminderSentAt: null,
+  } as any, lineItems)
 
   revalidatePath('/[locale]/invoices', 'page')
   return invoice

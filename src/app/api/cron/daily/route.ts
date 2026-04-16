@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { dbAdapter } from '@/lib/adapters/db'
 import { emailAdapter } from '@/lib/adapters/email'
 import { estimateFollowUpEmail, invoiceReminderEmail, invoiceOverdueEmail, jobUnbilledEmail } from '@/lib/email-templates'
+import { db as dbClient } from '@/db'
+import { cronExecutions } from '@/db/schema/cron-executions'
+import { eq as drizzleEq } from 'drizzle-orm'
+
+const CRON_BATCH_LIMIT = parseInt(process.env.CRON_BATCH_LIMIT ?? '500', 10)
 
 // Vercel Cron — runs daily at 8am UTC
 // Configure in vercel.json: { "crons": [{ "path": "/api/cron/daily", "schedule": "0 8 * * *" }] }
@@ -16,6 +21,14 @@ export async function GET(req: NextRequest) {
   const results = { overdueMarked: 0, overdueEmailsSent: 0, estimatesExpired: 0, followUpsSent: 0, remindersSent: 0, unbilledAlerts: 0, errors: 0 }
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://workpilot.mrlabs.io'
   const now = new Date()
+  const startedAt = Date.now()
+
+  // Begin execution audit row — we'll update it on the way out.
+  const [execRow] = await dbClient.insert(cronExecutions).values({
+    job: 'daily',
+    status: 'running',
+    startedAt: now,
+  }).returning({ id: cronExecutions.id }).catch(() => [{ id: null }] as any)
 
   try {
     // We need to process all users — in a real multi-tenant app you'd paginate
@@ -24,11 +37,12 @@ export async function GET(req: NextRequest) {
     const { invoices } = await import('@/db/schema/invoices')
     const { estimates } = await import('@/db/schema/estimates')
     const { users } = await import('@/db/schema/users')
-    const { eq, and, lte, gte } = await import('drizzle-orm')
+    const { eq, and, lte, gte, isNull } = await import('drizzle-orm')
 
     // ── Automation #6: Mark overdue invoices + email client ─────────────────
     const sentInvoices = await db.select().from(invoices)
       .where(and(eq(invoices.status, 'sent'), lte(invoices.dueDate, now)))
+      .limit(CRON_BATCH_LIMIT)
 
     for (const inv of sentInvoices) {
       try {
@@ -70,6 +84,7 @@ export async function GET(req: NextRequest) {
         eq(estimates.status, 'sent'),
         lte(estimates.validUntil, now),
       ))
+      .limit(CRON_BATCH_LIMIT)
 
     for (const est of expiredEstimates) {
       try {
@@ -106,9 +121,12 @@ export async function GET(req: NextRequest) {
         gte(invoices.dueDate, threeDayStart),
         lte(invoices.dueDate, threeDayEnd),
       ))
+      .limit(CRON_BATCH_LIMIT)
 
     for (const inv of upcomingInvoices) {
       if (!inv.clientEmail || !inv.dueDate) continue
+      // Skip if reminder already sent for this invoice
+      if (inv.reminderSentAt) continue
       try {
         const contractor = await db.select().from(users).where(eq(users.id, inv.userId)).then(r => r[0])
         const contractorName = [contractor?.name, contractor?.companyName].filter(Boolean).join(' · ') || 'Your Contractor'
@@ -124,6 +142,8 @@ export async function GET(req: NextRequest) {
             contractorName,
           }),
         })
+        // Mark reminder as sent to prevent duplicates
+        await db.update(invoices).set({ reminderSentAt: now }).where(eq(invoices.id, inv.id))
         results.remindersSent++
       } catch {
         results.errors++
@@ -131,19 +151,18 @@ export async function GET(req: NextRequest) {
     }
 
     // ── Automation #3: Estimate follow-up after 3 days without response ──────
-    const threeDaysAgo = new Date(now)
-    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3)
-    const threeDaysAgoStart = new Date(threeDaysAgo)
-    threeDaysAgoStart.setHours(0, 0, 0, 0)
-    const threeDaysAgoEnd = new Date(threeDaysAgo)
-    threeDaysAgoEnd.setHours(23, 59, 59, 999)
+    // Idempotency: only send once per estimate. followUpSentAt flag prevents duplicates
+    // if updatedAt drifts (e.g. contractor edits a stale estimate).
+    const threeDaysAgoCutoff = new Date(now)
+    threeDaysAgoCutoff.setDate(threeDaysAgoCutoff.getDate() - 3)
 
     const staleEstimates = await db.select().from(estimates)
       .where(and(
         eq(estimates.status, 'sent'),
-        gte(estimates.updatedAt, threeDaysAgoStart),
-        lte(estimates.updatedAt, threeDaysAgoEnd),
+        lte(estimates.updatedAt, threeDaysAgoCutoff),
+        isNull(estimates.followUpSentAt),
       ))
+      .limit(CRON_BATCH_LIMIT)
 
     for (const est of staleEstimates) {
       if (!est.clientEmail) continue
@@ -162,6 +181,8 @@ export async function GET(req: NextRequest) {
             daysSinceSent: 3,
           }),
         })
+        // Mark follow-up as sent to prevent duplicates on future runs
+        await db.update(estimates).set({ followUpSentAt: now }).where(eq(estimates.id, est.id))
         results.followUpsSent++
       } catch {
         results.errors++
@@ -175,6 +196,7 @@ export async function GET(req: NextRequest) {
 
     const completedJobs = await db.select().from(jobs)
       .where(and(eq(jobs.status, 'completed'), lte(jobs.updatedAt, threeDaysAgoDate)))
+      .limit(CRON_BATCH_LIMIT)
 
     for (const job of completedJobs) {
       try {
@@ -211,9 +233,26 @@ export async function GET(req: NextRequest) {
 
   } catch (err) {
     console.error('[CRON] daily job error:', err)
+    if (execRow?.id) {
+      await dbClient.update(cronExecutions).set({
+        status: 'failed',
+        finishedAt: new Date(),
+        durationMs: Date.now() - startedAt,
+        results,
+        error: (err as Error)?.message ?? String(err),
+      }).where(drizzleEq(cronExecutions.id, execRow.id)).catch(() => null)
+    }
     return NextResponse.json({ error: 'Cron failed', results }, { status: 500 })
   }
 
   console.log('[CRON] daily results:', results)
+  if (execRow?.id) {
+    await dbClient.update(cronExecutions).set({
+      status: 'ok',
+      finishedAt: new Date(),
+      durationMs: Date.now() - startedAt,
+      results,
+    }).where(drizzleEq(cronExecutions.id, execRow.id)).catch(() => null)
+  }
   return NextResponse.json({ ok: true, results })
 }

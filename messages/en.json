@@ -57,7 +57,8 @@
       "sent": "Sent",
       "approved": "Approved",
       "rejected": "Rejected",
-      "converted": "Converted"
+      "converted": "Converted",
+      "expired": "Expired"
     },
     "fields": {
       "number": "Estimate #",
@@ -122,6 +123,59 @@
     "photos": "Photos",
     "uploadPhoto": "Upload Photo"
   },
+  "shoppingList": {
+    "title": "Shopping List",
+    "newList": "New List",
+    "namePlaceholder": "List name...",
+    "create": "Create",
+    "cancel": "Cancel",
+    "empty": "No shopping lists yet.",
+    "drafts": "Drafts",
+    "completedSection": "Completed",
+    "backToLists": "Lists",
+    "copied": "Copied",
+    "copyList": "Copy list",
+    "sinJob": "No linked job",
+    "noJobHelp": "Purchased items won't be logged as expenses until you link a job.",
+    "link": "Link",
+    "linkToJob": "Link to a job",
+    "changeJob": "Change job",
+    "change": "Change",
+    "unlink": "Unlink",
+    "selectJobPlaceholder": "Pick a job...",
+    "spent": "Spent",
+    "budget": "Budget",
+    "materialBudget": "Materials budget",
+    "estimateLabel": "Estimate",
+    "used": "used",
+    "overBudget": "over budget",
+    "markPurchased": "Purchased",
+    "descriptionPlaceholder": "Description",
+    "costPlaceholder": "Cost",
+    "add": "Add",
+    "addItem": "Add item",
+    "purchasedHeading": "Purchased",
+    "pending": "Pending",
+    "of": "of"
+  },
+  "settings": {
+    "title": "Settings",
+    "sections": {
+      "profile": "Profile",
+      "company": "My Company",
+      "license": "License & Web Links",
+      "docSettings": "Doc Settings",
+      "taxes": "Taxes",
+      "markup": "Line Item Markup",
+      "contracts": "Contracts",
+      "payments": "Payments",
+      "financing": "Homeowner Financing",
+      "quickbooks": "QuickBooks Sync",
+      "preferences": "Preferences",
+      "subscription": "Subscription",
+      "catalog": "Item Catalog"
+    }
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",
@@ -150,11 +204,13 @@
     "features": {
       "title": "Everything you need. Nothing you don't.",
       "items": [
-        "Build estimates in minutes with cost templates",
+        "Build estimates in minutes with your item catalog",
         "Convert estimate to invoice in 1 click — no double entry",
         "Real-time job costing: know your margins before the job ends",
         "Visual crew scheduling with drag-and-drop",
-        "Mobile field app for photos and task checklists"
+        "Mobile field app for photos and task checklists",
+        "Digital signatures and contracts on estimates",
+        "AI assistant that creates estimates and answers questions"
       ]
     },
     "pricing": {

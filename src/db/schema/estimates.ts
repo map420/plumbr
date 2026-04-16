@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, varchar, numeric, pgEnum } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, varchar, numeric, pgEnum, boolean } from 'drizzle-orm/pg-core'
 import { users } from './users'
 import { jobs } from './jobs'
 import { clients } from './clients'
@@ -24,6 +24,32 @@ export const estimates = pgTable('estimates', {
   validUntil: timestamp('valid_until'),
   convertedToInvoiceId: text('converted_to_invoice_id'),
   shareToken: text('share_token').unique(),
+  // Additional fields
+  poNumber: varchar('po_number', { length: 50 }),
+  privateNotes: text('private_notes'),
+  showFinancing: boolean('show_financing').default(false),
+  allowExpire: boolean('allow_expire').default(true),
+  // Markup & discount
+  markupPercent: numeric('markup_percent', { precision: 5, scale: 2 }),
+  discountType: varchar('discount_type', { length: 10 }), // 'percent' | 'fixed'
+  discountValue: numeric('discount_value', { precision: 12, scale: 2 }),
+  // Deposit
+  depositType: varchar('deposit_type', { length: 10 }), // 'percent' | 'fixed'
+  depositAmount: numeric('deposit_amount', { precision: 12, scale: 2 }),
+  depositPaid: boolean('deposit_paid').default(false),
+  depositPaidAt: timestamp('deposit_paid_at'),
+  // Signature
+  signatureDataUrl: text('signature_data_url'),
+  signedByName: varchar('signed_by_name', { length: 255 }),
+  signedByEmail: varchar('signed_by_email', { length: 255 }),
+  signedAt: timestamp('signed_at'),
+  signedIp: varchar('signed_ip', { length: 50 }),
+  // Contract
+  contractId: text('contract_id'),
+  // Auto-generate invoice
+  autoGenerateInvoice: boolean('auto_generate_invoice').default(false),
+  // Cron follow-up idempotency — set when follow-up email is sent so we don't resend on edits
+  followUpSentAt: timestamp('follow_up_sent_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })

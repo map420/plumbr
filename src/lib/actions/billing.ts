@@ -26,7 +26,7 @@ async function requireUser(locale: string) {
     name = [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ') || null
   }
 
-  return dbAdapter.users.upsert({ id: userId, email, name, companyName: null, phone: null, plan: null, stripeCustomerId: null, stripeSubscriptionId: null, logoUrl: null, taxRate: null, documentFooter: null, paymentTerms: null })
+  return dbAdapter.users.upsert({ id: userId, email, name, companyName: null, phone: null, plan: null, stripeCustomerId: null, stripeSubscriptionId: null, logoUrl: null, taxRate: null, documentFooter: null, paymentTerms: null, acceptAch: null, coverProcessingFee: null, licenseNumber: null, licenseState: null, insuranceInfo: null, websiteUrl: null, socialLinks: null, showCredentialsOnDocs: null, smsEnabled: null, smsPhoneNumber: null } as any)
 }
 
 function getOrigin(headersList: Awaited<ReturnType<typeof headers>>) {

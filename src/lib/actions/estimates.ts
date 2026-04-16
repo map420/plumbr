@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache'
 import type { LineItemInput } from '@/lib/adapters/db/types'
 import { estimateSentEmail, estimateApprovedEmail, estimateRejectedEmail } from '@/lib/email-templates'
 import { isPro, STARTER_LIMITS } from '@/lib/stripe'
+import { calculateTax } from '@/lib/tax'
 import { getUserPlan } from './billing'
 import { requireUser as requireAuth } from './auth-helpers'
 
@@ -33,6 +34,8 @@ type RawLineItem = { type: string; description: string; quantity: number; unitPr
 export async function createEstimate(data: {
   jobId: string; clientId?: string; clientName: string; clientEmail: string; clientPhone?: string; status: string
   subtotal: number; tax: number; total: number; notes: string; validUntil: string
+  markupPercent?: number; discountType?: string; discountValue?: number
+  depositType?: string; depositAmount?: number; autoGenerateInvoice?: boolean
 }, items: RawLineItem[]) {
   const userId = await requireAuth()
 
@@ -48,6 +51,17 @@ export async function createEstimate(data: {
       throw new Error(`PLAN_LIMIT: Upgrade to Pro to create more than ${STARTER_LIMITS.estimates} estimates.`)
     }
   }
+
+  // Recompute tax server-side using the user's configured tax rate — don't trust the client
+  const profile = await dbAdapter.users.findById(userId)
+  const subtotalAfterDiscount = Math.max(data.subtotal - (
+    data.discountType === 'percent' && data.discountValue ? data.subtotal * (data.discountValue / 100)
+    : data.discountType === 'fixed' && data.discountValue ? data.discountValue
+    : 0
+  ), 0)
+  const serverTax = calculateTax(subtotalAfterDiscount, profile?.taxRate)
+  const serverTotal = Math.round((subtotalAfterDiscount + serverTax) * 100) / 100
+
   const lineItems: LineItemInput[] = items.map((item, i) => ({
     parentId: '',
     parentType: 'estimate' as const,
@@ -56,6 +70,8 @@ export async function createEstimate(data: {
     quantity: String(item.quantity),
     unitPrice: String(item.unitPrice),
     total: String(item.total),
+    markupPercent: null,
+    section: null,
     sortOrder: i,
   }))
 
@@ -68,13 +84,27 @@ export async function createEstimate(data: {
     clientPhone: data.clientPhone || null,
     status: data.status as 'draft',
     subtotal: String(data.subtotal),
-    tax: String(data.tax),
-    total: String(data.total),
+    tax: String(serverTax),
+    total: String(serverTotal),
     notes: data.notes || null,
     validUntil: data.validUntil ? new Date(data.validUntil) : null,
     convertedToInvoiceId: null,
     shareToken: null,
-  }, lineItems)
+    markupPercent: data.markupPercent ? String(data.markupPercent) : null,
+    discountType: data.discountType || null,
+    discountValue: data.discountValue ? String(data.discountValue) : null,
+    depositType: data.depositType || null,
+    depositAmount: data.depositAmount ? String(data.depositAmount) : null,
+    depositPaid: false,
+    depositPaidAt: null,
+    signatureDataUrl: null,
+    signedByName: null,
+    signedByEmail: null,
+    signedAt: null,
+    signedIp: null,
+    contractId: null,
+    autoGenerateInvoice: data.autoGenerateInvoice || false,
+  } as any, lineItems)
 
   revalidatePath('/[locale]/estimates', 'page')
   return estimate
@@ -176,6 +206,50 @@ export async function updateEstimate(id: string, data: Partial<{
 
   revalidatePath('/[locale]/estimates', 'page')
   return estimate
+}
+
+/** Re-send estimate email (works even if already sent) */
+export async function resendEstimateEmail(id: string) {
+  const userId = await requireAuth()
+  const estimate = await dbAdapter.estimates.findById(id, userId)
+  if (!estimate) throw new Error('Estimate not found')
+  if (!estimate.clientEmail) throw new Error('No client email on this estimate')
+
+  const contractorUser = await dbAdapter.users.findById(userId)
+  const contractorName = [contractorUser?.name, contractorUser?.companyName].filter(Boolean).join(' · ') || 'Your Contractor'
+
+  // Ensure share token exists
+  let token = estimate.shareToken
+  if (!token) {
+    token = crypto.randomUUID()
+    await dbAdapter.estimates.update(estimate.id, userId, { shareToken: token })
+  }
+
+  // Mark as sent if still draft
+  if (estimate.status === 'draft') {
+    await dbAdapter.estimates.update(estimate.id, userId, { status: 'sent' })
+  }
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://workpilot.mrlabs.io'
+  const portalUrl = `${appUrl}/en/portal/${token}`
+
+  await emailAdapter.send({
+    to: estimate.clientEmail,
+    replyTo: contractorUser?.email,
+    subject: `Estimate ${estimate.number} from ${contractorName} — $${parseFloat(estimate.total).toLocaleString()}`,
+    html: estimateSentEmail({
+      clientName: estimate.clientName,
+      estimateNumber: estimate.number,
+      total: estimate.total,
+      validUntil: estimate.validUntil ? estimate.validUntil.toISOString() : null,
+      notes: estimate.notes,
+      contractorName,
+      portalUrl,
+    }),
+  })
+
+  revalidatePath('/[locale]/estimates', 'page')
+  return { success: true, shareToken: token }
 }
 
 export async function deleteEstimate(id: string) {

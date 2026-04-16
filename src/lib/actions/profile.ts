@@ -15,3 +15,9 @@ export async function updateProfile(data: { name: string; companyName: string; p
     paymentTerms: data.paymentTerms || 'net30',
   })
 }
+
+/** Returns the current user's profile row, or null if missing. */
+export async function getCurrentUserProfile() {
+  const userId = await requireUser()
+  return dbAdapter.users.findById(userId)
+}

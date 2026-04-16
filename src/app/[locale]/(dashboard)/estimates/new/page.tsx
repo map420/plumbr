@@ -1,19 +1,24 @@
 import { getTranslations } from 'next-intl/server'
 import { getClients } from '@/lib/actions/clients'
+import { getCurrentUserProfile } from '@/lib/actions/profile'
+import { parseTaxPercent } from '@/lib/tax'
 import { EstimateFormClient } from '../_components/EstimateFormClient'
 
 export default async function NewEstimatePage() {
-  const [te, tc, tj, clients] = await Promise.all([
+  const [te, tc, tj, clients, profile] = await Promise.all([
     getTranslations('estimates'),
     getTranslations('common'),
     getTranslations('jobs'),
     getClients(),
+    getCurrentUserProfile(),
   ])
+  const taxPercent = parseTaxPercent(profile?.taxRate)
   return (
-    <div className="p-4 md:p-8 max-w-3xl">
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">{te('new')}</h1>
+    <div className="md:p-8 max-w-3xl">
+      <h1 className="hidden md:block page-title">{te('new')}</h1>
       <EstimateFormClient
         clients={clients}
+        taxPercent={taxPercent}
         translations={{
           save: tc('save'), cancel: tc('cancel'),
           fields: {

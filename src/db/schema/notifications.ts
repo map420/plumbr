@@ -6,6 +6,7 @@ export const notificationTypeEnum = pgEnum('notification_type', [
   'invoice_paid',
   'estimate_approved',
   'job_completed_no_invoice',
+  'document_viewed',
 ])
 
 export const notifications = pgTable('notifications', {
