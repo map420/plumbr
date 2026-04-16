@@ -313,8 +313,12 @@ async function processMessages(
   }
 
   const { result: response } = await callWithFallback(params, false, fixedModel, { signal })
+  const msg = response as Anthropic.Message
+  if (msg.usage) {
+    console.log(`[AI USAGE] model=${msg.model} input=${msg.usage.input_tokens} output=${msg.usage.output_tokens} cache_read=${(msg.usage as any).cache_read_input_tokens ?? 0} cache_create=${(msg.usage as any).cache_creation_input_tokens ?? 0} stop=${msg.stop_reason} depth=${depth}`)
+  }
 
-  const toolBlocks = (response as Anthropic.Message).content.filter(b => b.type === 'tool_use')
+  const toolBlocks = msg.content.filter(b => b.type === 'tool_use')
 
   if (toolBlocks.length > 0) {
     // Escalate to Sonnet for tool processing (smarter model for complex actions)
@@ -370,6 +374,10 @@ async function processMessages(
       }
       if (event.type === 'content_block_start' && event.content_block.type === 'tool_use') {
         hasToolUse = true
+      }
+      if (event.type === 'message_delta' && (event as any).usage) {
+        const u = (event as any).usage
+        console.log(`[AI USAGE] tool-response output=${u.output_tokens ?? '?'}`)
       }
     }
 
