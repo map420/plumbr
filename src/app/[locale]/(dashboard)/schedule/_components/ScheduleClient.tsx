@@ -226,16 +226,16 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
 
   return (
     <div className="px-4 pt-2 pb-4 md:p-8">
-      <div className="hidden md:flex items-center justify-between mb-5">
+      <div className="hidden md:flex items-center justify-between mb-4">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--wp-text)' }}>{t.title}</h1>
           <p className="text-xs mt-0.5" style={{ color: 'var(--wp-text-3)' }}>
-            {locale === 'es' ? `${jobs.length} jobs agendados · ${todayJobs.length} hoy` : `${jobs.length} scheduled jobs · ${todayJobs.length} today`}
+            {locale === 'es'
+              ? `Semana del ${weekDays[1].getDate()}–${weekDays[5].getDate()} de ${weekDays[1].toLocaleString('es', { month: 'long' })} · ${jobs.length} jobs agendados · ${todayJobs.length} hoy`
+              : `${jobs.length} scheduled jobs · ${todayJobs.length} today`}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <button className="btn-primary btn-sm">+ {locale === 'es' ? 'Nuevo evento' : 'New event'}</button>
-        </div>
+        <button className="btn-primary btn-sm">+ {locale === 'es' ? 'Nuevo evento' : 'New event'}</button>
       </div>
 
       {/* Mobile list view (no DnD) */}
@@ -282,7 +282,7 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
       </div>
 
       {/* Desktop: 2-column layout with sidebar */}
-      <div className="hidden md:grid grid-cols-[260px_1fr] gap-5 items-start">
+      <div className="hidden md:grid grid-cols-[220px_1fr] gap-4 items-start">
         {/* ── LEFT SIDEBAR ── */}
         <div className="space-y-4 sticky top-4">
           {/* Mini calendar */}
@@ -429,33 +429,33 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
 
           return (
             <div>
-              {/* Calendar header */}
-              <div className="flex items-center justify-between mb-4">
+              {/* Calendar header — aligned with sidebar */}
+              <div className="flex items-start justify-between mb-3">
                 <div>
                   <div className="text-lg font-bold" style={{ color: 'var(--wp-text)' }}>
                     {weekDays[0].toLocaleString(locale === 'es' ? 'es' : 'en', { month: 'long' })} {weekDays[0].getDate()} – {weekDays[6].getDate()}, {weekDays[0].getFullYear()}
                   </div>
-                  <div className="text-xs" style={{ color: 'var(--wp-text-3)' }}>
+                  <div className="text-xs mt-0.5" style={{ color: 'var(--wp-text-3)' }}>
                     {locale === 'es' ? 'Semana' : 'Week'} {weekNum} · {totalWeekJobs} {locale === 'es' ? 'eventos' : 'events'}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   <button onClick={() => setWeekStart(d => { const n = new Date(d); n.setDate(n.getDate() - 7); return n })}
-                    className="p-1.5 rounded-lg" style={{ border: '1px solid var(--wp-border-v2)' }}>
+                    className="p-1.5 rounded-lg" style={{ border: '1px solid var(--wp-border-v2)', color: 'var(--wp-text-3)' }}>
                     <ChevronLeft size={14} />
                   </button>
                   <button onClick={() => { setWeekStart(startOfWeek(new Date())) }}
-                    className="text-xs px-3 py-1.5 rounded-lg font-medium" style={{ border: '1px solid var(--wp-border-v2)' }}>
+                    className="text-xs px-3 py-1.5 rounded-lg font-medium" style={{ border: '1px solid var(--wp-border-v2)', color: 'var(--wp-text-2)' }}>
                     Today
                   </button>
                   <button onClick={() => setWeekStart(d => { const n = new Date(d); n.setDate(n.getDate() + 7); return n })}
-                    className="p-1.5 rounded-lg" style={{ border: '1px solid var(--wp-border-v2)' }}>
+                    className="p-1.5 rounded-lg" style={{ border: '1px solid var(--wp-border-v2)', color: 'var(--wp-text-3)' }}>
                     <ChevronRight size={14} />
                   </button>
-                  <div className="flex rounded-lg overflow-hidden ml-2" style={{ border: '1px solid var(--wp-border-v2)' }}>
-                    <button className="text-[10px] px-2.5 py-1.5 font-medium" style={{ color: 'var(--wp-text-3)' }}>Day</button>
-                    <button className="text-[10px] px-2.5 py-1.5 font-medium" style={{ background: 'var(--wp-brand)', color: 'white' }}>Week</button>
-                    <button onClick={() => setView('month')} className="text-[10px] px-2.5 py-1.5 font-medium" style={{ color: 'var(--wp-text-3)' }}>Month</button>
+                  <div className="flex rounded-lg overflow-hidden ml-1" style={{ border: '1px solid var(--wp-border-v2)' }}>
+                    <button className="text-[10px] px-2 py-1.5 font-medium" style={{ color: 'var(--wp-text-3)' }}>Day</button>
+                    <button className="text-[10px] px-2 py-1.5 font-medium" style={{ background: 'var(--wp-brand)', color: 'white' }}>Week</button>
+                    <button onClick={() => setView('month')} className="text-[10px] px-2 py-1.5 font-medium" style={{ color: 'var(--wp-text-3)' }}>Month</button>
                   </div>
                 </div>
               </div>
