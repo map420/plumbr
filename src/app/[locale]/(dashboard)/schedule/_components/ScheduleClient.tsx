@@ -397,12 +397,28 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         {/* Week view — time-slot grid */}
         {view === 'week' && (() => {
-          const START_HOUR = 7
-          const END_HOUR = 18
           const HOUR_HEIGHT = 60
           const HEADER_HEIGHT = 44
-          const hours = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i)
           const displayDays = weekDays.slice(1, 6) // Mon-Fri
+
+          // Dynamic hour range based on actual jobs
+          let minH = 8, maxH = 18
+          const allWeekJobs = displayDays.flatMap(d => jobsForDay(filteredJobs, d))
+          for (const j of allWeekJobs) {
+            if (!j.startDate) continue
+            const sh = new Date(j.startDate).getHours()
+            const eh = j.endDate ? new Date(j.endDate).getHours() + 1 : sh + 2
+            if (sh < minH) minH = sh
+            if (eh > maxH) maxH = eh
+          }
+          // Also include current hour if today is in range
+          const nowHour = new Date().getHours()
+          if (nowHour < minH) minH = nowHour
+          if (nowHour + 1 > maxH) maxH = nowHour + 1
+          // Clamp and add padding
+          const START_HOUR = Math.max(0, minH - 1)
+          const END_HOUR = Math.min(24, maxH + 1)
+          const hours = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i)
 
           // Build tech color map
           const techColorMap = new Map<string, string>()
@@ -417,7 +433,7 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <div className="text-lg font-bold" style={{ color: 'var(--wp-text)' }}>
-                    {locale === 'es' ? 'Abril' : weekDays[0].toLocaleString('en', { month: 'long' })} {weekDays[0].getDate()} – {weekDays[6].getDate()}, {weekDays[0].getFullYear()}
+                    {weekDays[0].toLocaleString(locale === 'es' ? 'es' : 'en', { month: 'long' })} {weekDays[0].getDate()} – {weekDays[6].getDate()}, {weekDays[0].getFullYear()}
                   </div>
                   <div className="text-xs" style={{ color: 'var(--wp-text-3)' }}>
                     {locale === 'es' ? 'Semana' : 'Week'} {weekNum} · {totalWeekJobs} {locale === 'es' ? 'eventos' : 'events'}
@@ -610,7 +626,7 @@ function TimeSlotGrid({ hours, displayDays, filteredJobs, techAssignments, techC
             const isToday = sameDay(day, now)
 
             return (
-              <div key={di} style={{ position: 'relative', borderLeft: '1px solid var(--wp-border-light)', background: isToday ? 'color-mix(in srgb, var(--wp-info-v2) 4%, white)' : undefined }}>
+              <div key={di} style={{ position: 'relative', borderLeft: '1px solid var(--wp-border-light)', background: isToday ? 'color-mix(in srgb, var(--wp-info-v2) 8%, white)' : undefined }}>
                 {/* Hour cells */}
                 {hours.map(h => (
                   <div key={h} style={{ height: HOUR_HEIGHT, borderBottom: '1px solid var(--wp-border-light)' }} />
