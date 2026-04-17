@@ -226,33 +226,15 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
 
   return (
     <div className="px-4 pt-2 pb-4 md:p-8">
-      <div className="hidden md:flex items-center justify-between mb-6 flex-wrap gap-3">
+      <div className="hidden md:flex items-center justify-between mb-5">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--wp-text-primary)' }}>{t.title}</h1>
-          <p className="text-xs mt-0.5 hidden md:block" style={{ color: 'var(--wp-text-muted)' }}>Drag jobs between days to reschedule</p>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--wp-text)' }}>{t.title}</h1>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--wp-text-3)' }}>
+            {locale === 'es' ? `${jobs.length} jobs agendados · ${todayJobs.length} hoy` : `${jobs.length} scheduled jobs · ${todayJobs.length} today`}
+          </p>
         </div>
-        <div className="hidden md:flex items-center gap-2">
-          <div className="flex rounded-lg overflow-hidden mr-1" style={{ border: '1px solid var(--wp-border)' }}>
-            <button onClick={() => setView('week')} title="Week view" className="p-2" style={{ background: view === 'week' ? 'var(--wp-primary)' : 'transparent', color: view === 'week' ? 'white' : 'var(--wp-text-muted)' }}>
-              <CalendarDays size={15} />
-            </button>
-            <button onClick={() => setView('month')} title="Month view" className="p-2" style={{ background: view === 'month' ? 'var(--wp-primary)' : 'transparent', color: view === 'month' ? 'white' : 'var(--wp-text-muted)' }}>
-              <LayoutGrid size={15} />
-            </button>
-          </div>
-          <button onClick={() => view === 'week' ? setWeekStart(d => { const n = new Date(d); n.setDate(n.getDate() - 7); return n }) : setMonthDate(d => new Date(d.getFullYear(), d.getMonth() - 1, 1))}
-            className="p-2 rounded-lg" style={{ border: '1px solid var(--wp-border)' }}>
-            <ChevronLeft size={16} />
-          </button>
-          <span className="text-sm font-medium min-w-[180px] text-center" style={{ color: 'var(--wp-text-secondary)' }}>{headerLabel}</span>
-          <button onClick={() => view === 'week' ? setWeekStart(d => { const n = new Date(d); n.setDate(n.getDate() + 7); return n }) : setMonthDate(d => new Date(d.getFullYear(), d.getMonth() + 1, 1))}
-            className="p-2 rounded-lg" style={{ border: '1px solid var(--wp-border)' }}>
-            <ChevronRight size={16} />
-          </button>
-          <button onClick={() => { setWeekStart(startOfWeek(new Date())); setMonthDate(new Date(new Date().getFullYear(), new Date().getMonth(), 1)) }}
-            className="text-sm px-3 py-1.5 rounded-lg font-medium" style={{ border: '1px solid var(--wp-border)' }}>
-            {t.today}
-          </button>
+        <div className="flex items-center gap-2">
+          <button className="btn-primary btn-sm">+ {locale === 'es' ? 'Nuevo evento' : 'New event'}</button>
         </div>
       </div>
 
@@ -356,16 +338,25 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
               <p className="text-xs" style={{ color: 'var(--wp-text-3)' }}>{t.noJobs}</p>
             ) : (
               <div className="space-y-1.5">
-                {todayJobs.map((job, i) => (
-                  <Link key={job.id} href={`/${locale}/jobs/${job.id}`}
-                    className="flex items-center gap-2 p-1.5 rounded-md transition-colors hover:bg-[var(--wp-surface-2)]"
-                    style={{ borderLeft: `2px solid ${TECH_COLORS[i % TECH_COLORS.length]}` }}>
-                    <div className="min-w-0">
-                      <p className="text-xs font-medium truncate" style={{ color: 'var(--wp-text)' }}>{job.name}</p>
-                      <p className="text-[10px] truncate" style={{ color: 'var(--wp-text-3)' }}>{job.clientName}</p>
-                    </div>
-                  </Link>
-                ))}
+                {todayJobs.map((job, i) => {
+                  const assignment = techAssignments.find(a => a.jobId === job.id)
+                  const color = assignment ? (TECH_COLORS[techs.findIndex(t => t.id === assignment.technicianId) % TECH_COLORS.length] || TECH_COLORS[0]) : TECH_COLORS[i % TECH_COLORS.length]
+                  const timeStr = job.startDate ? new Date(job.startDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : ''
+                  const initials = job.clientName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+                  return (
+                    <Link key={job.id} href={`/${locale}/jobs/${job.id}`}
+                      className="flex items-center gap-2 p-1.5 rounded-md transition-colors hover:bg-[var(--wp-surface-2)]"
+                      style={{ borderLeft: `2px solid ${color}` }}>
+                      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: color }} />
+                      <div className="min-w-0">
+                        <p className="text-xs truncate" style={{ color: 'var(--wp-text-2)' }}>
+                          {timeStr && <span className="font-medium" style={{ color: 'var(--wp-text)' }}>{timeStr} · </span>}
+                          {job.name} · {initials}
+                        </p>
+                      </div>
+                    </Link>
+                  )
+                })}
               </div>
             )}
           </div>
@@ -374,24 +365,28 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
           {techs.length > 0 && (
             <div className="card p-3">
               <span className="text-xs font-bold block mb-2" style={{ color: 'var(--wp-text)' }}>
-                {locale === 'es' ? 'Equipo' : 'Team'}
+                {locale === 'es' ? 'Técnicos' : 'Technicians'}
               </span>
               <div className="space-y-1.5">
-                {techs.map((tech, i) => (
-                  <label key={tech.id} className="flex items-center gap-2 text-xs cursor-pointer">
-                    <input type="checkbox" checked={techFilter.size === 0 || techFilter.has(tech.id)}
-                      onChange={() => {
-                        setTechFilter(prev => {
-                          const next = new Set(prev)
-                          if (next.has(tech.id)) { next.delete(tech.id) } else { next.add(tech.id) }
-                          return next
-                        })
-                      }}
-                      className="rounded" style={{ accentColor: TECH_COLORS[i % TECH_COLORS.length] }} />
-                    <span className="w-2 h-2 rounded-full" style={{ background: TECH_COLORS[i % TECH_COLORS.length] }} />
-                    <span style={{ color: 'var(--wp-text-2)' }}>{tech.name}</span>
-                  </label>
-                ))}
+                {techs.map((tech, i) => {
+                  const techJobCount = techAssignments.filter(a => a.technicianId === tech.id).length
+                  return (
+                    <label key={tech.id} className="flex items-center gap-2 text-xs cursor-pointer">
+                      <input type="checkbox" checked={techFilter.size === 0 || techFilter.has(tech.id)}
+                        onChange={() => {
+                          setTechFilter(prev => {
+                            const next = new Set(prev)
+                            if (next.has(tech.id)) { next.delete(tech.id) } else { next.add(tech.id) }
+                            return next
+                          })
+                        }}
+                        className="rounded" style={{ accentColor: TECH_COLORS[i % TECH_COLORS.length] }} />
+                      <span className="w-2 h-2 rounded-full" style={{ background: TECH_COLORS[i % TECH_COLORS.length] }} />
+                      <span className="flex-1" style={{ color: 'var(--wp-text-2)' }}>{tech.name}</span>
+                      <span className="text-[10px] tabular-nums" style={{ color: 'var(--wp-text-3)' }}>{techJobCount}</span>
+                    </label>
+                  )
+                })}
               </div>
             </div>
           )}
@@ -400,34 +395,130 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
         {/* ── RIGHT: CALENDAR ── */}
         <div>
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        {/* Week view */}
-        {view === 'week' && (
-          <div className="grid grid-cols-7 gap-3">
-            {weekDays.map((day, i) => {
-              const dayJobs = jobsForDay(filteredJobs, day)
-              const isToday = sameDay(day, new Date())
-              return (
-                <DroppableDay key={i} day={day} isToday={isToday}>
-                  <div className="flex items-center justify-between mb-2" style={{ color: isToday ? 'var(--wp-accent)' : 'var(--wp-text-muted)' }}>
-                    <span className="text-xs font-semibold">{DAY_NAMES[day.getDay()]} {day.getDate()}</span>
-                    <Link href={`/${locale}/jobs/new`} className="opacity-0 group-hover/day:opacity-100 transition-opacity p-0.5 rounded" title="Add job">
-                      <Plus size={12} style={{ color: 'var(--wp-text-muted)' }} />
-                    </Link>
+        {/* Week view — time-slot grid */}
+        {view === 'week' && (() => {
+          const START_HOUR = 7
+          const END_HOUR = 18
+          const HOUR_HEIGHT = 60
+          const HEADER_HEIGHT = 44
+          const hours = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i)
+          const displayDays = weekDays.slice(1, 6) // Mon-Fri
+
+          // Build tech color map
+          const techColorMap = new Map<string, string>()
+          techs.forEach((tech, i) => techColorMap.set(tech.id, TECH_COLORS[i % TECH_COLORS.length]))
+
+          const totalWeekJobs = displayDays.reduce((s, d) => s + jobsForDay(filteredJobs, d).length, 0)
+          const weekNum = Math.ceil((weekDays[0].getDate() + new Date(weekDays[0].getFullYear(), weekDays[0].getMonth(), 1).getDay()) / 7)
+
+          return (
+            <div>
+              {/* Calendar header */}
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <div className="text-lg font-bold" style={{ color: 'var(--wp-text)' }}>
+                    {locale === 'es' ? 'Abril' : weekDays[0].toLocaleString('en', { month: 'long' })} {weekDays[0].getDate()} – {weekDays[6].getDate()}, {weekDays[0].getFullYear()}
                   </div>
-                  {dayJobs.length === 0 ? (
-                    <p className="text-xs" style={{ color: 'var(--wp-border)' }}>{t.noJobs}</p>
-                  ) : (
-                    <div className="space-y-1.5">
-                      {dayJobs.map(job => (
-                        <DraggableJob key={job.id} job={job} locale={locale} t={t} techName={techAssignments.find(a => a.jobId === job.id)?.technicianName} />
-                      ))}
-                    </div>
-                  )}
-                </DroppableDay>
-              )
-            })}
-          </div>
-        )}
+                  <div className="text-xs" style={{ color: 'var(--wp-text-3)' }}>
+                    {locale === 'es' ? 'Semana' : 'Week'} {weekNum} · {totalWeekJobs} {locale === 'es' ? 'eventos' : 'events'}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => setWeekStart(d => { const n = new Date(d); n.setDate(n.getDate() - 7); return n })}
+                    className="p-1.5 rounded-lg" style={{ border: '1px solid var(--wp-border-v2)' }}>
+                    <ChevronLeft size={14} />
+                  </button>
+                  <button onClick={() => { setWeekStart(startOfWeek(new Date())) }}
+                    className="text-xs px-3 py-1.5 rounded-lg font-medium" style={{ border: '1px solid var(--wp-border-v2)' }}>
+                    Today
+                  </button>
+                  <button onClick={() => setWeekStart(d => { const n = new Date(d); n.setDate(n.getDate() + 7); return n })}
+                    className="p-1.5 rounded-lg" style={{ border: '1px solid var(--wp-border-v2)' }}>
+                    <ChevronRight size={14} />
+                  </button>
+                  <div className="flex rounded-lg overflow-hidden ml-2" style={{ border: '1px solid var(--wp-border-v2)' }}>
+                    <button className="text-[10px] px-2.5 py-1.5 font-medium" style={{ color: 'var(--wp-text-3)' }}>Day</button>
+                    <button className="text-[10px] px-2.5 py-1.5 font-medium" style={{ background: 'var(--wp-brand)', color: 'white' }}>Week</button>
+                    <button onClick={() => setView('month')} className="text-[10px] px-2.5 py-1.5 font-medium" style={{ color: 'var(--wp-text-3)' }}>Month</button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Time-slot grid */}
+              <div className="card overflow-hidden" style={{ padding: 0 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '50px repeat(5, 1fr)' }}>
+                  {/* Time labels column */}
+                  <div>
+                    <div style={{ height: HEADER_HEIGHT, background: 'var(--wp-surface-2)', borderBottom: '1px solid var(--wp-border-v2)' }} />
+                    {hours.map(h => (
+                      <div key={h} className="text-[10px] font-medium text-right pr-2 flex items-start justify-end" style={{ height: HOUR_HEIGHT, color: 'var(--wp-text-3)', borderBottom: '1px solid var(--wp-border-light)', paddingTop: 2 }}>
+                        {h <= 12 ? `${h} AM` : `${h - 12} PM`}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Day columns */}
+                  {displayDays.map((day, di) => {
+                    const dayJobs = jobsForDay(filteredJobs, day)
+                    const isToday = sameDay(day, new Date())
+
+                    return (
+                      <div key={di} style={{ position: 'relative', borderLeft: '1px solid var(--wp-border-light)', background: isToday ? 'color-mix(in srgb, var(--wp-info-v2) 4%, white)' : undefined }}>
+                        {/* Day header */}
+                        <div className="text-center py-2" style={{ height: HEADER_HEIGHT, background: 'var(--wp-surface-2)', borderBottom: '1px solid var(--wp-border-v2)' }}>
+                          <div className="text-xs font-medium" style={{ color: isToday ? 'var(--wp-brand)' : 'var(--wp-text-3)' }}>
+                            {DAY_NAMES[day.getDay()]}
+                          </div>
+                          <div className="text-lg font-bold" style={{ color: isToday ? 'var(--wp-brand)' : 'var(--wp-text)' }}>
+                            {day.getDate()}
+                          </div>
+                        </div>
+
+                        {/* Hour cells (empty) */}
+                        {hours.map(h => (
+                          <div key={h} style={{ height: HOUR_HEIGHT, borderBottom: '1px solid var(--wp-border-light)' }} />
+                        ))}
+
+                        {/* Events positioned absolutely */}
+                        {dayJobs.map(job => {
+                          if (!job.startDate) return null
+                          const start = new Date(job.startDate)
+                          const startH = start.getHours() + start.getMinutes() / 60
+                          const endH = job.endDate
+                            ? new Date(job.endDate).getHours() + new Date(job.endDate).getMinutes() / 60
+                            : startH + 2 // default 2h duration
+                          const top = HEADER_HEIGHT + (startH - START_HOUR) * HOUR_HEIGHT
+                          const height = Math.max((endH - startH) * HOUR_HEIGHT, 40)
+
+                          const assignment = techAssignments.find(a => a.jobId === job.id)
+                          const color = assignment ? (techColorMap.get(assignment.technicianId) ?? TECH_COLORS[0]) : TECH_COLORS[0]
+                          const techName = assignment?.technicianName?.split(' ')[0] ?? ''
+                          const timeStr = start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: false })
+                          const isActive = job.status === 'active'
+
+                          return (
+                            <Link key={job.id} href={`/${locale}/jobs/${job.id}`}
+                              className="absolute left-1 right-1 rounded-lg px-2 py-1.5 overflow-hidden transition-shadow hover:shadow-md"
+                              style={{
+                                top, height,
+                                background: `color-mix(in srgb, ${color} 10%, white)`,
+                                borderLeft: `3px solid ${color}`,
+                                outline: isActive && isToday ? `2px solid ${color}` : undefined,
+                                outlineOffset: isActive && isToday ? 1 : undefined,
+                              }}>
+                              <div className="text-[10px] font-medium" style={{ color }}>{timeStr} · {techName}{isActive && isToday ? ` · ${locale === 'es' ? 'en curso' : 'active'}` : ''}</div>
+                              <div className="text-xs font-semibold mt-0.5 truncate" style={{ color: 'var(--wp-text)' }}>{job.name} · {job.clientName}</div>
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          )
+        })()}
 
         {/* Month view */}
         {view === 'month' && (
