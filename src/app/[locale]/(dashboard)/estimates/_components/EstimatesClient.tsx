@@ -18,7 +18,7 @@ import {
 } from '@/components/ui'
 
 type EstimateStatus = 'draft' | 'sent' | 'approved' | 'rejected' | 'converted' | 'expired'
-type Estimate = { id: string; number: string; clientName: string; status: string; total: string; createdAt: Date }
+type Estimate = { id: string; number: string; clientName: string; clientEmail?: string | null; status: string; total: string; createdAt: Date }
 type T = { title: string; new: string; empty: string; status: Record<EstimateStatus, string>; fields: { number: string; clientName: string; total: string } }
 
 type FilterValue = 'all' | EstimateStatus
@@ -445,6 +445,9 @@ export function EstimatesClient({ initialEstimates, viewCounts = {}, planInfo, t
                                   <ClientAvatar name={est.clientName} size="md" />
                                   <div className="min-w-0">
                                     <div style={{ color: 'var(--wp-text)', fontWeight: 500 }}>{est.clientName}</div>
+                                    {est.clientEmail && (
+                                      <div style={{ fontSize: '0.6875rem', color: 'var(--wp-text-3)', marginTop: '1px' }}>{est.clientEmail}</div>
+                                    )}
                                     {est.status === 'sent' && openedCount > 0 && (
                                       <div style={{ fontSize: '0.6875rem', color: 'var(--wp-success-v2)', marginTop: '1px' }}>
                                         ● {locale === 'es' ? `Visto ${openedCount}×` : `Opened ${openedCount}×`}

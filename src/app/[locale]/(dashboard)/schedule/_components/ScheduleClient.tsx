@@ -95,6 +95,36 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()))
   const [monthDate, setMonthDate] = useState(() => { const d = new Date(); d.setDate(1); return d })
   const [activeJob, setActiveJob] = useState<Job | null>(null)
+  const [techFilter, setTechFilter] = useState<Set<string>>(new Set())
+
+  // Unique technicians from assignments
+  const techs = (() => {
+    const map = new Map<string, string>()
+    techAssignments.forEach(a => map.set(a.technicianId, a.technicianName))
+    return Array.from(map, ([id, name]) => ({ id, name }))
+  })()
+
+  const TECH_COLORS = ['#1D4ED8', '#15803D', '#B45309', '#7C3AED', '#0F766E', '#BE123C']
+
+  // Filter jobs by selected technicians
+  const filteredJobs = techFilter.size === 0 ? jobs : jobs.filter(j => {
+    const assignment = techAssignments.find(a => a.jobId === j.id)
+    return assignment && techFilter.has(assignment.technicianId)
+  })
+
+  // Today's jobs for sidebar
+  const today = new Date(); today.setHours(0, 0, 0, 0)
+  const todayJobs = jobsForDay(jobs, today)
+
+  // Mini calendar data
+  const miniCalMonth = view === 'week' ? new Date(weekStart.getFullYear(), weekStart.getMonth(), 1) : monthDate
+  const miniCalGrid = getMonthGrid(miniCalMonth)
+  const miniCalDaysWithJobs = new Set(
+    jobs.filter(j => j.startDate).map(j => {
+      const d = new Date(j.startDate!)
+      return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+    })
+  )
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -269,13 +299,112 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
         })}
       </div>
 
-      {/* Desktop DnD Calendar */}
+      {/* Desktop: 2-column layout with sidebar */}
+      <div className="hidden md:grid grid-cols-[260px_1fr] gap-5 items-start">
+        {/* ── LEFT SIDEBAR ── */}
+        <div className="space-y-4 sticky top-4">
+          {/* Mini calendar */}
+          <div className="card p-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold" style={{ color: 'var(--wp-text)' }}>
+                {MONTH_NAMES[miniCalMonth.getMonth()]} {miniCalMonth.getFullYear()}
+              </span>
+              <div className="flex gap-1">
+                <button onClick={() => {
+                  const prev = new Date(miniCalMonth.getFullYear(), miniCalMonth.getMonth() - 1, 1)
+                  if (view === 'month') setMonthDate(prev)
+                  else setWeekStart(startOfWeek(prev))
+                }} className="p-0.5" style={{ color: 'var(--wp-text-3)' }}><ChevronLeft size={14} /></button>
+                <button onClick={() => {
+                  const next = new Date(miniCalMonth.getFullYear(), miniCalMonth.getMonth() + 1, 1)
+                  if (view === 'month') setMonthDate(next)
+                  else setWeekStart(startOfWeek(next))
+                }} className="p-0.5" style={{ color: 'var(--wp-text-3)' }}><ChevronRight size={14} /></button>
+              </div>
+            </div>
+            <div className="grid grid-cols-7 gap-0">
+              {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map(d => (
+                <div key={d} className="text-center text-[9px] font-semibold py-1" style={{ color: 'var(--wp-text-3)' }}>{d}</div>
+              ))}
+              {miniCalGrid.map((day, i) => {
+                if (!day) return <div key={i} className="h-7" />
+                const isToday = sameDay(day, new Date())
+                const dayKey = `${day.getFullYear()}-${day.getMonth()}-${day.getDate()}`
+                const hasJobs = miniCalDaysWithJobs.has(dayKey)
+                return (
+                  <button key={i} onClick={() => {
+                    setWeekStart(startOfWeek(day))
+                    setView('week')
+                  }} className="h-7 flex flex-col items-center justify-center rounded-md text-[11px] transition-colors hover:bg-[var(--wp-surface-2)]"
+                    style={isToday ? { background: 'var(--wp-brand)', color: 'white', fontWeight: 700 } : { color: 'var(--wp-text-2)' }}>
+                    {day.getDate()}
+                    {hasJobs && !isToday && <span className="w-1 h-1 rounded-full mt-0.5" style={{ background: 'var(--wp-brand)' }} />}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Today's schedule */}
+          <div className="card p-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold" style={{ color: 'var(--wp-text)' }}>
+                {locale === 'es' ? 'Hoy' : 'Today'} · {todayJobs.length} jobs
+              </span>
+            </div>
+            {todayJobs.length === 0 ? (
+              <p className="text-xs" style={{ color: 'var(--wp-text-3)' }}>{t.noJobs}</p>
+            ) : (
+              <div className="space-y-1.5">
+                {todayJobs.map((job, i) => (
+                  <Link key={job.id} href={`/${locale}/jobs/${job.id}`}
+                    className="flex items-center gap-2 p-1.5 rounded-md transition-colors hover:bg-[var(--wp-surface-2)]"
+                    style={{ borderLeft: `2px solid ${TECH_COLORS[i % TECH_COLORS.length]}` }}>
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium truncate" style={{ color: 'var(--wp-text)' }}>{job.name}</p>
+                      <p className="text-[10px] truncate" style={{ color: 'var(--wp-text-3)' }}>{job.clientName}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Team filters */}
+          {techs.length > 0 && (
+            <div className="card p-3">
+              <span className="text-xs font-bold block mb-2" style={{ color: 'var(--wp-text)' }}>
+                {locale === 'es' ? 'Equipo' : 'Team'}
+              </span>
+              <div className="space-y-1.5">
+                {techs.map((tech, i) => (
+                  <label key={tech.id} className="flex items-center gap-2 text-xs cursor-pointer">
+                    <input type="checkbox" checked={techFilter.size === 0 || techFilter.has(tech.id)}
+                      onChange={() => {
+                        setTechFilter(prev => {
+                          const next = new Set(prev)
+                          if (next.has(tech.id)) { next.delete(tech.id) } else { next.add(tech.id) }
+                          return next
+                        })
+                      }}
+                      className="rounded" style={{ accentColor: TECH_COLORS[i % TECH_COLORS.length] }} />
+                    <span className="w-2 h-2 rounded-full" style={{ background: TECH_COLORS[i % TECH_COLORS.length] }} />
+                    <span style={{ color: 'var(--wp-text-2)' }}>{tech.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── RIGHT: CALENDAR ── */}
+        <div>
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         {/* Week view */}
         {view === 'week' && (
-          <div className="hidden md:grid grid-cols-7 gap-3">
+          <div className="grid grid-cols-7 gap-3">
             {weekDays.map((day, i) => {
-              const dayJobs = jobsForDay(jobs, day)
+              const dayJobs = jobsForDay(filteredJobs, day)
               const isToday = sameDay(day, new Date())
               return (
                 <DroppableDay key={i} day={day} isToday={isToday}>
@@ -302,7 +431,7 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
 
         {/* Month view */}
         {view === 'month' && (
-          <div className="hidden md:block">
+          <div>
             <div className="grid grid-cols-7 mb-1">
               {DAY_NAMES.map(d => (
                 <div key={d} className="text-center text-xs font-semibold py-2" style={{ color: 'var(--wp-text-muted)' }}>{d}</div>
@@ -311,7 +440,7 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
             <div className="grid grid-cols-7 gap-1">
               {monthGrid.map((day, i) => {
                 if (!day) return <div key={i} className="min-h-[80px]" />
-                const dayJobs = jobsForDay(jobs, day)
+                const dayJobs = jobsForDay(filteredJobs, day)
                 const isToday = sameDay(day, new Date())
                 const dateStr = day.toISOString().split('T')[0]
                 return (
@@ -344,6 +473,8 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
           )}
         </DragOverlay>
       </DndContext>
+        </div>{/* end right calendar column */}
+      </div>{/* end 2-col grid */}
     </div>
   )
 }

@@ -222,7 +222,7 @@ export function ClientDetailClient({ client, jobs, estimates, invoices }: {
                     </div>
                   )
               }
-              sub={`Client since ${new Date().getFullYear()} · ${jobs.length} ${jobs.length === 1 ? 'job' : 'jobs'}`}
+              sub={`${locale === 'es' ? 'Cliente desde' : 'Client since'} ${new Date().getFullYear()} · ${jobs.length} ${jobs.length === 1 ? 'job' : 'jobs'}${client.address ? ` · ${client.address}` : ''}`}
               actions={
                 editing ? (
                   <>
@@ -468,6 +468,10 @@ export function ClientDetailClient({ client, jobs, estimates, invoices }: {
                 <p className="text-xs italic" style={{ color: 'var(--wp-text-2)', lineHeight: 1.5 }}>{client.notes}</p>
               </SideCard>
             )}
+
+            <SideCard label="Tags">
+              <p className="text-xs" style={{ color: 'var(--wp-text-3)' }}>{locale === 'es' ? 'Sin tags' : 'No tags'}</p>
+            </SideCard>
           </DetailSidebar>
         </div>
       </div>
