@@ -6,6 +6,7 @@ import { dbAdapter } from '@/lib/adapters/db'
 import { isPro, STARTER_LIMITS } from '@/lib/stripe'
 import { getUserPlan } from './billing'
 import { revalidatePath } from 'next/cache'
+import { invalidateUserData } from '@/lib/cache-tags'
 
 
 export async function getClients() {
@@ -50,6 +51,7 @@ export async function createClient(data: {
     notes: data.notes || null,
   })
   revalidatePath('/[locale]/clients', 'page')
+  invalidateUserData(userId)
   return client
 }
 
@@ -65,6 +67,7 @@ export async function updateClient(id: string, data: Partial<{
     ...data.notes !== undefined && { notes: data.notes || null },
   })
   revalidatePath('/[locale]/clients', 'page')
+  invalidateUserData(userId)
   return client
 }
 
@@ -72,4 +75,5 @@ export async function deleteClient(id: string) {
   const userId = await requireAuth()
   await dbAdapter.clients.delete(id, userId)
   revalidatePath('/[locale]/clients', 'page')
+  invalidateUserData(userId)
 }

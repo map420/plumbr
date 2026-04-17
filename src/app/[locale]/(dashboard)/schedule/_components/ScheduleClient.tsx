@@ -3,8 +3,15 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useLocale } from 'next-intl'
+import { useRouter } from 'next/navigation'
 import { JobStatusBadge } from '@/components/jobs/JobStatusBadge'
-import { ChevronLeft, ChevronRight, Plus, CalendarDays, LayoutGrid } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, CalendarDays, LayoutGrid, GripVertical } from 'lucide-react'
+import {
+  DndContext, DragOverlay, useDraggable, useDroppable,
+  PointerSensor, TouchSensor, useSensor, useSensors,
+  type DragStartEvent, type DragEndEvent,
+} from '@dnd-kit/core'
+import { updateJob } from '@/lib/actions/jobs'
 
 type JobStatus = 'lead' | 'active' | 'on_hold' | 'completed' | 'cancelled'
 type Job = { id: string; name: string; clientName: string; status: string; startDate: Date | null; endDate: Date | null }
@@ -37,20 +44,131 @@ const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December']
 
-export function ScheduleClient({ initialJobs, translations: t }: { initialJobs: Job[]; translations: T }) {
+type TechAssignment = { jobId: string; technicianId: string; technicianName: string }
+
+// Draggable job card
+function DraggableJob({ job, locale, t, techName }: { job: Job; locale: string; t: T; techName?: string }) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: job.id, data: { job } })
+  return (
+    <div
+      ref={setNodeRef}
+      className={`block p-2 rounded-lg transition-colors ${isDragging ? 'opacity-30' : ''}`}
+      style={{ background: 'color-mix(in srgb, var(--wp-primary) 8%, transparent)' }}
+    >
+      <div className="flex items-center gap-1">
+        <button {...listeners} {...attributes} className="cursor-grab active:cursor-grabbing shrink-0 touch-none" style={{ color: 'var(--wp-border)' }}>
+          <GripVertical size={12} />
+        </button>
+        <Link href={`/${locale}/jobs/${job.id}`} className="min-w-0 flex-1">
+          <p className="text-xs font-medium truncate" style={{ color: 'var(--wp-primary)' }} title={job.name}>{job.name}</p>
+          <p className="text-xs truncate" style={{ color: 'var(--wp-text-muted)' }} title={job.clientName}>{job.clientName}</p>
+        </Link>
+      </div>
+      <div className="mt-1 ml-4 flex items-center gap-1.5">
+        <JobStatusBadge status={job.status as JobStatus} label={t.status[job.status as JobStatus]} />
+        {techName && <span className="text-[9px] text-purple-600 bg-purple-50 px-1 py-0.5 rounded truncate max-w-[80px]">{techName}</span>}
+      </div>
+    </div>
+  )
+}
+
+// Droppable day cell
+function DroppableDay({ day, children, isToday }: { day: Date; children: React.ReactNode; isToday: boolean }) {
+  const dateStr = day.toISOString().split('T')[0]
+  const { isOver, setNodeRef } = useDroppable({ id: `day-${dateStr}`, data: { date: day } })
+  return (
+    <div
+      ref={setNodeRef}
+      className={`card p-3 min-h-[200px] group/day transition-colors ${isOver ? 'bg-blue-50 ring-2' : ''}`}
+      style={isToday ? { boxShadow: '0 0 0 2px var(--wp-accent)' } : undefined}
+    >
+      {children}
+    </div>
+  )
+}
+
+export function ScheduleClient({ initialJobs, techAssignments = [], translations: t }: { initialJobs: Job[]; techAssignments?: TechAssignment[]; translations: T }) {
   const locale = useLocale()
+  const router = useRouter()
+  const [jobs, setJobs] = useState(initialJobs)
   const [view, setView] = useState<'week' | 'month'>('week')
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()))
   const [monthDate, setMonthDate] = useState(() => { const d = new Date(); d.setDate(1); return d })
+  const [activeJob, setActiveJob] = useState<Job | null>(null)
 
-  // --- Week view ---
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+  )
+
+  function handleDragStart(event: DragStartEvent) {
+    const job = event.active.data.current?.job as Job
+    setActiveJob(job || null)
+  }
+
+  async function handleDragEnd(event: DragEndEvent) {
+    setActiveJob(null)
+    const { active, over } = event
+    if (!over) return
+
+    const jobId = active.id as string
+    const targetDate = over.data.current?.date as Date
+    if (!targetDate) return
+
+    const job = jobs.find(j => j.id === jobId)
+    if (!job || !job.startDate) return
+
+    const oldStart = new Date(job.startDate)
+    if (sameDay(oldStart, targetDate)) return // dropped on same day
+
+    // Conflict detection: check if assigned technician has another job on target day
+    const jobTechAssignment = techAssignments.find(a => a.jobId === jobId)
+    if (jobTechAssignment) {
+      const techOtherJobs = techAssignments
+        .filter(a => a.technicianId === jobTechAssignment.technicianId && a.jobId !== jobId)
+        .map(a => jobs.find(j => j.id === a.jobId))
+        .filter(Boolean) as Job[]
+      const targetDayStr = `${targetDate.getFullYear()}-${targetDate.getMonth()}-${targetDate.getDate()}`
+      const conflicts = techOtherJobs.filter(j => {
+        if (!j.startDate) return false
+        const jd = new Date(j.startDate)
+        return `${jd.getFullYear()}-${jd.getMonth()}-${jd.getDate()}` === targetDayStr
+      })
+      if (conflicts.length > 0) {
+        const proceed = confirm(`⚠️ Schedule conflict: ${jobTechAssignment.technicianName} is already assigned to "${conflicts[0].name}" on ${targetDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}.\n\nMove anyway?`)
+        if (!proceed) return
+      }
+    }
+
+    // Optimistic update
+    setJobs(prev => prev.map(j => {
+      if (j.id !== jobId) return j
+      const newStart = new Date(targetDate)
+      newStart.setHours(oldStart.getHours(), oldStart.getMinutes())
+      let newEnd = j.endDate ? new Date(j.endDate) : null
+      if (newEnd) {
+        const diff = newStart.getTime() - oldStart.getTime()
+        newEnd = new Date(newEnd.getTime() + diff)
+      }
+      return { ...j, startDate: newStart, endDate: newEnd }
+    }))
+
+    // Persist to DB
+    const newStart = new Date(targetDate)
+    newStart.setHours(oldStart.getHours(), oldStart.getMinutes())
+    await updateJob(jobId, { startDate: newStart.toISOString() }).catch(() => {
+      // Revert on error
+      setJobs(initialJobs)
+    })
+    router.refresh()
+  }
+
   const weekDays = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(weekStart)
     d.setDate(weekStart.getDate() + i)
     return d
   })
 
-  // --- Month view ---
   function getMonthGrid(base: Date) {
     const year = base.getFullYear()
     const month = base.getMonth()
@@ -65,18 +183,10 @@ export function ScheduleClient({ initialJobs, translations: t }: { initialJobs: 
 
   const monthGrid = getMonthGrid(monthDate)
 
-  function prevMonth() {
-    setMonthDate(d => new Date(d.getFullYear(), d.getMonth() - 1, 1))
-  }
-  function nextMonth() {
-    setMonthDate(d => new Date(d.getFullYear(), d.getMonth() + 1, 1))
-  }
-
   const headerLabel = view === 'week'
     ? `${weekDays[0].toLocaleString('en', { month: 'short', day: 'numeric' })} – ${weekDays[6].toLocaleString('en', { month: 'short', day: 'numeric', year: 'numeric' })}`
     : `${MONTH_NAMES[monthDate.getMonth()]} ${monthDate.getFullYear()}`
 
-  // Mobile: flat list of days with jobs, only show days that have jobs or are today/upcoming (next 7)
   const mobileDays = Array.from({ length: 14 }, (_, i) => {
     const d = new Date()
     d.setDate(d.getDate() + i - 1)
@@ -85,59 +195,67 @@ export function ScheduleClient({ initialJobs, translations: t }: { initialJobs: 
   })
 
   return (
-    <div className="p-4 md:p-8">
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-slate-900">{t.title}</h1>
+    <div className="px-4 pt-2 pb-4 md:p-8">
+      <div className="hidden md:flex items-center justify-between mb-6 flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--wp-text-primary)' }}>{t.title}</h1>
+          <p className="text-xs mt-0.5 hidden md:block" style={{ color: 'var(--wp-text-muted)' }}>Drag jobs between days to reschedule</p>
+        </div>
         <div className="hidden md:flex items-center gap-2">
-          {/* View toggle */}
-          <div className="flex border border-slate-200 rounded-lg overflow-hidden mr-1">
-            <button onClick={() => setView('week')} title="Week view" className={`p-2 ${view === 'week' ? 'bg-[#1E3A5F] text-white' : 'hover:bg-slate-50 text-slate-500'}`}>
+          <div className="flex rounded-lg overflow-hidden mr-1" style={{ border: '1px solid var(--wp-border)' }}>
+            <button onClick={() => setView('week')} title="Week view" className="p-2" style={{ background: view === 'week' ? 'var(--wp-primary)' : 'transparent', color: view === 'week' ? 'white' : 'var(--wp-text-muted)' }}>
               <CalendarDays size={15} />
             </button>
-            <button onClick={() => setView('month')} title="Month view" className={`p-2 ${view === 'month' ? 'bg-[#1E3A5F] text-white' : 'hover:bg-slate-50 text-slate-500'}`}>
+            <button onClick={() => setView('month')} title="Month view" className="p-2" style={{ background: view === 'month' ? 'var(--wp-primary)' : 'transparent', color: view === 'month' ? 'white' : 'var(--wp-text-muted)' }}>
               <LayoutGrid size={15} />
             </button>
           </div>
-
-          {/* Nav */}
-          <button onClick={() => view === 'week' ? setWeekStart(d => { const n = new Date(d); n.setDate(n.getDate() - 7); return n }) : prevMonth()}
-            className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50">
+          <button onClick={() => view === 'week' ? setWeekStart(d => { const n = new Date(d); n.setDate(n.getDate() - 7); return n }) : setMonthDate(d => new Date(d.getFullYear(), d.getMonth() - 1, 1))}
+            className="p-2 rounded-lg" style={{ border: '1px solid var(--wp-border)' }}>
             <ChevronLeft size={16} />
           </button>
-          <span className="text-sm font-medium text-slate-700 min-w-[180px] text-center">{headerLabel}</span>
-          <button onClick={() => view === 'week' ? setWeekStart(d => { const n = new Date(d); n.setDate(n.getDate() + 7); return n }) : nextMonth()}
-            className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50">
+          <span className="text-sm font-medium min-w-[180px] text-center" style={{ color: 'var(--wp-text-secondary)' }}>{headerLabel}</span>
+          <button onClick={() => view === 'week' ? setWeekStart(d => { const n = new Date(d); n.setDate(n.getDate() + 7); return n }) : setMonthDate(d => new Date(d.getFullYear(), d.getMonth() + 1, 1))}
+            className="p-2 rounded-lg" style={{ border: '1px solid var(--wp-border)' }}>
             <ChevronRight size={16} />
           </button>
           <button onClick={() => { setWeekStart(startOfWeek(new Date())); setMonthDate(new Date(new Date().getFullYear(), new Date().getMonth(), 1)) }}
-            className="text-sm px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 font-medium">
+            className="text-sm px-3 py-1.5 rounded-lg font-medium" style={{ border: '1px solid var(--wp-border)' }}>
             {t.today}
           </button>
         </div>
       </div>
 
-      {/* Mobile list view */}
-      <div className="md:hidden space-y-3">
+      {/* Mobile list view (no DnD) */}
+      <div className="md:hidden space-y-4">
         {mobileDays.map((day, i) => {
-          const dayJobs = jobsForDay(initialJobs, day)
+          const dayJobs = jobsForDay(jobs, day)
           const isToday = sameDay(day, new Date())
           if (dayJobs.length === 0 && !isToday) return null
           return (
             <div key={i}>
-              <div className={`flex items-center gap-2 mb-1.5 ${isToday ? 'text-[#F97316]' : 'text-slate-500'}`}>
-                <span className="text-xs font-bold uppercase tracking-wide">
+              <div className="py-2 px-3 -mx-4 rounded-none" style={{ background: 'var(--wp-bg-muted)' }}>
+                <span
+                  className="text-xs font-bold uppercase tracking-wide"
+                  style={{ color: isToday ? 'var(--wp-accent)' : 'var(--wp-text-tertiary)' }}
+                >
                   {isToday ? 'Today' : day.toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric' })}
                 </span>
               </div>
               {dayJobs.length === 0 ? (
-                <p className="text-xs text-slate-300 pl-1">{t.noJobs}</p>
+                <p className="text-xs pl-1 mt-2" style={{ color: 'var(--wp-text-tertiary)' }}>{t.noJobs}</p>
               ) : (
-                <div className="space-y-2">
-                  {dayJobs.map(job => (
-                    <Link key={job.id} href={`/${locale}/jobs/${job.id}`} className="plumbr-card p-3 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                <div className="space-y-2 mt-2">
+                  {dayJobs.map((job, idx) => (
+                    <Link
+                      key={job.id}
+                      href={`/${locale}/jobs/${job.id}`}
+                      className="card p-3 flex items-center justify-between transition-colors"
+                      style={{ animation: `fadeSlideIn 0.3s ease both`, animationDelay: `${idx * 30}ms` }}
+                    >
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-slate-800 truncate">{job.name}</p>
-                        <p className="text-xs text-slate-400 mt-0.5 truncate">{job.clientName}</p>
+                        <p className="text-sm font-semibold truncate" style={{ color: 'var(--wp-text-primary)' }} title={job.name}>{job.name}</p>
+                        <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--wp-text-tertiary)' }} title={job.clientName}>{job.clientName}</p>
                       </div>
                       <div className="shrink-0 ml-3">
                         <JobStatusBadge status={job.status as JobStatus} label={t.status[job.status as JobStatus]} />
@@ -151,80 +269,113 @@ export function ScheduleClient({ initialJobs, translations: t }: { initialJobs: 
         })}
       </div>
 
-      {/* Week view — desktop only */}
-      {view === 'week' && (
-        <div className="hidden md:grid grid-cols-7 gap-3">
-          {weekDays.map((day, i) => {
-            const dayJobs = jobsForDay(initialJobs, day)
-            const isToday = sameDay(day, new Date())
-            return (
-              <div key={i} className={`plumbr-card p-3 min-h-[200px] group/day ${isToday ? 'ring-2 ring-[#F97316]' : ''}`}>
-                <div className={`flex items-center justify-between mb-2 ${isToday ? 'text-[#F97316]' : 'text-slate-500'}`}>
-                  <span className="text-xs font-semibold">{DAY_NAMES[day.getDay()]} {day.getDate()}</span>
-                  <Link href={`/${locale}/jobs/new`} className="opacity-0 group-hover/day:opacity-100 transition-opacity p-0.5 rounded hover:bg-slate-100" title="Add job">
-                    <Plus size={12} className="text-slate-400 hover:text-[#F97316]" />
-                  </Link>
-                </div>
-                {dayJobs.length === 0 ? (
-                  <p className="text-xs text-slate-300">{t.noJobs}</p>
-                ) : (
-                  <div className="space-y-1.5">
-                    {dayJobs.map((job) => (
-                      <Link key={job.id} href={`/${locale}/jobs/${job.id}`} title={`${job.name} — ${job.clientName}`} className="block p-2 rounded-lg bg-[#1E3A5F]/5 hover:bg-[#1E3A5F]/10 transition-colors">
-                        <p className="text-xs font-medium text-[#1E3A5F] truncate">{job.name}</p>
-                        <p className="text-xs text-slate-400 truncate">{job.clientName}</p>
-                        <div className="mt-1">
-                          <JobStatusBadge status={job.status as JobStatus} label={t.status[job.status as JobStatus]} />
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      )}
-
-      {/* Month view — desktop only */}
-      {view === 'month' && (
-        <div className="hidden md:block">
-          <div className="grid grid-cols-7 mb-1">
-            {DAY_NAMES.map(d => (
-              <div key={d} className="text-center text-xs font-semibold text-slate-400 py-2">{d}</div>
-            ))}
-          </div>
-          <div className="grid grid-cols-7 gap-1">
-            {monthGrid.map((day, i) => {
-              if (!day) return <div key={i} className="min-h-[80px]" />
-              const dayJobs = jobsForDay(initialJobs, day)
+      {/* Desktop DnD Calendar */}
+      <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        {/* Week view */}
+        {view === 'week' && (
+          <div className="hidden md:grid grid-cols-7 gap-3">
+            {weekDays.map((day, i) => {
+              const dayJobs = jobsForDay(jobs, day)
               const isToday = sameDay(day, new Date())
               return (
-                <div key={i} className={`plumbr-card p-2 min-h-[80px] group/day ${isToday ? 'ring-2 ring-[#F97316]' : ''}`}>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className={`text-xs font-semibold ${isToday ? 'text-[#F97316]' : 'text-slate-500'}`}>{day.getDate()}</span>
-                    <Link href={`/${locale}/jobs/new`} className="opacity-0 group-hover/day:opacity-100 transition-opacity" title="Add job">
-                      <Plus size={10} className="text-slate-400 hover:text-[#F97316]" />
+                <DroppableDay key={i} day={day} isToday={isToday}>
+                  <div className="flex items-center justify-between mb-2" style={{ color: isToday ? 'var(--wp-accent)' : 'var(--wp-text-muted)' }}>
+                    <span className="text-xs font-semibold">{DAY_NAMES[day.getDay()]} {day.getDate()}</span>
+                    <Link href={`/${locale}/jobs/new`} className="opacity-0 group-hover/day:opacity-100 transition-opacity p-0.5 rounded" title="Add job">
+                      <Plus size={12} style={{ color: 'var(--wp-text-muted)' }} />
                     </Link>
                   </div>
-                  <div className="space-y-0.5">
-                    {dayJobs.slice(0, 2).map(job => (
-                      <Link key={job.id} href={`/${locale}/jobs/${job.id}`}
-                        title={`${job.name} — ${job.clientName}`}
-                        className="block text-[10px] font-medium text-white bg-[#1E3A5F] rounded px-1 py-0.5 truncate hover:bg-[#16304f]">
-                        {job.name}
-                      </Link>
-                    ))}
-                    {dayJobs.length > 2 && (
-                      <p className="text-[10px] text-slate-400">+{dayJobs.length - 2} more</p>
-                    )}
-                  </div>
-                </div>
+                  {dayJobs.length === 0 ? (
+                    <p className="text-xs" style={{ color: 'var(--wp-border)' }}>{t.noJobs}</p>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {dayJobs.map(job => (
+                        <DraggableJob key={job.id} job={job} locale={locale} t={t} techName={techAssignments.find(a => a.jobId === job.id)?.technicianName} />
+                      ))}
+                    </div>
+                  )}
+                </DroppableDay>
               )
             })}
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Month view */}
+        {view === 'month' && (
+          <div className="hidden md:block">
+            <div className="grid grid-cols-7 mb-1">
+              {DAY_NAMES.map(d => (
+                <div key={d} className="text-center text-xs font-semibold py-2" style={{ color: 'var(--wp-text-muted)' }}>{d}</div>
+              ))}
+            </div>
+            <div className="grid grid-cols-7 gap-1">
+              {monthGrid.map((day, i) => {
+                if (!day) return <div key={i} className="min-h-[80px]" />
+                const dayJobs = jobsForDay(jobs, day)
+                const isToday = sameDay(day, new Date())
+                const dateStr = day.toISOString().split('T')[0]
+                return (
+                  <DroppableMonthDay key={i} day={day} isToday={isToday}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-semibold" style={{ color: isToday ? 'var(--wp-accent)' : 'var(--wp-text-muted)' }}>{day.getDate()}</span>
+                    </div>
+                    <div className="space-y-0.5">
+                      {dayJobs.slice(0, 2).map(job => (
+                        <DraggableMonthJob key={job.id} job={job} locale={locale} />
+                      ))}
+                      {dayJobs.length > 2 && (
+                        <p className="text-[10px]" style={{ color: 'var(--wp-text-muted)' }}>+{dayJobs.length - 2} more</p>
+                      )}
+                    </div>
+                  </DroppableMonthDay>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Drag overlay — ghost that follows cursor */}
+        <DragOverlay>
+          {activeJob && (
+            <div className="p-2 rounded-lg bg-white shadow-xl w-[150px]" style={{ border: '1px solid var(--wp-border)' }}>
+              <p className="text-xs font-medium truncate" style={{ color: 'var(--wp-primary)' }} title={activeJob.name}>{activeJob.name}</p>
+              <p className="text-xs truncate" style={{ color: 'var(--wp-text-muted)' }} title={activeJob.clientName}>{activeJob.clientName}</p>
+            </div>
+          )}
+        </DragOverlay>
+      </DndContext>
+    </div>
+  )
+}
+
+// Month view droppable
+function DroppableMonthDay({ day, children, isToday }: { day: Date; children: React.ReactNode; isToday: boolean }) {
+  const dateStr = day.toISOString().split('T')[0]
+  const { isOver, setNodeRef } = useDroppable({ id: `day-${dateStr}`, data: { date: day } })
+  return (
+    <div
+      ref={setNodeRef}
+      className={`card p-2 min-h-[80px] group/day transition-colors ${isOver ? 'bg-blue-50 ring-2' : ''}`}
+      style={isToday ? { boxShadow: '0 0 0 2px var(--wp-accent)' } : undefined}
+    >
+      {children}
+    </div>
+  )
+}
+
+// Month view draggable job
+function DraggableMonthJob({ job, locale }: { job: Job; locale: string }) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: job.id, data: { job } })
+  return (
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      className={`block text-[10px] font-medium text-white rounded px-1 py-0.5 truncate cursor-grab active:cursor-grabbing touch-none ${isDragging ? 'opacity-30' : ''}`}
+      style={{ background: 'var(--wp-primary)' }}
+      title={`${job.name} — ${job.clientName}`}
+    >
+      {job.name}
     </div>
   )
 }

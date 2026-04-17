@@ -50,7 +50,10 @@ export function DashboardStats({ stats, alerts, todayJobs, activeJobs, revenueBy
   const hasTodayJobs = todayJobs.length > 0
 
   return (
-    <div className="p-4 md:p-8 space-y-4 max-w-4xl">
+    <div className="p-4 md:p-8 max-w-6xl">
+      <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-5 items-start">
+      {/* ── LEFT COLUMN ── */}
+      <div className="space-y-4">
 
       {/* ── BLOQUE 1: DINERO ── */}
       <div className="card p-4">
@@ -215,38 +218,115 @@ export function DashboardStats({ stats, alerts, todayJobs, activeJobs, revenueBy
         </div>
       )}
 
-      {/* ── BLOQUE 5: AI INSIGHT (when projection is weak) ── */}
+      {/* Quick actions */}
+      <div className="hidden md:grid grid-cols-4 gap-2.5">
+        <Link href={`/${locale}/estimates/new`} className="card p-3 flex items-center gap-2.5 hover:border-[color:var(--wp-brand)] transition-colors" style={{ borderColor: 'var(--wp-border-v2)' }}>
+          <Receipt size={16} style={{ color: 'var(--wp-text-3)' }} />
+          <span className="text-xs font-semibold" style={{ color: 'var(--wp-text)' }}>New estimate</span>
+        </Link>
+        <Link href={`/${locale}/jobs/new`} className="card p-3 flex items-center gap-2.5 hover:border-[color:var(--wp-brand)] transition-colors" style={{ borderColor: 'var(--wp-border-v2)' }}>
+          <Briefcase size={16} style={{ color: 'var(--wp-text-3)' }} />
+          <span className="text-xs font-semibold" style={{ color: 'var(--wp-text)' }}>New job</span>
+        </Link>
+        <Link href={`/${locale}/invoices/new`} className="card p-3 flex items-center gap-2.5 hover:border-[color:var(--wp-brand)] transition-colors" style={{ borderColor: 'var(--wp-border-v2)' }}>
+          <Receipt size={16} style={{ color: 'var(--wp-text-3)' }} />
+          <span className="text-xs font-semibold" style={{ color: 'var(--wp-text)' }}>Invoice</span>
+        </Link>
+        <Link href={`/${locale}/assistant`} className="card p-3 flex items-center gap-2.5 transition-colors" style={{ background: 'var(--wp-brand)', borderColor: 'var(--wp-brand)', color: 'white' }}>
+          <Bot size={16} />
+          <span className="text-xs font-semibold">Ask AI</span>
+        </Link>
+      </div>
+
+      </div>{/* end left column */}
+
+      {/* ── RIGHT SIDEBAR ── */}
+      <div className="space-y-4 lg:sticky lg:top-4">
+
+      {/* ── AI INSIGHT (navy hero card when projection is weak) ── */}
       {insights.length > 0 && (
-        <div className="card p-4 overflow-hidden" style={{ borderLeft: '3px solid var(--wp-warning)' }}>
-          <div className="flex items-center gap-2 mb-2">
-            <Lightbulb size={15} style={{ color: 'var(--wp-warning)' }} />
-            <h2 className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--wp-warning)' }}>Insight</h2>
+        <div className="wp-ai-card">
+          <div className="wp-ai-card-head">
+            <div className="wp-ai-icon">
+              <Bot size={14} />
+            </div>
+            <h2 className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--wp-ai-accent)' }}>
+              WorkPilot AI
+            </h2>
+            <span
+              className="ml-auto text-[9px] font-bold uppercase tracking-wider"
+              style={{ color: 'rgb(255 255 255 / 0.5)' }}
+            >
+              Insight
+            </span>
           </div>
-          <p className="text-sm font-medium mb-3" style={{ color: 'var(--wp-text-primary)' }}>{projectionSummary}</p>
+          <p className="text-sm font-medium mb-3" style={{ color: 'white' }}>{projectionSummary}</p>
           <div className="space-y-1.5 mb-3">
             {insights.map((insight, i) => (
               <div key={i} className="flex items-start gap-2">
-                <span className="text-xs mt-0.5" style={{ color: 'var(--wp-text-muted)' }}>•</span>
-                <p className="text-xs" style={{ color: 'var(--wp-text-secondary)' }}>{insight.text}</p>
+                <span className="text-xs mt-0.5" style={{ color: 'var(--wp-ai-accent)' }}>•</span>
+                <p className="text-xs" style={{ color: 'rgb(255 255 255 / 0.85)', lineHeight: 1.5 }}>{insight.text}</p>
               </div>
             ))}
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 relative">
             {insights.slice(0, 2).map((insight, i) => (
-              <Link key={i} href={`/${locale}${insight.href}`}
-                className="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
-                style={{ background: 'var(--wp-bg-muted)', color: 'var(--wp-primary)' }}>
+              <Link
+                key={i}
+                href={`/${locale}${insight.href}`}
+                className="text-xs font-medium px-3 py-1.5 rounded-md transition-colors"
+                style={{
+                  background: 'rgb(255 255 255 / 0.1)',
+                  color: 'white',
+                  border: '1px solid rgb(255 255 255 / 0.15)',
+                }}
+              >
                 {insight.label}
               </Link>
             ))}
-            <Link href={`/${locale}/assistant?msg=${encodeURIComponent(`My projected revenue is weak. ${projectionSummary} Analyze my business situation and recommend specific actions to improve revenue.`)}`}
-              className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
-              style={{ background: 'var(--wp-bg-muted)', color: 'var(--wp-text-secondary)' }}>
+            <Link
+              href={`/${locale}/assistant?msg=${encodeURIComponent(`My projected revenue is weak. ${projectionSummary} Analyze my business situation and recommend specific actions to improve revenue.`)}`}
+              className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-md transition-colors"
+              style={{
+                background: 'var(--wp-ai-accent)',
+                color: 'var(--wp-brand)',
+              }}
+            >
               <Bot size={12} /> Ask AI
             </Link>
           </div>
         </div>
       )}
+
+      {/* Sidebar: Today's Schedule */}
+      {hasTodayJobs && (
+        <div className="card p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--wp-text-muted)' }}>
+              {locale === 'es' ? 'Agenda de hoy' : "Today's schedule"}
+            </h2>
+            <span className="text-[10px] font-medium" style={{ color: 'var(--wp-text-muted)' }}>{todayJobs.length} jobs</span>
+          </div>
+          <div className="space-y-1.5">
+            {todayJobs.slice(0, 4).map(job => (
+              <Link key={job.id} href={`/${locale}/jobs/${job.id}`}
+                className="flex items-center gap-2.5 p-2 rounded-lg transition-colors hover:bg-[var(--wp-surface-2)]"
+                style={{ borderLeft: '2px solid var(--wp-info-v2)' }}>
+                {job.time && (
+                  <span className="text-[10px] font-bold tabular-nums shrink-0 w-12" style={{ color: 'var(--wp-text-3)' }}>{job.time}</span>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium truncate" style={{ color: 'var(--wp-text)' }}>{job.name}</p>
+                  <p className="text-[10px] truncate" style={{ color: 'var(--wp-text-3)' }}>{job.clientName}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      </div>{/* end right sidebar */}
+      </div>{/* end 2-col grid */}
     </div>
   )
 }

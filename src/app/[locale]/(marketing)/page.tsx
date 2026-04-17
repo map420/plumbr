@@ -1,5 +1,4 @@
 import { getLocale } from 'next-intl/server'
-import { auth } from '@clerk/nextjs/server'
 import Link from 'next/link'
 import {
   ArrowRight, CheckCircle2, X, FileText, BarChart2, Calendar,
@@ -15,15 +14,20 @@ import { FaqAccordion } from './_components/FaqAccordion'
 import { ScrollReveal } from './_components/ScrollReveal'
 import { AnimatedCounter } from './_components/AnimatedCounter'
 
+// Marketing page copy rarely changes. Revalidate hourly so Vercel caches the
+// rendered HTML at the edge and the DB/Clerk calls in this page only run
+// once per hour per locale instead of on every visit.
+export const revalidate = 3600
+
 export default async function LandingPage() {
   const locale = await getLocale()
-  const { userId } = await auth()
-  const isSignedIn = !!userId
-  const ctaHref = isSignedIn ? `/${locale}/dashboard` : `/${locale}/sign-up`
+  // CTA defaults to sign-up; the Navbar shows "Dashboard" instead when the
+  // visitor is already signed in (resolved client-side via Clerk).
+  const ctaHref = `/${locale}/sign-up`
 
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: 'Inter, sans-serif' }}>
-      <Navbar locale={locale} isSignedIn={isSignedIn} />
+      <Navbar locale={locale} />
 
       <main>
         {/* ── [2] HERO ──────────────────────────────────────────────────────── */}

@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { auth } from '@clerk/nextjs/server'
 import { CheckCircle2, ArrowRight, Wrench } from 'lucide-react'
 import { PLANS } from '@/lib/stripe'
 import { siteConfig } from '@/lib/config'
@@ -34,18 +33,23 @@ const FAQ = [
   },
   {
     q: 'Do you offer annual billing?',
-    a: 'Yes — pay annually and save 20% (equivalent to 2 months free). Available at checkout.',
+    a: 'Yes — pay annually at $249/year (save 28%). That\'s just ~$21/month.',
+  },
+  {
+    q: 'How does WorkPilot compare to Joist?',
+    a: 'WorkPilot Pro costs less than Joist Elite ($29 vs $32/mo) and includes crew scheduling, team management, job costing, a mobile field app, and an AI assistant — none of which Joist offers at any price.',
   },
 ]
 
+// Pricing page copy is static; Clerk auth resolves in the Navbar client-side.
+export const revalidate = 3600
+
 export default async function PricingPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params
-  const { userId } = await auth()
-  const isSignedIn = !!userId
 
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: 'Inter, sans-serif' }}>
-      <Navbar locale={locale} isSignedIn={isSignedIn} />
+      <Navbar locale={locale} />
 
       <main className="pt-16">
         {/* Hero */}
@@ -87,8 +91,8 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
                   <span className="text-slate-400 text-lg">/month</span>
                 </div>
                 <p className="text-sm text-slate-400 mb-6">
-                  or <span className="line-through">$588</span>{' '}
-                  <span className="font-semibold text-green-600">$470/year — save 20%</span>
+                  or <span className="line-through">$348</span>{' '}
+                  <span className="font-semibold text-green-600">$249/year — save 28%</span>
                 </p>
 
                 <div className="border-t border-slate-100 mb-6" />
@@ -117,9 +121,13 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
                     { title: 'Real-time job costing', desc: 'Know your margins before the job is done.' },
                     { title: 'Visual crew scheduling', desc: 'Assign jobs to your team in a drag-and-drop calendar.' },
                     { title: 'Mobile field app', desc: 'Your crew logs hours, photos and tasks from the field.' },
-                    { title: 'Client management', desc: 'Full client history with jobs, estimates and invoices.' },
+                    { title: 'Digital signatures & contracts', desc: 'Clients sign estimates digitally. Attach your standard contract.' },
+                    { title: 'Photo documentation', desc: 'Attach photos to line items and jobs. Camera capture from the field.' },
+                    { title: 'Change orders & work orders', desc: 'Formalize scope changes. Generate crew instructions without pricing.' },
+                    { title: 'AI Assistant', desc: 'Ask questions, create estimates, and get insights — all by chat.' },
+                    { title: 'SMS & email delivery', desc: 'Send estimates and invoices via text or email.' },
+                    { title: 'QuickBooks sync', desc: 'Auto-sync invoices and clients with QuickBooks Online.' },
                     { title: 'Expense tracking', desc: 'Log every cost per job — materials, labor, subs.' },
-                    { title: 'Email delivery', desc: 'Send estimates and invoices directly to clients.' },
                     { title: 'Priority support', desc: 'Real humans respond within 1 business day.' },
                   ].map(item => (
                     <div key={item.title} className="flex gap-3">

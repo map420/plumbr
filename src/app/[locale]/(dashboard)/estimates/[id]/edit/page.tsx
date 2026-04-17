@@ -14,8 +14,7 @@ export default async function EditEstimatePage({ params }: { params: Promise<{ i
   const taxPercent = parseTaxPercent(profile?.taxRate)
 
   return (
-    <div className="md:p-8 max-w-3xl">
-      <h1 className="hidden md:block page-title">{tc('edit')} {estimate.number}</h1>
+    <div className="max-w-6xl">
       <EstimateFormClient
         estimate={estimate}
         taxPercent={taxPercent}

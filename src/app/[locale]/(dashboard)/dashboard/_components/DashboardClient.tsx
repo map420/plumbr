@@ -6,7 +6,7 @@ import { useLocale } from 'next-intl'
 import { getJobs } from '@/lib/store/jobs'
 import { getEstimates } from '@/lib/store/estimates'
 import { getInvoices } from '@/lib/store/invoices'
-import { DollarSign, Briefcase, FileText, TrendingUp } from 'lucide-react'
+import { KpiCard } from '@/components/ui'
 
 type T = {
   greeting: string; subtitle: string
@@ -40,40 +40,45 @@ export function DashboardClient({ translations: t }: { translations: T }) {
     setStats({ activeJobs, openEstimates, revenueThisMonth, avgMargin })
   }, [])
 
-  const statCards = [
-    { label: t.stats.activeJobs, value: String(stats.activeJobs), icon: Briefcase, color: 'text-blue-600' },
-    { label: t.stats.openEstimates, value: String(stats.openEstimates), icon: FileText, color: 'text-orange-500' },
-    { label: t.stats.revenueThisMonth, value: stats.revenueThisMonth > 0 ? `$${stats.revenueThisMonth.toLocaleString()}` : '—', icon: DollarSign, color: 'text-green-600' },
-    { label: t.stats.avgJobMargin, value: stats.avgMargin !== null ? `${Math.round(stats.avgMargin)}%` : '—', icon: TrendingUp, color: 'text-purple-600' },
-  ]
-
   // Replace {name} placeholder in greeting with 'there' until Clerk is connected
   const greeting = t.greeting.replace('{name}', 'there')
 
   return (
     <div className="p-4 md:p-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">{greeting} 👷</h1>
-        <p className="text-slate-500 mt-1">{t.subtitle}</p>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--wp-text)' }}>{greeting} 👷</h1>
+        <p className="mt-1 text-sm" style={{ color: 'var(--wp-text-2)' }}>{t.subtitle}</p>
       </div>
 
-      <div className="grid grid-cols-4 gap-4 mb-8">
-        {statCards.map(({ label, value, icon: Icon, color }) => (
-          <div key={label} className="plumbr-card p-5">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-medium text-slate-500">{label}</span>
-              <Icon size={18} className={color} />
-            </div>
-            <div className="text-2xl font-bold text-slate-900">{value}</div>
-          </div>
-        ))}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+        <KpiCard
+          tone="info"
+          label={t.stats.activeJobs}
+          value={stats.activeJobs}
+        />
+        <KpiCard
+          tone="warning"
+          label={t.stats.openEstimates}
+          value={stats.openEstimates}
+        />
+        <KpiCard
+          tone="success"
+          label={t.stats.revenueThisMonth}
+          value={stats.revenueThisMonth > 0 ? `$${stats.revenueThisMonth.toFixed(2)}` : '—'}
+          subTone={stats.revenueThisMonth > 0 ? 'up' : 'neutral'}
+        />
+        <KpiCard
+          tone="brand"
+          label={t.stats.avgJobMargin}
+          value={stats.avgMargin !== null ? `${Math.round(stats.avgMargin)}%` : '—'}
+        />
       </div>
 
-      <div className="plumbr-card p-6">
-        <h2 className="text-base font-semibold text-slate-900 mb-4">{t.quickActions.title}</h2>
-        <div className="flex gap-3">
-          <Link href={`/${locale}/estimates/new`} className="btn-primary text-sm">{t.quickActions.newEstimate}</Link>
-          <Link href={`/${locale}/jobs/new`} className="btn-secondary text-sm">{t.quickActions.newJob}</Link>
+      <div className="card p-6">
+        <h2 className="text-sm font-semibold mb-3" style={{ color: 'var(--wp-text)' }}>{t.quickActions.title}</h2>
+        <div className="flex gap-2 flex-wrap">
+          <Link href={`/${locale}/estimates/new`} className="btn-primary btn-sm">{t.quickActions.newEstimate}</Link>
+          <Link href={`/${locale}/jobs/new`} className="btn-secondary btn-sm">{t.quickActions.newJob}</Link>
         </div>
       </div>
     </div>

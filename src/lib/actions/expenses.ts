@@ -4,6 +4,7 @@ import { requireUser as requireAuth } from './auth-helpers'
 
 import { dbAdapter } from '@/lib/adapters/db'
 import { revalidatePath } from 'next/cache'
+import { invalidateUserData } from '@/lib/cache-tags'
 import type { ExpenseType } from '@/lib/adapters/db/types'
 
 
@@ -33,6 +34,7 @@ export async function createExpense(jobId: string, data: {
     date: data.date ? new Date(data.date) : new Date(),
   })
   revalidatePath('/[locale]/jobs/[id]', 'page')
+  invalidateUserData(userId)
   return expense
 }
 
@@ -45,6 +47,7 @@ export async function deleteExpense(id: string) {
   const userId = await requireAuth()
   await dbAdapter.expenses.delete(id, userId)
   revalidatePath('/[locale]/jobs/[id]', 'page')
+  invalidateUserData(userId)
 }
 
 // Returns sum of all expenses for a job as a string

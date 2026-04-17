@@ -19,7 +19,7 @@ import { estimateTemplates } from '@/db/schema/estimate-templates'
 import { referrals } from '@/db/schema/referrals'
 import { qboConnections } from '@/db/schema/qbo-connections'
 import { jobChecklistItems } from '@/db/schema/job-checklists'
-import { eq, and, desc, count } from 'drizzle-orm'
+import { eq, and, desc, count, or, inArray } from 'drizzle-orm'
 import type { DbAdapter, Job, JobInput, EstimateInput, InvoiceInput, LineItemInput, CatalogItemInput, ChangeOrderInput, WorkOrderInput, EstimateTemplateInput, ReferralStatus } from '../types'
 
 // Drizzle infers budgetedCost/actualCost as string|null (no notNull in schema); coerce to default
@@ -113,6 +113,16 @@ export const drizzleAdapter: DbAdapter = {
       const rows = await db.select().from(clients).where(and(eq(clients.id, id), eq(clients.userId, userId)))
       return rows[0] ?? null
     },
+    async findByNameOrEmail(userId, name, email) {
+      // Invoice/estimate detail pages need the client's phone for quick
+      // actions. Used to scan clients.findAll (O(n)); this is O(1) with the
+      // clients_user_id_idx index.
+      const cond = email
+        ? and(eq(clients.userId, userId), or(eq(clients.name, name), eq(clients.email, email)))
+        : and(eq(clients.userId, userId), eq(clients.name, name))
+      const rows = await db.select().from(clients).where(cond).limit(1)
+      return rows[0] ?? null
+    },
     async create(userId, data) {
       const [client] = await db.insert(clients).values({ ...data, userId }).returning()
       return client
@@ -129,6 +139,10 @@ export const drizzleAdapter: DbAdapter = {
   jobs: {
     async findAll(userId) {
       const rows = await db.select().from(jobs).where(eq(jobs.userId, userId)).orderBy(desc(jobs.createdAt))
+      return rows.map(toJob)
+    },
+    async findRecent(userId, limit = 50) {
+      const rows = await db.select().from(jobs).where(eq(jobs.userId, userId)).orderBy(desc(jobs.createdAt)).limit(limit)
       return rows.map(toJob)
     },
     async findById(id, userId) {
@@ -153,6 +167,9 @@ export const drizzleAdapter: DbAdapter = {
     async findAll(userId) {
       return db.select().from(estimates).where(eq(estimates.userId, userId)).orderBy(desc(estimates.createdAt))
     },
+    async findRecent(userId, limit = 50) {
+      return db.select().from(estimates).where(eq(estimates.userId, userId)).orderBy(desc(estimates.createdAt)).limit(limit)
+    },
     async findById(id, userId) {
       const rows = await db.select().from(estimates).where(and(eq(estimates.id, id), eq(estimates.userId, userId)))
       return rows[0] ?? null
@@ -174,7 +191,10 @@ export const drizzleAdapter: DbAdapter = {
       return estimate
     },
     async update(id, userId, data) {
-      const [estimate] = await db.update(estimates).set({ ...data, updatedAt: new Date() })
+      const { status, ...rest } = data
+      const setData: any = { ...rest, updatedAt: new Date() }
+      if (status) setData.status = status
+      const [estimate] = await db.update(estimates).set(setData)
         .where(and(eq(estimates.id, id), eq(estimates.userId, userId))).returning()
       return estimate
     },
@@ -187,6 +207,9 @@ export const drizzleAdapter: DbAdapter = {
   invoices: {
     async findAll(userId) {
       return db.select().from(invoices).where(eq(invoices.userId, userId)).orderBy(desc(invoices.createdAt))
+    },
+    async findRecent(userId, limit = 50) {
+      return db.select().from(invoices).where(eq(invoices.userId, userId)).orderBy(desc(invoices.createdAt)).limit(limit)
     },
     async findById(id, userId) {
       const rows = await db.select().from(invoices).where(and(eq(invoices.id, id), eq(invoices.userId, userId)))
@@ -375,6 +398,22 @@ export const drizzleAdapter: DbAdapter = {
         .where(and(eq(documentViews.documentId, documentId), eq(documentViews.documentType, documentType)))
       return rows[0]?.cnt ?? 0
     },
+    async countByDocumentsBatch(documentIds, documentType) {
+      if (documentIds.length === 0) return {}
+      // One query with GROUP BY — replaces N serialized round-trips. A list of
+      // 50 estimates goes from ~50 × 100ms = 5s down to one query.
+      const rows = await db
+        .select({ id: documentViews.documentId, cnt: count() })
+        .from(documentViews)
+        .where(and(
+          inArray(documentViews.documentId, documentIds),
+          eq(documentViews.documentType, documentType),
+        ))
+        .groupBy(documentViews.documentId)
+      const out: Record<string, number> = {}
+      for (const r of rows) if (r.cnt > 0) out[r.id] = r.cnt
+      return out
+    },
   },
   changeOrders: {
     async findAll(userId) {
@@ -438,15 +477,15 @@ export const drizzleAdapter: DbAdapter = {
   },
   estimateTemplates: {
     async findAll(userId) {
-      return db.select().from(estimateTemplates).where(eq(estimateTemplates.userId, userId)).orderBy(desc(estimateTemplates.createdAt))
+      return db.select().from(estimateTemplates).where(eq(estimateTemplates.userId, userId)).orderBy(desc(estimateTemplates.createdAt)) as any
     },
     async findById(id, userId) {
       const rows = await db.select().from(estimateTemplates).where(and(eq(estimateTemplates.id, id), eq(estimateTemplates.userId, userId)))
-      return rows[0] ?? null
+      return (rows[0] ?? null) as any
     },
     async create(userId, data) {
       const [template] = await db.insert(estimateTemplates).values({ ...data, userId }).returning()
-      return template
+      return template as any
     },
     async delete(id, userId) {
       await db.delete(estimateTemplates).where(and(eq(estimateTemplates.id, id), eq(estimateTemplates.userId, userId)))

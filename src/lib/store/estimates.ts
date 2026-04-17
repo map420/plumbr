@@ -3,7 +3,7 @@ import { getAll, saveAll, nextNumber } from '.'
 const KEY = 'plumbr_estimates'
 const LI_KEY = 'plumbr_line_items_estimate'
 
-export type EstimateStatus = 'draft' | 'sent' | 'approved' | 'rejected' | 'converted'
+export type EstimateStatus = 'draft' | 'sent' | 'approved' | 'rejected' | 'converted' | 'expired'
 export type LineItemType = 'labor' | 'material' | 'subcontractor' | 'other'
 
 export interface LineItem {

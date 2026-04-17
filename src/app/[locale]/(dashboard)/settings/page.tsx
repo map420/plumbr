@@ -10,8 +10,8 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
   const user = await dbAdapter.users.findById(userId)
 
   return (
-    <div className="p-4 md:p-8 max-w-xl">
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Settings</h1>
+    <div className="p-4 md:p-8 max-w-4xl">
+      <h1 className="text-2xl font-bold text-slate-900 mb-6">{locale === 'es' ? 'Configuración' : 'Settings'}</h1>
       <SettingsClient
         locale={locale}
         plan={userPlan?.plan ?? 'starter'}

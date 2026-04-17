@@ -2,7 +2,8 @@ import { notFound } from 'next/navigation'
 import { getInvoice, getInvoiceLineItems } from '@/lib/actions/invoices'
 import { requireUser } from '@/lib/actions/auth-helpers'
 import { dbAdapter } from '@/lib/adapters/db'
-import { PrintButton } from './_components/PrintButton'
+import { generateQR } from '@/lib/qr'
+import { PrintControls } from './_components/PrintButton'
 
 export default async function PrintInvoicePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -13,6 +14,9 @@ export default async function PrintInvoicePage({ params }: { params: Promise<{ i
     dbAdapter.users.findById(userId),
   ])
   if (!invoice) notFound()
+
+  const portalUrl = invoice.shareToken ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://workpilot.mrlabs.io'}/en/portal/${invoice.shareToken}` : null
+  const qrDataUrl = portalUrl ? await generateQR(portalUrl) : null
 
   const companyName = user?.companyName || 'WorkPilot'
   const companyPhone = user?.phone || ''
@@ -29,10 +33,7 @@ export default async function PrintInvoicePage({ params }: { params: Promise<{ i
       `}</style>
 
       {/* Print controls — hidden when printing */}
-      <div className="no-print flex items-center gap-3 px-8 py-3 border-b border-slate-200 bg-slate-50">
-        <button onClick={() => window.print()} className="btn-primary text-sm">Print / Save PDF</button>
-        <button onClick={() => window.close()} className="btn-secondary text-sm">Close</button>
-      </div>
+      <PrintControls />
 
       <div className="max-w-2xl mx-auto px-12 py-10 print:px-0 print:py-0">
         {/* Header */}
@@ -118,13 +119,23 @@ export default async function PrintInvoicePage({ params }: { params: Promise<{ i
           </div>
         )}
 
+        {/* QR Code */}
+        {qrDataUrl && (
+          <div className="mt-8 flex items-center gap-3 border-t border-slate-200 pt-4">
+            <img src={qrDataUrl} alt="Pay online" className="w-24 h-24" />
+            <div>
+              <p className="text-xs font-medium text-slate-600">Pay online</p>
+              <p className="text-xs text-slate-400">Scan this QR code to view and pay this invoice online.</p>
+            </div>
+          </div>
+        )}
+
         {/* Footer */}
         <div className="mt-12 pt-6 border-t border-slate-100 text-xs text-slate-400 text-center">
           Thank you for your business · {companyName}
         </div>
       </div>
 
-      <PrintButton />
     </div>
   )
 }

@@ -41,10 +41,47 @@ export async function deleteTechnician(id: string) {
   revalidatePath('/[locale]/team', 'page')
 }
 
-export async function assignTechnicianToJob(jobId: string, technicianId: string) {
-  await requireAuth()
+export async function assignTechnicianToJob(jobId: string, technicianId: string): Promise<{ success: boolean; warning?: string }> {
+  const userId = await requireAuth()
+
+  // Conflict detection: warn if technician is already assigned to other active jobs
+  const job = await dbAdapter.jobs.findById(jobId, userId)
+  const techJobs = await dbAdapter.technicians.findJobsByTechnician(technicianId)
+  const allJobs = await dbAdapter.jobs.findAll(userId)
+
+  // Find other active jobs this tech is assigned to
+  const techActiveJobs = allJobs.filter(j =>
+    j.id !== jobId &&
+    techJobs.includes(j.id) &&
+    (j.status === 'active' || j.status === 'lead')
+  )
+
+  if (techActiveJobs.length > 0) {
+    // If both jobs have dates, check same-day conflict
+    const toDateKey = (d: Date) => `${new Date(d).getFullYear()}-${String(new Date(d).getMonth()+1).padStart(2,'0')}-${String(new Date(d).getDate()).padStart(2,'0')}`
+
+    let conflicts = techActiveJobs
+    if (job?.startDate) {
+      const jobDateKey = toDateKey(new Date(job.startDate))
+      const sameDayConflicts = techActiveJobs.filter(j => j.startDate && toDateKey(new Date(j.startDate)) === jobDateKey)
+      if (sameDayConflicts.length > 0) conflicts = sameDayConflicts
+    }
+
+    if (conflicts.length > 0) {
+      const tech = await dbAdapter.technicians.findById(technicianId, userId)
+      const conflictNames = conflicts.slice(0, 3).map(c => c.name).join(', ')
+      await dbAdapter.technicians.assignToJob(jobId, technicianId)
+      revalidatePath('/[locale]/jobs/[id]', 'page')
+      revalidatePath('/[locale]/schedule', 'page')
+      const sameDayNote = job?.startDate ? ' on the same day' : ''
+      return { success: true, warning: `${tech?.name || 'Technician'} is already assigned to "${conflictNames}"${sameDayNote}.` }
+    }
+  }
+
   await dbAdapter.technicians.assignToJob(jobId, technicianId)
   revalidatePath('/[locale]/jobs/[id]', 'page')
+  revalidatePath('/[locale]/schedule', 'page')
+  return { success: true }
 }
 
 export async function removeTechnicianFromJob(jobId: string, technicianId: string) {

@@ -1,19 +1,28 @@
 import { getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { getInvoice, getInvoiceLineItems } from '@/lib/actions/invoices'
+import { getDocumentViewCount } from '@/lib/actions/tracking'
+import { dbAdapter } from '@/lib/adapters/db'
+import { requireUser } from '@/lib/actions/auth-helpers'
 import { InvoiceDetailClient } from '../_components/InvoiceDetailClient'
 
 export default async function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const [ti, tc, te, invoice, lineItems] = await Promise.all([
+  const [ti, tc, te, invoice, lineItems, viewCount] = await Promise.all([
     getTranslations('invoices'), getTranslations('common'), getTranslations('estimates'),
-    getInvoice(id), getInvoiceLineItems(id),
+    getInvoice(id), getInvoiceLineItems(id), getDocumentViewCount(id, 'invoice'),
   ])
   if (!invoice) notFound()
+
+  // Get client phone from clients table if available
+  const userId = await requireUser()
+  const client = await dbAdapter.clients.findByNameOrEmail(userId, invoice.clientName, invoice.clientEmail)
 
   return (
     <InvoiceDetailClient
       invoice={invoice} lineItems={lineItems}
+      viewCount={viewCount} clientPhone={client?.phone ?? null}
+      shareToken={invoice.shareToken ?? null}
       translations={{
         back: tc('back'), markAsPaid: ti('markAsPaid'), print: 'Print',
         status: { draft: ti('status.draft'), sent: ti('status.sent'), paid: ti('status.paid'), overdue: ti('status.overdue'), cancelled: ti('status.cancelled') },

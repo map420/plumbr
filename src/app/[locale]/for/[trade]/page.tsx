@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { auth } from '@clerk/nextjs/server'
 import { getLocale } from 'next-intl/server'
 import { ArrowRight, CheckCircle2, Star, X } from 'lucide-react'
 import { getTrade, getAllTradeSlugs } from '@/lib/trades'
@@ -10,6 +9,10 @@ import { Navbar } from '@/app/[locale]/(marketing)/_components/Navbar'
 import { Footer } from '@/app/[locale]/(marketing)/_components/Footer'
 
 type Props = { params: Promise<{ locale: string; trade: string }> }
+
+// Trade landing pages are driven by the static trades registry. Pre-render at
+// build time; ISR lets us edit copy without redeploying.
+export const revalidate = 86400
 
 export async function generateStaticParams() {
   const slugs = getAllTradeSlugs()
@@ -46,13 +49,14 @@ export default async function TradePage({ params }: Props) {
   const trade = getTrade(slug)
   if (!trade) notFound()
 
-  const { userId } = await auth()
-  const isSignedIn = !!userId
-  const ctaHref = isSignedIn ? `/${locale}/dashboard` : `/${locale}/sign-up`
+  // CTA always points to sign-up; Clerk redirects authenticated users away
+  // from /sign-up automatically, and the Navbar itself resolves the signed-in
+  // state client-side.
+  const ctaHref = `/${locale}/sign-up`
 
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: 'Inter, sans-serif' }}>
-      <Navbar locale={locale} isSignedIn={isSignedIn} />
+      <Navbar locale={locale} />
 
       <main>
         {/* Hero */}

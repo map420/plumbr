@@ -197,7 +197,7 @@
       "badge": "Para contratistas con ingresos menores a $5M",
       "title": "Tu negocio de construcción,",
       "titleAccent": "en orden.",
-      "subtitle": "Deja de hacer malabares con WhatsApp, Excel y QuickBooks. Plumbr te da presupuestos, costos de trabajo, horarios de equipo y facturación — en un solo lugar.",
+      "subtitle": "Deja de hacer malabares con WhatsApp, Excel y QuickBooks. WorkPilot te da presupuestos, costos de trabajo, horarios de equipo y facturación — en un solo lugar.",
       "cta": "Prueba gratis 14 días",
       "noCreditCard": "Sin tarjeta de crédito"
     },
@@ -226,7 +226,7 @@
       }
     },
     "footer": {
-      "copy": "© 2025 Plumbr. Hecho por Mr Labs.",
+      "copy": "© 2025 WorkPilot. Hecho por Mr Labs.",
       "tagline": "Tu negocio de construcción, en orden."
     }
   },
@@ -236,7 +236,7 @@
       "subtitle": "Inicia sesión en tu cuenta."
     },
     "signUp": {
-      "title": "Plumbr",
+      "title": "WorkPilot",
       "subtitle": "Comienza tu prueba gratis de 14 días."
     }
   }

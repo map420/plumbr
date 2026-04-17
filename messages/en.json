@@ -197,7 +197,7 @@
       "badge": "Built for contractors under $5M revenue",
       "title": "Your construction business,",
       "titleAccent": "straight.",
-      "subtitle": "Stop juggling WhatsApp, Excel, and QuickBooks. Plumbr gives you estimates, job costing, crew scheduling, and invoicing — in one place.",
+      "subtitle": "Stop juggling WhatsApp, Excel, and QuickBooks. WorkPilot gives you estimates, job costing, crew scheduling, and invoicing — in one place.",
       "cta": "Start 14-day free trial",
       "noCreditCard": "No credit card required"
     },
@@ -226,7 +226,7 @@
       }
     },
     "footer": {
-      "copy": "© 2025 Plumbr. Built by Mr Labs.",
+      "copy": "© 2025 WorkPilot. Built by Mr Labs.",
       "tagline": "Your construction business, straight."
     }
   },
@@ -236,7 +236,7 @@
       "subtitle": "Sign in to your account."
     },
     "signUp": {
-      "title": "Plumbr",
+      "title": "WorkPilot",
       "subtitle": "Start your 14-day free trial."
     }
   }

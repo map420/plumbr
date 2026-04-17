@@ -7,6 +7,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { createCheckoutSession, createPortalSession } from '@/lib/actions/billing-actions'
 import { updateProfile } from '@/lib/actions/profile'
 import { getCatalogItems, createCatalogItem, deleteCatalogItem } from '@/lib/actions/catalog'
+import type { LineItemType } from '@/lib/adapters/db/types'
 import { Toast } from '@/components/Toast'
 import { ConfirmModal } from '@/components/ConfirmModal'
 import {
@@ -59,7 +60,7 @@ export function SettingsClient({ locale, plan, hasSubscription, profile: initial
   // Catalog state
   const [catalogItemsList, setCatalogItemsList] = useState<any[]>([])
   const [showAddCatalog, setShowAddCatalog] = useState(false)
-  const [newCatalogItem, setNewCatalogItem] = useState({ name: '', type: 'labor', unitPrice: '', description: '', category: '' })
+  const [newCatalogItem, setNewCatalogItem] = useState({ name: '', type: 'labor' as LineItemType, unitPrice: '', description: '', category: '', unit: '' })
   const [deleteCatalogId, setDeleteCatalogId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -71,7 +72,7 @@ export function SettingsClient({ locale, plan, hasSubscription, profile: initial
     startTransition(async () => {
       const item = await createCatalogItem(newCatalogItem)
       setCatalogItemsList(prev => [...prev, item])
-      setNewCatalogItem({ name: '', type: 'labor', unitPrice: '', description: '', category: '' })
+      setNewCatalogItem({ name: '', type: 'labor', unitPrice: '', description: '', category: '', unit: '' })
       setShowAddCatalog(false)
     })
   }
@@ -441,7 +442,7 @@ export function SettingsClient({ locale, plan, hasSubscription, profile: initial
               <form onSubmit={handleAddCatalogItem} className="space-y-3 mb-4 p-4 rounded-lg" style={{ background: 'var(--wp-bg-muted)' }}>
                 <div className="grid grid-cols-2 gap-3">
                   <input value={newCatalogItem.name} onChange={e => setNewCatalogItem(p => ({...p, name: e.target.value}))} placeholder="Item name" className="input text-sm" required />
-                  <select value={newCatalogItem.type} onChange={e => setNewCatalogItem(p => ({...p, type: e.target.value}))} className="input text-sm">
+                  <select value={newCatalogItem.type} onChange={e => setNewCatalogItem(p => ({...p, type: e.target.value as LineItemType}))} className="input text-sm">
                     <option value="labor">Labor</option>
                     <option value="material">Material</option>
                     <option value="subcontractor">Subcontractor</option>

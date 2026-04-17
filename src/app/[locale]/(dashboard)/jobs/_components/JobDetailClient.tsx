@@ -9,7 +9,6 @@ import { createExpense, deleteExpense } from '@/lib/actions/expenses'
 import { assignTechnicianToJob, removeTechnicianFromJob } from '@/lib/actions/technicians'
 import { createChangeOrder, updateChangeOrder } from '@/lib/actions/change-orders'
 import { createWorkOrder, generateWorkOrderFromEstimate, updateWorkOrder } from '@/lib/actions/work-orders'
-import { JobStatusBadge } from '@/components/jobs/JobStatusBadge'
 import { EstimateStatusBadge } from '@/components/estimates/EstimateStatusBadge'
 import { InvoiceStatusBadge } from '@/components/invoices/InvoiceStatusBadge'
 import { ConfirmModal } from '@/components/ConfirmModal'
@@ -17,6 +16,15 @@ import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { Edit, Trash2, Plus, X, Camera, FileEdit, ClipboardList, ChevronDown, ChevronLeft, ShoppingCart, ChevronRight } from 'lucide-react'
 import { PhotoUploader } from '@/components/PhotoUploader'
 import { PhotoGallery } from '@/components/PhotoGallery'
+import { ClientAvatar, StatusPill, type StatusTone } from '@/components/ui'
+
+const JOB_STATUS_TONE: Record<string, StatusTone> = {
+  lead: 'neutral',
+  active: 'active',
+  on_hold: 'warning',
+  completed: 'done',
+  cancelled: 'declined',
+}
 
 type JobStatus = 'lead' | 'active' | 'on_hold' | 'completed' | 'cancelled'
 type EstimateStatus = 'draft' | 'sent' | 'approved' | 'rejected' | 'converted'
@@ -266,19 +274,73 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
       </div>
 
       <div className="p-4 md:p-8">
-      <div className="hidden md:flex items-start justify-between mb-6">
-        <div>
+      <div className="hidden md:block mb-4">
+        <div className="mb-4">
           <Breadcrumbs items={[{ label: 'Jobs', href: `/${locale}/jobs` }, { label: job.name }]} />
-          <h1 className="text-2xl font-bold text-[var(--wp-text-primary)]">{job.name}</h1>
-          <div className="mt-1"><JobStatusBadge status={job.status as JobStatus} label={t.status[job.status as JobStatus]} /></div>
         </div>
-        <div className="flex gap-2">
-          <Link href={`/${locale}/jobs/${job.id}/edit`} className="btn-secondary flex items-center gap-2 text-sm">
-            <Edit size={14} /> {t.edit}
-          </Link>
-          <button onClick={() => setShowDeleteModal(true)} disabled={isPending} className="flex items-center gap-2 text-sm px-3 py-2 rounded-lg border border-[var(--wp-error)] text-[var(--wp-error)] hover:bg-[var(--wp-error-bg)] transition-colors disabled:opacity-50">
-            <Trash2 size={14} /> {t.delete}
-          </button>
+        <div className="wp-doc-hero">
+          <div className="wp-doc-hero-top">
+            <div className="flex items-center gap-3">
+              <ClientAvatar name={job.clientName} size="xl" />
+              <div>
+                <div className="wp-doc-hero-title">{job.name}</div>
+                <div className="wp-doc-hero-sub">
+                  {job.clientName}
+                  {job.startDate && <> · {locale === 'es' ? 'Inicio' : 'Started'} {new Date(job.startDate).toLocaleDateString()}</>}
+                </div>
+              </div>
+            </div>
+            <div className="wp-doc-hero-actions">
+              <Link href={`/${locale}/jobs/${job.id}/edit`} className="btn-secondary btn-sm">
+                <Edit size={14} /> {t.edit}
+              </Link>
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                disabled={isPending}
+                className="btn-ghost btn-sm hover:!text-red-500 disabled:opacity-50"
+                style={{ minHeight: 'auto' }}
+                title={t.delete}
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          </div>
+          <div className="wp-doc-meta-row">
+            <div className="wp-meta-item flex flex-col">
+              <div className="wp-meta-k">Status</div>
+              <div className="wp-meta-v">
+                <StatusPill tone={JOB_STATUS_TONE[job.status] ?? 'neutral'}>
+                  {t.status[job.status as JobStatus] ?? job.status}
+                </StatusPill>
+              </div>
+            </div>
+            {parseFloat(job.budgetedCost) > 0 && (
+              <div className="wp-meta-item flex flex-col">
+                <div className="wp-meta-k">Budget</div>
+                <div className="wp-meta-v tabular-nums">${formatCurrencyCompact(parseFloat(job.budgetedCost))}</div>
+              </div>
+            )}
+            {parseFloat(job.actualCost) > 0 && (
+              <div className="wp-meta-item flex flex-col">
+                <div className="wp-meta-k">Actual</div>
+                <div className="wp-meta-v tabular-nums">${formatCurrencyCompact(parseFloat(job.actualCost))}</div>
+              </div>
+            )}
+            {parseFloat(job.budgetedCost) > 0 && (() => {
+              const budget = parseFloat(job.budgetedCost)
+              const actual = parseFloat(job.actualCost) || 0
+              const margin = ((budget - actual) / budget) * 100
+              const marginColor = margin >= 30 ? 'var(--wp-success-v2)' : margin >= 10 ? 'var(--wp-warning-v2)' : 'var(--wp-error-v2)'
+              return (
+                <div className="wp-meta-item flex flex-col ml-auto text-right">
+                  <div className="wp-meta-k">Margin</div>
+                  <div className="wp-meta-v wp-meta-v--total" style={{ color: marginColor }}>
+                    {margin.toFixed(0)}%
+                  </div>
+                </div>
+              )
+            })()}
+          </div>
         </div>
       </div>
 
@@ -303,6 +365,23 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
           {job.notes && <div className="text-sm pt-2 border-t border-[var(--wp-border-light)]"><span className="text-[var(--wp-text-muted)]">{t.fields.notes}</span><p className="text-[var(--wp-text-primary)] mt-0.5 whitespace-pre-wrap">{job.notes}</p></div>}
         </div>
 
+        <div className="space-y-4">
+        {/* Clock-in card */}
+        {(job.status === 'active') && (
+          <div className="rounded-xl p-5" style={{ background: 'linear-gradient(135deg, var(--wp-brand) 0%, #1E293B 100%)', color: 'white' }}>
+            <div className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ opacity: 0.7 }}>Clock in</div>
+            <div className="text-xs mb-2" style={{ opacity: 0.7 }}>
+              {job.startDate ? `Started ${new Date(job.startDate).toLocaleDateString()}` : 'Not started yet'}
+            </div>
+            <div className="text-2xl font-bold tabular-nums mb-3">—:—</div>
+            <div className="flex gap-2">
+              <button className="flex-1 py-2 text-xs font-semibold rounded-lg" style={{ background: 'white', color: 'var(--wp-brand)' }}>
+                Start
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="card p-5">
           <h3 className="text-sm font-semibold text-[var(--wp-text-primary)] mb-4">Job Costing</h3>
           <div className="space-y-3 text-sm">
@@ -326,6 +405,7 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
             {revenueMargin !== null && <p className={`text-xs font-medium ${revenueMargin >= 0 ? 'text-[var(--wp-success)]' : 'text-[var(--wp-error)]'}`}>{revenueMargin}% profit margin</p>}
           </div>
         </div>
+        </div>{/* end sidebar space-y wrapper */}
       </div>
 
       {/* Technicians */}

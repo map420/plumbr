@@ -151,7 +151,7 @@ export interface ChangeOrder {
 export interface WorkOrder {
   id: string; userId: string; jobId: string; number: string; title: string
   instructions: string | null; scheduledDate: Date | null; status: WorkOrderStatus
-  assignedTechnicianIds: string[]; createdAt: Date; updatedAt: Date
+  assignedTechnicianIds: string[] | null; createdAt: Date; updatedAt: Date
 }
 
 export interface Referral {
@@ -207,6 +207,7 @@ export interface DbAdapter {
   clients: {
     findAll(userId: string): Promise<Client[]>
     findById(id: string, userId: string): Promise<Client | null>
+    findByNameOrEmail(userId: string, name: string, email: string | null): Promise<Client | null>
     create(userId: string, data: ClientInput): Promise<Client>
     update(id: string, userId: string, data: Partial<ClientInput>): Promise<Client>
     delete(id: string, userId: string): Promise<void>
@@ -290,6 +291,8 @@ export interface DbAdapter {
     create(data: Omit<DocumentView, 'id' | 'viewedAt'>): Promise<DocumentView>
     findByDocument(documentId: string, documentType: string): Promise<DocumentView[]>
     countByDocument(documentId: string, documentType: string): Promise<number>
+    /** Single-query bulk count. Returns { [documentId]: count } for all ids with views > 0. */
+    countByDocumentsBatch(documentIds: string[], documentType: string): Promise<Record<string, number>>
   }
   changeOrders: {
     findAll(userId: string): Promise<ChangeOrder[]>

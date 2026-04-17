@@ -7,6 +7,7 @@ import type { LineItemInput } from '@/lib/adapters/db/types'
 import { estimateSentEmail, estimateApprovedEmail, estimateRejectedEmail } from '@/lib/email-templates'
 import { isPro, STARTER_LIMITS } from '@/lib/stripe'
 import { calculateTax } from '@/lib/tax'
+import { invalidateUserData } from '@/lib/cache-tags'
 import { getUserPlan } from './billing'
 import { requireUser as requireAuth } from './auth-helpers'
 
@@ -107,6 +108,7 @@ export async function createEstimate(data: {
   } as any, lineItems)
 
   revalidatePath('/[locale]/estimates', 'page')
+  invalidateUserData(userId)
   return estimate
 }
 
@@ -205,6 +207,7 @@ export async function updateEstimate(id: string, data: Partial<{
   }
 
   revalidatePath('/[locale]/estimates', 'page')
+  invalidateUserData(userId)
   return estimate
 }
 
@@ -249,6 +252,7 @@ export async function resendEstimateEmail(id: string) {
   })
 
   revalidatePath('/[locale]/estimates', 'page')
+  invalidateUserData(userId)
   return { success: true, shareToken: token }
 }
 
@@ -256,4 +260,5 @@ export async function deleteEstimate(id: string) {
   const userId = await requireAuth()
   await dbAdapter.estimates.delete(id, userId)
   revalidatePath('/[locale]/estimates', 'page')
+  invalidateUserData(userId)
 }

@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { ShoppingCart, Plus, ChevronRight } from 'lucide-react'
 import { createShoppingList } from '@/lib/actions/shopping-lists'
+import { Segmented, KpiCard, EmptyState } from '@/components/ui'
 
 type ListWithStats = {
   id: string; name: string; jobId: string | null; status: string
@@ -26,13 +27,11 @@ export function ShoppingListsClient({ lists }: { lists: ListWithStats[] }) {
   const activeLists = lists.filter(l => l.status === 'active' && l.jobId)
   const completedLists = lists.filter(l => l.status === 'completed')
 
-  // Default to whichever bucket has content; prefer Active.
   const initialTab: Tab = activeLists.length > 0 ? 'active'
     : draftLists.length > 0 ? 'drafts'
     : 'active'
   const [tab, setTab] = useState<Tab>(initialTab)
 
-  // Mobile create button lives in DashboardShell — it dispatches this event.
   useEffect(() => {
     function open() { setShowNew(true) }
     window.addEventListener('shopping-list:new', open)
@@ -50,22 +49,57 @@ export function ShoppingListsClient({ lists }: { lists: ListWithStats[] }) {
   }
 
   const visible = tab === 'active' ? activeLists : tab === 'drafts' ? draftLists : completedLists
-  const TABS: { key: Tab; label: string; count: number }[] = [
-    { key: 'active', label: locale === 'es' ? 'Activas' : 'Active', count: activeLists.length },
-    { key: 'drafts', label: t('drafts'), count: draftLists.length },
-    { key: 'completed', label: t('completedSection'), count: completedLists.length },
+
+  const tabOptions = [
+    { value: 'active' as Tab, label: locale === 'es' ? 'Activas' : 'Active', count: activeLists.length },
+    { value: 'drafts' as Tab, label: t('drafts'), count: draftLists.length },
+    { value: 'completed' as Tab, label: t('completedSection'), count: completedLists.length },
   ]
 
+  const totalCost = lists.reduce((s, l) => s + l.totalCost, 0)
+  const purchasedCost = lists.reduce((s, l) => s + l.purchasedCost, 0)
+  const pendingCost = totalCost - purchasedCost
+
   return (
-    <div className="px-4 pt-2 pb-4 md:p-8 min-h-full max-w-3xl">
-      <div className="hidden md:flex items-center justify-between mb-6">
-        <h1 className="page-title mb-0">{t('title')}</h1>
+    <div className="px-4 pt-2 pb-4 md:p-8 min-h-full max-w-4xl">
+      <div className="hidden md:flex items-end justify-between mb-5">
+        <div>
+          <h1 className="page-title mb-0">{t('title')}</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--wp-text-2)' }}>
+            {lists.length} {lists.length === 1 ? 'list' : 'lists'}
+            {pendingCost > 0 && (
+              <>{' · '}<span style={{ color: 'var(--wp-warning-v2)', fontWeight: 500 }}>${pendingCost.toLocaleString()}</span> pending</>
+            )}
+          </p>
+        </div>
         <button onClick={() => setShowNew(true)} className="btn-primary btn-sm">
           <Plus size={14} /> {t('newList')}
         </button>
       </div>
 
-      {/* New list form */}
+      {lists.length > 0 && (
+        <div className="hidden md:grid grid-cols-3 gap-2.5 mb-5">
+          <KpiCard
+            tone="info"
+            label="Active"
+            value={activeLists.length}
+            sub={activeLists.length > 0 ? 'Linked to jobs' : undefined}
+          />
+          <KpiCard
+            tone="warning"
+            label="Total pending"
+            value={`$${pendingCost.toLocaleString()}`}
+            sub={`$${purchasedCost.toLocaleString()} already bought`}
+          />
+          <KpiCard
+            tone="success"
+            label="Completed"
+            value={completedLists.length}
+            subTone={completedLists.length > 0 ? 'up' : 'neutral'}
+          />
+        </div>
+      )}
+
       {showNew && (
         <div className="card p-4 mb-4">
           <div className="flex gap-2">
@@ -87,53 +121,24 @@ export function ShoppingListsClient({ lists }: { lists: ListWithStats[] }) {
         </div>
       )}
 
-      {/* Tabs by status */}
-      <div className="flex items-center gap-1 mb-4 overflow-x-auto" role="tablist">
-        {TABS.map(it => {
-          const isActive = tab === it.key
-          return (
-            <button
-              key={it.key}
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => setTab(it.key)}
-              className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors"
-              style={{
-                background: isActive ? 'var(--wp-primary)' : 'var(--wp-bg-muted)',
-                color: isActive ? 'white' : 'var(--wp-text-secondary)',
-              }}
-            >
-              {it.label}
-              <span
-                className="ml-1.5 inline-flex items-center justify-center text-[10px] font-semibold rounded-full px-1.5"
-                style={{
-                  background: isActive ? 'rgba(255,255,255,0.25)' : 'var(--wp-bg-primary)',
-                  color: isActive ? 'white' : 'var(--wp-text-muted)',
-                  minWidth: 18,
-                }}
-              >
-                {it.count}
-              </span>
-            </button>
-          )
-        })}
+      <div className="mb-4">
+        <Segmented value={tab} onChange={setTab} options={tabOptions} />
       </div>
 
-      {/* Visible bucket */}
       {visible.length === 0 ? (
-        <div className="card p-12 text-center">
-          <ShoppingCart size={36} className="mx-auto mb-3" style={{ color: 'var(--wp-border)' }} />
-          <p className="text-sm mb-4" style={{ color: 'var(--wp-text-muted)' }}>
-            {tab === 'active' && (locale === 'es' ? 'Sin listas activas vinculadas a un job.' : 'No active lists linked to a job.')}
-            {tab === 'drafts' && (locale === 'es' ? 'Sin borradores.' : 'No drafts.')}
-            {tab === 'completed' && (locale === 'es' ? 'Sin listas completadas.' : 'No completed lists.')}
-          </p>
-          {tab !== 'completed' && (
-            <button onClick={() => setShowNew(true)} className="btn-primary btn-sm inline-flex items-center gap-2">
+        <EmptyState
+          icon={<ShoppingCart size={36} />}
+          title={
+            tab === 'active' ? (locale === 'es' ? 'Sin listas activas vinculadas a un job.' : 'No active lists linked to a job.')
+            : tab === 'drafts' ? (locale === 'es' ? 'Sin borradores.' : 'No drafts.')
+            : (locale === 'es' ? 'Sin listas completadas.' : 'No completed lists.')
+          }
+          cta={tab !== 'completed' ? (
+            <button onClick={() => setShowNew(true)} className="btn-primary btn-sm">
               <Plus size={14} /> {t('newList')}
             </button>
-          )}
-        </div>
+          ) : undefined}
+        />
       ) : (
         <div className="space-y-2">
           {visible.map(list => (
@@ -150,28 +155,33 @@ function ListCard({ list, locale }: { list: ListWithStats; locale: string }) {
   const isComplete = list.purchasedItems === list.totalItems && list.totalItems > 0
 
   return (
-    <Link href={`/${locale}/shopping-list/${list.id}`}
-      className="card p-4 flex items-center gap-4 hover:shadow-md transition-shadow">
+    <Link
+      href={`/${locale}/shopping-list/${list.id}`}
+      className="card p-4 flex items-center gap-4 transition-all hover:border-[color:var(--wp-border-hover)]"
+    >
       <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between mb-1">
-          <p className="text-sm font-semibold truncate" style={{ color: 'var(--wp-text-primary)' }}>{list.name}</p>
-          <span className="text-xs shrink-0 ml-2" style={{ color: 'var(--wp-text-muted)' }}>
+        <div className="flex items-center justify-between mb-1.5">
+          <p className="text-sm font-semibold truncate" style={{ color: 'var(--wp-text)' }}>{list.name}</p>
+          <span
+            className="text-xs shrink-0 ml-2 font-medium tabular-nums"
+            style={{ color: isComplete ? 'var(--wp-success-v2)' : 'var(--wp-text-2)' }}
+          >
             {list.purchasedItems}/{list.totalItems}
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--wp-bg-muted)' }}>
+          <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--wp-surface-3)' }}>
             <div className="h-full rounded-full transition-all" style={{
               width: `${pct}%`,
-              background: isComplete ? 'var(--wp-success)' : 'var(--wp-primary)',
+              background: isComplete ? 'var(--wp-success-v2)' : 'var(--wp-brand)',
             }} />
           </div>
-          <span className="text-xs font-medium shrink-0" style={{ color: 'var(--wp-text-muted)' }}>
+          <span className="text-xs font-medium shrink-0 tabular-nums" style={{ color: 'var(--wp-text-3)' }}>
             ${list.purchasedCost.toLocaleString()} / ${list.totalCost.toLocaleString()}
           </span>
         </div>
       </div>
-      <ChevronRight size={16} style={{ color: 'var(--wp-border)' }} />
+      <ChevronRight size={16} style={{ color: 'var(--wp-text-3)' }} />
     </Link>
   )
 }

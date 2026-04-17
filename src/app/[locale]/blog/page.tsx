@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { auth } from '@clerk/nextjs/server'
 import { getLocale } from 'next-intl/server'
 import { Calendar, Clock, ArrowRight } from 'lucide-react'
 import { getAllPosts } from '@/lib/blog'
@@ -17,6 +16,11 @@ export const metadata: Metadata = {
   keywords: ['contractor tips', 'construction business guide', 'contractor software blog', 'how to run a contracting business'],
 }
 
+// Blog content changes on a cadence of days/weeks, not per request. Revalidate
+// hourly so the page is cached at the edge and only rebuilds when a post is
+// actually added (or after 1h elapses).
+export const revalidate = 3600
+
 const CATEGORY_COLORS: Record<string, string> = {
   Estimating: 'bg-blue-100 text-blue-700',
   Finance: 'bg-green-100 text-green-700',
@@ -31,14 +35,12 @@ function formatDate(iso: string) {
 
 export default async function BlogPage() {
   const locale = await getLocale()
-  const { userId } = await auth()
-  const isSignedIn = !!userId
   const posts = getAllPosts()
   const [featured, ...rest] = posts
 
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: 'Inter, sans-serif' }}>
-      <Navbar locale={locale} isSignedIn={isSignedIn} />
+      <Navbar locale={locale} />
 
       <main className="pt-16">
         {/* Header */}

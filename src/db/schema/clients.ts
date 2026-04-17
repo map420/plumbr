@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, varchar, index } from 'drizzle-orm/pg-core'
 import { users } from './users'
 
 export const clients = pgTable('clients', {
@@ -11,7 +11,9 @@ export const clients = pgTable('clients', {
   notes: text('notes'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-})
+}, (t) => [
+  index('clients_user_id_idx').on(t.userId),
+])
 
 export type Client = typeof clients.$inferSelect
 export type NewClient = typeof clients.$inferInsert

@@ -14,8 +14,7 @@ export default async function NewEstimatePage() {
   ])
   const taxPercent = parseTaxPercent(profile?.taxRate)
   return (
-    <div className="md:p-8 max-w-3xl">
-      <h1 className="hidden md:block page-title">{te('new')}</h1>
+    <div className="max-w-6xl">
       <EstimateFormClient
         clients={clients}
         taxPercent={taxPercent}

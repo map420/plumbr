@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, varchar, numeric, pgEnum } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, varchar, numeric, pgEnum, index } from 'drizzle-orm/pg-core'
 import { users } from './users'
 import { clients } from './clients'
 
@@ -23,7 +23,11 @@ export const jobs = pgTable('jobs', {
   notes: text('notes'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-})
+}, (t) => [
+  index('jobs_user_id_idx').on(t.userId),
+  index('jobs_user_status_idx').on(t.userId, t.status),
+  index('jobs_user_created_idx').on(t.userId, t.createdAt),
+])
 
 export type Job = typeof jobs.$inferSelect
 export type NewJob = typeof jobs.$inferInsert

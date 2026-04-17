@@ -14,8 +14,10 @@ export function getStripe(): Stripe {
 export const PLANS = {
   pro: {
     name: 'Pro',
-    price: 49,
+    price: 29,
+    annualPrice: 249,
     priceId: process.env.STRIPE_PRO_PRICE_ID!,
+    annualPriceId: process.env.STRIPE_PRO_ANNUAL_PRICE_ID || '',
     features: [
       'Unlimited jobs & estimates',
       'Invoice generation & tracking',
@@ -23,8 +25,14 @@ export const PLANS = {
       'Field mobile view',
       'Schedule calendar',
       'Email automations',
+      'Digital signatures & contracts',
+      'Photo documentation',
+      'Change orders & work orders',
+      'AI Assistant',
+      'SMS delivery',
+      'QuickBooks sync',
       'English & Spanish',
-      'Email support',
+      'Priority support',
     ],
   },
 } as const
@@ -32,6 +40,9 @@ export const PLANS = {
 export const STARTER_LIMITS = {
   jobs: 5,
   estimates: 5,
+  clients: 10,
+  catalogItems: 10,
+  photos: 5,
   team: false,
 } as const
 

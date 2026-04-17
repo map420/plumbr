@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { approveEstimateByToken, rejectEstimateByToken } from '@/lib/actions/portal'
-import { CheckCircle, XCircle, FileText, Receipt, Clock } from 'lucide-react'
+import { approveEstimateByToken, rejectEstimateByToken, approveChangeOrderByToken, rejectChangeOrderByToken } from '@/lib/actions/portal'
+import { CheckCircle, XCircle, FileText, Receipt, Clock, FileEdit } from 'lucide-react'
+import SignaturePad from '@/components/SignaturePad'
 
 type LineItem = {
   id: string; type: string; description: string
@@ -29,7 +30,17 @@ type InvoiceData = {
   lineItems: LineItem[]
 }
 
-type PortalData = EstimateData | InvoiceData
+type ChangeOrderData = {
+  type: 'change_order'
+  changeOrder: {
+    id: string; number: string; description: string | null
+    status: string; subtotal: string; tax: string; total: string
+    notes: string | null; signatureDataUrl: string | null; signedByName: string | null
+  }
+  lineItems: LineItem[]
+}
+
+type PortalData = EstimateData | InvoiceData | ChangeOrderData
 
 const ESTIMATE_STATUS_COLORS: Record<string, string> = {
   draft: 'bg-slate-100 text-slate-600',
@@ -47,42 +58,62 @@ const INVOICE_STATUS_COLORS: Record<string, string> = {
   cancelled: 'bg-slate-100 text-slate-500',
 }
 
-export function PortalClient({ token, data }: { token: string; data: PortalData }) {
+type PortalPhoto = { id: string; url: string; description: string | null }
+
+export function PortalClient({ token, data, photos = [] }: { token: string; data: PortalData; photos?: PortalPhoto[] }) {
   const [isPending, startTransition] = useTransition()
   const [actionDone, setActionDone] = useState<'approved' | 'rejected' | null>(null)
+  const [showSignature, setShowSignature] = useState(false)
+  const [signedName, setSignedName] = useState('')
+  const [signatureData, setSignatureData] = useState<string | null>(null)
+  const [showRejectModal, setShowRejectModal] = useState(false)
+  const [rejectReason, setRejectReason] = useState('')
 
   const isEstimate = data.type === 'estimate'
-  const doc = isEstimate ? data.estimate : data.invoice
+  const isChangeOrder = data.type === 'change_order'
+  const isInvoice = data.type === 'invoice'
+  const doc = isEstimate ? data.estimate : isChangeOrder ? data.changeOrder : data.invoice
   const lineItems = data.lineItems
-  const statusColors = isEstimate ? ESTIMATE_STATUS_COLORS : INVOICE_STATUS_COLORS
+  const statusColors = isEstimate || isChangeOrder ? ESTIMATE_STATUS_COLORS : INVOICE_STATUS_COLORS
+  const docLabel = isChangeOrder ? 'Change Order' : isEstimate ? 'Estimate' : 'Invoice'
 
   function handleApprove() {
+    if (!signatureData || !signedName.trim()) return
     startTransition(async () => {
-      await approveEstimateByToken(token)
+      if (isChangeOrder) {
+        await approveChangeOrderByToken(token, { signatureDataUrl: signatureData, signedByName: signedName })
+      } else {
+        await approveEstimateByToken(token, { signatureDataUrl: signatureData, signedByName: signedName })
+      }
       setActionDone('approved')
     })
   }
 
   function handleReject() {
     startTransition(async () => {
-      await rejectEstimateByToken(token)
+      if (isChangeOrder) {
+        await rejectChangeOrderByToken(token, rejectReason || undefined)
+      } else {
+        await rejectEstimateByToken(token, rejectReason || undefined)
+      }
+      setShowRejectModal(false)
       setActionDone('rejected')
     })
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4">
+    <div className="min-h-screen bg-slate-50 py-6 px-5 md:py-8 md:px-4">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-xl bg-[#1E3A5F] flex items-center justify-center">
-            {isEstimate ? <FileText size={18} className="text-white" /> : <Receipt size={18} className="text-white" />}
+            {isChangeOrder ? <FileEdit size={18} className="text-white" /> : isEstimate ? <FileText size={18} className="text-white" /> : <Receipt size={18} className="text-white" />}
           </div>
           <div>
             <h1 className="text-xl font-bold text-slate-900">
-              {isEstimate ? 'Estimate' : 'Invoice'} {doc.number}
+              {docLabel} {doc.number}
             </h1>
-            <p className="text-sm text-slate-500">For {doc.clientName}</p>
+            <p className="text-sm text-slate-500">For {'clientName' in doc ? doc.clientName : ''}</p>
           </div>
         </div>
 
@@ -120,7 +151,7 @@ export function PortalClient({ token, data }: { token: string; data: PortalData 
                   Valid until {new Date(data.estimate.validUntil).toLocaleDateString()}
                 </span>
               )}
-              {!isEstimate && data.invoice.dueDate && (
+              {isInvoice && data.type === 'invoice' && data.invoice.dueDate && (
                 <span className="flex items-center gap-1">
                   <Clock size={11} />
                   Due {new Date(data.invoice.dueDate).toLocaleDateString()}
@@ -145,8 +176,8 @@ export function PortalClient({ token, data }: { token: string; data: PortalData 
                   <tr key={item.id}>
                     <td className="py-2.5 text-slate-700">{item.description}</td>
                     <td className="py-2.5 text-right text-slate-500">{parseFloat(item.quantity)}</td>
-                    <td className="py-2.5 text-right text-slate-500">${parseFloat(item.unitPrice).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                    <td className="py-2.5 text-right font-medium text-slate-800">${parseFloat(item.total).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                    <td className="py-2.5 text-right text-slate-500">${parseFloat(item.unitPrice).toFixed(2)}</td>
+                    <td className="py-2.5 text-right font-medium text-slate-800">${parseFloat(item.total).toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -157,17 +188,17 @@ export function PortalClient({ token, data }: { token: string; data: PortalData 
           <div className="px-6 py-4 border-t border-slate-100 space-y-1.5">
             <div className="flex justify-between text-sm text-slate-500">
               <span>Subtotal</span>
-              <span>${parseFloat(doc.subtotal).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              <span>${parseFloat(doc.subtotal).toFixed(2)}</span>
             </div>
             {parseFloat(doc.tax) > 0 && (
               <div className="flex justify-between text-sm text-slate-500">
                 <span>Tax</span>
-                <span>${parseFloat(doc.tax).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                <span>${parseFloat(doc.tax).toFixed(2)}</span>
               </div>
             )}
             <div className="flex justify-between font-bold text-slate-900 pt-1 border-t border-slate-100">
               <span>Total</span>
-              <span>${parseFloat(doc.total).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              <span>${parseFloat(doc.total).toFixed(2)}</span>
             </div>
           </div>
 
@@ -181,23 +212,85 @@ export function PortalClient({ token, data }: { token: string; data: PortalData 
         </div>
 
         {/* Estimate CTA buttons */}
-        {isEstimate && !actionDone && (doc.status === 'sent' || doc.status === 'draft') && (
+        {(isEstimate || isChangeOrder) && !actionDone && (doc.status === 'sent' || doc.status === 'draft') && !showSignature && (
           <div className="flex gap-3">
             <button
-              onClick={handleApprove}
-              disabled={isPending}
-              className="flex-1 py-3 rounded-xl font-semibold text-sm bg-emerald-600 text-white hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              onClick={() => setShowSignature(true)}
+              className="flex-1 py-3 rounded-xl font-semibold text-sm bg-emerald-600 text-white hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
             >
               <CheckCircle size={16} />
-              {isPending ? 'Processing…' : 'Approve estimate'}
+              Approve {isChangeOrder ? 'change order' : 'estimate'}
             </button>
             <button
-              onClick={handleReject}
+              onClick={() => setShowRejectModal(true)}
               disabled={isPending}
               className="px-6 py-3 rounded-xl font-semibold text-sm border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50"
             >
               Decline
             </button>
+          </div>
+        )}
+
+        {/* Reject modal with reason */}
+        {showRejectModal && (
+          <div className="space-y-4 p-4 bg-red-50 rounded-xl">
+            <h3 className="font-semibold text-slate-800 text-sm">Decline this estimate</h3>
+            <div>
+              <label className="block text-xs text-slate-500 mb-1">Reason (optional)</label>
+              <textarea
+                value={rejectReason}
+                onChange={e => setRejectReason(e.target.value)}
+                placeholder="Let the contractor know why you're declining..."
+                rows={3}
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none"
+              />
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={handleReject}
+                disabled={isPending}
+                className="flex-1 py-3 rounded-xl font-semibold text-sm bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {isPending ? 'Processing...' : 'Confirm Decline'}
+              </button>
+              <button
+                onClick={() => { setShowRejectModal(false); setRejectReason('') }}
+                className="px-6 py-3 rounded-xl text-sm border border-slate-200 text-slate-600"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {showSignature && (
+          <div className="space-y-4 p-4 bg-slate-50 rounded-xl">
+            <h3 className="font-semibold text-slate-800 text-sm">Sign to approve</h3>
+            <div>
+              <label className="block text-xs text-slate-500 mb-1">Your name</label>
+              <input type="text" value={signedName} onChange={e => setSignedName(e.target.value)} placeholder="Full name" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+            </div>
+            <SignaturePad onSave={setSignatureData} onClear={() => setSignatureData(null)} />
+            <div className="flex gap-3">
+              <button onClick={handleApprove} disabled={isPending || !signatureData || !signedName.trim()} className="flex-1 py-3 rounded-xl font-semibold text-sm bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50">
+                {isPending ? 'Processing...' : 'Sign & Approve'}
+              </button>
+              <button onClick={() => { setShowSignature(false); setSignatureData(null); setSignedName('') }} className="px-6 py-3 rounded-xl text-sm border border-slate-200 text-slate-600">
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Photos */}
+        {photos.length > 0 && (
+          <div className="mt-6 pt-4 border-t border-slate-100">
+            <p className="text-xs font-medium text-slate-500 mb-3">Photos ({photos.length})</p>
+            <div className="grid grid-cols-3 gap-2">
+              {photos.map(p => (
+                <img key={p.id} src={p.url} alt={p.description || 'Photo'} className="w-full aspect-square object-cover rounded-lg" />
+              ))}
+            </div>
           </div>
         )}
 

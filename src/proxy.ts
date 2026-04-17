@@ -18,6 +18,8 @@ const isPublicRoute = createRouteMatcher([
 ])
 
 export default clerkMiddleware(async (auth, req: NextRequest) => {
+  // API routes handle their own auth — but we still need clerkMiddleware to
+  // run so that auth() works inside route handlers. Skip intl + protect only.
   if (req.nextUrl.pathname.startsWith('/api/')) return
   if (!isPublicRoute(req)) await auth.protect()
   return intlMiddleware(req)

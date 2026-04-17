@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, varchar, numeric, pgEnum, boolean } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, varchar, numeric, pgEnum, boolean, index } from 'drizzle-orm/pg-core'
 import { users } from './users'
 import { jobs } from './jobs'
 import { clients } from './clients'
@@ -52,7 +52,12 @@ export const estimates = pgTable('estimates', {
   followUpSentAt: timestamp('follow_up_sent_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-})
+}, (t) => [
+  index('estimates_user_id_idx').on(t.userId),
+  index('estimates_user_status_idx').on(t.userId, t.status),
+  index('estimates_user_created_idx').on(t.userId, t.createdAt),
+  index('estimates_job_id_idx').on(t.jobId),
+])
 
 export type Estimate = typeof estimates.$inferSelect
 export type NewEstimate = typeof estimates.$inferInsert

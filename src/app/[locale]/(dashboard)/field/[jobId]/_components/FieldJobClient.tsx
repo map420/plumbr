@@ -1,44 +1,67 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { updateJob } from '@/lib/actions/jobs'
 import { createExpense } from '@/lib/actions/expenses'
+import { getChecklist, addChecklistItem, toggleChecklistItem, deleteChecklistItem, initializeChecklist } from '@/lib/actions/checklist'
+import { PhotoUploader } from '@/components/PhotoUploader'
+import { PhotoGallery } from '@/components/PhotoGallery'
+import { getPhotosByJob } from '@/lib/actions/photos'
 import { JobStatusBadge } from '@/components/jobs/JobStatusBadge'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
-import { CheckSquare, Square, Camera, MapPin, ExternalLink, Clock, CheckCircle2 } from 'lucide-react'
+import { CheckSquare, Square, Camera, MapPin, ExternalLink, Clock, CheckCircle2, Plus, Trash2, X, ClipboardList } from 'lucide-react'
 
 type JobStatus = 'lead' | 'active' | 'on_hold' | 'completed' | 'cancelled'
 type Job = { id: string; name: string; clientName: string; status: string; address: string | null }
 type T = { todaysJobs: string; checklist: string; photos: string; uploadPhoto: string; status: Record<JobStatus, string> }
+type ChecklistItem = { id: string; label: string; completed: boolean; completedAt: Date | null }
+type WorkOrderItem = { id: string; number: string; title: string; instructions: string | null; status: string }
 
-const DEFAULT_TASKS = [
-  'Review job scope with client',
-  'Confirm materials on-site',
-  'Take before photos',
-  'Complete work',
-  'Take after photos',
-  'Client sign-off',
-]
-
-export function FieldJobClient({ job, locale, translations: t }: { job: Job; locale: string; translations: T }) {
+export function FieldJobClient({ job, locale, workOrders = [], translations: t }: { job: Job; locale: string; workOrders?: WorkOrderItem[]; translations: T }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [hours, setHours] = useState('')
   const [rate, setRate] = useState('')
   const [hoursLogged, setHoursLogged] = useState(false)
   const [isLoggingHours, startLoggingHours] = useTransition()
-  const storageKey = `plumbr_checklist_${job.id}`
-  const [checklist, setChecklist] = useState<Record<string, boolean>>(() => {
-    if (typeof window === 'undefined') return {}
-    try { return JSON.parse(localStorage.getItem(storageKey) ?? '{}') } catch { return {} }
-  })
 
-  function toggleTask(task: string) {
-    const updated = { ...checklist, [task]: !checklist[task] }
-    setChecklist(updated)
-    localStorage.setItem(storageKey, JSON.stringify(updated))
+  // Photos
+  const [photos, setPhotos] = useState<{ id: string; url: string; description: string | null; thumbnailUrl: string | null }[]>([])
+
+  // DB-backed checklist
+  const [items, setItems] = useState<ChecklistItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [newItem, setNewItem] = useState('')
+  const [showAddItem, setShowAddItem] = useState(false)
+
+  useEffect(() => {
+    initializeChecklist(job.id).then(data => {
+      setItems(data as ChecklistItem[])
+      setLoading(false)
+    }).catch(() => setLoading(false))
+    getPhotosByJob(job.id).then(p => setPhotos(p as any)).catch(() => {})
+  }, [job.id])
+
+  async function handleToggle(item: ChecklistItem) {
+    // Optimistic update
+    setItems(prev => prev.map(i => i.id === item.id ? { ...i, completed: !i.completed, completedAt: !i.completed ? new Date() : null } : i))
+    await toggleChecklistItem(item.id, !item.completed)
+  }
+
+  async function handleAddItem(e: React.FormEvent) {
+    e.preventDefault()
+    if (!newItem.trim()) return
+    const created = await addChecklistItem(job.id, newItem.trim())
+    setItems(prev => [...prev, created as ChecklistItem])
+    setNewItem('')
+    setShowAddItem(false)
+  }
+
+  async function handleDeleteItem(id: string) {
+    setItems(prev => prev.filter(i => i.id !== id))
+    await deleteChecklistItem(id)
   }
 
   function markComplete() {
@@ -66,25 +89,26 @@ export function FieldJobClient({ job, locale, translations: t }: { job: Job; loc
     })
   }
 
-  const completedCount = DEFAULT_TASKS.filter((task) => checklist[task]).length
+  const completedCount = items.filter(i => i.completed).length
+  const totalCount = items.length || 1
 
   return (
     <div className="p-4 max-w-lg mx-auto">
       <Breadcrumbs items={[{ label: 'Field', href: `/${locale}/field` }, { label: job.name }]} />
 
-      <div className="plumbr-card p-4 mb-4">
+      <div className="card p-4 mb-4">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h1 className="text-lg font-bold text-slate-900">{job.name}</h1>
-            <p className="text-sm text-slate-500 mt-0.5">{job.clientName}</p>
+            <h1 className="text-lg font-bold" style={{ color: 'var(--wp-text-primary)' }}>{job.name}</h1>
+            <p className="text-sm mt-0.5" style={{ color: 'var(--wp-text-muted)' }}>{job.clientName}</p>
           </div>
-          <Link href={`/${locale}/jobs/${job.id}`} className="flex items-center gap-1 text-xs text-[#1E3A5F] hover:underline shrink-0 mt-1">
+          <Link href={`/${locale}/jobs/${job.id}`} className="flex items-center gap-1 text-xs hover:underline shrink-0 mt-1" style={{ color: 'var(--wp-primary)' }}>
             <ExternalLink size={12} /> Full details
           </Link>
         </div>
         {job.address && (
           <a href={`https://maps.google.com/?q=${encodeURIComponent(job.address)}`} target="_blank" rel="noreferrer"
-            className="flex items-center gap-1 text-xs text-[#F97316] mt-2 hover:underline">
+            className="flex items-center gap-1 text-xs mt-2 hover:underline" style={{ color: 'var(--wp-accent)' }}>
             <MapPin size={12} /> {job.address}
           </a>
         )}
@@ -93,32 +117,72 @@ export function FieldJobClient({ job, locale, translations: t }: { job: Job; loc
         </div>
       </div>
 
-      <div className="plumbr-card p-4 mb-4">
+      {/* Checklist — DB-backed, customizable */}
+      <div className="card p-4 mb-4">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-semibold text-slate-800">{t.checklist}</h2>
-          <span className="text-xs text-slate-400">{completedCount}/{DEFAULT_TASKS.length}</span>
-        </div>
-        <div className="w-full bg-slate-100 rounded-full h-1.5 mb-4">
-          <div className="h-1.5 rounded-full bg-[#F97316] transition-all" style={{ width: `${(completedCount / DEFAULT_TASKS.length) * 100}%` }} />
-        </div>
-        <div className="space-y-2">
-          {DEFAULT_TASKS.map((task) => (
-            <button key={task} onClick={() => toggleTask(task)}
-              className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors text-left">
-              {checklist[task]
-                ? <CheckSquare size={18} className="text-green-500 shrink-0" />
-                : <Square size={18} className="text-slate-300 shrink-0" />}
-              <span className={`text-sm ${checklist[task] ? 'line-through text-slate-400' : 'text-slate-700'}`}>{task}</span>
+          <h2 className="font-semibold">{t.checklist}</h2>
+          <div className="flex items-center gap-2">
+            <span className="text-xs" style={{ color: 'var(--wp-text-muted)' }}>{completedCount}/{items.length}</span>
+            <button onClick={() => setShowAddItem(!showAddItem)} style={{ color: 'var(--wp-accent)' }}>
+              {showAddItem ? <X size={14} /> : <Plus size={14} />}
             </button>
-          ))}
+          </div>
         </div>
+
+        {/* Progress bar */}
+        <div className="w-full rounded-full h-1.5 mb-4" style={{ background: 'var(--wp-bg-muted)' }}>
+          <div className="h-1.5 rounded-full transition-all" style={{ width: `${(completedCount / totalCount) * 100}%`, background: 'var(--wp-accent)' }} />
+        </div>
+
+        {/* Add custom item */}
+        {showAddItem && (
+          <form onSubmit={handleAddItem} className="flex gap-2 mb-3">
+            <input
+              type="text"
+              value={newItem}
+              onChange={e => setNewItem(e.target.value)}
+              placeholder="Add custom task..."
+              className="flex-1 input text-sm"
+              autoFocus
+            />
+            <button type="submit" className="btn-primary text-xs px-3">Add</button>
+          </form>
+        )}
+
+        {loading ? (
+          <div className="space-y-2">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-10 rounded-lg animate-pulse" style={{ background: 'var(--wp-bg-muted)' }} />
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-1">
+            {items.map(item => (
+              <div key={item.id} className="flex items-center gap-2 group">
+                <button onClick={() => handleToggle(item)}
+                  className="flex-1 flex items-center gap-3 p-2 rounded-lg transition-colors text-left">
+                  {item.completed
+                    ? <CheckSquare size={18} className="text-green-500 shrink-0" />
+                    : <Square size={18} className="shrink-0" style={{ color: 'var(--wp-border)' }} />}
+                  <span className="text-sm" style={{ color: item.completed ? 'var(--wp-text-muted)' : 'var(--wp-text-secondary)', textDecoration: item.completed ? 'line-through' : 'none' }}>{item.label}</span>
+                </button>
+                <button onClick={() => handleDeleteItem(item.id)}
+                  className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-500 transition-all"
+                  style={{ color: 'var(--wp-border)' }}
+                  aria-label="Delete task">
+                  <Trash2 size={12} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Log Hours */}
-      <div className="plumbr-card p-4 mb-4">
+      <div className="card p-4 mb-4">
         <div className="flex items-center gap-2 mb-3">
-          <Clock size={16} className="text-[#1E3A5F]" />
-          <h2 className="font-semibold text-slate-800">Log Hours</h2>
+          <Clock size={16} style={{ color: 'var(--wp-primary)' }} />
+          <h2 className="font-semibold">Log Hours</h2>
         </div>
         {hoursLogged ? (
           <div className="flex items-center gap-2 text-green-600 text-sm py-2">
@@ -128,29 +192,14 @@ export function FieldJobClient({ job, locale, translations: t }: { job: Job; loc
           <form onSubmit={logHours} className="flex flex-col gap-3">
             <div className="flex gap-2">
               <div className="flex-1">
-                <label className="block text-xs text-slate-500 mb-1">Hours worked</label>
-                <input
-                  type="number"
-                  min="0.25"
-                  step="0.25"
-                  value={hours}
-                  onChange={e => setHours(e.target.value)}
-                  placeholder="e.g. 4"
-                  className="plumbr-input text-sm w-full"
-                  required
-                />
+                <label className="block text-xs mb-1">Hours worked</label>
+                <input type="number" min="0.25" step="0.25" value={hours} onChange={e => setHours(e.target.value)}
+                  placeholder="e.g. 4" className="input text-sm w-full" required />
               </div>
               <div className="flex-1">
-                <label className="block text-xs text-slate-500 mb-1">Rate/hr (optional)</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="1"
-                  value={rate}
-                  onChange={e => setRate(e.target.value)}
-                  placeholder="e.g. 75"
-                  className="plumbr-input text-sm w-full"
-                />
+                <label className="block text-xs mb-1">Rate/hr (optional)</label>
+                <input type="number" min="0" step="1" value={rate} onChange={e => setRate(e.target.value)}
+                  placeholder="e.g. 75" className="input text-sm w-full" />
               </div>
             </div>
             <button type="submit" disabled={isLoggingHours} className="btn-secondary text-sm disabled:opacity-50">
@@ -160,17 +209,48 @@ export function FieldJobClient({ job, locale, translations: t }: { job: Job; loc
         )}
       </div>
 
-      <div className="plumbr-card p-4 mb-4">
-        <h2 className="font-semibold text-slate-800 mb-3">{t.photos}</h2>
-        <button className="w-full border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center gap-2 text-slate-400 hover:border-[#F97316]/50 hover:text-[#F97316] transition-colors">
-          <Camera size={24} />
-          <span className="text-sm">{t.uploadPhoto}</span>
-        </button>
+      {/* Work Orders — crew instructions */}
+      {workOrders.length > 0 && (
+        <div className="card p-4 mb-4">
+          <div className="flex items-center gap-2 mb-3">
+            <ClipboardList size={16} style={{ color: 'var(--wp-primary)' }} />
+            <h2 className="font-semibold">Work Orders</h2>
+          </div>
+          <div className="space-y-3">
+            {workOrders.map(wo => (
+              <div key={wo.id} className="rounded-lg p-3" style={{ border: '1px solid var(--wp-border-light)' }}>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-semibold" style={{ color: 'var(--wp-primary)' }}>{wo.number}</span>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                    wo.status === 'completed' ? 'bg-emerald-50 text-emerald-700' :
+                    wo.status === 'in_progress' ? 'bg-blue-50 text-blue-700' :
+                    'bg-gray-100 text-gray-600'
+                  }`}>{wo.status}</span>
+                </div>
+                <p className="text-sm font-medium" style={{ color: 'var(--wp-text-secondary)' }}>{wo.title}</p>
+                {wo.instructions && (
+                  <div className="mt-2 p-2 rounded text-xs whitespace-pre-wrap" style={{ background: 'var(--wp-bg-muted)', color: 'var(--wp-text-secondary)' }}>
+                    {wo.instructions}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="card p-4 mb-4">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-semibold">{t.photos}</h2>
+          <PhotoUploader jobId={job.id} onUploaded={(photo) => setPhotos(prev => [...prev, photo as any])} />
+        </div>
+        <PhotoGallery photos={photos} canDelete />
+        {photos.length === 0 && <p className="text-xs text-center py-2" style={{ color: 'var(--wp-text-muted)' }}>No photos yet. Use the button above to capture.</p>}
       </div>
 
       {job.status !== 'completed' && (
         <button onClick={markComplete} disabled={isPending} className="w-full btn-primary py-3 text-sm disabled:opacity-50">
-          Mark Job as Completed ✓
+          Mark Job as Completed
         </button>
       )}
     </div>

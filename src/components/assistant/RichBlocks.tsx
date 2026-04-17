@@ -283,7 +283,7 @@ export function RichChecklist({
       // Update items with their new expenseIds
       setItems(prev => prev.map((it, idx) => {
         const match = results.find(r => r.status === 'fulfilled' && r.value.idx === idx)
-        if (match && match.status === 'fulfilled') return { ...it, expenseId: match.value.expenseId }
+        if (match && match.status === 'fulfilled') return { ...it, expenseId: match.value.expenseId ?? undefined }
         return it
       }))
 
@@ -312,7 +312,7 @@ export function RichChecklist({
     try {
       if (isSaved && item.id) {
         const result = await markItemPurchased(item.id, activeJobId, String(item.estimatedCost))
-        setItems(prev => prev.map((it, i) => i === idx ? { ...it, expenseId: result.expenseId } : it))
+        setItems(prev => prev.map((it, i) => i === idx ? { ...it, expenseId: result.expenseId ?? undefined } : it))
       } else {
         const expense = await createExpense(activeJobId, {
           description: item.description,

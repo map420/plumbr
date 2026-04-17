@@ -5,6 +5,7 @@ import { emailAdapter } from '@/lib/adapters/email'
 import { revalidatePath } from 'next/cache'
 import { jobCompletedInvoiceDueEmail } from '@/lib/email-templates'
 import { isPro, STARTER_LIMITS } from '@/lib/stripe'
+import { invalidateUserData } from '@/lib/cache-tags'
 import { getUserPlan } from './billing'
 import { requireUser as requireAuth } from './auth-helpers'
 
@@ -16,6 +17,36 @@ export async function getJobs() {
 export async function getJob(id: string) {
   const userId = await requireAuth()
   return dbAdapter.jobs.findById(id, userId)
+}
+
+/** Verify job belongs to current user. Returns job if valid, null otherwise. */
+export async function validateJobOwnership(id: string) {
+  const userId = await requireAuth()
+  const job = await dbAdapter.jobs.findById(id, userId)
+  return job || null
+}
+
+/** Search user's jobs by name/client — active + lead first, then others. */
+export async function searchJobs(query: string = '', limit = 20) {
+  const userId = await requireAuth()
+  const all = await dbAdapter.jobs.findAll(userId)
+  const q = query.trim().toLowerCase()
+  const filtered = q
+    ? all.filter(j => j.name.toLowerCase().includes(q) || j.clientName.toLowerCase().includes(q))
+    : all
+  // Rank: active > lead > on_hold > completed > cancelled
+  const rank = (s: string) => ({ active: 0, lead: 1, on_hold: 2, completed: 3, cancelled: 4 }[s] ?? 5)
+  const sorted = filtered.sort((a, b) => {
+    const r = rank(a.status) - rank(b.status)
+    if (r !== 0) return r
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  })
+  return sorted.slice(0, limit).map(j => ({
+    id: j.id,
+    name: j.name,
+    clientName: j.clientName,
+    status: j.status,
+  }))
 }
 
 export async function createJob(data: {
@@ -53,6 +84,7 @@ export async function createJob(data: {
     notes: data.notes || null,
   })
   revalidatePath('/[locale]/jobs', 'page')
+  invalidateUserData(userId)
   return job
 }
 
@@ -88,7 +120,7 @@ export async function updateJob(id: string, data: Partial<{
     if (contractorUser?.email) {
       const draftInvoice = jobInvoices.find(inv => inv.status === 'draft')
       if (draftInvoice) {
-        const appUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://plumbr.vercel.app'}/en/invoices/${draftInvoice.id}`
+        const appUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://workpilot.mrlabs.io'}/en/invoices/${draftInvoice.id}`
         await emailAdapter.send({
           to: contractorUser.email,
           subject: `Job "${job.name}" completed — invoice ready to send`,
@@ -117,6 +149,7 @@ export async function updateJob(id: string, data: Partial<{
   }
 
   revalidatePath('/[locale]/jobs', 'page')
+  invalidateUserData(userId)
   return job
 }
 
@@ -124,4 +157,5 @@ export async function deleteJob(id: string) {
   const userId = await requireAuth()
   await dbAdapter.jobs.delete(id, userId)
   revalidatePath('/[locale]/jobs', 'page')
+  invalidateUserData(userId)
 }

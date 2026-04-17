@@ -6,7 +6,8 @@ import Link from 'next/link'
 import { useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { createExpense } from '@/lib/actions/expenses'
-import { Receipt, ChevronDown, X, Plus } from 'lucide-react'
+import { Receipt, ChevronDown, X, Plus, Camera } from 'lucide-react'
+import { KpiCard, Segmented } from '@/components/ui'
 
 type Expense = {
   id: string; jobId: string; description: string; type: string; amount: string
@@ -23,10 +24,10 @@ const TYPE_LABELS: Record<string, string> = {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  labor: 'bg-blue-50 text-blue-700',
-  material: 'bg-amber-50 text-amber-700',
-  subcontractor: 'bg-purple-50 text-purple-700',
-  other: 'bg-gray-100 text-gray-600',
+  labor: 'wp-type-chip wp-type-chip--labor',
+  material: 'wp-type-chip wp-type-chip--material',
+  subcontractor: 'wp-type-chip wp-type-chip--subcontractor',
+  other: 'wp-type-chip wp-type-chip--other',
 }
 
 export function ExpensesGlobalClient({
@@ -68,6 +69,40 @@ export function ExpensesGlobalClient({
     }
     return { byType, grand }
   }, [filtered])
+
+  // KPI totals from ALL expenses (unfiltered)
+  const kpis = useMemo(() => {
+    let total = 0, materials = 0, tools = 0, fuelOther = 0
+    for (const e of initialExpenses) {
+      const amt = parseFloat(e.amount)
+      total += amt
+      if (e.type === 'material') materials += amt
+      else if (e.type === 'subcontractor') tools += amt // using subcontractor slot for tools
+      else if (e.type === 'other') fuelOther += amt
+      else fuelOther += 0 // labor goes into separate tracking
+    }
+    return { total, materials, tools, fuelOther, labor: total - materials - tools - fuelOther }
+  }, [initialExpenses])
+
+  // Group filtered by date for date grouping
+  const dateGrouped = useMemo(() => {
+    const groups: Record<string, Expense[]> = {}
+    const sorted = [...filtered].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    for (const e of sorted) {
+      const key = new Date(e.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+      if (!groups[key]) groups[key] = []
+      groups[key].push(e)
+    }
+    return groups
+  }, [filtered])
+
+  const SEGMENTED_OPTIONS = [
+    { value: 'all', label: 'All', count: initialExpenses.length },
+    { value: 'material', label: 'Materials' },
+    { value: 'labor', label: 'Labor' },
+    { value: 'subcontractor', label: 'Subs' },
+    { value: 'other', label: 'Other' },
+  ] as const
 
   const hasFilters = typeFilter || jobFilter || techFilter || dateFrom || dateTo
   function clearFilters() {
@@ -139,11 +174,24 @@ export function ExpensesGlobalClient({
       )}
 
       {/* Desktop header */}
-      <div className="hidden md:flex items-center justify-between mb-6">
-        <h1 className="page-title mb-0">Expenses</h1>
+      <div className="hidden md:flex items-center justify-between mb-2">
+        <div>
+          <h1 className="page-title mb-0">Expenses</h1>
+          <p className="text-xs mt-1" style={{ color: 'var(--wp-text-muted)' }}>
+            {initialExpenses.length} expenses · ${formatCurrencyCompact(kpis.total)} MTD
+          </p>
+        </div>
         <button onClick={() => setShowNewExpense(true)} className="btn-primary btn-sm">
           <Plus size={14} /> New Expense
         </button>
+      </div>
+
+      {/* KPI row */}
+      <div className="hidden md:grid grid-cols-4 gap-3 mb-5">
+        <KpiCard label="Total spent" value={`$${formatCurrencyCompact(kpis.total)}`} sub="this month" tone="danger" />
+        <KpiCard label="Materials" value={`$${formatCurrencyCompact(kpis.materials)}`} sub={`${kpis.total > 0 ? Math.round(kpis.materials / kpis.total * 100) : 0}%`} tone="info" />
+        <KpiCard label="Labor" value={`$${formatCurrencyCompact(kpis.labor)}`} sub={`${kpis.total > 0 ? Math.round(kpis.labor / kpis.total * 100) : 0}%`} tone="warning" />
+        <KpiCard label="Subs + Other" value={`$${formatCurrencyCompact(kpis.tools + kpis.fuelOther)}`} sub={`${kpis.total > 0 ? Math.round((kpis.tools + kpis.fuelOther) / kpis.total * 100) : 0}%`} tone="brand" />
       </div>
 
       {/* Mobile: tab-bar for types */}
@@ -154,91 +202,32 @@ export function ExpensesGlobalClient({
         <button onClick={() => setTypeFilter(typeFilter === 'subcontractor' ? '' : 'subcontractor')} className={`tab-bar-item ${typeFilter === 'subcontractor' ? 'tab-bar-item-active' : ''}`}>Sub</button>
       </div>
 
-      {/* Desktop filters */}
-      <div className="hidden md:block card p-4 mb-5">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          <div className="relative">
-            <select
-              value={typeFilter}
-              onChange={e => setTypeFilter(e.target.value)}
-              className="input pr-8 appearance-none"
-            >
-              <option value="">All types</option>
-              {Object.entries(TYPE_LABELS).map(([val, label]) => (
-                <option key={val} value={val}>{label}</option>
-              ))}
-            </select>
-            <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
-
-          <div className="relative">
-            <select
-              value={jobFilter}
-              onChange={e => setJobFilter(e.target.value)}
-              className="input pr-8 appearance-none"
-            >
-              <option value="">All jobs</option>
-              {jobs.map(j => (
-                <option key={j.id} value={j.id}>{j.name}</option>
-              ))}
-            </select>
-            <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
-
-          {technicians.length > 0 && (
+      {/* Desktop toolbar: segmented + secondary filters */}
+      <div className="hidden md:block mb-5">
+        <div className="flex items-center gap-4 flex-wrap">
+          <Segmented
+            options={SEGMENTED_OPTIONS}
+            value={typeFilter || 'all'}
+            onChange={(v: string) => setTypeFilter(v === 'all' ? '' : v)}
+          />
+          <div className="flex items-center gap-2 ml-auto">
             <div className="relative">
-              <select
-                value={techFilter}
-                onChange={e => setTechFilter(e.target.value)}
-                className="input pr-8 appearance-none"
-              >
-                <option value="">All technicians</option>
-                {technicians.map(t => (
-                  <option key={t.id} value={t.id}>{t.name}</option>
-                ))}
+              <select value={jobFilter} onChange={e => setJobFilter(e.target.value)} className="input pr-8 appearance-none text-xs" style={{ minWidth: '140px' }}>
+                <option value="">All jobs</option>
+                {jobs.map(j => <option key={j.id} value={j.id}>{j.name}</option>)}
               </select>
-              <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--wp-text-muted)' }} />
             </div>
-          )}
-
-          <input
-            type="date"
-            value={dateFrom}
-            onChange={e => setDateFrom(e.target.value)}
-            className="input"
-            placeholder="From"
-            title="From date"
-          />
-          <input
-            type="date"
-            value={dateTo}
-            onChange={e => setDateTo(e.target.value)}
-            className="input"
-            placeholder="To"
-            title="To date"
-          />
+            <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="input text-xs" title="From date" />
+            <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="input text-xs" title="To date" />
+            {hasFilters && (
+              <button onClick={clearFilters} className="flex items-center gap-1 text-xs px-2 py-1 rounded" style={{ color: 'var(--wp-text-muted)' }}>
+                <X size={12} /> Clear
+              </button>
+            )}
+          </div>
         </div>
-        {hasFilters && (
-          <button onClick={clearFilters} className="mt-3 flex items-center gap-1 text-xs" style={{ color: 'var(--wp-text-muted)' }}>
-            <X size={12} /> Clear filters
-          </button>
-        )}
-      </div> {/* end desktop filters */}
-
-      {/* Summary by type */}
-      {filtered.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-          {Object.entries(TYPE_LABELS).map(([type, label]) => {
-            const amt = totals.byType[type] ?? 0
-            return (
-              <div key={type} className="card p-4">
-                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${TYPE_COLORS[type]}`}>{label}</span>
-                <p className="text-lg font-bold mt-2" style={{ color: 'var(--wp-text-primary)' }}>${formatCurrencyCompact(amt)}</p>
-              </div>
-            )
-          })}
-        </div>
-      )}
+      </div>
 
       {/* Mobile list — Joist style */}
       <div className={`md:hidden ${isPending ? 'opacity-50' : ''}`}>
@@ -288,7 +277,7 @@ export function ExpensesGlobalClient({
         })()}
       </div>
 
-      {/* Desktop table */}
+      {/* Desktop table — date grouped */}
       <div className="hidden md:block card overflow-hidden">
         {filtered.length === 0 ? (
           <div className="px-5 py-16 text-center">
@@ -297,62 +286,65 @@ export function ExpensesGlobalClient({
           </div>
         ) : (
           <>
-            {/* Header */}
-            <div className="hidden sm:grid grid-cols-[1fr_1fr_2fr_auto_auto] gap-3 px-5 py-2.5 text-xs font-medium uppercase tracking-wide" style={{ borderBottom: '1px solid var(--wp-border-light)', background: 'var(--wp-bg-muted)', color: 'var(--wp-text-muted)' }}>
+            {/* Table header */}
+            <div className="grid grid-cols-[80px_1fr_1.5fr_100px_100px_50px_100px] gap-3 px-5 py-2.5 text-[10px] font-semibold uppercase tracking-wider" style={{ borderBottom: '1px solid var(--wp-border)', background: 'var(--wp-surface-2)', color: 'var(--wp-text-3)' }}>
+              <span>Time</span>
+              <span>Description</span>
               <span>Job</span>
-              <span>Type</span>
-              <span>Detail</span>
-              <span>Date</span>
+              <span>Category</span>
+              <span>Technician</span>
+              <span className="text-center">Receipt</span>
               <span className="text-right">Amount</span>
             </div>
-            <div>
-              {filtered.map(exp => {
-                const job = jobMap[exp.jobId]
-                const tech = exp.technicianId ? techMap[exp.technicianId] : null
-                const isLabor = exp.type === 'labor'
-                return (
-                  <div key={exp.id} className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_2fr_auto_auto] gap-1 sm:gap-3 px-5 py-3 items-center transition-colors" style={{ borderBottom: '1px solid var(--wp-border-light)' }}>
-                    <div className="min-w-0">
-                      {job ? (
-                        <Link href={`/${locale}/jobs/${job.id}`} className="text-sm font-medium hover:underline truncate block" style={{ color: 'var(--wp-primary)' }} onClick={e => e.stopPropagation()}>
-                          {job.name}
-                        </Link>
-                      ) : (
-                        <span className="text-sm" style={{ color: 'var(--wp-text-muted)' }}>Unknown job</span>
-                      )}
-                      {job && <span className="text-xs truncate block" style={{ color: 'var(--wp-text-muted)' }}>{job.clientName}</span>}
-                    </div>
-                    <div>
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${TYPE_COLORS[exp.type]}`}>
-                        {TYPE_LABELS[exp.type] ?? exp.type}
-                      </span>
-                    </div>
-                    <div className="min-w-0">
-                      {isLabor && tech ? (
-                        <>
-                          <p className="text-sm truncate" style={{ color: 'var(--wp-text-secondary)' }}>{tech.name}</p>
-                          <p className="text-xs" style={{ color: 'var(--wp-text-muted)' }}>
-                            {parseFloat(exp.hours ?? '0').toFixed(1)} hrs
-                            {exp.ratePerHour ? ` @ $${parseFloat(exp.ratePerHour).toFixed(0)}/hr` : ''}
-                          </p>
-                        </>
-                      ) : (
-                        <p className="text-sm truncate" style={{ color: 'var(--wp-text-secondary)' }}>{exp.description}</p>
-                      )}
-                    </div>
-                    <span className="text-xs whitespace-nowrap" style={{ color: 'var(--wp-text-muted)' }}>
-                      {new Date(exp.date).toLocaleDateString()}
-                    </span>
-                    <span className="font-semibold text-sm text-right whitespace-nowrap" style={{ color: 'var(--wp-text-primary)' }}>
-                      ${formatCurrency(exp.amount)}
-                    </span>
+            {Object.entries(dateGrouped).map(([dateLabel, exps]) => {
+              const dayTotal = exps.reduce((s, e) => s + parseFloat(e.amount), 0)
+              return (
+                <div key={dateLabel}>
+                  {/* Date group header */}
+                  <div className="flex items-baseline justify-between px-5 py-2" style={{ background: 'var(--wp-surface-2)', borderBottom: '1px solid var(--wp-border-light)' }}>
+                    <span className="text-xs font-bold" style={{ color: 'var(--wp-text)' }}>{dateLabel}</span>
+                    <span className="text-xs font-semibold tabular-nums" style={{ color: 'var(--wp-text)' }}>${dayTotal.toFixed(2)}</span>
                   </div>
-                )
-              })}
-            </div>
-            <div className="px-5 py-3 flex justify-between items-center" style={{ borderTop: '1px solid var(--wp-border-light)', background: 'var(--wp-bg-muted)' }}>
-              <span className="text-sm" style={{ color: 'var(--wp-text-muted)' }}>{filtered.length} expense{filtered.length !== 1 ? 's' : ''}</span>
-              <span className="text-sm font-bold" style={{ color: 'var(--wp-text-primary)' }}>
+                  {exps.map(exp => {
+                    const job = jobMap[exp.jobId]
+                    const tech = exp.technicianId ? techMap[exp.technicianId] : null
+                    const time = new Date(exp.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+                    return (
+                      <div key={exp.id} className="grid grid-cols-[80px_1fr_1.5fr_100px_100px_50px_100px] gap-3 px-5 py-3 items-center transition-colors hover:bg-[var(--wp-surface-2)]" style={{ borderBottom: '1px solid var(--wp-border-light)' }}>
+                        <span className="text-xs tabular-nums" style={{ color: 'var(--wp-text-3)' }}>{time}</span>
+                        <div className="min-w-0">
+                          <p className="text-sm truncate" style={{ color: 'var(--wp-text)' }}>{exp.description || TYPE_LABELS[exp.type]}</p>
+                        </div>
+                        <div className="min-w-0">
+                          {job ? (
+                            <Link href={`/${locale}/jobs/${job.id}`} className="text-sm hover:underline truncate block" style={{ color: 'var(--wp-brand)' }}>
+                              {job.name}
+                            </Link>
+                          ) : (
+                            <span className="text-xs" style={{ color: 'var(--wp-text-3)' }}>—</span>
+                          )}
+                        </div>
+                        <span className={TYPE_COLORS[exp.type] ?? TYPE_COLORS.other}>
+                          {TYPE_LABELS[exp.type] ?? exp.type}
+                        </span>
+                        <span className="text-xs truncate" style={{ color: 'var(--wp-text-3)' }}>
+                          {tech ? tech.name : '—'}
+                        </span>
+                        <span className="text-center">
+                          <Camera size={14} style={{ color: 'var(--wp-text-3)', opacity: 0.4 }} className="mx-auto" />
+                        </span>
+                        <span className="font-semibold text-sm text-right tabular-nums" style={{ color: 'var(--wp-error-v2)' }}>
+                          ${formatCurrency(exp.amount)}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              )
+            })}
+            <div className="px-5 py-3 flex justify-between items-center" style={{ borderTop: '1px solid var(--wp-border)', background: 'var(--wp-surface-2)' }}>
+              <span className="text-xs" style={{ color: 'var(--wp-text-3)' }}>{filtered.length} expense{filtered.length !== 1 ? 's' : ''}</span>
+              <span className="text-sm font-bold tabular-nums" style={{ color: 'var(--wp-text)' }}>
                 Total: ${formatCurrency(totals.grand)}
               </span>
             </div>

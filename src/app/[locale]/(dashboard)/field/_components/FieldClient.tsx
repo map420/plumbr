@@ -4,8 +4,9 @@ import Link from 'next/link'
 import { useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { JobStatusBadge } from '@/components/jobs/JobStatusBadge'
-import { MapPin, ChevronRight, Wrench, Users, Calendar, Clock } from 'lucide-react'
+import { MapPin, ChevronRight, Wrench, Calendar, Clock } from 'lucide-react'
 import { isScheduledToday } from '@/lib/schedule'
+import { ClientAvatar, Segmented, EmptyState } from '@/components/ui'
 
 type JobStatus = 'lead' | 'active' | 'on_hold' | 'completed' | 'cancelled'
 type Job = { id: string; name: string; clientName: string; status: string; address: string | null; startDate: Date | null }
@@ -30,101 +31,79 @@ export function FieldClient({ initialJobs, technicians, selectedTechId, translat
     router.push(`/${locale}/field${params}`)
   }
 
+  const techOptions = [
+    { value: '', label: 'All' },
+    ...technicians.map(tech => ({ value: tech.id, label: tech.name })),
+  ]
+
   return (
     <div className="px-4 pt-2 pb-4 max-w-lg mx-auto">
       <div className="hidden md:flex items-center gap-2 mb-4">
-        <Wrench size={20} style={{ color: 'var(--wp-accent)' }} />
-        <h1 className="text-xl font-bold" style={{ color: 'var(--wp-text-primary)' }}>{t.title}</h1>
+        <Wrench size={20} style={{ color: 'var(--wp-brand)' }} />
+        <h1 className="text-xl font-bold tracking-tight" style={{ color: 'var(--wp-text)' }}>{t.title}</h1>
       </div>
 
       {/* Technician filter */}
       {technicians.length > 0 && (
         <div className="mb-5">
-          <div className="hidden md:flex items-center gap-2 mb-2">
-            <Users size={13} style={{ color: 'var(--wp-text-muted)' }} />
-            <span className="text-xs font-medium uppercase tracking-wide" style={{ color: 'var(--wp-text-tertiary)' }}>Filter by Technician</span>
-          </div>
-          {/* Mobile: tab-bar style */}
-          <div className="tab-bar mb-1 md:hidden">
-            <button onClick={() => handleTechFilter('')}
-              className={`tab-bar-item ${!selectedTechId ? 'tab-bar-item-active' : ''}`}>
-              All
-            </button>
-            {technicians.map(tech => (
-              <button key={tech.id} onClick={() => handleTechFilter(tech.id)}
-                className={`tab-bar-item ${selectedTechId === tech.id ? 'tab-bar-item-active' : ''}`}>
-                {tech.name}
-              </button>
-            ))}
-          </div>
-          {/* Desktop: pill style */}
-          <div className="hidden md:flex flex-wrap gap-2">
-            <button onClick={() => handleTechFilter('')}
-              className="text-xs px-3 py-1.5 rounded-full font-medium transition-colors"
-              style={{ background: !selectedTechId ? 'var(--wp-primary)' : 'var(--wp-bg-muted)', color: !selectedTechId ? 'white' : 'var(--wp-text-secondary)' }}>
-              All
-            </button>
-            {technicians.map(tech => (
-              <button key={tech.id} onClick={() => handleTechFilter(tech.id)}
-                className="text-xs px-3 py-1.5 rounded-full font-medium transition-colors"
-                style={{ background: selectedTechId === tech.id ? 'var(--wp-primary)' : 'var(--wp-bg-muted)', color: selectedTechId === tech.id ? 'white' : 'var(--wp-text-secondary)' }}>
-                {tech.name}
-              </button>
-            ))}
-          </div>
+          <Segmented
+            value={selectedTechId ?? ''}
+            onChange={handleTechFilter}
+            options={techOptions}
+          />
         </div>
       )}
 
+      {/* Today's jobs */}
       <div className="mb-6">
-        <div className="flex items-baseline gap-2 mb-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--wp-accent)' }}>{t.todaysJobs}</h2>
-          <span className="text-xs" style={{ color: 'var(--wp-text-tertiary)' }}>{new Date().toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+        <div className="flex items-baseline justify-between mb-3">
+          <h2 className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--wp-text-3)' }}>{t.todaysJobs}</h2>
+          <span className="text-[11px]" style={{ color: 'var(--wp-text-3)' }}>
+            {new Date().toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric' })}
+          </span>
         </div>
         {todayJobs.length === 0 ? (
-          <div className="card p-8 text-center">
-            <div className="w-12 h-12 rounded-2xl mx-auto mb-3 flex items-center justify-center" style={{ background: 'var(--wp-bg-muted)' }}>
-              <Calendar size={24} style={{ color: 'var(--wp-text-muted)' }} />
-            </div>
-            <p className="text-sm font-medium mb-1" style={{ color: 'var(--wp-text-primary)' }}>
-              {selectedTech ? `No jobs for ${selectedTech.name}` : 'No jobs today'}
-            </p>
-            <p className="text-xs mb-4" style={{ color: 'var(--wp-text-muted)' }}>
-              {selectedTech ? 'Try selecting a different technician or schedule a new job.' : t.noJobs}
-            </p>
-            <Link href={`/${locale}/jobs/new`} className="btn-primary btn-sm inline-flex items-center gap-1.5 text-xs">
-              + Schedule a job
-            </Link>
-          </div>
+          <EmptyState
+            icon={<Calendar size={32} />}
+            title={selectedTech ? `No jobs for ${selectedTech.name}` : 'No jobs today'}
+            description={selectedTech ? 'Try a different technician or schedule a new job.' : t.noJobs}
+            cta={
+              <Link href={`/${locale}/jobs/new`} className="btn-primary btn-sm">
+                + Schedule a job
+              </Link>
+            }
+          />
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {todayJobs.map((job, idx) => (
               <Link
                 key={job.id}
                 href={`/${locale}/field/${job.id}`}
-                className="card p-4 flex items-center justify-between hover:shadow-md transition-shadow"
+                className="card p-4 flex items-start gap-3 transition-all hover:border-[color:var(--wp-border-hover)]"
                 style={{ animation: `fadeSlideIn 0.3s ease both`, animationDelay: `${idx * 30}ms` }}
               >
+                <ClientAvatar name={job.clientName} size="lg" />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="font-semibold truncate" style={{ color: 'var(--wp-text-primary)' }}>{job.name}</p>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="font-semibold truncate" style={{ color: 'var(--wp-text)' }}>{job.name}</p>
                     {job.startDate && (
-                      <span className="flex items-center gap-0.5 text-xs shrink-0" style={{ color: 'var(--wp-text-muted)' }}>
+                      <span className="flex items-center gap-0.5 text-xs shrink-0 font-medium" style={{ color: 'var(--wp-info-v2)' }}>
                         <Clock size={10} />
                         {new Date(job.startDate).toLocaleTimeString('en', { hour: 'numeric', minute: '2-digit' })}
                       </span>
                     )}
                   </div>
-                  <p className="text-sm mt-0.5" style={{ color: 'var(--wp-text-secondary)' }}>{job.clientName}</p>
+                  <p className="text-sm mt-0.5" style={{ color: 'var(--wp-text-2)' }}>{job.clientName}</p>
                   {job.address && (
-                    <div className="flex items-center gap-1 mt-1 text-xs" style={{ color: 'var(--wp-text-tertiary)' }}>
-                      <MapPin size={11} /> {job.address}
+                    <div className="flex items-center gap-1 mt-1.5 text-xs" style={{ color: 'var(--wp-text-3)' }}>
+                      <MapPin size={11} /> <span className="truncate">{job.address}</span>
                     </div>
                   )}
                   <div className="mt-2">
                     <JobStatusBadge status={job.status as JobStatus} label={t.status[job.status as JobStatus]} />
                   </div>
                 </div>
-                <ChevronRight size={18} className="ml-3 shrink-0" style={{ color: 'var(--wp-text-tertiary)' }} />
+                <ChevronRight size={18} className="shrink-0 self-center" style={{ color: 'var(--wp-text-3)' }} />
               </Link>
             ))}
           </div>
@@ -133,33 +112,34 @@ export function FieldClient({ initialJobs, technicians, selectedTechId, translat
 
       {upcomingJobs.length > 0 && (
         <div>
-          <h2 className="text-sm font-semibold uppercase tracking-wide mb-3" style={{ color: 'var(--wp-text-tertiary)' }}>Active Jobs</h2>
+          <h2 className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--wp-text-3)' }}>Active jobs</h2>
           <div className="space-y-2">
             {upcomingJobs.map((job, idx) => (
               <Link
                 key={job.id}
                 href={`/${locale}/field/${job.id}`}
-                className="card p-3 flex items-center justify-between hover:shadow-sm transition-shadow"
+                className="card p-3 flex items-center gap-3 transition-all hover:border-[color:var(--wp-border-hover)]"
                 style={{ animation: `fadeSlideIn 0.3s ease both`, animationDelay: `${idx * 30}ms` }}
               >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium truncate" style={{ color: 'var(--wp-text-primary)' }}>{job.name}</p>
+                <ClientAvatar name={job.clientName} size="md" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-medium truncate" style={{ color: 'var(--wp-text)' }}>{job.name}</p>
                     {job.startDate && (
-                      <span className="flex items-center gap-0.5 text-[10px] shrink-0" style={{ color: 'var(--wp-text-muted)' }}>
+                      <span className="flex items-center gap-0.5 text-[10px] shrink-0" style={{ color: 'var(--wp-text-3)' }}>
                         <Clock size={9} />
                         {new Date(job.startDate).toLocaleTimeString('en', { hour: 'numeric', minute: '2-digit' })}
                       </span>
                     )}
                   </div>
-                  <p className="text-xs" style={{ color: 'var(--wp-text-tertiary)' }}>{job.clientName}</p>
+                  <p className="text-xs truncate" style={{ color: 'var(--wp-text-3)' }}>{job.clientName}</p>
                   {job.address && (
-                    <div className="flex items-center gap-1 mt-0.5 text-[10px]" style={{ color: 'var(--wp-text-muted)' }}>
-                      <MapPin size={9} /> {job.address}
+                    <div className="flex items-center gap-1 mt-0.5 text-[10px]" style={{ color: 'var(--wp-text-3)' }}>
+                      <MapPin size={9} /> <span className="truncate">{job.address}</span>
                     </div>
                   )}
                 </div>
-                <ChevronRight size={16} style={{ color: 'var(--wp-text-tertiary)' }} />
+                <ChevronRight size={14} style={{ color: 'var(--wp-text-3)' }} />
               </Link>
             ))}
           </div>

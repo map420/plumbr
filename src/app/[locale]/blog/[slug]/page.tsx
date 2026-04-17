@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { auth } from '@clerk/nextjs/server'
 import { getLocale } from 'next-intl/server'
 import { ArrowLeft, Calendar, Clock } from 'lucide-react'
 import { getPost, getAllPosts } from '@/lib/blog'
@@ -10,6 +9,11 @@ import { Navbar } from '@/app/[locale]/(marketing)/_components/Navbar'
 import { Footer } from '@/app/[locale]/(marketing)/_components/Footer'
 
 type Props = { params: Promise<{ locale: string; slug: string }> }
+
+// Blog posts are static MDX files. Pre-render at build time and revalidate
+// daily — posts don't change after publish, but ISR gives us an escape hatch
+// if we ever edit one in place.
+export const revalidate = 86400
 
 export async function generateStaticParams() {
   const posts = getAllPosts()
@@ -52,13 +56,11 @@ export default async function BlogPostPage({ params }: Props) {
   const post = getPost(slug)
   if (!post) notFound()
 
-  const { userId } = await auth()
-  const isSignedIn = !!userId
   const allPosts = getAllPosts().filter(p => p.slug !== slug).slice(0, 3)
 
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: 'Inter, sans-serif' }}>
-      <Navbar locale={locale} isSignedIn={isSignedIn} />
+      <Navbar locale={locale} />
 
       <main className="pt-16">
         {/* Article header */}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { useAuth } from '@clerk/nextjs'
 import { Menu, X, Wrench, ChevronDown } from 'lucide-react'
 
 const TRADES = [
@@ -15,7 +16,14 @@ const TRADES = [
   { label: 'Remodelers', slug: 'remodelers' },
 ]
 
-export function Navbar({ locale, isSignedIn }: { locale: string; isSignedIn: boolean }) {
+/**
+ * `isSignedIn` is now resolved from Clerk client-side. Removing the prop from
+ * the RSC callers lets those pages (marketing home, /for/[trade], /blog,
+ * /blog/[slug]) drop their `await auth()` calls — that was the last piece
+ * preventing Next from statically rendering them.
+ */
+export function Navbar({ locale }: { locale: string }) {
+  const { isSignedIn } = useAuth()
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
   const [tradesOpen, setTradesOpen] = useState(false)

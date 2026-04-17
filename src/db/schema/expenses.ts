@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, varchar, numeric, pgEnum } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, varchar, numeric, pgEnum, index } from 'drizzle-orm/pg-core'
 import { users } from './users'
 import { jobs } from './jobs'
 import { technicians } from './technicians'
@@ -17,7 +17,10 @@ export const expenses = pgTable('expenses', {
   ratePerHour: numeric('rate_per_hour', { precision: 10, scale: 2 }),
   date: timestamp('date').defaultNow().notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
-})
+}, (t) => [
+  index('expenses_user_id_idx').on(t.userId),
+  index('expenses_job_id_idx').on(t.jobId),
+])
 
 export type Expense = typeof expenses.$inferSelect
 export type NewExpense = typeof expenses.$inferInsert

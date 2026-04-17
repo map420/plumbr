@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { auth } from '@clerk/nextjs/server'
 import { getLocale } from 'next-intl/server'
 import {
   ArrowRight, FileText, BarChart2, Calendar,
@@ -135,14 +134,15 @@ const FEATURES = [
   },
 ]
 
+// Features page is static marketing copy. ISR refreshes hourly.
+export const revalidate = 3600
+
 export default async function FeaturesPage() {
   const locale = await getLocale()
-  const { userId } = await auth()
-  const isSignedIn = !!userId
 
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: 'Inter, sans-serif' }}>
-      <Navbar locale={locale} isSignedIn={isSignedIn} />
+      <Navbar locale={locale} />
 
       <main className="pt-16">
         {/* Hero */}

@@ -1,0 +1,718 @@
+/* ═══════════════════════════════════════════
+   Conversational Rich — Block Components
+   Professional, minimal. Uses --wp-* tokens.
+   ═══════════════════════════════════════════ */
+
+.rich-blocks > * + * { margin-top: 20px; }
+
+/* Tighter spacing when heading is followed by table/list/insights (they belong together) */
+.rich-blocks > .blk-prose + .blk-table,
+.rich-blocks > .blk-prose + .blk-list,
+.rich-blocks > .blk-prose + .blk-insights,
+.rich-blocks > .blk-prose + .blk-metrics,
+.rich-blocks > .blk-prose + .blk-clients { margin-top: 10px; }
+
+/* More space after data blocks before prose */
+.rich-blocks > .blk-table + .blk-prose,
+.rich-blocks > .blk-list + .blk-prose,
+.rich-blocks > .blk-insights + .blk-prose,
+.rich-blocks > .blk-metrics + .blk-prose,
+.rich-blocks > .blk-clients + .blk-prose { margin-top: 16px; }
+
+/* ── Prose ── */
+.blk-prose {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--wp-text-primary);
+}
+
+.blk-prose .n {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+  font-weight: 600;
+  color: var(--wp-primary);
+  background: var(--wp-bg-muted);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.blk-prose .h {
+  font-weight: 600;
+  color: var(--wp-text-primary);
+}
+
+/* ── Metrics Strip ── */
+.blk-metrics {
+  display: flex;
+  gap: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--wp-border);
+}
+
+.blk-metric-item {
+  flex: 1;
+  padding: 14px 10px;
+  text-align: center;
+  background: var(--wp-bg-primary);
+  border-right: 1px solid var(--wp-border);
+}
+
+.blk-metric-item:last-child { border-right: none; }
+
+.blk-metric-val {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--wp-text-primary);
+}
+
+.blk-metric-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--wp-text-muted);
+  margin-top: 4px;
+  letter-spacing: 0.3px;
+}
+
+/* ── Insights — subtle, border-left accent ── */
+.blk-insights { display: flex; flex-direction: column; gap: 4px; }
+
+.blk-insight {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  background: var(--wp-bg-muted);
+  color: var(--wp-text-secondary);
+  border-left: 3px solid var(--wp-border);
+}
+
+.blk-insight strong { font-weight: 600; color: var(--wp-text-primary); }
+
+.blk-insight-icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  margin-top: 2px;
+  background: var(--wp-text-primary);
+  color: var(--wp-bg-primary);
+}
+
+.blk-insight.positive { border-left-color: var(--wp-success); }
+.blk-insight.negative { border-left-color: var(--wp-error); }
+.blk-insight.warning { border-left-color: var(--wp-warning); }
+.blk-insight.info { border-left-color: var(--wp-primary); }
+
+/* ── Client Breakdown ── */
+.blk-clients {
+  border: 1px solid var(--wp-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.blk-client-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 14px;
+  gap: 10px;
+}
+
+.blk-client-row + .blk-client-row { border-top: 1px solid var(--wp-border); }
+
+.blk-client-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.blk-client-dot.primary { background: var(--wp-primary); }
+.blk-client-dot.secondary { background: var(--wp-text-muted); }
+
+.blk-client-detail { flex: 1; min-width: 0; }
+.blk-client-name { font-size: 13px; font-weight: 500; color: var(--wp-text-primary); }
+.blk-client-pct { font-size: 10px; color: var(--wp-text-muted); margin-top: 1px; }
+
+.blk-client-amount {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--wp-text-primary);
+}
+
+.blk-client-bar {
+  height: 3px;
+  background: var(--wp-border-light);
+  margin: 0 14px;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.blk-client-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--wp-primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: blkBarGrow 0.8s ease 0.4s forwards;
+}
+
+@keyframes blkBarGrow { to { transform: scaleX(1); } }
+
+/* ── List ── */
+.blk-list { display: flex; flex-direction: column; gap: 4px; }
+
+.blk-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--wp-text-primary);
+}
+
+.blk-list-item strong { font-weight: 600; }
+
+.blk-list-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  background: var(--wp-bg-muted);
+  color: var(--wp-text-muted);
+  font-weight: 600;
+}
+
+.blk-list-icon.done { color: var(--wp-success); }
+.blk-list-icon.pending { color: var(--wp-warning); }
+
+.blk-list-amount {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wp-text-primary);
+  white-space: nowrap;
+  margin-left: 8px;
+}
+
+/* ── Table ── */
+.blk-table {
+  border: 1px solid var(--wp-border);
+  border-radius: 10px;
+  overflow-x: auto;
+}
+
+.blk-table-head,
+.blk-table-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 8px;
+  padding: 10px 14px;
+}
+
+.blk-table-head {
+  background: var(--wp-bg-muted);
+  min-width: max-content;
+}
+
+.blk-table-head span {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--wp-text-muted);
+}
+
+.blk-table-row {
+  border-top: 1px solid var(--wp-border-light);
+  min-width: max-content;
+}
+
+.blk-table-row span {
+  font-size: 13px;
+  color: var(--wp-text-primary);
+  word-break: break-word;
+}
+
+/* ── Actions ── */
+.blk-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.blk-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.blk-action-primary {
+  background: var(--wp-primary);
+  color: white;
+}
+
+.blk-action-primary:hover {
+  filter: brightness(1.1);
+}
+
+.blk-action-ghost {
+  background: transparent;
+  color: var(--wp-text-secondary);
+  border: 1px solid var(--wp-border);
+}
+
+.blk-action-ghost:hover {
+  border-color: var(--wp-text-muted);
+  color: var(--wp-text-primary);
+}
+
+.blk-action-arrow { transition: transform 0.2s; font-size: 11px; }
+.blk-action-btn:hover .blk-action-arrow { transform: translateX(2px); }
+
+/* ── Responsive ── */
+/* ── Checklist (interactive material list) ── */
+.blk-checklist {
+  border: 1px solid var(--wp-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* Budget bar */
+.blk-checklist-budget {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--wp-border-light);
+}
+
+.blk-checklist-budget-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--wp-text-muted);
+  margin-bottom: 6px;
+}
+
+.blk-checklist-budget-labels strong {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+  font-weight: 600;
+  color: var(--wp-text-primary);
+}
+
+.blk-checklist-budget-bar {
+  height: 6px;
+  background: var(--wp-bg-muted);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.blk-checklist-budget-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--wp-primary);
+  transition: width 0.4s ease;
+}
+
+.blk-checklist-budget-fill.over {
+  background: var(--wp-error);
+}
+
+.blk-checklist-budget-pct {
+  font-size: 10px;
+  color: var(--wp-text-muted);
+  margin-top: 4px;
+}
+
+.blk-checklist-item + .blk-checklist-item { border-top: 1px solid var(--wp-border-light); }
+.blk-checklist-item { position: relative; transition: opacity 0.3s, transform 0.3s; }
+.blk-checklist-item.removing { opacity: 0; transform: translateX(-100%); pointer-events: none; }
+
+.blk-checklist-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: default;
+  transition: background 0.15s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.blk-checklist-row:hover { background: var(--wp-bg-muted); }
+
+.blk-checklist-check {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 2px solid var(--wp-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  color: transparent;
+  cursor: pointer;
+}
+.blk-checklist-check:hover:not(.checked) {
+  border-color: var(--wp-success);
+  background: rgba(34,197,94,0.1);
+}
+.blk-checklist-check.saving {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.blk-checklist-check.checked {
+  background: var(--wp-success);
+  border-color: var(--wp-success);
+  color: white;
+}
+
+.blk-checklist-desc {
+  flex: 1;
+  font-size: 13px;
+  color: var(--wp-text-primary);
+  cursor: pointer;
+}
+.blk-checklist-desc:hover { color: var(--wp-primary); }
+
+.blk-checklist-item.done .blk-checklist-desc {
+  text-decoration: line-through;
+  color: var(--wp-text-muted);
+}
+
+.blk-checklist-cost {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--wp-text-primary);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.blk-checklist-cost:hover { color: var(--wp-primary); }
+
+.blk-checklist-delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--wp-text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s;
+  opacity: 0;
+}
+.blk-checklist-row:hover .blk-checklist-delete-btn { opacity: 1; }
+.blk-checklist-delete-btn:hover { background: rgba(239,68,68,0.1); color: var(--wp-error); }
+
+/* Always visible on touch devices (no hover) */
+@media (hover: none) {
+  .blk-checklist-delete-btn { opacity: 0.5; }
+}
+
+.blk-checklist-item.done .blk-checklist-cost {
+  color: var(--wp-text-muted);
+}
+
+/* ── Edit bar ── */
+.blk-checklist-edit-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px 10px;
+  justify-content: flex-end;
+}
+
+@keyframes ctx-fade-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Delete confirmation ── */
+.blk-checklist-delete-confirm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: rgba(239,68,68,0.05);
+  animation: ctx-fade-in 0.15s ease-out;
+}
+
+.blk-checklist-delete-msg {
+  flex: 1;
+  font-size: 11px;
+  color: var(--wp-error);
+}
+
+.blk-checklist-input {
+  width: 80px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--wp-border);
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  color: var(--wp-text-primary);
+  background: var(--wp-bg-primary);
+}
+
+.blk-checklist-input:focus { outline: none; border-color: var(--wp-primary); }
+
+.blk-checklist-btn {
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.blk-checklist-btn.confirm {
+  background: var(--wp-primary);
+  color: white;
+}
+
+.blk-checklist-btn.confirm:hover { filter: brightness(1.1); }
+.blk-checklist-btn.confirm:disabled { opacity: 0.5; }
+
+.blk-checklist-btn.danger {
+  background: var(--wp-error);
+  color: white;
+}
+
+.blk-checklist-btn.danger:hover { filter: brightness(1.1); }
+
+.blk-checklist-btn.cancel {
+  background: transparent;
+  color: var(--wp-text-muted);
+}
+
+.blk-checklist-btn.cancel:hover { color: var(--wp-text-secondary); }
+
+.blk-checklist-name-input {
+  flex: 1;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--wp-border);
+  font-size: 13px;
+  color: var(--wp-text-primary);
+  background: var(--wp-bg-primary);
+  font-family: inherit;
+  min-width: 0;
+}
+
+.blk-checklist-name-input:focus { outline: none; border-color: var(--wp-primary); }
+
+.blk-checklist-add-btn {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  color: var(--wp-text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  border-top: 1px solid var(--wp-border-light);
+  transition: all 0.15s;
+}
+
+.blk-checklist-add-btn:hover { color: var(--wp-primary); background: var(--wp-bg-muted); }
+
+.blk-checklist-add-form {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--wp-border-light);
+  flex-wrap: wrap;
+}
+
+.blk-checklist-total {
+  padding: 8px 14px;
+  font-size: 12px;
+  color: var(--wp-text-muted);
+  border-top: 1px solid var(--wp-border-light);
+  background: var(--wp-bg-muted);
+}
+
+/* ── Two-button footer ── */
+.blk-checklist-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  border-top: 1px solid var(--wp-border-light);
+  background: var(--wp-border-light);
+}
+
+.blk-checklist-footer-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 14px;
+  border: none;
+  background: var(--wp-bg-primary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  text-decoration: none;
+  min-height: 44px;
+}
+
+.blk-checklist-footer-btn.primary {
+  color: var(--wp-primary);
+}
+.blk-checklist-footer-btn.primary:hover:not(:disabled) {
+  background: var(--wp-primary);
+  color: white;
+}
+.blk-checklist-footer-btn.primary:disabled {
+  color: var(--wp-text-muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.blk-checklist-footer-btn.secondary {
+  color: var(--wp-text-secondary);
+}
+.blk-checklist-footer-btn.secondary:hover:not(:disabled) {
+  background: var(--wp-bg-muted);
+  color: var(--wp-text-primary);
+}
+.blk-checklist-footer-btn.secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Saved animation: green pulse + check draw */
+.blk-checklist-footer-btn.secondary.just-saved {
+  background: rgba(34,197,94,0.1);
+  color: var(--wp-success);
+  animation: saved-pulse 0.6s ease-out;
+}
+
+@keyframes saved-pulse {
+  0%   { transform: scale(1); background: rgba(34,197,94,0.3); }
+  50%  { transform: scale(1.02); background: rgba(34,197,94,0.2); }
+  100% { transform: scale(1); background: rgba(34,197,94,0.1); }
+}
+
+.blk-checklist-check-anim {
+  color: var(--wp-success);
+  animation: check-draw 0.4s ease-out;
+}
+
+@keyframes check-draw {
+  from { transform: scale(0) rotate(-45deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+/* ── Closed state (list completed) ── */
+.blk-checklist-closed {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-top: 1px solid var(--wp-border-light);
+  background: rgba(34,197,94,0.06);
+  color: var(--wp-success);
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.blk-checklist-closed:hover { background: rgba(34,197,94,0.12); }
+
+/* ── Skipped items (unchecked when list closed) ── */
+.blk-checklist-item.skipped .blk-checklist-desc,
+.blk-checklist-item.skipped .blk-checklist-cost {
+  text-decoration: line-through;
+  color: var(--wp-text-muted);
+  opacity: 0.6;
+}
+.blk-checklist-item.skipped .blk-checklist-check {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* ── Save form hint ── */
+.blk-checklist-save-hint {
+  font-size: 11px;
+  color: var(--wp-text-muted);
+  padding: 2px 2px 0;
+}
+
+.blk-checklist-save-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border-top: 1px solid var(--wp-border-light);
+  background: var(--wp-bg-muted);
+}
+
+.blk-checklist-save-field {
+  display: flex;
+  align-items: center;
+}
+
+.blk-checklist-save-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.blk-checklist-job-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--wp-bg-primary);
+  border: 1px solid var(--wp-border);
+  color: var(--wp-text-secondary);
+  font-size: 12px;
+}
+
+.blk-checklist-saved-icon {
+  margin-left: auto;
+  color: var(--wp-text-muted);
+}
+
+.blk-checklist-total-amount {
+  font-family: ui-monospace, monospace;
+  font-weight: 600;
+  color: var(--wp-text-primary);
+}
+
+/* ── Responsive ── */
+@media (max-width: 400px) {
+  .blk-metrics { flex-wrap: wrap; }
+  .blk-metric-item { flex: 1 1 45%; border-bottom: 1px solid var(--wp-border); }
+  .blk-checklist-confirm { flex-direction: column; align-items: stretch; }
+}

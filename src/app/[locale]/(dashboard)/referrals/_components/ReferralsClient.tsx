@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Copy, Check, Mail } from 'lucide-react'
+import { Copy, Check, Mail, Gift } from 'lucide-react'
 import { createReferral } from '@/lib/actions/referrals'
+import { StatusPill, type StatusTone } from '@/components/ui'
 
 type Referral = {
   id: string
@@ -13,10 +14,10 @@ type Referral = {
   createdAt: Date
 }
 
-const STATUS_LABEL: Record<string, { label: string; color: string }> = {
-  pending: { label: 'Invited', color: 'var(--wp-text-muted)' },
-  signed_up: { label: 'Signed up', color: 'var(--wp-primary)' },
-  subscribed: { label: 'Paying', color: 'var(--wp-success)' },
+const STATUS_META: Record<string, { label: string; tone: StatusTone }> = {
+  pending: { label: 'Invited', tone: 'neutral' },
+  signed_up: { label: 'Signed up', tone: 'info' },
+  subscribed: { label: 'Paying', tone: 'success' },
 }
 
 export function ReferralsClient({ referrals: initial, referralLink }: { referrals: Referral[]; referralLink: string }) {
@@ -26,6 +27,9 @@ export function ReferralsClient({ referrals: initial, referralLink }: { referral
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+
+  const paying = referrals.filter(r => r.status === 'subscribed').length
+  const totalReward = referrals.reduce((s, r) => s + (parseFloat(r.reward) || 0), 0)
 
   function copyLink() {
     navigator.clipboard.writeText(referralLink).then(() => {
@@ -59,33 +63,71 @@ export function ReferralsClient({ referrals: initial, referralLink }: { referral
   }
 
   return (
-    <div className="space-y-6">
-      {/* Share link */}
-      <div className="card p-4">
-        <label className="block text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--wp-text-muted)' }}>
-          Your referral link
-        </label>
-        <div className="flex gap-2">
-          <input
-            readOnly
-            value={referralLink}
-            className="input text-sm flex-1 font-mono"
-            onFocus={e => e.currentTarget.select()}
-          />
-          <button onClick={copyLink} className="btn-primary text-sm whitespace-nowrap flex items-center gap-1.5">
-            {copied ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy</>}
-          </button>
-        </div>
-        <p className="mt-2 text-xs" style={{ color: 'var(--wp-text-muted)' }}>
-          Share this anywhere. New signups who use it will be linked to your account.
+    <div className="p-4 md:p-8 space-y-5 max-w-4xl">
+      <div>
+        <h1 className="page-title mb-0">Referrals</h1>
+        <p className="text-sm mt-1" style={{ color: 'var(--wp-text-2)' }}>
+          Invite other contractors and earn rewards.
         </p>
       </div>
 
+      {/* Hero card — navy gradient */}
+      <div className="wp-ai-card" style={{ padding: '24px' }}>
+        <div className="flex items-start gap-4 relative">
+          <div className="wp-ai-icon" style={{ width: 40, height: 40, background: 'rgb(255 255 255 / 0.1)' }}>
+            <Gift size={18} />
+          </div>
+          <div className="flex-1">
+            <div className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--wp-ai-accent)' }}>
+              Refer & earn
+            </div>
+            <div className="text-lg font-bold tracking-tight" style={{ color: 'white' }}>Share plumbr, get rewarded</div>
+            <p className="text-sm mt-1" style={{ color: 'rgb(255 255 255 / 0.75)', lineHeight: 1.5 }}>
+              Each contractor who signs up via your link and subscribes earns you a reward.
+            </p>
+
+            <div className="mt-4 flex gap-2">
+              <input
+                readOnly
+                value={referralLink}
+                onFocus={e => e.currentTarget.select()}
+                className="flex-1 rounded-md px-3 py-2 text-xs font-mono select-all outline-none"
+                style={{
+                  background: 'rgb(255 255 255 / 0.08)',
+                  color: 'white',
+                  border: '1px dashed rgb(255 255 255 / 0.2)',
+                }}
+              />
+              <button
+                onClick={copyLink}
+                className="px-3 py-2 text-xs font-semibold rounded-md flex items-center gap-1.5 transition-colors"
+                style={{ background: 'var(--wp-ai-accent)', color: 'var(--wp-brand)' }}
+              >
+                {copied ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy</>}
+              </button>
+            </div>
+          </div>
+
+          <div className="hidden sm:block text-right">
+            <div className="text-[10px] uppercase tracking-wider font-semibold mb-1" style={{ color: 'rgb(255 255 255 / 0.5)' }}>Paying</div>
+            <div className="text-3xl font-bold tabular-nums" style={{ color: 'white' }}>{paying}</div>
+            {totalReward > 0 && (
+              <div className="text-xs mt-1 font-mono" style={{ color: 'var(--wp-ai-accent)' }}>
+                +${totalReward.toLocaleString()}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Invite by email */}
-      <form onSubmit={handleInvite} className="card p-4">
-        <label className="block text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--wp-text-muted)' }}>
-          Invite by email
-        </label>
+      <form onSubmit={handleInvite} className="card p-5">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--wp-text)' }}>Invite by email</h2>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--wp-text-3)' }}>We&apos;ll send a personalized invite link.</p>
+          </div>
+        </div>
         <div className="flex gap-2">
           <input
             type="email"
@@ -98,22 +140,24 @@ export function ReferralsClient({ referrals: initial, referralLink }: { referral
             <Mail size={14} /> {isPending ? '...' : 'Invite'}
           </button>
         </div>
-        {error && <p className="mt-2 text-xs" style={{ color: 'var(--wp-error)' }}>{error}</p>}
+        {error && (
+          <p className="mt-2 text-xs" style={{ color: 'var(--wp-error-v2)' }}>{error}</p>
+        )}
       </form>
 
       {/* List */}
       <div>
-        <h2 className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--wp-text-muted)' }}>
+        <h2 className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--wp-text-3)' }}>
           Your referrals ({referrals.length})
         </h2>
         {referrals.length === 0 ? (
-          <p className="text-sm text-center py-6 card" style={{ color: 'var(--wp-text-muted)' }}>
+          <div className="card p-10 text-center text-sm" style={{ color: 'var(--wp-text-3)' }}>
             No referrals yet. Invite your first contractor above.
-          </p>
+          </div>
         ) : (
           <div className="card overflow-hidden">
             {referrals.map((r, i) => {
-              const meta = STATUS_LABEL[r.status] ?? { label: r.status, color: 'var(--wp-text-muted)' }
+              const meta = STATUS_META[r.status] ?? { label: r.status, tone: 'neutral' as StatusTone }
               return (
                 <div
                   key={r.id}
@@ -121,20 +165,20 @@ export function ReferralsClient({ referrals: initial, referralLink }: { referral
                   style={i > 0 ? { borderTop: '1px solid var(--wp-border-light)' } : undefined}
                 >
                   <div className="min-w-0">
-                    <p className="text-sm font-medium truncate" style={{ color: 'var(--wp-text-primary)' }}>
+                    <p className="text-sm font-medium truncate" style={{ color: 'var(--wp-text)' }}>
                       {r.referredEmail}
                     </p>
-                    <p className="text-[11px]" style={{ color: 'var(--wp-text-muted)' }}>
+                    <p className="text-[11px]" style={{ color: 'var(--wp-text-3)' }}>
                       {new Date(r.createdAt).toLocaleDateString()}
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-xs font-semibold" style={{ color: meta.color }}>{meta.label}</p>
+                  <div className="flex items-center gap-3 shrink-0">
                     {parseFloat(r.reward) > 0 && (
-                      <p className="text-[11px] font-mono" style={{ color: 'var(--wp-success)' }}>
+                      <p className="text-xs font-mono font-semibold" style={{ color: 'var(--wp-success-v2)' }}>
                         +${parseFloat(r.reward).toLocaleString()}
                       </p>
                     )}
+                    <StatusPill tone={meta.tone}>{meta.label}</StatusPill>
                   </div>
                 </div>
               )

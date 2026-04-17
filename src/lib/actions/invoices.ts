@@ -7,6 +7,7 @@ import { paymentsAdapter } from '@/lib/adapters/payments'
 import { invoiceSentEmail, invoicePaidEmail } from '@/lib/email-templates'
 import { calculateTax } from '@/lib/tax'
 import { revalidatePath } from 'next/cache'
+import { invalidateUserData } from '@/lib/cache-tags'
 import type { LineItemInput } from '@/lib/adapters/db/types'
 
 
@@ -80,6 +81,7 @@ export async function createInvoice(data: {
   } as any, lineItems)
 
   revalidatePath('/[locale]/invoices', 'page')
+  invalidateUserData(userId)
   return invoice
 }
 
@@ -100,6 +102,7 @@ export async function createInvoicePaymentLink(id: string): Promise<{ url: strin
   if (invoice.status === 'draft') {
     await dbAdapter.invoices.update(id, userId, { status: 'sent' })
     revalidatePath('/[locale]/invoices/[id]', 'page')
+    invalidateUserData(userId)
   }
 
   return { url }
@@ -141,7 +144,9 @@ export async function sendInvoiceToClient(id: string): Promise<{ sent: boolean; 
   if (invoice.status === 'draft') {
     await dbAdapter.invoices.update(id, userId, { status: 'sent' })
     revalidatePath('/[locale]/invoices/[id]', 'page')
+    invalidateUserData(userId)
     revalidatePath('/[locale]/invoices', 'page')
+  invalidateUserData(userId)
   }
 
   return { sent: true }
@@ -185,5 +190,6 @@ export async function updateInvoice(id: string, data: Partial<{
   }
 
   revalidatePath('/[locale]/invoices', 'page')
+  invalidateUserData(userId)
   return invoice
 }
