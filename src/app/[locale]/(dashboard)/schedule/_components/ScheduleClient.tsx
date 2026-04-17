@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
@@ -444,78 +444,18 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
                 </div>
               </div>
 
-              {/* Time-slot grid */}
-              <div className="card overflow-hidden" style={{ padding: 0 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '50px repeat(5, 1fr)' }}>
-                  {/* Time labels column */}
-                  <div>
-                    <div style={{ height: HEADER_HEIGHT, background: 'var(--wp-surface-2)', borderBottom: '1px solid var(--wp-border-v2)' }} />
-                    {hours.map(h => (
-                      <div key={h} className="text-[10px] font-medium text-right pr-2 flex items-start justify-end" style={{ height: HOUR_HEIGHT, color: 'var(--wp-text-3)', borderBottom: '1px solid var(--wp-border-light)', paddingTop: 2 }}>
-                        {h <= 12 ? `${h} AM` : `${h - 12} PM`}
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Day columns */}
-                  {displayDays.map((day, di) => {
-                    const dayJobs = jobsForDay(filteredJobs, day)
-                    const isToday = sameDay(day, new Date())
-
-                    return (
-                      <div key={di} style={{ position: 'relative', borderLeft: '1px solid var(--wp-border-light)', background: isToday ? 'color-mix(in srgb, var(--wp-info-v2) 4%, white)' : undefined }}>
-                        {/* Day header */}
-                        <div className="text-center py-2" style={{ height: HEADER_HEIGHT, background: 'var(--wp-surface-2)', borderBottom: '1px solid var(--wp-border-v2)' }}>
-                          <div className="text-xs font-medium" style={{ color: isToday ? 'var(--wp-brand)' : 'var(--wp-text-3)' }}>
-                            {DAY_NAMES[day.getDay()]}
-                          </div>
-                          <div className="text-lg font-bold" style={{ color: isToday ? 'var(--wp-brand)' : 'var(--wp-text)' }}>
-                            {day.getDate()}
-                          </div>
-                        </div>
-
-                        {/* Hour cells (empty) */}
-                        {hours.map(h => (
-                          <div key={h} style={{ height: HOUR_HEIGHT, borderBottom: '1px solid var(--wp-border-light)' }} />
-                        ))}
-
-                        {/* Events positioned absolutely */}
-                        {dayJobs.map(job => {
-                          if (!job.startDate) return null
-                          const start = new Date(job.startDate)
-                          const startH = start.getHours() + start.getMinutes() / 60
-                          const endH = job.endDate
-                            ? new Date(job.endDate).getHours() + new Date(job.endDate).getMinutes() / 60
-                            : startH + 2 // default 2h duration
-                          const top = HEADER_HEIGHT + (startH - START_HOUR) * HOUR_HEIGHT
-                          const height = Math.max((endH - startH) * HOUR_HEIGHT, 40)
-
-                          const assignment = techAssignments.find(a => a.jobId === job.id)
-                          const color = assignment ? (techColorMap.get(assignment.technicianId) ?? TECH_COLORS[0]) : TECH_COLORS[0]
-                          const techName = assignment?.technicianName?.split(' ')[0] ?? ''
-                          const timeStr = start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: false })
-                          const isActive = job.status === 'active'
-
-                          return (
-                            <Link key={job.id} href={`/${locale}/jobs/${job.id}`}
-                              className="absolute left-1 right-1 rounded-lg px-2 py-1.5 overflow-hidden transition-shadow hover:shadow-md"
-                              style={{
-                                top, height,
-                                background: `color-mix(in srgb, ${color} 10%, white)`,
-                                borderLeft: `3px solid ${color}`,
-                                outline: isActive && isToday ? `2px solid ${color}` : undefined,
-                                outlineOffset: isActive && isToday ? 1 : undefined,
-                              }}>
-                              <div className="text-[10px] font-medium" style={{ color }}>{timeStr} · {techName}{isActive && isToday ? ` · ${locale === 'es' ? 'en curso' : 'active'}` : ''}</div>
-                              <div className="text-xs font-semibold mt-0.5 truncate" style={{ color: 'var(--wp-text)' }}>{job.name} · {job.clientName}</div>
-                            </Link>
-                          )
-                        })}
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
+              {/* Time-slot grid — scrollable */}
+              <TimeSlotGrid
+                hours={hours}
+                displayDays={displayDays}
+                filteredJobs={filteredJobs}
+                techAssignments={techAssignments}
+                techColorMap={techColorMap}
+                locale={locale}
+                START_HOUR={START_HOUR}
+                HOUR_HEIGHT={HOUR_HEIGHT}
+                HEADER_HEIGHT={HEADER_HEIGHT}
+              />
             </div>
           )
         })()}
@@ -598,6 +538,136 @@ function DraggableMonthJob({ job, locale }: { job: Job; locale: string }) {
       title={`${job.name} — ${job.clientName}`}
     >
       {job.name}
+    </div>
+  )
+}
+
+// ── TimeSlotGrid: scrollable calendar with current-time line ──
+function TimeSlotGrid({ hours, displayDays, filteredJobs, techAssignments, techColorMap, locale, START_HOUR, HOUR_HEIGHT, HEADER_HEIGHT }: {
+  hours: number[]; displayDays: Date[]; filteredJobs: Job[]; techAssignments: TechAssignment[]
+  techColorMap: Map<string, string>; locale: string; START_HOUR: number; HOUR_HEIGHT: number; HEADER_HEIGHT: number
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [now, setNow] = useState(new Date())
+
+  // Auto-scroll to current hour on mount
+  useEffect(() => {
+    if (scrollRef.current) {
+      const currentH = new Date().getHours()
+      const scrollTo = Math.max(0, (currentH - START_HOUR - 1) * HOUR_HEIGHT)
+      scrollRef.current.scrollTop = scrollTo
+    }
+  }, [START_HOUR, HOUR_HEIGHT])
+
+  // Update current time every minute
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 60_000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const nowH = now.getHours() + now.getMinutes() / 60
+  const nowTop = HEADER_HEIGHT + (nowH - START_HOUR) * HOUR_HEIGHT
+  const isNowVisible = nowH >= START_HOUR && nowH <= START_HOUR + hours.length
+
+  // Check if today is one of the display days
+  const todayColIndex = displayDays.findIndex(d => sameDay(d, now))
+
+  return (
+    <div className="card overflow-hidden" style={{ padding: 0 }}>
+      {/* Sticky day headers */}
+      <div style={{ display: 'grid', gridTemplateColumns: '50px repeat(5, 1fr)' }}>
+        <div style={{ height: HEADER_HEIGHT, background: 'var(--wp-surface-2)', borderBottom: '1px solid var(--wp-border-v2)' }} />
+        {displayDays.map((day, di) => {
+          const isToday = sameDay(day, now)
+          return (
+            <div key={di} className="text-center py-2" style={{ height: HEADER_HEIGHT, background: 'var(--wp-surface-2)', borderBottom: '1px solid var(--wp-border-v2)', borderLeft: '1px solid var(--wp-border-light)' }}>
+              <div className="text-xs font-medium" style={{ color: isToday ? 'var(--wp-brand)' : 'var(--wp-text-3)' }}>
+                {DAY_NAMES[day.getDay()]}
+              </div>
+              <div className="text-lg font-bold" style={{ color: isToday ? 'var(--wp-brand)' : 'var(--wp-text)' }}>
+                {day.getDate()}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Scrollable body */}
+      <div ref={scrollRef} className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 280px)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '50px repeat(5, 1fr)', position: 'relative' }}>
+          {/* Time labels column */}
+          <div>
+            {hours.map(h => (
+              <div key={h} className="text-[10px] font-medium text-right pr-2 flex items-start justify-end" style={{ height: HOUR_HEIGHT, color: 'var(--wp-text-3)', borderBottom: '1px solid var(--wp-border-light)', paddingTop: 2 }}>
+                {h === 12 ? '12 PM' : h < 12 ? `${h} AM` : `${h - 12} PM`}
+              </div>
+            ))}
+          </div>
+
+          {/* Day columns */}
+          {displayDays.map((day, di) => {
+            const dayJobs = jobsForDay(filteredJobs, day)
+            const isToday = sameDay(day, now)
+
+            return (
+              <div key={di} style={{ position: 'relative', borderLeft: '1px solid var(--wp-border-light)', background: isToday ? 'color-mix(in srgb, var(--wp-info-v2) 4%, white)' : undefined }}>
+                {/* Hour cells */}
+                {hours.map(h => (
+                  <div key={h} style={{ height: HOUR_HEIGHT, borderBottom: '1px solid var(--wp-border-light)' }} />
+                ))}
+
+                {/* Events */}
+                {dayJobs.map(job => {
+                  if (!job.startDate) return null
+                  const start = new Date(job.startDate)
+                  const startH = start.getHours() + start.getMinutes() / 60
+                  const endH = job.endDate
+                    ? new Date(job.endDate).getHours() + new Date(job.endDate).getMinutes() / 60
+                    : startH + 2
+                  const top = (startH - START_HOUR) * HOUR_HEIGHT
+                  const height = Math.max((endH - startH) * HOUR_HEIGHT, 40)
+
+                  const assignment = techAssignments.find(a => a.jobId === job.id)
+                  const color = assignment ? (techColorMap.get(assignment.technicianId) ?? '#1D4ED8') : '#1D4ED8'
+                  const techName = assignment?.technicianName?.split(' ')[0] ?? ''
+                  const timeStr = start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: false })
+                  const isActive = job.status === 'active'
+
+                  return (
+                    <Link key={job.id} href={`/${locale}/jobs/${job.id}`}
+                      className="absolute left-1 right-1 rounded-lg px-2 py-1.5 overflow-hidden transition-shadow hover:shadow-md z-10"
+                      style={{
+                        top, height,
+                        background: `color-mix(in srgb, ${color} 10%, white)`,
+                        borderLeft: `3px solid ${color}`,
+                        outline: isActive && isToday ? `2px solid ${color}` : undefined,
+                        outlineOffset: isActive && isToday ? 1 : undefined,
+                      }}>
+                      <div className="text-[10px] font-medium" style={{ color }}>{timeStr} · {techName}{isActive && isToday ? ' · en curso' : ''}</div>
+                      <div className="text-xs font-semibold mt-0.5 truncate" style={{ color: 'var(--wp-text)' }}>{job.name} · {job.clientName}</div>
+                    </Link>
+                  )
+                })}
+              </div>
+            )
+          })}
+
+          {/* Current time line — spans across all columns */}
+          {isNowVisible && (
+            <div className="absolute pointer-events-none z-20" style={{
+              top: (nowH - START_HOUR) * HOUR_HEIGHT,
+              left: 50,
+              right: 0,
+              height: 0,
+            }}>
+              {/* Red dot on left edge */}
+              <div className="absolute rounded-full" style={{ width: 8, height: 8, background: '#EF4444', left: -4, top: -4 }} />
+              {/* Red line */}
+              <div style={{ height: 2, background: '#EF4444', width: '100%' }} />
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
