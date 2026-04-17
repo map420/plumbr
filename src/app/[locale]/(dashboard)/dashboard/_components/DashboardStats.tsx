@@ -64,31 +64,66 @@ export function DashboardStats({ stats, alerts, todayJobs, activeJobs, revenueBy
             <p className="text-2xl font-bold" style={{ color: 'var(--wp-text-primary)' }}>
               {stats.revenueThisMonth > 0 ? `$${formatCurrencyCompact(stats.revenueThisMonth)}` : '—'}
             </p>
+            {/* Sparkline bars */}
+            {revenueByMonth.length > 0 && (
+              <div className="flex items-end gap-1 h-6 mt-2">
+                {revenueByMonth.slice(-7).map((m, i, arr) => {
+                  const max = Math.max(...arr.map(x => x.revenue), 1)
+                  const h = Math.max((m.revenue / max) * 100, 4)
+                  return (
+                    <div key={i} className="rounded-sm" style={{
+                      width: 4, height: `${h}%`,
+                      background: 'var(--wp-brand)',
+                      opacity: i === arr.length - 1 ? 1 : 0.3,
+                    }} />
+                  )
+                })}
+              </div>
+            )}
           </Link>
           <div className="mx-4" style={{ width: 1, background: 'var(--wp-border)' }} />
           <Link href={`/${locale}/invoices`} className="flex-1 pl-4">
             <p className="text-[10px] font-medium uppercase tracking-wide mb-1" style={{ color: 'var(--wp-text-muted)' }}>Unpaid</p>
-            <p className="text-2xl font-bold" style={{ color: stats.unpaidCount > 0 ? 'var(--wp-accent)' : 'var(--wp-success)' }}>
+            <p className="text-2xl font-bold" style={{ color: stats.unpaidCount > 0 ? 'var(--wp-error-v2, var(--wp-accent))' : 'var(--wp-success)' }}>
               ${formatCurrencyCompact(stats.unpaidTotal)}
             </p>
+            {stats.unpaidCount > 0 && (
+              <p className="text-[10px] mt-1" style={{ color: 'var(--wp-error-v2, var(--wp-accent))' }}>
+                {stats.unpaidCount} {locale === 'es' ? 'facturas' : 'invoices'}
+              </p>
+            )}
           </Link>
         </div>
 
-        {/* Pipeline pills */}
-        <div className="flex items-center gap-1.5 pt-3" style={{ borderTop: '1px solid var(--wp-border-light)' }}>
-          <Link href={`/${locale}/estimates`} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium"
-            style={{ background: 'var(--wp-bg-muted)', color: 'var(--wp-text-primary)' }}>
-            <span className="font-bold">{pipeline.pending}</span> Pending
+        {/* Pipeline — 4-cell grid */}
+        <div className="grid grid-cols-4 gap-2 pt-3" style={{ borderTop: '1px solid var(--wp-border-light)' }}>
+          <Link href={`/${locale}/estimates`} className="rounded-lg p-2.5 text-center transition-colors hover:bg-[var(--wp-surface-3)]" style={{ background: 'var(--wp-surface-2)' }}>
+            <div className="flex items-center justify-center gap-1 mb-0.5">
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--wp-info-v2)' }} />
+              <span className="text-lg font-bold" style={{ color: 'var(--wp-text)' }}>{pipeline.pending}</span>
+            </div>
+            <span className="text-[10px] font-medium" style={{ color: 'var(--wp-text-3)' }}>Pending</span>
           </Link>
-          <ChevronRight size={11} className="shrink-0" style={{ color: 'var(--wp-border)' }} />
-          <Link href={`/${locale}/invoices`} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium"
-            style={{ background: 'var(--wp-bg-muted)', color: 'var(--wp-primary)' }}>
-            <span className="font-bold">{pipeline.unpaid}</span> Unpaid
+          <div className="rounded-lg p-2.5 text-center" style={{ background: 'var(--wp-surface-2)' }}>
+            <div className="flex items-center justify-center gap-1 mb-0.5">
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--wp-success-v2)' }} />
+              <span className="text-lg font-bold" style={{ color: 'var(--wp-text)' }}>—</span>
+            </div>
+            <span className="text-[10px] font-medium" style={{ color: 'var(--wp-text-3)' }}>Approved</span>
+          </div>
+          <Link href={`/${locale}/invoices`} className="rounded-lg p-2.5 text-center transition-colors hover:bg-[var(--wp-surface-3)]" style={{ background: 'var(--wp-surface-2)' }}>
+            <div className="flex items-center justify-center gap-1 mb-0.5">
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--wp-warning-v2)' }} />
+              <span className="text-lg font-bold" style={{ color: 'var(--wp-text)' }}>{pipeline.unpaid}</span>
+            </div>
+            <span className="text-[10px] font-medium" style={{ color: 'var(--wp-text-3)' }}>Unpaid</span>
           </Link>
-          <ChevronRight size={11} className="shrink-0" style={{ color: 'var(--wp-border)' }} />
-          <Link href={`/${locale}/payments`} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium"
-            style={{ background: 'var(--wp-bg-muted)', color: 'var(--wp-success)' }}>
-            <span className="font-bold">{pipeline.paid}</span> Paid
+          <Link href={`/${locale}/payments`} className="rounded-lg p-2.5 text-center transition-colors hover:bg-[var(--wp-surface-3)]" style={{ background: 'var(--wp-surface-2)' }}>
+            <div className="flex items-center justify-center gap-1 mb-0.5">
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--wp-brand)' }} />
+              <span className="text-lg font-bold" style={{ color: 'var(--wp-text)' }}>{pipeline.paid}</span>
+            </div>
+            <span className="text-[10px] font-medium" style={{ color: 'var(--wp-text-3)' }}>Paid MTD</span>
           </Link>
         </div>
       </div>

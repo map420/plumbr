@@ -282,8 +282,12 @@ export function EstimateFormClient({ translations: t, estimate, clients = [], ta
                 ? (locale === 'es' ? 'Editar estimate' : 'Edit estimate')
                 : (locale === 'es' ? 'Crear estimate' : 'Create estimate')}
             </h1>
-            <div className="text-xs mt-1" style={{ color: 'var(--wp-text-3)' }}>
-              {locale === 'es' ? `Paso ${step + 1} de ${STEPS.length}` : `Step ${step + 1} of ${STEPS.length}`} · {STEPS[step]}
+            <div className="text-xs mt-1 flex items-center gap-3" style={{ color: 'var(--wp-text-3)' }}>
+              <span>{locale === 'es' ? `Paso ${step + 1} de ${STEPS.length}` : `Step ${step + 1} of ${STEPS.length}`} · {STEPS[step]}</span>
+              <span className="inline-flex items-center gap-1.5" style={{ color: 'var(--wp-success-v2)' }}>
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--wp-success-v2)' }} />
+                {locale === 'es' ? 'Auto-guardado' : 'Auto-saved'}
+              </span>
             </div>
           </div>
           <button type="button" onClick={() => router.back()} className="btn-ghost btn-sm">
@@ -734,9 +738,14 @@ export function EstimateFormClient({ translations: t, estimate, clients = [], ta
                 <ArrowLeft size={14} /> {locale === 'es' ? 'Atrás' : 'Back'}
               </button>
               {isLastStep ? (
-                <button type="submit" disabled={isPending} className="btn-primary btn-sm">
-                  {isPending ? '...' : t.save}
-                </button>
+                <div className="flex gap-2">
+                  <button type="submit" disabled={isPending} className="btn-secondary btn-sm">
+                    {isPending ? '...' : (locale === 'es' ? 'Guardar borrador' : 'Save draft')}
+                  </button>
+                  <button type="submit" disabled={isPending} className="btn-primary btn-sm">
+                    {isPending ? '...' : (locale === 'es' ? 'Guardar y enviar' : 'Save & send')}
+                  </button>
+                </div>
               ) : (
                 <button type="button" onClick={() => setStep(s => s + 1)} className="btn-primary btn-sm">
                   {locale === 'es' ? 'Continuar' : 'Continue'} <ArrowRight size={14} />

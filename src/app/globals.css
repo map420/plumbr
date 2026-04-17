@@ -59,6 +59,21 @@
     /* v2 AI accent (indigo pastel — for AI card highlights on navy bg) */
     --wp-ai-accent: #A5B4FC;
 
+    /* v2 Typography scale */
+    --wp-text-xs: 0.6875rem;   /* 11px */
+    --wp-text-sm: 0.75rem;     /* 12px */
+    --wp-text-base: 0.8125rem; /* 13px */
+    --wp-text-md: 0.875rem;    /* 14px */
+    --wp-text-lg: 1rem;        /* 16px */
+    --wp-text-xl: 1.125rem;    /* 18px */
+    --wp-text-2xl: 1.375rem;   /* 22px */
+    --wp-text-3xl: 1.625rem;   /* 26px */
+
+    /* v2 Semantic surface aliases */
+    --wp-surface-raised: var(--wp-surface);
+    --wp-surface-sunken: var(--wp-surface-2);
+    --wp-surface-inset: var(--wp-surface-3);
+
     /* v2 Elevation (very subtle) */
     --wp-elevation-1: 0 1px 2px rgb(0 0 0 / 0.04), 0 1px 3px rgb(0 0 0 / 0.06);
     --wp-elevation-2: 0 2px 4px rgb(0 0 0 / 0.04), 0 1px 2px rgb(0 0 0 / 0.06);
@@ -944,7 +959,7 @@
     margin-bottom: 12px;
   }
   .wp-side-card--dark {
-    background: var(--wp-brand);
+    background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
     color: white;
     border: none;
   }

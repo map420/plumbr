@@ -295,21 +295,38 @@ export function JobsClient({ initialJobs, jobAssignments, planInfo, translations
                       <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--wp-surface-2)', color: 'var(--wp-text-3)' }}>{statusJobs.length}</span>
                     </div>
                     <div className="space-y-2">
-                      {statusJobs.map(job => (
-                        <Link key={job.id} href={`/${locale}/jobs/${job.id}`}
-                          className="block p-3 rounded-xl transition-all hover:border-[color:var(--wp-brand)]"
-                          style={{ background: 'var(--wp-surface)', border: '1px solid var(--wp-border-v2)', boxShadow: 'var(--wp-elevation-1)' }}>
-                          <p className="text-[10px] font-mono" style={{ color: 'var(--wp-text-3)' }}>JOB-{job.id.slice(0, 4)}</p>
-                          <p className="text-sm font-semibold mt-0.5 truncate" style={{ color: 'var(--wp-text)' }}>{job.name}</p>
-                          <p className="text-xs mt-1" style={{ color: 'var(--wp-text-3)' }}>👤 {job.clientName}</p>
-                          <div className="flex items-center justify-between mt-2">
-                            {job.startDate && <span className="text-[10px]" style={{ color: 'var(--wp-text-3)' }}>{new Date(job.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>}
-                            {job.budgetedCost && parseFloat(job.budgetedCost) > 0 && (
-                              <span className="text-xs font-semibold tabular-nums" style={{ color: 'var(--wp-text)' }}>${parseFloat(job.budgetedCost).toLocaleString()}</span>
+                      {statusJobs.map(job => {
+                        const isOnHold = job.status === 'on_hold'
+                        // Progress: estimate from start to end date
+                        let progress = status === 'completed' ? 100 : status === 'lead' ? 0 : 50
+                        if (job.startDate && job.endDate) {
+                          const start = new Date(job.startDate).getTime()
+                          const end = new Date(job.endDate).getTime()
+                          const now = Date.now()
+                          progress = Math.min(100, Math.max(0, Math.round(((now - start) / (end - start)) * 100)))
+                        }
+                        return (
+                          <Link key={job.id} href={`/${locale}/jobs/${job.id}`}
+                            className="block p-3 rounded-xl transition-all hover:border-[color:var(--wp-brand)]"
+                            style={{ background: 'var(--wp-surface)', border: '1px solid var(--wp-border-v2)', boxShadow: 'var(--wp-elevation-1)', borderLeft: isOnHold ? '2px solid var(--wp-error-v2)' : undefined }}>
+                            <p className="text-[10px] font-mono" style={{ color: 'var(--wp-text-3)' }}>JOB-{job.id.slice(0, 4)}</p>
+                            <p className="text-sm font-semibold mt-0.5 truncate" style={{ color: 'var(--wp-text)' }}>{job.name}</p>
+                            <p className="text-xs mt-1" style={{ color: 'var(--wp-text-3)' }}>👤 {job.clientName}</p>
+                            <div className="flex items-center justify-between mt-2">
+                              {job.startDate && <span className="text-[10px]" style={{ color: 'var(--wp-text-3)' }}>{new Date(job.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>}
+                              {job.budgetedCost && parseFloat(job.budgetedCost) > 0 && (
+                                <span className="text-xs font-semibold tabular-nums" style={{ color: 'var(--wp-text)' }}>${parseFloat(job.budgetedCost).toLocaleString()}</span>
+                              )}
+                            </div>
+                            {/* Progress bar */}
+                            {status !== 'lead' && (
+                              <div className="mt-2 rounded-full overflow-hidden" style={{ height: 3, background: 'var(--wp-surface-3)' }}>
+                                <div className="h-full rounded-full" style={{ width: `${progress}%`, background: dotColors[status] }} />
+                              </div>
                             )}
-                          </div>
-                        </Link>
-                      ))}
+                          </Link>
+                        )
+                      })}
                       {statusJobs.length === 0 && (
                         <div className="py-8 text-center text-xs rounded-xl" style={{ border: '1px dashed var(--wp-border-v2)', color: 'var(--wp-text-3)' }}>
                           No jobs

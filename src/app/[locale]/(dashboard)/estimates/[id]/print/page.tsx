@@ -55,14 +55,14 @@ export default async function PrintEstimatePage({ params }: { params: Promise<{ 
       <div className="max-w-2xl mx-auto px-12 py-10 print:px-0 print:py-0">
 
         {/* Header — logo + company | estimate #/dates */}
-        <div className="flex justify-between items-start pb-6 mb-7" style={{ borderBottom: '2px solid #0F172A' }}>
+        <div className="flex justify-between items-start pb-6 mb-7" style={{ borderBottom: '3px solid #0F172A' }}>
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-lg flex items-center justify-center" style={{ background: '#0F172A', color: '#A5B4FC', fontWeight: 800, fontSize: 14 }}>
+            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: '#0F172A', color: '#A5B4FC', fontWeight: 800, fontSize: 16 }}>
               {companyInitials}
             </div>
             <div>
-              <h1 className="text-lg font-extrabold tracking-tight" style={{ color: '#0F172A' }}>{companyName}</h1>
-              {businessTaxId && <p className="text-xs mt-0.5" style={{ color: '#A1A1AA' }}>Licensed · Tax #{businessTaxId}</p>}
+              <h1 className="text-lg font-extrabold tracking-tight" style={{ color: '#0F172A', letterSpacing: '-0.02em' }}>{companyName}</h1>
+              {businessTaxId && <p className="text-xs mt-0.5" style={{ color: '#A1A1AA' }}>Licensed Plumbing Contractor · Lic #{businessTaxId}</p>}
             </div>
           </div>
           <div className="text-right">
@@ -154,17 +154,21 @@ export default async function PrintEstimatePage({ params }: { params: Promise<{ 
               <span>Total</span>
               <span>${parseFloat(estimate.total).toFixed(2)}</span>
             </div>
-            {depositAmount !== null && (
-              <div
-                className="flex justify-between text-xs font-medium mt-2 pt-1.5 tabular-nums"
-                style={{ color: '#B45309', borderTop: '1px solid #EAEAEC' }}
-              >
-                <span>Deposit {estimate.depositType === 'percent' ? `(${estimate.depositAmount}%)` : ''}</span>
-                <span>${depositAmount.toFixed(2)}</span>
-              </div>
-            )}
           </div>
         </div>
+
+        {/* Deposit callout — separate card */}
+        {depositAmount !== null && (
+          <div className="flex justify-end mb-5">
+            <div className="w-64 rounded-lg px-4 py-3 flex items-center gap-3" style={{ background: '#FFFBEB', border: '1px solid #FDE68A' }}>
+              <div className="w-7 h-7 rounded-md flex items-center justify-center shrink-0 text-xs font-bold" style={{ background: '#B45309', color: 'white' }}>%</div>
+              <div className="text-xs" style={{ color: '#78350F' }}>
+                <strong style={{ color: '#B45309' }}>Deposit required</strong>
+                {' · '}{estimate.depositType === 'percent' ? `${estimate.depositAmount}%` : ''} = ${depositAmount.toFixed(2)} upon approval
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Signature */}
         {estimate.signatureDataUrl && (
@@ -196,7 +200,7 @@ export default async function PrintEstimatePage({ params }: { params: Promise<{ 
               target="_blank"
               rel="noreferrer"
               className="text-xs font-bold px-3.5 py-2 rounded-md"
-              style={{ background: 'white', color: '#0F172A' }}
+              style={{ background: '#F97316', color: 'white' }}
             >
               Approve online →
             </a>
@@ -205,8 +209,8 @@ export default async function PrintEstimatePage({ params }: { params: Promise<{ 
 
         {/* QR + portal link */}
         {qrDataUrl && (
-          <div className="grid grid-cols-[80px_1fr] gap-4 items-center pt-4" style={{ borderTop: '1px solid #EAEAEC' }}>
-            <img src={qrDataUrl} alt="View online" className="w-20 h-20 rounded" />
+          <div className="grid grid-cols-[96px_1fr] gap-4 items-center pt-4" style={{ borderTop: '1px solid #EAEAEC' }}>
+            <img src={qrDataUrl} alt="View online" className="w-24 h-24 rounded" style={{ border: '1px solid #EAEAEC' }} />
             <div>
               <p className="text-xs font-semibold" style={{ color: '#18181B' }}>Secure client portal</p>
               <p className="text-[10px] leading-relaxed mt-0.5" style={{ color: '#A1A1AA' }}>View line items, ask questions and sign digitally.</p>

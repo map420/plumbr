@@ -467,84 +467,74 @@ export function EstimateDetailClient({ estimate, lineItems, job, viewCount = 0, 
 
         <div className="grid grid-cols-[1fr_300px] gap-4 items-start">
           <div>
-            {/* Hero card */}
-            <DocHero
-              title={estimate.number}
-              sub={
-                <>
-                  {estimate.createdAt && (
-                    <>
-                      {locale === 'es' ? 'Creado' : 'Issued'} {new Date(estimate.createdAt).toLocaleDateString()}
-                    </>
-                  )}
-                  {estimate.validUntil && (
-                    <>
-                      {' · '}{locale === 'es' ? 'Válido hasta' : 'Valid until'} {new Date(estimate.validUntil).toLocaleDateString()}
-                    </>
-                  )}
-                </>
-              }
-              actions={
-                <>
-                  {estimate.clientEmail && (
-                    <button onClick={() => setShowEmailModal(true)} disabled={isSendingEmail} className="btn-primary btn-sm">
-                      <Mail size={14} /> {isSendingEmail ? 'Sending...' : emailSent ? 'Sent!' : 'Email'}
-                    </button>
-                  )}
-                  {(status === 'approved' || status === 'sent') && (
-                    <button onClick={handleConvert} disabled={isPending || isConverting} className="btn-sm" style={{ background: 'var(--wp-purple)', color: 'white', borderRadius: 'var(--wp-radius-md)', padding: '0.375rem 0.75rem', fontWeight: 600, fontSize: '0.75rem' }}>
-                      {isConverting ? <><Loader2 size={14} className="animate-spin" /> Converting...</> : <><ArrowRight size={14} /> {t.convertToInvoice}</>}
-                    </button>
-                  )}
-                  <div style={{ width: '1px', height: '20px', background: 'var(--wp-border-v2)', margin: '0 4px' }} />
-                  {hasMaterialItems && (
-                    <button onClick={handleGenerateShoppingList} disabled={isGeneratingList} className="btn-ghost btn-sm" title="Create a shopping list from material line items" style={{ minHeight: 'auto' }}>
-                      {isGeneratingList ? <Loader2 size={14} className="animate-spin" /> : <ShoppingCart size={14} />}
-                    </button>
-                  )}
-                  <Link href={`/${locale}/estimates/${estimate.id}/print`} className="btn-ghost btn-sm" style={{ minHeight: 'auto' }} title="Print">
-                    <FileText size={14} />
+            {/* Hero card — title + total on right */}
+            <div className="card p-5" style={{ boxShadow: 'var(--wp-elevation-1)' }}>
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="text-2xl font-bold" style={{ color: 'var(--wp-text)', letterSpacing: '-0.025em' }}>{estimate.number}</div>
+                  <div className="text-sm mt-1" style={{ color: 'var(--wp-text-3)' }}>
+                    {estimate.createdAt && (
+                      <>{locale === 'es' ? 'Creado' : 'Issued'} {new Date(estimate.createdAt).toLocaleDateString()}</>
+                    )}
+                    {estimate.validUntil && (
+                      <>{' · '}{locale === 'es' ? 'Válido hasta' : 'Valid until'} {new Date(estimate.validUntil).toLocaleDateString()}</>
+                    )}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--wp-text-3)' }}>Total</div>
+                  <div className="text-2xl font-extrabold tabular-nums" style={{ color: 'var(--wp-text)', letterSpacing: '-0.025em' }}>
+                    ${parseFloat(estimate.total).toFixed(2)}
+                  </div>
+                </div>
+              </div>
+              {/* Meta row */}
+              <div className="flex items-center gap-4 mt-4 pt-4 flex-wrap" style={{ borderTop: '1px solid var(--wp-border-light)' }}>
+                <StatusPill tone={STATUS_TONE[status]}>{t.status[status]}</StatusPill>
+                {viewCount > 0 && (
+                  <span className="inline-flex items-center gap-1 text-xs" style={{ color: 'var(--wp-text-2)' }}>
+                    <Eye size={14} style={{ color: 'var(--wp-text-3)' }} />
+                    <strong style={{ color: 'var(--wp-text)' }}>{viewCount}</strong> views
+                  </span>
+                )}
+                {job && (
+                  <Link href={`/${locale}/jobs/${job.id}`} className="inline-flex items-center gap-1 text-xs" style={{ color: 'var(--wp-text-2)' }}>
+                    <Briefcase size={14} style={{ color: 'var(--wp-text-3)' }} />
+                    Linked to <strong style={{ color: 'var(--wp-text)' }}>{job.name}</strong>
                   </Link>
-                  <Link href={`/${locale}/estimates/${estimate.id}/edit`} className="btn-ghost btn-sm" style={{ minHeight: 'auto' }} title={t.edit}>
-                    <Edit size={14} />
-                  </Link>
-                  <button onClick={() => setShowDeleteModal(true)} disabled={isPending} className="btn-ghost btn-sm hover:!text-red-500" style={{ minHeight: 'auto' }} title={t.delete}>
-                    <Trash2 size={14} />
-                  </button>
-                </>
-              }
-            >
-              <DocMeta
-                k="Status"
-                v={<StatusPill tone={STATUS_TONE[status]}>{t.status[status]}</StatusPill>}
-              />
-              {viewCount > 0 && (
-                <DocMeta
-                  k={locale === 'es' ? 'Vistas' : 'Views'}
-                  v={
-                    <span style={{ color: 'var(--wp-success-v2)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                      <Eye size={13} /> {viewCount}
-                    </span>
-                  }
-                />
+                )}
+              </div>
+            </div>
+
+            {/* Action bar — separate card */}
+            <div className="card mt-2 px-3 py-2 flex items-center gap-2 flex-wrap" style={{ boxShadow: 'var(--wp-elevation-1)' }}>
+              {estimate.clientEmail && (
+                <button onClick={() => setShowEmailModal(true)} disabled={isSendingEmail} className="btn-primary btn-sm">
+                  <Mail size={14} /> {isSendingEmail ? 'Sending...' : emailSent ? 'Sent!' : 'Email'}
+                </button>
               )}
-              {job && (
-                <DocMeta
-                  k="Job"
-                  v={
-                    <Link href={`/${locale}/jobs/${job.id}`} className="inline-flex items-center gap-1" style={{ color: 'var(--wp-brand)' }}>
-                      <Briefcase size={12} />{job.name} →
-                    </Link>
-                  }
-                />
+              {(status === 'approved' || status === 'sent') && (
+                <button onClick={handleConvert} disabled={isPending || isConverting} className="btn-sm" style={{ background: 'var(--wp-purple)', color: 'white', borderRadius: 'var(--wp-radius-md)', padding: '0.375rem 0.75rem', fontWeight: 600, fontSize: '0.75rem' }}>
+                  {isConverting ? <><Loader2 size={14} className="animate-spin" /> Converting...</> : <><ArrowRight size={14} /> {t.convertToInvoice}</>}
+                </button>
               )}
-              <DocMeta
-                className="ml-auto text-right"
-                k={locale === 'es' ? 'Total' : 'Total'}
-                v={`$${parseFloat(estimate.total).toFixed(2)}`}
-                total
-              />
-            </DocHero>
+              <div style={{ width: '1px', height: '20px', background: 'var(--wp-border-v2)', margin: '0 4px' }} />
+              {hasMaterialItems && (
+                <button onClick={handleGenerateShoppingList} disabled={isGeneratingList} className="btn-ghost btn-sm" title="Materials list" style={{ minHeight: 'auto' }}>
+                  {isGeneratingList ? <Loader2 size={14} className="animate-spin" /> : <ShoppingCart size={14} />}
+                </button>
+              )}
+              <Link href={`/${locale}/estimates/${estimate.id}/print`} className="btn-ghost btn-sm" style={{ minHeight: 'auto' }} title="Print">
+                <FileText size={14} />
+              </Link>
+              <Link href={`/${locale}/estimates/${estimate.id}/edit`} className="btn-ghost btn-sm" style={{ minHeight: 'auto' }} title={t.edit}>
+                <Edit size={14} />
+              </Link>
+              <div className="flex-1" />
+              <button onClick={() => setShowDeleteModal(true)} disabled={isPending} className="btn-ghost btn-sm hover:!text-red-500" style={{ minHeight: 'auto', color: 'var(--wp-error-v2)' }} title={t.delete}>
+                <Trash2 size={14} />
+              </button>
+            </div>
 
             {generateError && (
               <div className="mt-2 text-xs px-3 py-2 rounded-md" style={{ color: 'var(--wp-error-v2)', background: 'var(--wp-error-bg-v2)', border: '1px solid var(--wp-error-border)' }}>
@@ -646,8 +636,8 @@ export function EstimateDetailClient({ estimate, lineItems, job, viewCount = 0, 
             </SideCard>
 
             {portalUrl && (
-              <SideCard label={locale === 'es' ? 'Portal del cliente' : 'Client portal'}>
-                <div className="rounded-md px-2.5 py-2 text-xs font-mono break-all" style={{ background: 'var(--wp-surface-2)', color: 'var(--wp-text-3)', border: '1px solid var(--wp-border-v2)' }}>
+              <SideCard label={locale === 'es' ? 'Portal del cliente' : 'Client portal'} className="!border-dashed !border-[color:var(--wp-info-v2)]">
+                <div className="rounded-md px-2.5 py-2 text-xs font-mono break-all" style={{ background: 'var(--wp-surface-2)', color: 'var(--wp-text-3)' }}>
                   {portalUrl}
                 </div>
                 <div className="flex gap-1.5 mt-2.5">
