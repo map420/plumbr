@@ -83,6 +83,7 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
   }, {})
   const vendorGroups = Object.entries(pendingByVendor)
   const uniqueVendors = vendorGroups.map(([v]) => v).filter(v => v !== 'Sin proveedor' && v !== 'No vendor')
+  const uniqueJobsCount = job ? 1 : 0 // List currently linked to one job; future: multi-job support
 
   async function handlePurchase(item: Item) {
     if (!list.jobId) return
@@ -288,7 +289,9 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
           <div>
             <h1 className="text-xl font-bold" style={{ color: 'var(--wp-text)' }}>{list.name}</h1>
             <p className="text-xs mt-1" style={{ color: 'var(--wp-text-3)' }}>
-              {items.length} {locale === 'es' ? 'materiales' : 'items'} · ${items.reduce((s, it) => s + parseFloat(it.estimatedCost), 0).toLocaleString()} {locale === 'es' ? 'estimado' : 'estimated'}
+              {locale === 'es'
+                ? `Materiales de ${uniqueJobsCount} job${uniqueJobsCount !== 1 ? 's' : ''} · $${items.reduce((s, it) => s + parseFloat(it.estimatedCost), 0).toLocaleString()} estimado · ${vendorGroups.length} proveedor${vendorGroups.length !== 1 ? 'es' : ''}`
+                : `${uniqueJobsCount} job${uniqueJobsCount !== 1 ? 's' : ''} · $${items.reduce((s, it) => s + parseFloat(it.estimatedCost), 0).toLocaleString()} estimated · ${vendorGroups.length} vendor${vendorGroups.length !== 1 ? 's' : ''}`}
             </p>
           </div>
           <div className="flex gap-2">
@@ -310,116 +313,12 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
         <div className="flex flex-col md:flex-row gap-4 items-start">
         <div className="space-y-4 flex-1 min-w-0 w-full">
 
-        {/* Job card */}
-        {job ? (
-          <div className="card p-4">
-            <div className="flex items-start gap-3">
-              <div
-                className="rounded-lg flex items-center justify-center shrink-0"
-                style={{ width: 36, height: 36, background: 'var(--wp-bg-muted)', color: 'var(--wp-text-secondary)' }}
-              >
-                <Briefcase size={16} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <button
-                  onClick={() => router.push(`/${locale}/jobs/${job.id}`)}
-                  className="flex items-center gap-1 text-sm font-semibold text-left"
-                  style={{ color: 'var(--wp-text-primary)' }}
-                >
-                  <span className="truncate">{job.name} · {job.clientName}</span>
-                  <ExternalLink size={12} style={{ color: 'var(--wp-text-muted)' }} />
-                </button>
-                {estimate && (
-                  <button
-                    onClick={() => router.push(`/${locale}/estimates/${estimate.id}`)}
-                    className="text-xs mt-0.5"
-                    style={{ color: 'var(--wp-text-muted)' }}
-                  >
-                    {t('estimateLabel')} {estimate.number}{materialBudget > 0 && ` · ${t('materialBudget')}: $${materialBudget.toLocaleString()}`}
-                  </button>
-                )}
-              </div>
-              <div style={{ position: 'relative' }}>
-                <button
-                  onClick={() => setJobMenuOpen(o => !o)}
-                  style={{ padding: 6, borderRadius: 6, color: 'var(--wp-text-muted)' }}
-                >
-                  <MoreHorizontal size={16} />
-                </button>
-                {jobMenuOpen && (
-                  <>
-                    <div
-                      onClick={() => setJobMenuOpen(false)}
-                      style={{ position: 'fixed', inset: 0, zIndex: 40 }}
-                    />
-                    <div
-                      style={{
-                        position: 'absolute', right: 0, top: 'calc(100% + 4px)',
-                        background: 'var(--wp-bg-primary)',
-                        border: '1px solid var(--wp-border)',
-                        borderRadius: 8,
-                        boxShadow: 'var(--wp-shadow-md)',
-                        zIndex: 50,
-                        minWidth: 180,
-                        overflow: 'hidden',
-                      }}
-                    >
-                      <button
-                        onClick={() => { setJobMenuOpen(false); setShowJobPicker(true) }}
-                        style={{ display: 'block', width: '100%', padding: '10px 14px', textAlign: 'left', fontSize: 13, color: 'var(--wp-text-primary)', background: 'transparent', border: 'none', cursor: 'pointer' }}
-                      >
-                        {t('changeJob')}
-                      </button>
-                      <button
-                        onClick={handleUnlinkJob}
-                        disabled={saving}
-                        style={{ display: 'flex', alignItems: 'center', gap: 6, width: '100%', padding: '10px 14px', textAlign: 'left', fontSize: 13, color: 'var(--wp-error)', background: 'transparent', border: 'none', cursor: 'pointer', borderTop: '1px solid var(--wp-border-light)' }}
-                      >
-                        <Unlink size={13} /> {t('unlink')}
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Budget bar (only if we have a real budget) */}
-            {materialBudget > 0 && (
-              <div className="mt-3">
-                <div className="flex justify-between text-xs mb-1.5" style={{ color: 'var(--wp-text-muted)' }}>
-                  <span>{t('spent')}: <strong className="font-mono" style={{ color: 'var(--wp-text-primary)' }}>${materialSpent.toLocaleString()}</strong></span>
-                  <span>{t('budget')}: <strong className="font-mono" style={{ color: 'var(--wp-text-primary)' }}>${materialBudget.toLocaleString()}</strong></span>
-                </div>
-                <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--wp-bg-muted)' }}>
-                  <div className="h-full rounded-full transition-all" style={{
-                    width: `${budgetPct}%`,
-                    background: isOverBudget ? 'var(--wp-error)' : 'var(--wp-primary)',
-                  }} />
-                </div>
-                <p className="text-[10px] mt-1" style={{ color: isOverBudget ? 'var(--wp-error)' : 'var(--wp-text-muted)' }}>
-                  {Math.round(budgetPct)}% {t('used')}{isOverBudget ? ` — ${t('overBudget')}` : ''}
-                </p>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="card p-4 flex items-center gap-3">
-            <div
-              className="rounded-lg flex items-center justify-center shrink-0"
-              style={{ width: 36, height: 36, background: 'var(--wp-bg-muted)', color: 'var(--wp-text-muted)' }}
-            >
-              <Briefcase size={16} />
-            </div>
-            <div className="flex-1">
-              <div className="text-sm font-medium" style={{ color: 'var(--wp-text-primary)' }}>{t('sinJob')}</div>
-              <div className="text-xs" style={{ color: 'var(--wp-text-muted)' }}>{t('noJobHelp')}</div>
-            </div>
-            <button
-              onClick={() => setShowJobPicker(true)}
-              className="btn-secondary btn-sm"
-            >
-              {t('link')}
-            </button>
+        {/* Job link — compact row, not a big card (job info is in sidebar) */}
+        {!job && (
+          <div className="card p-3 flex items-center gap-3">
+            <Briefcase size={14} style={{ color: 'var(--wp-text-3)' }} />
+            <span className="flex-1 text-xs" style={{ color: 'var(--wp-text-3)' }}>{t('noJobHelp')}</span>
+            <button onClick={() => setShowJobPicker(true)} className="btn-secondary btn-sm text-xs">{t('link')}</button>
           </div>
         )}
 
@@ -703,12 +602,6 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
           </div>
         )}
 
-        {/* Pending total */}
-        {pendingTotal > 0 && !selectMode && (
-          <p className="text-center text-xs" style={{ color: 'var(--wp-text-muted)' }}>
-            {t('pending')}: <span className="font-mono font-semibold" style={{ color: 'var(--wp-text-primary)' }}>${pendingTotal.toLocaleString()}</span>
-          </p>
-        )}
       </div>
 
         </div>{/* end left column */}
