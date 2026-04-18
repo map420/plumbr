@@ -544,13 +544,14 @@ function TimeSlotGrid({ hours, displayDays, filteredJobs, techAssignments, techC
 
   // Auto-scroll to center current time line in viewport
   useEffect(() => {
-    if (scrollRef.current) {
-      const currentH = new Date().getHours() + new Date().getMinutes() / 60
-      const currentTimeOffset = (currentH - START_HOUR) * HOUR_HEIGHT
-      const viewportHeight = scrollRef.current.clientHeight
-      const scrollTo = Math.max(0, currentTimeOffset - viewportHeight / 2)
-      scrollRef.current.scrollTop = scrollTo
-    }
+    requestAnimationFrame(() => {
+      if (scrollRef.current) {
+        const currentH = new Date().getHours() + new Date().getMinutes() / 60
+        const currentTimeOffset = (currentH - START_HOUR) * HOUR_HEIGHT
+        const viewportHeight = scrollRef.current.clientHeight
+        scrollRef.current.scrollTop = Math.max(0, currentTimeOffset - viewportHeight / 2)
+      }
+    })
   }, [START_HOUR, HOUR_HEIGHT])
 
   // Update current time every minute
@@ -610,9 +611,9 @@ function TimeSlotGrid({ hours, displayDays, filteredJobs, techAssignments, techC
         })}
       </div>
 
-      {/* Scrollable body */}
+      {/* Scrollable body — extra padding bottom so current time can center even when near end */}
       <div ref={scrollRef} className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 280px)' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '50px repeat(5, 1fr)', position: 'relative' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '50px repeat(5, 1fr)', position: 'relative', paddingBottom: 'calc(50vh - 60px)' }}>
           {/* Time labels column */}
           <div>
             {hours.map(h => (
