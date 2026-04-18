@@ -349,7 +349,6 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
               <p className="text-[var(--wp-text-primary)] mt-0.5 whitespace-pre-wrap">{job.notes}</p>
             </div>
           )}
-        {/* Content continues below — checklist, photos, estimates, invoices will be added here */}
         </div>{/* end left column */}
 
         {/* ── RIGHT SIDEBAR ── */}
@@ -416,7 +415,9 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
         </div>
 
         </div>{/* end right sidebar */}
-      </div>{/* end 2-col grid */}
+      </div>{/* end 2-col grid — reopened below for remaining content */}
+
+      {/* Remaining content — full width below the 2-col grid */}
 
       {/* Technicians */}
       <div className="card p-5 mb-4">
