@@ -423,9 +423,24 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
           </div>
         )}
 
-        {/* Pending items */}
+        {/* Pending items — vendor group styled header */}
         {pendingItems.length > 0 && (
           <div className="card overflow-hidden">
+            {/* Vendor group header */}
+            <div className="flex items-center justify-between px-4 py-2.5" style={{ background: 'var(--wp-surface-2)', borderBottom: '1px solid var(--wp-border-v2)' }}>
+              <div className="flex items-center gap-2">
+                <span className="text-sm">🏬</span>
+                <span className="text-sm font-semibold" style={{ color: 'var(--wp-text)' }}>
+                  {locale === 'es' ? 'Items pendientes' : 'Pending items'}
+                </span>
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--wp-info-bg-v2)', color: 'var(--wp-info-v2)' }}>
+                  ● {pendingItems.length} items
+                </span>
+              </div>
+              <span className="text-xs tabular-nums" style={{ color: 'var(--wp-text-3)' }}>
+                ~${pendingItems.reduce((s: number, it: any) => s + parseFloat(it.estimatedCost), 0).toLocaleString()}
+              </span>
+            </div>
             {pendingItems.map((item, i) => {
               const isActive = confirming === item.id
               const isEditing = editingId === item.id
@@ -599,13 +614,24 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
           </button>
         )}
 
-        {/* Purchased items */}
+        {/* Purchased items — vendor group styled header */}
         {purchasedItems.length > 0 && (
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--wp-text-muted)' }}>
-              {t('purchasedHeading')} ({purchasedItems.length})
-            </p>
-            <div className="card overflow-hidden">
+          <div className="card overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-2.5" style={{ background: 'var(--wp-surface-2)', borderBottom: '1px solid var(--wp-border-v2)' }}>
+              <div className="flex items-center gap-2">
+                <span className="text-sm">✓</span>
+                <span className="text-sm font-semibold" style={{ color: 'var(--wp-text)' }}>
+                  {t('purchasedHeading')}
+                </span>
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--wp-success-bg-v2)', color: 'var(--wp-success-v2)' }}>
+                  ● {purchasedItems.length} items
+                </span>
+              </div>
+              <span className="text-xs tabular-nums" style={{ color: 'var(--wp-text-3)' }}>
+                ${purchasedItems.reduce((s: number, it: any) => s + parseFloat(it.estimatedCost), 0).toLocaleString()}
+              </span>
+            </div>
+            <div>
               {purchasedItems.map((item, i) => (
                 <div key={item.id} className="flex items-center gap-3 px-4 py-2.5"
                   style={i > 0 ? { borderTop: '1px solid var(--wp-border-light)' } : undefined}>
