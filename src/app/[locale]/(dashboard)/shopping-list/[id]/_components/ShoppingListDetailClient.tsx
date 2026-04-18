@@ -268,30 +268,31 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
 
       <div className="p-4 md:p-8 space-y-4">
         {/* Desktop header */}
-        <div className="hidden md:flex items-center justify-between">
-          <h1 className="text-xl font-bold" style={{ color: 'var(--wp-text-primary)' }}>{list.name}</h1>
+        <div className="hidden md:flex items-start justify-between">
+          <div>
+            <h1 className="text-xl font-bold" style={{ color: 'var(--wp-text)' }}>{list.name}</h1>
+            <p className="text-xs mt-1" style={{ color: 'var(--wp-text-3)' }}>
+              {items.length} {locale === 'es' ? 'materiales' : 'items'} · ${items.reduce((s, it) => s + parseFloat(it.estimatedCost), 0).toLocaleString()} {locale === 'es' ? 'estimado' : 'estimated'}
+            </p>
+          </div>
           <div className="flex gap-2">
-            {pendingItems.length > 1 && list.jobId && (
-              <button
-                onClick={toggleSelectMode}
-                className="btn-secondary btn-sm flex items-center gap-1.5"
-                title="Select multiple items to mark them as purchased at once"
-              >
-                {selectMode ? <><X size={13} /> Cancel</> : <><CheckSquare size={13} /> Select</>}
+            <Link href={`/${locale}/shopping-list/${list.id}/print`} className="btn-secondary btn-sm">
+              <Printer size={13} /> Print / PDF
+            </Link>
+            <button onClick={handleShare} className="btn-secondary btn-sm">
+              {copied ? <><Check size={13} /> {t('copied')}</> : <><Copy size={13} /> Share with team</>}
+            </button>
+            {pendingItems.length > 0 && (
+              <button className="btn-primary btn-sm">
+                <Check size={13} /> Mark all bought
               </button>
             )}
-            <Link
-              href={`/${locale}/shopping-list/${list.id}/print`}
-              className="btn-secondary btn-sm flex items-center gap-1.5"
-              title="Print-friendly view"
-            >
-              <Printer size={13} /> Print
-            </Link>
-            <button onClick={handleShare} className="btn-secondary btn-sm flex items-center gap-1.5">
-              {copied ? <><Check size={13} /> {t('copied')}</> : <><Copy size={13} /> {t('copyList')}</>}
-            </button>
           </div>
         </div>
+
+        {/* 2-column layout: items left + sidebar right */}
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_300px] gap-5 items-start">
+        <div className="space-y-4">
 
         {/* Job card */}
         {job ? (
@@ -645,6 +646,53 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
           </p>
         )}
       </div>
+
+        </div>{/* end left column */}
+
+        {/* ── RIGHT SIDEBAR ── */}
+        <div className="hidden md:flex flex-col gap-4 sticky top-4">
+          {/* Total card */}
+          <div className="rounded-xl p-5" style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', color: 'white' }}>
+            <div className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ opacity: 0.6 }}>Total</div>
+            <div className="text-2xl font-extrabold tabular-nums mb-3" style={{ letterSpacing: '-0.02em' }}>
+              ${items.reduce((s, it) => s + parseFloat(it.estimatedCost), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            </div>
+            <div className="space-y-1 text-xs" style={{ opacity: 0.85 }}>
+              <div className="flex justify-between">
+                <span>Already bought</span>
+                <span>${purchasedItems.reduce((s: number, it: any) => s + parseFloat(it.estimatedCost), 0).toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Remaining</span>
+                <span>${pendingItems.reduce((s: number, it: any) => s + parseFloat(it.estimatedCost), 0).toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Linked jobs */}
+          {job && (
+            <div className="card p-4">
+              <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--wp-text-3)' }}>Linked jobs</div>
+              <Link href={`/${locale}/jobs/${job.id}`} className="flex items-center justify-between text-xs py-1" style={{ color: 'var(--wp-text-2)' }}>
+                <span className="font-medium" style={{ color: 'var(--wp-brand)' }}>{job.name}</span>
+                <span>{items.length} items</span>
+              </Link>
+            </div>
+          )}
+
+          {/* AI tip */}
+          <div className="card p-4" style={{ background: 'var(--wp-surface-2)' }}>
+            <div className="flex items-center gap-1.5 mb-2">
+              <span className="text-xs font-semibold" style={{ color: 'var(--wp-brand)' }}>◆ WorkPilot AI</span>
+            </div>
+            <p className="text-[11px] leading-relaxed" style={{ color: 'var(--wp-text-2)' }}>
+              {locale === 'es'
+                ? 'Optimiza tu ruta de compras agrupando por proveedor. Ahorra tiempo y combustible.'
+                : 'Optimize your shopping route by grouping by vendor. Save time and fuel.'}
+            </p>
+          </div>
+        </div>
+        </div>{/* end 2-col grid */}
 
       {/* Bulk action bar — fixed bottom on mobile, sticky on desktop */}
       {selectMode && (
