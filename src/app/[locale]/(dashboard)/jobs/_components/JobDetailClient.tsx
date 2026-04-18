@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { formatCurrency, formatCurrencyCompact } from '@/lib/format'
@@ -278,68 +278,51 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
         <div className="mb-4">
           <Breadcrumbs items={[{ label: 'Jobs', href: `/${locale}/jobs` }, { label: job.name }]} />
         </div>
-        <div className="wp-doc-hero">
-          <div className="wp-doc-hero-top">
-            <div className="flex items-center gap-3">
-              <ClientAvatar name={job.clientName} size="xl" />
-              <div>
-                <div className="wp-doc-hero-title">{job.name}</div>
-                <div className="wp-doc-hero-sub">
-                  {job.clientName}
-                  {job.startDate && <> · {locale === 'es' ? 'Inicio' : 'Started'} {new Date(job.startDate).toLocaleDateString()}</>}
-                </div>
-              </div>
+        {/* Hero — proposal style */}
+        <div className="card p-5 mb-4" style={{ boxShadow: 'var(--wp-elevation-1)' }}>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-xl font-bold" style={{ color: 'var(--wp-text)', letterSpacing: '-0.02em' }}>{job.name}</h1>
+              <p className="text-sm mt-1" style={{ color: 'var(--wp-text-3)' }}>
+                JOB-{job.id.slice(0, 4)}
+                {job.startDate && <> · {locale === 'es' ? 'Iniciado' : 'Started'} {new Date(job.startDate).toLocaleDateString()}</>}
+              </p>
             </div>
-            <div className="wp-doc-hero-actions">
+            <div className="flex items-center gap-2">
+              {job.status === 'active' && (
+                <button className="btn-primary btn-sm">
+                  ✓ {locale === 'es' ? 'Marcar completado' : 'Mark completed'}
+                </button>
+              )}
               <Link href={`/${locale}/jobs/${job.id}/edit`} className="btn-secondary btn-sm">
                 <Edit size={14} /> {t.edit}
               </Link>
-              <button
-                onClick={() => setShowDeleteModal(true)}
-                disabled={isPending}
-                className="btn-ghost btn-sm hover:!text-red-500 disabled:opacity-50"
-                style={{ minHeight: 'auto' }}
-                title={t.delete}
-              >
+              <button onClick={() => setShowDeleteModal(true)} disabled={isPending}
+                className="btn-ghost btn-sm hover:!text-red-500" style={{ minHeight: 'auto' }}>
                 <Trash2 size={14} />
               </button>
             </div>
           </div>
-          <div className="wp-doc-meta-row">
-            <div className="wp-meta-item flex flex-col">
-              <div className="wp-meta-k">Status</div>
-              <div className="wp-meta-v">
-                <StatusPill tone={JOB_STATUS_TONE[job.status] ?? 'neutral'}>
-                  {t.status[job.status as JobStatus] ?? job.status}
-                </StatusPill>
-              </div>
-            </div>
+          {/* Meta row */}
+          <div className="flex items-center gap-5 mt-4 pt-4 flex-wrap" style={{ borderTop: '1px solid var(--wp-border-light)' }}>
+            <StatusPill tone={JOB_STATUS_TONE[job.status] ?? 'neutral'}>
+              {t.status[job.status as JobStatus] ?? job.status}
+            </StatusPill>
+            {job.clientId ? (
+              <Link href={`/${locale}/clients/${job.clientId}`} className="text-xs flex items-center gap-1" style={{ color: 'var(--wp-text-2)' }}>
+                👤 <strong style={{ color: 'var(--wp-text)' }}>{job.clientName}</strong>
+              </Link>
+            ) : (
+              <span className="text-xs" style={{ color: 'var(--wp-text-2)' }}>👤 {job.clientName}</span>
+            )}
+            {job.address && (
+              <span className="text-xs" style={{ color: 'var(--wp-text-3)' }}>📍 {job.address}</span>
+            )}
             {parseFloat(job.budgetedCost) > 0 && (
-              <div className="wp-meta-item flex flex-col">
-                <div className="wp-meta-k">Budget</div>
-                <div className="wp-meta-v tabular-nums">${formatCurrencyCompact(parseFloat(job.budgetedCost))}</div>
-              </div>
+              <span className="text-lg font-bold tabular-nums ml-auto" style={{ color: 'var(--wp-text)' }}>
+                ${formatCurrencyCompact(parseFloat(job.budgetedCost))}
+              </span>
             )}
-            {parseFloat(job.actualCost) > 0 && (
-              <div className="wp-meta-item flex flex-col">
-                <div className="wp-meta-k">Actual</div>
-                <div className="wp-meta-v tabular-nums">${formatCurrencyCompact(parseFloat(job.actualCost))}</div>
-              </div>
-            )}
-            {parseFloat(job.budgetedCost) > 0 && (() => {
-              const budget = parseFloat(job.budgetedCost)
-              const actual = parseFloat(job.actualCost) || 0
-              const margin = ((budget - actual) / budget) * 100
-              const marginColor = margin >= 30 ? 'var(--wp-success-v2)' : margin >= 10 ? 'var(--wp-warning-v2)' : 'var(--wp-error-v2)'
-              return (
-                <div className="wp-meta-item flex flex-col ml-auto text-right">
-                  <div className="wp-meta-k">Margin</div>
-                  <div className="wp-meta-v wp-meta-v--total" style={{ color: marginColor }}>
-                    {margin.toFixed(0)}%
-                  </div>
-                </div>
-              )
-            })()}
           </div>
         </div>
       </div>
@@ -366,20 +349,9 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
         </div>
 
         <div className="space-y-4">
-        {/* Clock-in card */}
+        {/* Clock-in card — functional timer */}
         {(job.status === 'active') && (
-          <div className="rounded-xl p-5" style={{ background: 'linear-gradient(135deg, var(--wp-brand) 0%, #1E293B 100%)', color: 'white' }}>
-            <div className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ opacity: 0.7 }}>Clock in</div>
-            <div className="text-xs mb-2" style={{ opacity: 0.7 }}>
-              {job.startDate ? `Started ${new Date(job.startDate).toLocaleDateString()}` : 'Not started yet'}
-            </div>
-            <div className="text-2xl font-bold tabular-nums mb-3">—:—</div>
-            <div className="flex gap-2">
-              <button className="flex-1 py-2 text-xs font-semibold rounded-lg" style={{ background: 'white', color: 'var(--wp-brand)' }}>
-                Start
-              </button>
-            </div>
-          </div>
+          <ClockInCard startDate={job.startDate} locale={locale} />
         )}
 
         <div className="card p-5">
@@ -405,6 +377,39 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
             {revenueMargin !== null && <p className={`text-xs font-medium ${revenueMargin >= 0 ? 'text-[var(--wp-success)]' : 'text-[var(--wp-error)]'}`}>{revenueMargin}% profit margin</p>}
           </div>
         </div>
+        {/* Schedule card */}
+        <div className="card p-4">
+          <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--wp-text-3)' }}>Schedule</div>
+          {job.startDate && (
+            <div className="text-xs" style={{ color: 'var(--wp-text-2)' }}>
+              {new Date(job.startDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+            </div>
+          )}
+          <div className="flex items-center gap-1 mt-1 text-[10px]" style={{ color: 'var(--wp-success-v2)' }}>
+            ● {locale === 'es' ? 'Programado' : 'On schedule'}
+          </div>
+        </div>
+
+        {/* Client card */}
+        <div className="card p-4">
+          <div className="text-[10px] font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--wp-text-3)' }}>Client</div>
+          <div className="flex items-center gap-2.5 mb-3">
+            <ClientAvatar name={job.clientName} size="md" />
+            <div>
+              <p className="text-sm font-semibold" style={{ color: 'var(--wp-text)' }}>{job.clientName}</p>
+              <p className="text-[10px]" style={{ color: 'var(--wp-text-3)' }}>{job.clientEmail || ''}</p>
+            </div>
+          </div>
+          <div className="flex gap-1.5">
+            {job.clientPhone && (
+              <a href={`tel:${job.clientPhone}`} className="flex-1 text-center btn-secondary btn-sm" style={{ minHeight: 'auto', padding: '5px 8px', fontSize: '0.6875rem' }}>Call</a>
+            )}
+            {job.clientPhone && (
+              <a href={`sms:${job.clientPhone}`} className="flex-1 text-center btn-secondary btn-sm" style={{ minHeight: 'auto', padding: '5px 8px', fontSize: '0.6875rem' }}>SMS</a>
+            )}
+          </div>
+        </div>
+
         </div>{/* end sidebar space-y wrapper */}
       </div>
 
@@ -818,6 +823,69 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
           </div>
         )}
       </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Clock-in timer card ──
+function ClockInCard({ startDate, locale }: { startDate: Date | null; locale: string }) {
+  const [running, setRunning] = useState(false)
+  const [elapsed, setElapsed] = useState(0)
+  const startRef = useRef<number>(0)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  function start() {
+    startRef.current = Date.now()
+    setRunning(true)
+    intervalRef.current = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - startRef.current) / 1000))
+    }, 1000)
+  }
+
+  function pause() {
+    if (intervalRef.current) clearInterval(intervalRef.current)
+    setRunning(false)
+  }
+
+  function stop() {
+    if (intervalRef.current) clearInterval(intervalRef.current)
+    setRunning(false)
+    setElapsed(0)
+  }
+
+  useEffect(() => () => { if (intervalRef.current) clearInterval(intervalRef.current) }, [])
+
+  const hours = Math.floor(elapsed / 3600)
+  const minutes = Math.floor((elapsed % 3600) / 60)
+  const timeStr = `${hours}h ${minutes.toString().padStart(2, '0')}m`
+
+  return (
+    <div className="rounded-xl p-5" style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', color: 'white' }}>
+      <div className="text-[10px] font-semibold uppercase tracking-wider mb-0.5" style={{ opacity: 0.6 }}>Clock in</div>
+      <div className="text-xs mb-3" style={{ opacity: 0.6 }}>
+        {startDate
+          ? `${locale === 'es' ? 'Iniciado' : 'Started'} ${new Date(startDate).toLocaleDateString()}`
+          : locale === 'es' ? 'Sin iniciar' : 'Not started'}
+      </div>
+      <div className="text-3xl font-extrabold tabular-nums mb-4" style={{ letterSpacing: '-0.02em' }}>
+        {running || elapsed > 0 ? timeStr : '0h 00m'}
+      </div>
+      <div className="flex gap-2">
+        {!running ? (
+          <button onClick={start} className="flex-1 py-2.5 text-xs font-bold rounded-lg transition-colors" style={{ background: 'white', color: '#0F172A' }}>
+            {elapsed > 0 ? (locale === 'es' ? 'Reanudar' : 'Resume') : 'Start'}
+          </button>
+        ) : (
+          <>
+            <button onClick={pause} className="flex-1 py-2.5 text-xs font-bold rounded-lg" style={{ background: 'rgba(255,255,255,0.15)', color: 'white' }}>
+              {locale === 'es' ? 'Pausar' : 'Pause'}
+            </button>
+            <button onClick={stop} className="flex-1 py-2.5 text-xs font-bold rounded-lg" style={{ background: '#EF4444', color: 'white' }}>
+              Stop
+            </button>
+          </>
+        )}
       </div>
     </div>
   )
