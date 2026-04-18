@@ -349,11 +349,11 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
               <p className="text-[var(--wp-text-primary)] mt-0.5 whitespace-pre-wrap">{job.notes}</p>
             </div>
           )}
-        {/* Content continues below — checklist, photos, estimates, invoices, expenses */}
+        {/* Content continues below — checklist, photos, estimates, invoices will be added here */}
+        </div>{/* end left column */}
 
-        <div className="space-y-4 hidden">
-          {/* Old info card removed — data now in hero meta row */}
-        </div>
+        {/* ── RIGHT SIDEBAR ── */}
+        <div className="space-y-4 sticky top-4">
         {/* Clock-in card — functional timer */}
         {(job.status === 'active') && (
           <ClockInCard startDate={job.startDate} locale={locale} />
@@ -415,7 +415,7 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
           </div>
         </div>
 
-        </div>{/* end sidebar space-y wrapper */}
+        </div>{/* end right sidebar */}
       </div>{/* end 2-col grid */}
 
       {/* Technicians */}
