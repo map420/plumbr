@@ -278,14 +278,14 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
         <div className="mb-4">
           <Breadcrumbs items={[{ label: 'Jobs', href: `/${locale}/jobs` }, { label: job.name }]} />
         </div>
-        {/* Hero — proposal style */}
-        <div className="card p-5 mb-4" style={{ boxShadow: 'var(--wp-elevation-1)' }}>
+        {/* Hero — matching proposal layout */}
+        <div className="card p-5" style={{ boxShadow: 'var(--wp-elevation-1)' }}>
           <div className="flex justify-between items-start">
             <div>
               <h1 className="text-xl font-bold" style={{ color: 'var(--wp-text)', letterSpacing: '-0.02em' }}>{job.name}</h1>
               <p className="text-sm mt-1" style={{ color: 'var(--wp-text-3)' }}>
                 JOB-{job.id.slice(0, 4)}
-                {job.startDate && <> · {locale === 'es' ? 'Iniciado' : 'Started'} {new Date(job.startDate).toLocaleDateString()}</>}
+                {job.startDate && <> · {locale === 'es' ? 'Iniciado' : 'Started'} {new Date(job.startDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</>}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -294,61 +294,66 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
                   ✓ {locale === 'es' ? 'Marcar completado' : 'Mark completed'}
                 </button>
               )}
-              <Link href={`/${locale}/jobs/${job.id}/edit`} className="btn-secondary btn-sm">
-                <Edit size={14} /> {t.edit}
+              <Link href={`/${locale}/field/${job.id}`} className="btn-secondary btn-sm">
+                Field mode
               </Link>
               <button onClick={() => setShowDeleteModal(true)} disabled={isPending}
-                className="btn-ghost btn-sm hover:!text-red-500" style={{ minHeight: 'auto' }}>
-                <Trash2 size={14} />
+                className="btn-ghost btn-sm" style={{ minHeight: 'auto', color: 'var(--wp-text-3)' }}>
+                ···
               </button>
             </div>
           </div>
-          {/* Meta row */}
-          <div className="flex items-center gap-5 mt-4 pt-4 flex-wrap" style={{ borderTop: '1px solid var(--wp-border-light)' }}>
-            <StatusPill tone={JOB_STATUS_TONE[job.status] ?? 'neutral'}>
-              {t.status[job.status as JobStatus] ?? job.status}
-            </StatusPill>
-            {job.clientId ? (
-              <Link href={`/${locale}/clients/${job.clientId}`} className="text-xs flex items-center gap-1" style={{ color: 'var(--wp-text-2)' }}>
-                👤 <strong style={{ color: 'var(--wp-text)' }}>{job.clientName}</strong>
-              </Link>
-            ) : (
-              <span className="text-xs" style={{ color: 'var(--wp-text-2)' }}>👤 {job.clientName}</span>
-            )}
+          {/* Meta row — labeled columns */}
+          <div className="flex items-end gap-6 mt-4 pt-4 flex-wrap" style={{ borderTop: '1px solid var(--wp-border-light)' }}>
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--wp-text-3)' }}>Status</div>
+              <StatusPill tone={JOB_STATUS_TONE[job.status] ?? 'neutral'}>
+                {t.status[job.status as JobStatus] ?? job.status}
+              </StatusPill>
+            </div>
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--wp-text-3)' }}>Client</div>
+              {job.clientId ? (
+                <Link href={`/${locale}/clients/${job.clientId}`} className="text-sm font-medium" style={{ color: 'var(--wp-text)' }}>
+                  {job.clientName}
+                </Link>
+              ) : (
+                <span className="text-sm font-medium" style={{ color: 'var(--wp-text)' }}>{job.clientName}</span>
+              )}
+            </div>
             {job.address && (
-              <span className="text-xs" style={{ color: 'var(--wp-text-3)' }}>📍 {job.address}</span>
+              <div>
+                <div className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--wp-text-3)' }}>{locale === 'es' ? 'Dirección' : 'Address'}</div>
+                <span className="text-sm" style={{ color: 'var(--wp-text-2)' }}>{job.address}</span>
+              </div>
             )}
             {parseFloat(job.budgetedCost) > 0 && (
-              <span className="text-lg font-bold tabular-nums ml-auto" style={{ color: 'var(--wp-text)' }}>
-                ${formatCurrencyCompact(parseFloat(job.budgetedCost))}
-              </span>
+              <div className="ml-auto text-right">
+                <div className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--wp-text-3)' }}>Budgeted</div>
+                <span className="text-xl font-bold tabular-nums" style={{ color: 'var(--wp-text)' }}>
+                  ${formatCurrencyCompact(parseFloat(job.budgetedCost))}
+                </span>
+              </div>
             )}
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <div className="md:col-span-2 card p-5 space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="text-[var(--wp-text-muted)]">Client</span>
-              {job.clientId ? (
-                <Link href={`/${locale}/clients/${job.clientId}`} className="font-medium mt-0.5 text-[var(--wp-primary)] hover:underline flex items-center gap-1">
-                  {job.clientName}
-                </Link>
-              ) : (
-                <p className="font-medium mt-0.5">{job.clientName}</p>
-              )}
-            </div>
-            <div><span className="text-[var(--wp-text-muted)]">{t.fields.clientEmail}</span><p className="font-medium mt-0.5">{job.clientEmail || '—'}</p></div>
-            <div><span className="text-[var(--wp-text-muted)]">{t.fields.clientPhone}</span><p className="font-medium mt-0.5">{job.clientPhone || '—'}</p></div>
-            <div><span className="text-[var(--wp-text-muted)]">{t.fields.address}</span><p className="font-medium mt-0.5">{job.address || '—'}</p></div>
-            <div><span className="text-[var(--wp-text-muted)]">{t.fields.startDate}</span><p className="font-medium mt-0.5">{job.startDate ? new Date(job.startDate).toLocaleDateString() : '—'}</p></div>
-          </div>
-          {job.notes && <div className="text-sm pt-2 border-t border-[var(--wp-border-light)]"><span className="text-[var(--wp-text-muted)]">{t.fields.notes}</span><p className="text-[var(--wp-text-primary)] mt-0.5 whitespace-pre-wrap">{job.notes}</p></div>}
-        </div>
-
+      {/* 2-column layout: content left + sidebar right */}
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_300px] gap-5 items-start mb-6">
         <div className="space-y-4">
+          {/* Job details card */}
+          {job.notes && (
+            <div className="card p-5 text-sm">
+              <span className="text-[var(--wp-text-muted)]">{t.fields.notes}</span>
+              <p className="text-[var(--wp-text-primary)] mt-0.5 whitespace-pre-wrap">{job.notes}</p>
+            </div>
+          )}
+        {/* Content continues below — checklist, photos, estimates, invoices, expenses */}
+
+        <div className="space-y-4 hidden">
+          {/* Old info card removed — data now in hero meta row */}
+        </div>
         {/* Clock-in card — functional timer */}
         {(job.status === 'active') && (
           <ClockInCard startDate={job.startDate} locale={locale} />
@@ -411,7 +416,7 @@ export function JobDetailClient({ job, estimates, invoices, expenses: initialExp
         </div>
 
         </div>{/* end sidebar space-y wrapper */}
-      </div>
+      </div>{/* end 2-col grid */}
 
       {/* Technicians */}
       <div className="card p-5 mb-4">
