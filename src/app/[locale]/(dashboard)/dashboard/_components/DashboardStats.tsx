@@ -128,110 +128,7 @@ export function DashboardStats({ stats, alerts, todayJobs, activeJobs, revenueBy
         </div>
       </div>
 
-      {/* ── BLOQUE 2: NEEDS ATTENTION ── */}
-      <div className="card overflow-hidden">
-        <h2 className="text-[10px] font-semibold uppercase tracking-wide px-4 pt-3 pb-2" style={{ color: 'var(--wp-text-muted)' }}>Needs Attention</h2>
-        {actionItems.length === 0 ? (
-          <div className="flex items-center gap-2 px-4 pb-3">
-            <CheckCircle2 size={14} style={{ color: 'var(--wp-success)' }} />
-            <p className="text-sm" style={{ color: 'var(--wp-text-muted)' }}>All caught up — nothing needs your attention.</p>
-          </div>
-        ) : (
-          actionItems.map((item, i) => (
-            <div key={`${item.type}-${i}`}
-              className="flex items-center gap-2.5 px-4 py-2.5"
-              style={i < actionItems.length - 1 ? { borderBottom: '1px solid var(--wp-border-light)' } : undefined}>
-              {item.type === 'alert' ? (
-                <AlertTriangle size={14} className="shrink-0" style={{ color: item.alertType === 'error' ? 'var(--wp-error)' : 'var(--wp-warning)' }} />
-              ) : (
-                <Clock size={14} className="shrink-0" style={{ color: 'var(--wp-primary)' }} />
-              )}
-              <Link href={`/${locale}${item.href}`}
-                className="flex-1 text-sm"
-                style={{ color: item.type === 'alert' ? (item.alertType === 'error' ? 'var(--wp-error)' : 'var(--wp-warning)') : 'var(--wp-text-primary)' }}>
-                {item.label}
-              </Link>
-              {item.type === 'alert' && item.index !== undefined && (
-                <button onClick={() => setDismissedAlerts(prev => new Set(prev).add(item.index!))}
-                  className="shrink-0 opacity-40 hover:opacity-100 transition-opacity">
-                  <X size={13} />
-                </button>
-              )}
-              {item.type === 'due' && (
-                <ChevronRight size={14} className="shrink-0" style={{ color: 'var(--wp-border)' }} />
-              )}
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* ── BLOQUE 3: TRABAJO ── */}
-      <div className="card p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <h2 className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--wp-text-muted)' }}>
-              {hasTodayJobs ? 'Today' : 'Active Jobs'}
-            </h2>
-            {hasTodayJobs && (
-              <Link href={`/${locale}/jobs`} className="flex items-center gap-1 text-xs font-medium" style={{ color: 'var(--wp-primary)' }}>
-                <Briefcase size={12} />
-                {stats.activeJobs} active
-              </Link>
-            )}
-          </div>
-          <Link href={`/${locale}/schedule`} className="text-[11px] font-medium" style={{ color: 'var(--wp-accent)' }}>Schedule</Link>
-        </div>
-
-        {hasTodayJobs ? (
-          /* Today's jobs */
-          <div className="space-y-1.5">
-            {todayJobs.map(job => (
-              <Link key={job.id} href={`/${locale}/jobs/${job.id}`}
-                className="flex items-center gap-3 p-2.5 rounded-lg transition-colors" style={{ background: 'var(--wp-bg-muted)' }}>
-                {job.time && (
-                  <span className="text-xs font-semibold shrink-0 w-14" style={{ color: 'var(--wp-accent)' }}>{job.time}</span>
-                )}
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium truncate" style={{ color: 'var(--wp-text-primary)' }}>{job.name}</p>
-                  <p className="text-[11px] truncate" style={{ color: 'var(--wp-text-muted)' }}>{job.clientName}</p>
-                </div>
-                <ChevronRight size={14} style={{ color: 'var(--wp-border)' }} />
-              </Link>
-            ))}
-          </div>
-        ) : activeJobs.length > 0 ? (
-          /* Active jobs — collapsible */
-          <div>
-            <button onClick={() => setShowActiveJobs(!showActiveJobs)}
-              className="w-full flex items-center justify-between py-2 transition-colors">
-              <span className="text-xs font-medium" style={{ color: 'var(--wp-text-secondary)' }}>
-                {stats.activeJobs} active job{stats.activeJobs !== 1 ? 's' : ''} — no schedule today
-              </span>
-              <ChevronDown size={14} className="transition-transform" style={{ color: 'var(--wp-text-muted)', transform: showActiveJobs ? 'rotate(180deg)' : 'none' }} />
-            </button>
-            {showActiveJobs && (
-              <div className="space-y-1.5 pt-1">
-                {activeJobs.map(job => (
-                  <Link key={job.id} href={`/${locale}/jobs/${job.id}`}
-                    className="flex items-center gap-3 p-2.5 rounded-lg transition-colors" style={{ background: 'var(--wp-bg-muted)' }}>
-                    <Briefcase size={13} className="shrink-0" style={{ color: 'var(--wp-text-muted)' }} />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium truncate" style={{ color: 'var(--wp-text-primary)' }}>{job.name}</p>
-                      <p className="text-[11px] truncate" style={{ color: 'var(--wp-text-muted)' }}>{job.clientName}</p>
-                    </div>
-                    <ChevronRight size={14} style={{ color: 'var(--wp-border)' }} />
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-        ) : (
-          /* No jobs at all */
-          <div className="py-2 text-center">
-            <p className="text-xs" style={{ color: 'var(--wp-text-muted)' }}>No active jobs</p>
-          </div>
-        )}
-      </div>
+      {/* Needs attention + Today moved to RIGHT sidebar */}
 
       {/* ── BLOQUE 4: REVENUE & FORECAST ── */}
       {revenueByMonth.some(m => m.revenue > 0 || m.projected > 0) && (
@@ -253,23 +150,35 @@ export function DashboardStats({ stats, alerts, todayJobs, activeJobs, revenueBy
         </div>
       )}
 
-      {/* Quick actions */}
+      {/* Quick actions with subtexts */}
       <div className="hidden md:grid grid-cols-4 gap-2.5">
-        <Link href={`/${locale}/estimates/new`} className="card p-3 flex items-center gap-2.5 hover:border-[color:var(--wp-brand)] transition-colors" style={{ borderColor: 'var(--wp-border-v2)' }}>
-          <Receipt size={16} style={{ color: 'var(--wp-text-3)' }} />
-          <span className="text-xs font-semibold" style={{ color: 'var(--wp-text)' }}>New estimate</span>
+        <Link href={`/${locale}/estimates/new`} className="card p-3 hover:border-[color:var(--wp-brand)] transition-colors" style={{ borderColor: 'var(--wp-border-v2)' }}>
+          <div className="flex items-center gap-2 mb-1">
+            <Receipt size={16} style={{ color: 'var(--wp-text-3)' }} />
+            <span className="text-xs font-semibold" style={{ color: 'var(--wp-text)' }}>New estimate</span>
+          </div>
+          <p className="text-[10px]" style={{ color: 'var(--wp-text-3)' }}>{locale === 'es' ? 'Crear y enviar' : 'Create & send'}</p>
         </Link>
-        <Link href={`/${locale}/jobs/new`} className="card p-3 flex items-center gap-2.5 hover:border-[color:var(--wp-brand)] transition-colors" style={{ borderColor: 'var(--wp-border-v2)' }}>
-          <Briefcase size={16} style={{ color: 'var(--wp-text-3)' }} />
-          <span className="text-xs font-semibold" style={{ color: 'var(--wp-text)' }}>New job</span>
+        <Link href={`/${locale}/jobs/new`} className="card p-3 hover:border-[color:var(--wp-brand)] transition-colors" style={{ borderColor: 'var(--wp-border-v2)' }}>
+          <div className="flex items-center gap-2 mb-1">
+            <Briefcase size={16} style={{ color: 'var(--wp-text-3)' }} />
+            <span className="text-xs font-semibold" style={{ color: 'var(--wp-text)' }}>New job</span>
+          </div>
+          <p className="text-[10px]" style={{ color: 'var(--wp-text-3)' }}>{locale === 'es' ? 'Agendar trabajo' : 'Schedule work'}</p>
         </Link>
-        <Link href={`/${locale}/invoices/new`} className="card p-3 flex items-center gap-2.5 hover:border-[color:var(--wp-brand)] transition-colors" style={{ borderColor: 'var(--wp-border-v2)' }}>
-          <Receipt size={16} style={{ color: 'var(--wp-text-3)' }} />
-          <span className="text-xs font-semibold" style={{ color: 'var(--wp-text)' }}>Invoice</span>
+        <Link href={`/${locale}/invoices/new`} className="card p-3 hover:border-[color:var(--wp-brand)] transition-colors" style={{ borderColor: 'var(--wp-border-v2)' }}>
+          <div className="flex items-center gap-2 mb-1">
+            <Receipt size={16} style={{ color: 'var(--wp-text-3)' }} />
+            <span className="text-xs font-semibold" style={{ color: 'var(--wp-text)' }}>Invoice</span>
+          </div>
+          <p className="text-[10px]" style={{ color: 'var(--wp-text-3)' }}>{locale === 'es' ? 'Cobrar cliente' : 'Bill client'}</p>
         </Link>
-        <Link href={`/${locale}/assistant`} className="card p-3 flex items-center gap-2.5 transition-colors" style={{ background: 'var(--wp-brand)', borderColor: 'var(--wp-brand)', color: 'white' }}>
-          <Bot size={16} />
-          <span className="text-xs font-semibold">Ask AI</span>
+        <Link href={`/${locale}/assistant`} className="card p-3 transition-colors" style={{ background: 'var(--wp-brand)', borderColor: 'var(--wp-brand)', color: 'white' }}>
+          <div className="flex items-center gap-2 mb-1">
+            <Bot size={16} />
+            <span className="text-xs font-semibold">Ask WorkPilot AI</span>
+          </div>
+          <p className="text-[10px]" style={{ opacity: 0.7 }}>{locale === 'es' ? 'Análisis, draft, más' : 'Analysis, draft, more'}</p>
         </Link>
       </div>
 
@@ -333,17 +242,55 @@ export function DashboardStats({ stats, alerts, todayJobs, activeJobs, revenueBy
         </div>
       )}
 
-      {/* Sidebar: Today's Schedule */}
-      {hasTodayJobs && (
-        <div className="card p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--wp-text-muted)' }}>
-              {locale === 'es' ? 'Agenda de hoy' : "Today's schedule"}
-            </h2>
-            <span className="text-[10px] font-medium" style={{ color: 'var(--wp-text-muted)' }}>{todayJobs.length} jobs</span>
+      {/* Today's schedule + Needs attention moved below AI insights */}
+
+      {/* ── NEEDS ATTENTION (right sidebar) ── */}
+      <div className="card overflow-hidden">
+        <div className="flex items-center justify-between px-4 pt-3 pb-2">
+          <h2 className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--wp-text-muted)' }}>
+            {locale === 'es' ? 'Requiere tu atención' : 'Requires attention'}
+          </h2>
+          {actionItems.length > 0 && (
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--wp-error-bg-v2)', color: 'var(--wp-error-v2)' }}>
+              {actionItems.length}
+            </span>
+          )}
+        </div>
+        {actionItems.length === 0 ? (
+          <div className="flex items-center gap-2 px-4 pb-3">
+            <CheckCircle2 size={14} style={{ color: 'var(--wp-success)' }} />
+            <p className="text-xs" style={{ color: 'var(--wp-text-muted)' }}>{locale === 'es' ? 'Todo al día' : 'All caught up'}</p>
           </div>
+        ) : (
+          actionItems.map((item, i) => (
+            <Link key={`${item.type}-${i}`} href={`/${locale}${item.href}`}
+              className="flex items-center gap-2.5 px-4 py-2.5 transition-colors hover:bg-[var(--wp-surface-2)]"
+              style={i < actionItems.length - 1 ? { borderBottom: '1px solid var(--wp-border-light)' } : undefined}>
+              <span className="w-2 h-2 rounded-full shrink-0" style={{
+                background: item.type === 'alert'
+                  ? (item.alertType === 'error' ? 'var(--wp-error-v2)' : 'var(--wp-warning-v2)')
+                  : 'var(--wp-info-v2)'
+              }} />
+              <span className="flex-1 text-xs" style={{ color: 'var(--wp-text)' }}>{item.label}</span>
+              <ChevronRight size={12} className="shrink-0" style={{ color: 'var(--wp-text-3)' }} />
+            </Link>
+          ))
+        )}
+      </div>
+
+      {/* ── TODAY'S SCHEDULE (right sidebar) ── */}
+      <div className="card p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--wp-text-muted)' }}>
+            {locale === 'es' ? 'Agenda de hoy' : "Today's schedule"}
+          </h2>
+          <span className="text-[10px] font-medium" style={{ color: 'var(--wp-text-3)' }}>
+            {hasTodayJobs ? `${todayJobs.length} jobs` : ''}
+          </span>
+        </div>
+        {hasTodayJobs ? (
           <div className="space-y-1.5">
-            {todayJobs.slice(0, 4).map(job => (
+            {todayJobs.map(job => (
               <Link key={job.id} href={`/${locale}/jobs/${job.id}`}
                 className="flex items-center gap-2.5 p-2 rounded-lg transition-colors hover:bg-[var(--wp-surface-2)]"
                 style={{ borderLeft: '2px solid var(--wp-info-v2)' }}>
@@ -357,8 +304,31 @@ export function DashboardStats({ stats, alerts, todayJobs, activeJobs, revenueBy
               </Link>
             ))}
           </div>
-        </div>
-      )}
+        ) : activeJobs.length > 0 ? (
+          <div>
+            <button onClick={() => setShowActiveJobs(!showActiveJobs)}
+              className="w-full flex items-center justify-between py-1 transition-colors">
+              <span className="text-xs" style={{ color: 'var(--wp-text-2)' }}>
+                {stats.activeJobs} active — {locale === 'es' ? 'sin agenda hoy' : 'no schedule today'}
+              </span>
+              <ChevronDown size={12} className="transition-transform" style={{ color: 'var(--wp-text-3)', transform: showActiveJobs ? 'rotate(180deg)' : 'none' }} />
+            </button>
+            {showActiveJobs && (
+              <div className="space-y-1 pt-2">
+                {activeJobs.slice(0, 5).map(job => (
+                  <Link key={job.id} href={`/${locale}/jobs/${job.id}`}
+                    className="flex items-center gap-2 p-1.5 rounded-md transition-colors hover:bg-[var(--wp-surface-2)]">
+                    <Briefcase size={11} style={{ color: 'var(--wp-text-3)' }} />
+                    <span className="text-xs truncate" style={{ color: 'var(--wp-text-2)' }}>{job.name}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <p className="text-xs" style={{ color: 'var(--wp-text-3)' }}>{locale === 'es' ? 'Sin agenda' : 'No schedule'}</p>
+        )}
+      </div>
 
       </div>{/* end right sidebar */}
       </div>{/* end 2-col grid */}
