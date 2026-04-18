@@ -1099,4 +1099,32 @@
   .wp-type-chip--material { background: var(--wp-success-bg-v2); color: var(--wp-success-v2); }
   .wp-type-chip--subcontractor { background: var(--wp-warning-bg-v2); color: var(--wp-warning-v2); }
   .wp-type-chip--other { background: var(--wp-surface-3); color: var(--wp-text-2); }
+
+  /* Shopping list detail — 2-col layout */
+  .sl-detail-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .sl-detail-main {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+  }
+  .sl-detail-sidebar {
+    display: none;
+  }
+  @media (min-width: 768px) {
+    .sl-detail-layout {
+      flex-direction: row;
+    }
+    .sl-detail-sidebar {
+      display: block;
+      width: 280px;
+      flex-shrink: 0;
+      position: sticky;
+      top: 16px;
+    }
+  }
 }

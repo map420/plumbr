@@ -310,8 +310,8 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
         </div>
 
         {/* 2-column layout: items left + sidebar right */}
-        <div className="flex flex-col md:flex-row gap-4 items-start">
-        <div className="space-y-4 flex-1 min-w-0 w-full">
+        <div className="sl-detail-layout">
+        <div className="sl-detail-main space-y-4">
 
         {/* Job link — compact row, not a big card (job info is in sidebar) */}
         {!job && (
@@ -607,7 +607,7 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
         </div>{/* end left column */}
 
         {/* ── RIGHT SIDEBAR ── */}
-        <div className="hidden md:block sticky top-4 space-y-4 shrink-0" style={{ width: 280 }}>
+        <div className="sl-detail-sidebar space-y-4">
           {/* Total card */}
           <div className="rounded-xl p-5" style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', color: 'white' }}>
             <div className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ opacity: 0.6 }}>Total</div>
