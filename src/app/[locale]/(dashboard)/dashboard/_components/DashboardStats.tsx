@@ -104,14 +104,14 @@ export function DashboardStats({ stats, alerts, todayJobs, activeJobs, revenueBy
             { href: `/${locale}/payments`, count: pipeline.paid, label: locale === 'es' ? 'Pagado MTD' : 'Paid MTD', color: 'var(--wp-brand)', amount: stats.revenueThisMonth },
           ].map((cell, i) => (
             <Link key={i} href={cell.href} className="rounded-lg p-3 transition-colors hover:bg-[var(--wp-surface-3)]" style={{ background: 'var(--wp-surface-2)', borderBottom: `2px solid ${cell.color}` }}>
-              <div className="flex items-center gap-1.5 mb-1">
+              <div className="flex items-center gap-1.5 mb-2">
                 <span className="w-1.5 h-1.5 rounded-full" style={{ background: cell.color }} />
-                <span className="text-xl font-bold tabular-nums" style={{ color: 'var(--wp-text)' }}>{cell.count || '—'}</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--wp-text-3)' }}>{cell.label}</span>
               </div>
+              <span className="text-xl font-bold tabular-nums block" style={{ color: 'var(--wp-text)' }}>{cell.count || '—'}</span>
               {cell.amount != null && cell.amount > 0 && (
-                <p className="text-[10px] font-medium tabular-nums mb-0.5" style={{ color: 'var(--wp-text-2)' }}>${formatCurrencyCompact(cell.amount)}</p>
+                <p className="text-[10px] font-medium tabular-nums mt-0.5" style={{ color: 'var(--wp-text-2)' }}>${formatCurrencyCompact(cell.amount)}</p>
               )}
-              <span className="text-[10px] font-medium" style={{ color: 'var(--wp-text-3)' }}>{cell.label}</span>
             </Link>
           ))}
         </div>
