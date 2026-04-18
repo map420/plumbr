@@ -31,7 +31,7 @@ export function ListSkeleton({ rows = 8 }: { rows?: number }) {
 
 export function DetailSkeleton() {
   return (
-    <div className="p-4 md:p-6 space-y-4 max-w-5xl animate-pulse" aria-busy="true" aria-live="polite">
+    <div className="p-4 md:p-6 space-y-4 animate-pulse" aria-busy="true" aria-live="polite">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-2">

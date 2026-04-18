@@ -204,7 +204,7 @@ export function ClientDetailClient({ client, jobs, estimates, invoices }: {
       </div>
 
       {/* ══════════════ DESKTOP LAYOUT (v2 refactored) ══════════════ */}
-      <div className="hidden md:block p-8 max-w-6xl">
+      <div className="hidden md:block p-8">
         <div className="mb-4">
           <Breadcrumbs items={[{ label: 'Clients', href: `/${locale}/clients` }, { label: client.name }]} />
         </div>

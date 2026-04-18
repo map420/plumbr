@@ -24,7 +24,7 @@ export function PaymentsClient({ dueInvoices, ytdRevenue, monthRevenue, winRate,
   const totalDue = dueInvoices.reduce((s, inv) => s + parseFloat(inv.total), 0)
 
   return (
-    <div className="p-4 md:p-8 space-y-5 max-w-5xl">
+    <div className="p-4 md:p-8 space-y-5">
       <div>
         <h1 className="page-title mb-0">
           {locale === 'es' ? 'Pagos recibidos' : 'Payments received'}

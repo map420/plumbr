@@ -30,7 +30,7 @@ export default async function PaymentsPage() {
   const winRate = sentEstimates.length > 0 ? Math.round((approvedEstimates.length / sentEstimates.length) * 100) : 0
 
   return (
-    <div className="p-4 md:p-8 max-w-4xl">
+    <div className="p-4 md:p-8">
       <PaymentsClient
         dueInvoices={dueInvoices.map(i => ({
           id: i.id, number: i.number, clientName: i.clientName,

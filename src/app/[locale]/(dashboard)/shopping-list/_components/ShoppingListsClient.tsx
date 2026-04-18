@@ -61,7 +61,7 @@ export function ShoppingListsClient({ lists }: { lists: ListWithStats[] }) {
   const pendingCost = totalCost - purchasedCost
 
   return (
-    <div className="px-4 pt-2 pb-4 md:p-8 min-h-full max-w-4xl">
+    <div className="px-4 pt-2 pb-4 md:p-8 min-h-full">
       <div className="hidden md:flex items-end justify-between mb-5">
         <div>
           <h1 className="page-title mb-0">{t('title')}</h1>

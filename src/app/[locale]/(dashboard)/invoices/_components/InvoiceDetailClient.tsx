@@ -477,7 +477,7 @@ export function InvoiceDetailClient({ invoice, lineItems, viewCount = 0, clientP
       </div>
 
       {/* ══════════════ DESKTOP LAYOUT (v2) ══════════════ */}
-      <div className="hidden md:block p-8 max-w-6xl">
+      <div className="hidden md:block p-8">
         <div className="mb-4">
           <Breadcrumbs items={[{ label: 'Invoices', href: `/${locale}/invoices` }, { label: invoice.number }]} />
         </div>

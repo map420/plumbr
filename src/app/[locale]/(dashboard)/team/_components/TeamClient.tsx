@@ -63,7 +63,7 @@ export function TeamClient({ initialTechnicians, isPro, locale }: { initialTechn
 
   if (!isPro) {
     return (
-      <div className="p-4 md:p-8 max-w-5xl">
+      <div className="p-4 md:p-8">
         <h1 className="page-title">Team</h1>
         <div className="card p-12 text-center">
           <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: 'var(--wp-warning-bg-v2)' }}>
@@ -86,7 +86,7 @@ export function TeamClient({ initialTechnicians, isPro, locale }: { initialTechn
     : 0
 
   return (
-    <div className="px-4 pt-2 pb-4 md:p-8 bg-white md:bg-transparent min-h-full max-w-5xl">
+    <div className="px-4 pt-2 pb-4 md:p-8 bg-white md:bg-transparent min-h-full">
       {deleteId && (
         <ConfirmModal
           title="Remove Technician"

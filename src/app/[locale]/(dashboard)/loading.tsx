@@ -1,6 +1,6 @@
 export default function Loading() {
   return (
-    <div className="p-4 md:p-8 space-y-4 max-w-4xl animate-pulse" aria-busy="true" aria-live="polite">
+    <div className="p-4 md:p-8 space-y-4 animate-pulse" aria-busy="true" aria-live="polite">
       {/* Revenue card */}
       <div className="card p-4">
         <div className="flex items-stretch gap-4 mb-3">

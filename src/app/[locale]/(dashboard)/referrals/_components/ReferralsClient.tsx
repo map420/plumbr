@@ -63,7 +63,7 @@ export function ReferralsClient({ referrals: initial, referralLink }: { referral
   }
 
   return (
-    <div className="p-4 md:p-8 space-y-5 max-w-4xl">
+    <div className="p-4 md:p-8 space-y-5">
       <div>
         <h1 className="page-title mb-0">Referrals</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--wp-text-2)' }}>

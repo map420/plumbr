@@ -130,7 +130,7 @@ export function ExpensesGlobalClient({
   }
 
   return (
-    <div className="px-4 pt-2 pb-4 md:p-8 bg-white md:bg-transparent min-h-full max-w-5xl">
+    <div className="px-4 pt-2 pb-4 md:p-8 bg-white md:bg-transparent min-h-full">
       {/* New Expense Modal */}
       {showNewExpense && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowNewExpense(false)}>
