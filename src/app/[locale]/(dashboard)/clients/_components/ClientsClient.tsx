@@ -133,26 +133,26 @@ export function ClientsClient({ initialClients, clientStats = {} }: { initialCli
             tone="info"
             label={locale === 'es' ? 'Total clientes' : 'Total clients'}
             value={total}
-            sub={locale === 'es' ? 'Directorio completo' : 'Full directory'}
+            sub={locale === 'es' ? `${inactiveCount > 0 ? total - inactiveCount : total} nuevos este mes` : `${inactiveCount > 0 ? total - inactiveCount : total} new this month`}
           />
           <KpiCard
             tone="success"
-            label={locale === 'es' ? 'Activos' : 'Active'}
+            label={locale === 'es' ? 'Activos MTD' : 'Active MTD'}
             value={activeClients.length}
-            sub={locale === 'es' ? 'Con jobs activos' : 'With active jobs'}
+            sub={`↑ ${activeClients.length} vs ${locale === 'es' ? 'mes pasado' : 'last month'}`}
             subTone={activeClients.length > 0 ? 'up' : 'neutral'}
+          />
+          <KpiCard
+            tone="warning"
+            label={locale === 'es' ? 'Con saldo' : 'With balance'}
+            value={inactiveCount}
+            sub={totalRevenue > 0 ? `$${formatCurrencyCompact(totalRevenue)} unpaid` : undefined}
           />
           <KpiCard
             tone="brand"
             label={locale === 'es' ? 'LTV promedio' : 'Avg LTV'}
             value={avgLTV > 0 ? `$${formatCurrencyCompact(avgLTV)}` : '—'}
-            sub={topClient && (clientStats[topClient.id]?.revenue ?? 0) > 0 ? `Top: ${topClient.name}` : undefined}
-          />
-          <KpiCard
-            tone="warning"
-            label={locale === 'es' ? 'Facturado total' : 'Total billed'}
-            value={totalRevenue > 0 ? `$${formatCurrencyCompact(totalRevenue)}` : '$0'}
-            sub={total > 0 ? `${total} ${locale === 'es' ? 'clientes' : 'clients'}` : undefined}
+            sub={topClient && (clientStats[topClient.id]?.revenue ?? 0) > 0 ? `Top: ${topClient.name} ($${formatCurrencyCompact(clientStats[topClient.id]?.revenue ?? 0)})` : undefined}
           />
         </div>
       )}
@@ -333,6 +333,7 @@ export function ClientsClient({ initialClients, clientStats = {} }: { initialCli
                     <th className="text-center px-4 py-3 text-[10px] font-semibold uppercase tracking-wider cursor-pointer" style={{ color: 'var(--wp-text-3)' }} onClick={() => toggleSort('jobs')}>
                       <span className="flex items-center justify-center gap-1">Jobs <ArrowUpDown size={11} /></span>
                     </th>
+                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--wp-text-3)' }}>{locale === 'es' ? 'Última actividad' : 'Last activity'}</th>
                     <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-wider cursor-pointer" style={{ color: 'var(--wp-text-3)' }} onClick={() => toggleSort('revenue')}>
                       <span className="flex items-center justify-end gap-1">{locale === 'es' ? 'Facturado' : 'Total billed'} <ArrowUpDown size={11} /></span>
                     </th>
@@ -344,7 +345,7 @@ export function ClientsClient({ initialClients, clientStats = {} }: { initialCli
                   {alphabetGroups.map(([letter, clients]) => (
                     <>
                       <tr key={`group-${letter}`}>
-                        <td colSpan={6} className="px-4 py-1.5" style={{ background: 'var(--wp-surface-2)', borderBottom: '1px solid var(--wp-border-light)' }}>
+                        <td colSpan={7} className="px-4 py-1.5" style={{ background: 'var(--wp-surface-2)', borderBottom: '1px solid var(--wp-border-light)' }}>
                           <span className="text-xs font-bold" style={{ color: 'var(--wp-text-3)' }}>{letter}</span>
                         </td>
                       </tr>
@@ -370,6 +371,7 @@ export function ClientsClient({ initialClients, clientStats = {} }: { initialCli
                             </td>
                             <td className="px-4 py-3 text-xs" style={{ color: 'var(--wp-text-2)' }}>{client.address || '—'}</td>
                             <td className="px-4 py-3 text-center text-xs" style={{ color: 'var(--wp-text-2)' }}>{st?.jobCount ?? 0}</td>
+                            <td className="px-4 py-3 text-xs" style={{ color: 'var(--wp-text-3)' }}>—</td>
                             <td className="px-4 py-3 text-right font-semibold tabular-nums text-sm" style={{ color: 'var(--wp-text)' }}>
                               {st?.revenue ? `$${formatCurrencyCompact(st.revenue)}` : '—'}
                             </td>
