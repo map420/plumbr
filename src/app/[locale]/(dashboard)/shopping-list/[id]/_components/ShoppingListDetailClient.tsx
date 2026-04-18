@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { ChevronLeft, Copy, Check, Briefcase, MoreHorizontal, ExternalLink, Unlink, RotateCcw, Pencil, Trash2, Printer, Save, X, CheckSquare, Square } from 'lucide-react'
 import { addShoppingListItem, markItemPurchased, unmarkItemPurchased, updateShoppingListJob, updateShoppingListItem, deleteShoppingListItem, bulkMarkItemsPurchased } from '@/lib/actions/shopping-lists'
 import { JobPicker, type JobPickerOption } from '@/components/JobPicker'
+import { ShoppingListSidebar } from './ShoppingListSidebar'
 
 type Item = { id: string; description: string; quantity: string | null; unit: string | null; estimatedCost: string; status: string; purchasedAt: Date | null; vendor?: string | null; aisle?: string | null }
 type List = { id: string; name: string; jobId: string | null; status: string; shareToken: string | null; items: Item[] }
@@ -607,68 +608,15 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
         </div>{/* end left column */}
 
         {/* ── RIGHT SIDEBAR ── */}
-        <div className="sl-detail-sidebar space-y-4" style={{ width: 280, flexShrink: 0, position: 'sticky', top: 16 }}>
-          {/* Total card */}
-          <div className="rounded-xl p-5" style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', color: 'white' }}>
-            <div className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ opacity: 0.6 }}>Total</div>
-            <div className="text-2xl font-extrabold tabular-nums mb-3" style={{ letterSpacing: '-0.02em' }}>
-              ${items.reduce((s, it) => s + parseFloat(it.estimatedCost), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-            </div>
-            <div className="space-y-1 text-xs" style={{ opacity: 0.85 }}>
-              <div className="flex justify-between">
-                <span>Already bought</span>
-                <span>${purchasedItems.reduce((s: number, it: any) => s + parseFloat(it.estimatedCost), 0).toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Remaining</span>
-                <span>${pendingItems.reduce((s: number, it: any) => s + parseFloat(it.estimatedCost), 0).toLocaleString()}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Linked jobs */}
-          {job && (
-            <div className="card p-4">
-              <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--wp-text-3)' }}>Linked jobs</div>
-              <Link href={`/${locale}/jobs/${job.id}`} className="flex items-center justify-between text-xs py-1" style={{ color: 'var(--wp-text-2)' }}>
-                <span className="font-medium" style={{ color: 'var(--wp-brand)' }}>{job.name}</span>
-                <span>{items.length} items</span>
-              </Link>
-            </div>
-          )}
-
-          {/* Vendors summary */}
-          {uniqueVendors.length > 0 && (
-            <div className="card p-4">
-              <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--wp-text-3)' }}>
-                {locale === 'es' ? 'Proveedores' : 'Vendors'}
-              </div>
-              <div className="space-y-1">
-                {vendorGroups.map(([vendor, vItems]) => (
-                  <div key={vendor} className="flex items-center justify-between text-xs">
-                    <span className="font-medium" style={{ color: 'var(--wp-text)' }}>{vendor}</span>
-                    <span style={{ color: 'var(--wp-text-3)' }}>
-                      {vItems.length} · ${vItems.reduce((s, it) => s + parseFloat(it.estimatedCost), 0).toLocaleString()}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* AI tip */}
-          <div className="card p-4" style={{ background: 'var(--wp-surface-2)' }}>
-            <div className="flex items-center gap-1.5 mb-2">
-              <span className="text-xs font-semibold" style={{ color: 'var(--wp-brand)' }}>◆ WorkPilot AI</span>
-            </div>
-            <p className="text-[11px] leading-relaxed" style={{ color: 'var(--wp-text-2)' }}>
-              {locale === 'es'
-                ? 'Optimiza tu ruta de compras agrupando por proveedor. Ahorra tiempo y combustible.'
-                : 'Optimize your shopping route by grouping by vendor. Save time and fuel.'}
-            </p>
-          </div>
+        <div className="hidden md:block space-y-4" style={{ width: 280, flexShrink: 0, position: 'sticky', top: 16 }}>
+          <ShoppingListSidebar items={items} job={job} locale={locale} />
         </div>
         </div>{/* end 2-col grid */}
+
+        {/* Mobile sidebar — shows below content on mobile */}
+        <div className="md:hidden space-y-4 mt-4">
+          <ShoppingListSidebar items={items} job={job} locale={locale} />
+        </div>
 
       {/* Bulk action bar — fixed bottom on mobile, sticky on desktop */}
       {selectMode && (
