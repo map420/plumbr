@@ -307,7 +307,7 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
         </div>
 
         {/* 2-column layout: items left + sidebar right */}
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-5 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_280px] gap-4 items-start">
         <div className="space-y-4">
 
         {/* Job card */}
@@ -714,7 +714,7 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
         </div>{/* end left column */}
 
         {/* ── RIGHT SIDEBAR ── */}
-        <div className="hidden lg:block sticky top-4 space-y-4">
+        <div className="hidden md:block sticky top-4 space-y-4">
           {/* Total card */}
           <div className="rounded-xl p-5" style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', color: 'white' }}>
             <div className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ opacity: 0.6 }}>Total</div>
