@@ -237,7 +237,7 @@ export async function saveChecklistAsList(data: {
 // ── Items ──
 
 export async function addShoppingListItem(listId: string, data: {
-  description: string; quantity?: string; unit?: string; estimatedCost: string
+  description: string; quantity?: string; unit?: string; estimatedCost: string; vendor?: string; aisle?: string
 }) {
   const userId = await getUserId()
 
@@ -267,6 +267,8 @@ export async function addShoppingListItem(listId: string, data: {
     quantity: clean.quantity,
     unit: clean.unit,
     estimatedCost: clean.estimatedCost,
+    vendor: data.vendor?.trim() || null,
+    aisle: data.aisle?.trim() || null,
     sortOrder: existing.length,
   }).returning()
   invalidateUserData(userId)
@@ -410,7 +412,7 @@ export async function bulkMarkItemsPurchased(itemIds: string[], jobId: string) {
 }
 
 export async function updateShoppingListItem(itemId: string, data: {
-  description?: string; quantity?: string; unit?: string; estimatedCost?: string
+  description?: string; quantity?: string; unit?: string; estimatedCost?: string; vendor?: string; aisle?: string
 }) {
   const userId = await getUserId()
 
@@ -435,6 +437,8 @@ export async function updateShoppingListItem(itemId: string, data: {
   if (data.quantity !== undefined) updates.quantity = clean.quantity
   if (data.unit !== undefined) updates.unit = clean.unit
   if (data.estimatedCost !== undefined) updates.estimatedCost = clean.estimatedCost
+  if (data.vendor !== undefined) updates.vendor = data.vendor.trim() || null
+  if (data.aisle !== undefined) updates.aisle = data.aisle.trim() || null
   if (Object.keys(updates).length === 0) return
 
   await db.update(shoppingListItems)

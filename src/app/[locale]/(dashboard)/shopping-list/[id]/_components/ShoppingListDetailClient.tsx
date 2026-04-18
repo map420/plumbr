@@ -8,7 +8,7 @@ import { ChevronLeft, Copy, Check, Briefcase, MoreHorizontal, ExternalLink, Unli
 import { addShoppingListItem, markItemPurchased, unmarkItemPurchased, updateShoppingListJob, updateShoppingListItem, deleteShoppingListItem, bulkMarkItemsPurchased } from '@/lib/actions/shopping-lists'
 import { JobPicker, type JobPickerOption } from '@/components/JobPicker'
 
-type Item = { id: string; description: string; quantity: string | null; unit: string | null; estimatedCost: string; status: string; purchasedAt: Date | null }
+type Item = { id: string; description: string; quantity: string | null; unit: string | null; estimatedCost: string; status: string; purchasedAt: Date | null; vendor?: string | null; aisle?: string | null }
 type List = { id: string; name: string; jobId: string | null; status: string; shareToken: string | null; items: Item[] }
 type JobSummary = { id: string; name: string; clientName: string; status: string }
 type EstimateSummary = { id: string; number: string }
@@ -31,6 +31,8 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
   const [showAdd, setShowAdd] = useState(false)
   const [newDesc, setNewDesc] = useState('')
   const [newCost, setNewCost] = useState('')
+  const [newVendor, setNewVendor] = useState('')
+  const [newAisle, setNewAisle] = useState('')
   const [materialSpent, setMaterialSpent] = useState(initialSpent)
   const [copied, setCopied] = useState(false)
   const [job, setJob] = useState<JobSummary | null>(initialJob)
@@ -72,6 +74,16 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
   const purchasedItems = items.filter(it => it.status === 'purchased')
   const pendingTotal = pendingItems.reduce((s, it) => s + parseFloat(it.estimatedCost), 0)
 
+  // Group pending items by vendor (null vendor → "Sin proveedor"/"No vendor")
+  const pendingByVendor = pendingItems.reduce<Record<string, Item[]>>((acc, it) => {
+    const key = it.vendor || (locale === 'es' ? 'Sin proveedor' : 'No vendor')
+    if (!acc[key]) acc[key] = []
+    acc[key].push(it)
+    return acc
+  }, {})
+  const vendorGroups = Object.entries(pendingByVendor)
+  const uniqueVendors = vendorGroups.map(([v]) => v).filter(v => v !== 'Sin proveedor' && v !== 'No vendor')
+
   async function handlePurchase(item: Item) {
     if (!list.jobId) return
     const amount = editAmount || item.estimatedCost
@@ -98,10 +110,14 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
       const item = await addShoppingListItem(list.id, {
         description: newDesc.trim(),
         estimatedCost: newCost,
+        vendor: newVendor.trim() || undefined,
+        aisle: newAisle.trim() || undefined,
       })
       setItems(prev => [...prev, { ...item, quantity: null, unit: null, purchasedAt: null } as any])
       setNewDesc('')
       setNewCost('')
+      setNewVendor('')
+      setNewAisle('')
       setShowAdd(false)
     } catch (err) {
       console.error(err)
@@ -509,14 +525,23 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
                             {selectedIds.has(item.id)
                               ? <CheckSquare size={20} style={{ color: 'var(--wp-primary)' }} className="shrink-0" />
                               : <Square size={20} style={{ color: 'var(--wp-border)' }} className="shrink-0" />}
-                            <span className="flex-1 text-sm" style={{ color: 'var(--wp-text-primary)' }}>
-                              {item.description}
-                              {item.quantity && (
-                                <span className="text-xs ml-1" style={{ color: 'var(--wp-text-muted)' }}>
-                                  × {parseFloat(item.quantity).toLocaleString()}{item.unit ? ` ${item.unit}` : ''}
-                                </span>
+                            <div className="flex-1 min-w-0">
+                              <span className="text-sm" style={{ color: 'var(--wp-text-primary)' }}>
+                                {item.description}
+                                {item.quantity && (
+                                  <span className="text-xs ml-1" style={{ color: 'var(--wp-text-muted)' }}>
+                                    × {parseFloat(item.quantity).toLocaleString()}{item.unit ? ` ${item.unit}` : ''}
+                                  </span>
+                                )}
+                              </span>
+                              {(item.vendor || item.aisle) && (
+                                <div className="text-[10px] mt-0.5" style={{ color: 'var(--wp-text-3)' }}>
+                                  {item.aisle && <span>{item.aisle}</span>}
+                                  {item.aisle && item.vendor && <span> · </span>}
+                                  {item.vendor && <span>{item.vendor}</span>}
+                                </div>
                               )}
-                            </span>
+                            </div>
                             <span className="text-sm font-mono font-medium shrink-0" style={{ color: 'var(--wp-text-primary)' }}>
                               ${parseFloat(item.estimatedCost).toLocaleString()}
                             </span>
@@ -528,14 +553,23 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
                               className="flex-1 flex items-center gap-3 text-left cursor-pointer"
                             >
                               <div className="w-5 h-5 rounded border-2 shrink-0" style={{ borderColor: 'var(--wp-border)' }} />
-                              <span className="flex-1 text-sm" style={{ color: 'var(--wp-text-primary)' }}>
-                                {item.description}
-                                {item.quantity && (
-                                  <span className="text-xs ml-1" style={{ color: 'var(--wp-text-muted)' }}>
-                                    × {parseFloat(item.quantity).toLocaleString()}{item.unit ? ` ${item.unit}` : ''}
-                                  </span>
+                              <div className="flex-1 min-w-0">
+                                <span className="text-sm" style={{ color: 'var(--wp-text-primary)' }}>
+                                  {item.description}
+                                  {item.quantity && (
+                                    <span className="text-xs ml-1" style={{ color: 'var(--wp-text-muted)' }}>
+                                      × {parseFloat(item.quantity).toLocaleString()}{item.unit ? ` ${item.unit}` : ''}
+                                    </span>
+                                  )}
+                                </span>
+                                {(item.vendor || item.aisle) && (
+                                  <div className="text-[10px] mt-0.5" style={{ color: 'var(--wp-text-3)' }}>
+                                    {item.aisle && <span>{item.aisle}</span>}
+                                    {item.aisle && item.vendor && <span> · </span>}
+                                    {item.vendor && <span>{item.vendor}</span>}
+                                  </div>
                                 )}
-                              </span>
+                              </div>
                               <span className="text-sm font-mono font-medium shrink-0" style={{ color: 'var(--wp-text-primary)' }}>
                                 ${parseFloat(item.estimatedCost).toLocaleString()}
                               </span>
@@ -602,10 +636,14 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
           <div className="card p-4 flex items-center gap-2 flex-wrap">
             <input className="flex-1 min-w-[140px] input text-sm" value={newDesc} onChange={e => setNewDesc(e.target.value)}
               placeholder={t('descriptionPlaceholder')} autoFocus />
+            <input className="w-32 input text-sm" value={newVendor} onChange={e => setNewVendor(e.target.value)}
+              placeholder={locale === 'es' ? 'Proveedor' : 'Vendor'} />
+            <input className="w-24 input text-sm" value={newAisle} onChange={e => setNewAisle(e.target.value)}
+              placeholder={locale === 'es' ? 'Pasillo' : 'Aisle'} />
             <input type="number" className="w-24 input text-sm font-mono" value={newCost} onChange={e => setNewCost(e.target.value)}
               placeholder={t('costPlaceholder')} min="0" step="0.01" />
             <button onClick={handleAddItem} disabled={saving || !newDesc.trim() || !newCost} className="btn-primary text-xs">{t('add')}</button>
-            <button onClick={() => { setShowAdd(false); setNewDesc(''); setNewCost('') }} className="btn-secondary text-xs">{t('cancel')}</button>
+            <button onClick={() => { setShowAdd(false); setNewDesc(''); setNewCost(''); setNewVendor(''); setNewAisle('') }} className="btn-secondary text-xs">{t('cancel')}</button>
           </div>
         ) : (
           <button onClick={() => setShowAdd(true)} className="w-full py-2.5 text-sm font-medium rounded-lg transition-colors"
@@ -703,6 +741,25 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
                 <span className="font-medium" style={{ color: 'var(--wp-brand)' }}>{job.name}</span>
                 <span>{items.length} items</span>
               </Link>
+            </div>
+          )}
+
+          {/* Vendors summary */}
+          {uniqueVendors.length > 0 && (
+            <div className="card p-4">
+              <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--wp-text-3)' }}>
+                {locale === 'es' ? 'Proveedores' : 'Vendors'}
+              </div>
+              <div className="space-y-1">
+                {vendorGroups.map(([vendor, vItems]) => (
+                  <div key={vendor} className="flex items-center justify-between text-xs">
+                    <span className="font-medium" style={{ color: 'var(--wp-text)' }}>{vendor}</span>
+                    <span style={{ color: 'var(--wp-text-3)' }}>
+                      {vItems.length} · ${vItems.reduce((s, it) => s + parseFloat(it.estimatedCost), 0).toLocaleString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

@@ -21,6 +21,8 @@ export const shoppingListItems = pgTable('shopping_list_items', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   shoppingListId: text('shopping_list_id').notNull().references(() => shoppingLists.id, { onDelete: 'cascade' }),
   description: varchar('description', { length: 500 }).notNull(),
+  vendor: varchar('vendor', { length: 120 }),
+  aisle: varchar('aisle', { length: 50 }),
   quantity: numeric('quantity', { precision: 10, scale: 2 }),
   unit: varchar('unit', { length: 50 }),
   estimatedCost: numeric('estimated_cost', { precision: 12, scale: 2 }).notNull(),
@@ -31,6 +33,7 @@ export const shoppingListItems = pgTable('shopping_list_items', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (t) => [
   index('shopping_list_items_list_id_idx').on(t.shoppingListId),
+  index('shopping_list_items_vendor_idx').on(t.vendor),
 ])
 
 export type ShoppingList = typeof shoppingLists.$inferSelect
