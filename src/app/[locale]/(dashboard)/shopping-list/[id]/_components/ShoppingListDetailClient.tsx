@@ -310,8 +310,8 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
         </div>
 
         {/* 2-column layout: items left + sidebar right */}
-        <div className="sl-detail-layout" style={{ display: 'flex', flexWrap: 'nowrap', gap: 16, alignItems: 'flex-start', flexDirection: 'row' }}>
-        <div className="sl-detail-main space-y-4" style={{ flex: '1 1 0', minWidth: 0 }}>
+        <div className="sl-detail-layout" style={{ display: 'flex', flexWrap: 'nowrap', gap: 16, alignItems: 'flex-start', flexDirection: 'row', width: '100%' }}>
+        <div className="sl-detail-main space-y-4" style={{ flex: '1 1 0', minWidth: 0, maxWidth: 'calc(100% - 296px)' }}>
 
         {/* Job link — compact row, not a big card (job info is in sidebar) */}
         {!job && (
