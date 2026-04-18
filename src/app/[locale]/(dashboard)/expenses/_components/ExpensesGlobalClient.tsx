@@ -96,12 +96,17 @@ export function ExpensesGlobalClient({
     return groups
   }, [filtered])
 
+  const typeCounts = initialExpenses.reduce<Record<string, number>>((acc, e) => {
+    acc[e.type] = (acc[e.type] ?? 0) + 1
+    return acc
+  }, {})
+
   const SEGMENTED_OPTIONS = [
     { value: 'all', label: 'All', count: initialExpenses.length },
-    { value: 'material', label: 'Materials' },
-    { value: 'labor', label: 'Labor' },
-    { value: 'subcontractor', label: 'Subs' },
-    { value: 'other', label: 'Other' },
+    { value: 'material', label: 'Materials', count: typeCounts['material'] ?? 0 },
+    { value: 'labor', label: 'Tools', count: typeCounts['labor'] ?? 0 },
+    { value: 'subcontractor', label: 'Fuel', count: typeCounts['subcontractor'] ?? 0 },
+    { value: 'other', label: 'Subs', count: typeCounts['other'] ?? 0 },
   ] as const
 
   const hasFilters = typeFilter || jobFilter || techFilter || dateFrom || dateTo
@@ -181,9 +186,14 @@ export function ExpensesGlobalClient({
             {initialExpenses.length} expenses · ${formatCurrencyCompact(kpis.total)} MTD
           </p>
         </div>
-        <button onClick={() => setShowNewExpense(true)} className="btn-primary btn-sm">
-          <Plus size={14} /> New Expense
-        </button>
+        <div className="flex items-center gap-2">
+          <button className="btn-secondary btn-sm">
+            <Camera size={14} /> Scan receipt
+          </button>
+          <button onClick={() => setShowNewExpense(true)} className="btn-primary btn-sm">
+            <Plus size={14} /> Log expense
+          </button>
+        </div>
       </div>
 
       {/* KPI row */}
@@ -202,30 +212,21 @@ export function ExpensesGlobalClient({
         <button onClick={() => setTypeFilter(typeFilter === 'subcontractor' ? '' : 'subcontractor')} className={`tab-bar-item ${typeFilter === 'subcontractor' ? 'tab-bar-item-active' : ''}`}>Sub</button>
       </div>
 
-      {/* Desktop toolbar: segmented + secondary filters */}
+      {/* Desktop toolbar: search + segmented */}
       <div className="hidden md:block mb-5">
-        <div className="flex items-center gap-4 flex-wrap">
+        <div className="card px-4 py-3 flex items-center gap-4" style={{ boxShadow: 'var(--wp-elevation-1)' }}>
+          <div className="flex-1 relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--wp-text-3)' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </span>
+            <input type="text" placeholder={locale === 'es' ? 'Buscar por vendor, categoría o job...' : 'Search by vendor, category or job...'}
+              className="w-full pl-9 pr-3 py-2 text-sm rounded-lg outline-none" style={{ background: 'var(--wp-surface-2)', color: 'var(--wp-text)' }} />
+          </div>
           <Segmented
             options={SEGMENTED_OPTIONS}
             value={typeFilter || 'all'}
             onChange={(v: string) => setTypeFilter(v === 'all' ? '' : v)}
           />
-          <div className="flex items-center gap-2 ml-auto">
-            <div className="relative">
-              <select value={jobFilter} onChange={e => setJobFilter(e.target.value)} className="input pr-8 appearance-none text-xs" style={{ minWidth: '140px' }}>
-                <option value="">All jobs</option>
-                {jobs.map(j => <option key={j.id} value={j.id}>{j.name}</option>)}
-              </select>
-              <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--wp-text-muted)' }} />
-            </div>
-            <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="input text-xs" title="From date" />
-            <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="input text-xs" title="To date" />
-            {hasFilters && (
-              <button onClick={clearFilters} className="flex items-center gap-1 text-xs px-2 py-1 rounded" style={{ color: 'var(--wp-text-muted)' }}>
-                <X size={12} /> Clear
-              </button>
-            )}
-          </div>
         </div>
       </div>
 
