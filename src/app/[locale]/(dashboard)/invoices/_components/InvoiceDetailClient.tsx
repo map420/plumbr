@@ -505,10 +505,7 @@ export function InvoiceDetailClient({ invoice, lineItems, viewCount = 0, clientP
                       {isSending ? <><Loader2 size={14} className="animate-spin" /> Sending...</> : <><Mail size={14} /> Email</>}
                     </button>
                   )}
-                  <button onClick={() => setShowPaymentModal(true)} className="btn-sm"
-                    style={{ background: 'var(--wp-success-v2)', color: 'white', borderRadius: 'var(--wp-radius-md)', padding: '0.375rem 0.75rem', fontWeight: 600, fontSize: '0.75rem' }}>
-                    <DollarSign size={14} /> {locale === 'es' ? 'Cobrar' : 'Record Payment'}
-                  </button>
+                  {/* Record Payment button removed — available in sidebar "Payments received" card */}
                   {(status === 'sent' || status === 'overdue') && (
                     <button onClick={() => handleStatusChange('paid')} disabled={isPending} className="btn-ghost btn-sm"
                       style={{ color: 'var(--wp-success-v2)', minHeight: 'auto' }}>
