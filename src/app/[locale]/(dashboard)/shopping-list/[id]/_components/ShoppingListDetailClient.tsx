@@ -89,7 +89,7 @@ export function ShoppingListDetailClient({ list, job: initialJob, materialSpent:
           className="sl-grid"
           style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 260px',
+            gridTemplateColumns: '1fr 340px',
             gap: 20,
             alignItems: 'start',
           }}
