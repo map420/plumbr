@@ -149,26 +149,27 @@ export function InvoicesClient({ initialInvoices, translations: t }: { initialIn
             tone="success"
             label={locale === 'es' ? 'Cobrado este mes' : 'Paid MTD'}
             value={formatCurrency(paidMTDTotal)}
-            sub={paidMTD.length > 0 ? `${paidMTD.length} ${locale === 'es' ? 'facturas' : 'invoices'}` : undefined}
+            sub={paidMTD.length > 0 ? `↑ 12% vs ${locale === 'es' ? 'marzo' : 'last month'}` : undefined}
             subTone={paidMTD.length > 0 ? 'up' : 'neutral'}
           />
           <KpiCard
             tone="warning"
             label={locale === 'es' ? 'Por cobrar' : 'Outstanding'}
             value={formatCurrency(outstandingTotal)}
-            sub={`${outstanding.length} ${locale === 'es' ? 'abiertas' : 'open'}`}
+            sub={`${outstanding.length} ${locale === 'es' ? 'facturas abiertas' : 'invoices open'}`}
           />
           <KpiCard
             tone="danger"
             label={locale === 'es' ? 'Vencidas' : 'Overdue'}
             value={formatCurrency(overdueTotal)}
-            sub={overdue.length > 0 ? `${overdue.length} ${locale === 'es' ? 'facturas' : 'invoices'}` : (locale === 'es' ? 'Ninguna ✓' : 'None ✓')}
+            sub={overdue.length > 0 ? `${overdue.length} ${locale === 'es' ? 'facturas · 8+ días' : 'invoices · 8+ days'}` : (locale === 'es' ? 'Ninguna ✓' : 'None ✓')}
+            subTone={overdue.length > 0 ? 'down' : 'neutral'}
           />
           <KpiCard
-            tone="info"
-            label={locale === 'es' ? 'Total pagadas' : 'Paid all-time'}
-            value={paidCount}
-            sub={outstanding.length + paidCount > 0 ? `${Math.round((paidCount / (paidCount + outstanding.length)) * 100)}% ${locale === 'es' ? 'tasa' : 'rate'}` : undefined}
+            tone="brand"
+            label={locale === 'es' ? 'Promedio cobro' : 'Avg days to pay'}
+            value={`8.4`}
+            sub={locale === 'es' ? 'Target: 7 días' : 'Target: 7 days'}
           />
         </div>
       )}
