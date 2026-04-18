@@ -151,13 +151,13 @@ export function ShoppingListItems({
 
   return (
     <div className="space-y-4" style={{ opacity: saving ? 0.7 : 1 }}>
-      {/* Toolbar: select mode / bulk actions */}
-      {pendingItems.length > 1 && jobId && (
+      {/* Bulk actions bar — only when selecting */}
+      {selectMode && (
         <div className="flex items-center gap-2">
-          <button onClick={() => { setSelectMode(s => !s); setSelectedIds(new Set()) }} className="btn-secondary btn-sm text-xs">
-            {selectMode ? <><X size={12} /> {locale === 'es' ? 'Cancelar' : 'Cancel'}</> : <><CheckSquare size={12} /> {locale === 'es' ? 'Seleccionar' : 'Select'}</>}
+          <button onClick={() => { setSelectMode(false); setSelectedIds(new Set()) }} className="btn-secondary btn-sm text-xs">
+            <X size={12} /> {locale === 'es' ? 'Cancelar' : 'Cancel'}
           </button>
-          {selectMode && selectedIds.size > 0 && (
+          {selectedIds.size > 0 && (
             <button onClick={handleBulkPurchase} className="btn-primary btn-sm text-xs">
               {locale === 'es' ? `Marcar ${selectedIds.size} compradas` : `Mark ${selectedIds.size} bought`}
             </button>
