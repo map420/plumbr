@@ -611,9 +611,9 @@ function TimeSlotGrid({ hours, displayDays, filteredJobs, techAssignments, techC
         })}
       </div>
 
-      {/* Scrollable body — max 8 hours visible (~480px), rest is scrollable */}
+      {/* Scrollable body — max 8 hours visible (~480px) */}
       <div ref={scrollRef} className="overflow-y-auto" style={{ maxHeight: 480 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '50px repeat(5, 1fr)', position: 'relative', paddingBottom: 240 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '50px repeat(5, 1fr)', position: 'relative' }}>
           {/* Time labels column */}
           <div>
             {hours.map(h => (
