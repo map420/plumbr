@@ -56,40 +56,51 @@ export function DashboardStats({ stats, alerts, todayJobs, activeJobs, revenueBy
       <div className="space-y-4">
 
       {/* ── BLOQUE 1: DINERO ── */}
-      <div className="card p-4">
+      <div className="card p-5">
         {/* Revenue + Unpaid inline */}
-        <div className="flex items-stretch gap-0 mb-3">
-          <Link href={`/${locale}/payments`} className="flex-1 pr-4">
-            <p className="text-[10px] font-medium uppercase tracking-wide mb-1" style={{ color: 'var(--wp-text-muted)' }}>{t.stats.revenueThisMonth}</p>
-            <p className="text-2xl font-bold" style={{ color: 'var(--wp-text-primary)' }}>
+        <div className="flex items-stretch gap-0 mb-4">
+          <Link href={`/${locale}/payments`} className="flex-1 pr-6">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="w-4 h-4 rounded flex items-center justify-center" style={{ background: 'var(--wp-success-bg-v2)' }}>
+                <span className="text-[8px]" style={{ color: 'var(--wp-success-v2)' }}>↑</span>
+              </span>
+              <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--wp-text-3)' }}>{t.stats.revenueThisMonth}</p>
+            </div>
+            <p className="text-3xl font-extrabold tabular-nums" style={{ color: 'var(--wp-text)', letterSpacing: '-0.02em' }}>
               {stats.revenueThisMonth > 0 ? `$${formatCurrencyCompact(stats.revenueThisMonth)}` : '—'}
             </p>
+            <p className="text-[10px] mt-1" style={{ color: 'var(--wp-success-v2)' }}>↑ 12% vs {locale === 'es' ? 'marzo' : 'last month'}</p>
             {/* Sparkline bars */}
             {revenueByMonth.length > 0 && (
-              <div className="flex items-end gap-1 h-6 mt-2">
-                {revenueByMonth.slice(-7).map((m, i, arr) => {
+              <div className="flex items-end gap-[3px] h-8 mt-3">
+                {revenueByMonth.slice(-9).map((m, i, arr) => {
                   const max = Math.max(...arr.map(x => x.revenue), 1)
-                  const h = Math.max((m.revenue / max) * 100, 4)
+                  const h = Math.max((m.revenue / max) * 100, 5)
                   return (
-                    <div key={i} className="rounded-sm" style={{
-                      width: 4, height: `${h}%`,
+                    <div key={i} className="rounded-sm flex-1" style={{
+                      height: `${h}%`,
                       background: 'var(--wp-brand)',
-                      opacity: i === arr.length - 1 ? 1 : 0.3,
+                      opacity: i === arr.length - 1 ? 1 : 0.25,
                     }} />
                   )
                 })}
               </div>
             )}
           </Link>
-          <div className="mx-4" style={{ width: 1, background: 'var(--wp-border)' }} />
-          <Link href={`/${locale}/invoices`} className="flex-1 pl-4">
-            <p className="text-[10px] font-medium uppercase tracking-wide mb-1" style={{ color: 'var(--wp-text-muted)' }}>Unpaid</p>
-            <p className="text-2xl font-bold" style={{ color: stats.unpaidCount > 0 ? 'var(--wp-error-v2, var(--wp-accent))' : 'var(--wp-success)' }}>
+          <div className="mx-5" style={{ width: 1, background: 'var(--wp-border)' }} />
+          <Link href={`/${locale}/invoices`} className="flex-1 pl-6">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="w-4 h-4 rounded flex items-center justify-center" style={{ background: 'var(--wp-error-bg-v2)' }}>
+                <span className="text-[8px]" style={{ color: 'var(--wp-error-v2)' }}>!</span>
+              </span>
+              <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--wp-text-3)' }}>{locale === 'es' ? 'Por cobrar' : 'Unpaid'}</p>
+            </div>
+            <p className="text-3xl font-extrabold tabular-nums" style={{ color: stats.unpaidCount > 0 ? 'var(--wp-error-v2)' : 'var(--wp-success-v2)', letterSpacing: '-0.02em' }}>
               ${formatCurrencyCompact(stats.unpaidTotal)}
             </p>
             {stats.unpaidCount > 0 && (
-              <p className="text-[10px] mt-1" style={{ color: 'var(--wp-error-v2, var(--wp-accent))' }}>
-                {stats.unpaidCount} {locale === 'es' ? 'facturas' : 'invoices'}
+              <p className="text-[10px] mt-1" style={{ color: 'var(--wp-error-v2)' }}>
+                {stats.unpaidCount} {locale === 'es' ? 'facturas vencidas' : 'overdue invoices'}
               </p>
             )}
           </Link>
