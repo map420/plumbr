@@ -282,7 +282,7 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
       </div>
 
       {/* Desktop: 2-column layout with sidebar */}
-      <div className="hidden md:grid grid-cols-[220px_1fr] gap-4 items-start">
+      <div className="hidden md:grid grid-cols-[260px_1fr] gap-5 items-start">
         {/* ── LEFT SIDEBAR ── */}
         <div className="space-y-4 sticky top-4">
           {/* Mini calendar */}
@@ -542,11 +542,13 @@ function TimeSlotGrid({ hours, displayDays, filteredJobs, techAssignments, techC
   const scrollRef = useRef<HTMLDivElement>(null)
   const [now, setNow] = useState(new Date())
 
-  // Auto-scroll to current hour on mount
+  // Auto-scroll to center current time line in viewport
   useEffect(() => {
     if (scrollRef.current) {
-      const currentH = new Date().getHours()
-      const scrollTo = Math.max(0, (currentH - START_HOUR - 1) * HOUR_HEIGHT)
+      const currentH = new Date().getHours() + new Date().getMinutes() / 60
+      const currentTimeOffset = (currentH - START_HOUR) * HOUR_HEIGHT
+      const viewportHeight = scrollRef.current.clientHeight
+      const scrollTo = Math.max(0, currentTimeOffset - viewportHeight / 2)
       scrollRef.current.scrollTop = scrollTo
     }
   }, [START_HOUR, HOUR_HEIGHT])
