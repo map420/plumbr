@@ -50,7 +50,7 @@ export function DashboardStats({ stats, alerts, todayJobs, activeJobs, revenueBy
   const hasTodayJobs = todayJobs.length > 0
 
   return (
-    <div className="p-4 md:p-8 max-w-6xl">
+    <div className="p-4 md:p-8">
       <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-5 items-start">
       {/* ── LEFT COLUMN ── */}
       <div className="space-y-4">
@@ -95,36 +95,25 @@ export function DashboardStats({ stats, alerts, todayJobs, activeJobs, revenueBy
           </Link>
         </div>
 
-        {/* Pipeline — 4-cell grid */}
+        {/* Pipeline — 4-cell grid matching proposal */}
         <div className="grid grid-cols-4 gap-2 pt-3" style={{ borderTop: '1px solid var(--wp-border-light)' }}>
-          <Link href={`/${locale}/estimates`} className="rounded-lg p-2.5 text-center transition-colors hover:bg-[var(--wp-surface-3)]" style={{ background: 'var(--wp-surface-2)' }}>
-            <div className="flex items-center justify-center gap-1 mb-0.5">
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--wp-info-v2)' }} />
-              <span className="text-lg font-bold" style={{ color: 'var(--wp-text)' }}>{pipeline.pending}</span>
-            </div>
-            <span className="text-[10px] font-medium" style={{ color: 'var(--wp-text-3)' }}>Pending</span>
-          </Link>
-          <div className="rounded-lg p-2.5 text-center" style={{ background: 'var(--wp-surface-2)' }}>
-            <div className="flex items-center justify-center gap-1 mb-0.5">
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--wp-success-v2)' }} />
-              <span className="text-lg font-bold" style={{ color: 'var(--wp-text)' }}>—</span>
-            </div>
-            <span className="text-[10px] font-medium" style={{ color: 'var(--wp-text-3)' }}>Approved</span>
-          </div>
-          <Link href={`/${locale}/invoices`} className="rounded-lg p-2.5 text-center transition-colors hover:bg-[var(--wp-surface-3)]" style={{ background: 'var(--wp-surface-2)' }}>
-            <div className="flex items-center justify-center gap-1 mb-0.5">
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--wp-warning-v2)' }} />
-              <span className="text-lg font-bold" style={{ color: 'var(--wp-text)' }}>{pipeline.unpaid}</span>
-            </div>
-            <span className="text-[10px] font-medium" style={{ color: 'var(--wp-text-3)' }}>Unpaid</span>
-          </Link>
-          <Link href={`/${locale}/payments`} className="rounded-lg p-2.5 text-center transition-colors hover:bg-[var(--wp-surface-3)]" style={{ background: 'var(--wp-surface-2)' }}>
-            <div className="flex items-center justify-center gap-1 mb-0.5">
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--wp-brand)' }} />
-              <span className="text-lg font-bold" style={{ color: 'var(--wp-text)' }}>{pipeline.paid}</span>
-            </div>
-            <span className="text-[10px] font-medium" style={{ color: 'var(--wp-text-3)' }}>Paid MTD</span>
-          </Link>
+          {[
+            { href: `/${locale}/estimates`, count: pipeline.pending, label: locale === 'es' ? 'Pendientes' : 'Pending', color: 'var(--wp-info-v2)' },
+            { href: `/${locale}/estimates`, count: 0, label: locale === 'es' ? 'Aprobados' : 'Approved', color: 'var(--wp-success-v2)' },
+            { href: `/${locale}/invoices`, count: pipeline.unpaid, label: locale === 'es' ? 'Sin pagar' : 'Unpaid', color: 'var(--wp-warning-v2)', amount: stats.unpaidTotal },
+            { href: `/${locale}/payments`, count: pipeline.paid, label: locale === 'es' ? 'Pagado MTD' : 'Paid MTD', color: 'var(--wp-brand)', amount: stats.revenueThisMonth },
+          ].map((cell, i) => (
+            <Link key={i} href={cell.href} className="rounded-lg p-3 transition-colors hover:bg-[var(--wp-surface-3)]" style={{ background: 'var(--wp-surface-2)', borderBottom: `2px solid ${cell.color}` }}>
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: cell.color }} />
+                <span className="text-xl font-bold tabular-nums" style={{ color: 'var(--wp-text)' }}>{cell.count || '—'}</span>
+              </div>
+              {cell.amount != null && cell.amount > 0 && (
+                <p className="text-[10px] font-medium tabular-nums mb-0.5" style={{ color: 'var(--wp-text-2)' }}>${formatCurrencyCompact(cell.amount)}</p>
+              )}
+              <span className="text-[10px] font-medium" style={{ color: 'var(--wp-text-3)' }}>{cell.label}</span>
+            </Link>
+          ))}
         </div>
       </div>
 
