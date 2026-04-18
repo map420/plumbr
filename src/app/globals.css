@@ -1102,30 +1102,12 @@
 
 }
 
-/* Shopping list detail — 2-col layout (outside @layer for proper media query) */
-.sl-detail-layout {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  align-items: flex-start;
-}
-.sl-detail-main {
-  flex: 1;
-  min-width: 0;
-  width: 100%;
-}
-.sl-detail-sidebar {
-  display: none;
-}
-@media (min-width: 768px) {
-  .sl-detail-layout {
-    flex-direction: row;
+/* Shopping list detail — CSS Grid 2-col layout */
+@media (max-width: 767px) {
+  .sl-grid {
+    grid-template-columns: 1fr !important;
   }
-  .sl-detail-sidebar {
-    display: block;
-    width: 280px;
-    flex-shrink: 0;
-    position: sticky;
-    top: 16px;
+  .sl-side-col {
+    display: none;
   }
 }

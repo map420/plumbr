@@ -310,9 +310,19 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
           </div>
         </div>
 
-        {/* 2-column layout: items left + sidebar right */}
-        <div className="sl-detail-layout" style={{ display: 'flex', flexWrap: 'nowrap', gap: 16, alignItems: 'flex-start', flexDirection: 'row', width: '100%' }}>
-        <div className="sl-detail-main space-y-4" style={{ flex: '1 1 0', minWidth: 0, maxWidth: 'calc(100% - 296px)' }}>
+        {/* 2-column layout: items left + sidebar right — using CSS Grid (more robust than flex) */}
+        <div
+          suppressHydrationWarning
+          className="sl-grid"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 280px',
+            gap: 16,
+            alignItems: 'start',
+            width: '100%',
+          }}
+        >
+        <div className="sl-main-col space-y-4" style={{ minWidth: 0 }}>
 
         {/* Job link — compact row, not a big card (job info is in sidebar) */}
         {!job && (
@@ -608,15 +618,10 @@ export function ShoppingListDetailClient({ list, job: initialJob, estimate, mate
         </div>{/* end left column */}
 
         {/* ── RIGHT SIDEBAR ── */}
-        <div className="hidden md:block space-y-4" style={{ width: 280, flexShrink: 0, position: 'sticky', top: 16 }}>
+        <div className="sl-side-col space-y-4" style={{ position: 'sticky', top: 16 }}>
           <ShoppingListSidebar items={items} job={job} locale={locale} />
         </div>
         </div>{/* end 2-col grid */}
-
-        {/* Mobile sidebar — shows below content on mobile */}
-        <div className="md:hidden space-y-4 mt-4">
-          <ShoppingListSidebar items={items} job={job} locale={locale} />
-        </div>
 
       {/* Bulk action bar — fixed bottom on mobile, sticky on desktop */}
       {selectMode && (
