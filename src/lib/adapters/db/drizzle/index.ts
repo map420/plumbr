@@ -248,9 +248,19 @@ export const drizzleAdapter: DbAdapter = {
 
   users: {
     async findById(id) {
-      const rows = await db.select().from(users).where(eq(users.id, id))
-      if (!rows[0]) return null
-      return { ...rows[0], socialLinks: rows[0].socialLinks as Record<string, string> | null } as import('../types').User
+      // Retry logic for Supabase pooler connection hiccups
+      let lastErr: unknown
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          const rows = await db.select().from(users).where(eq(users.id, id))
+          if (!rows[0]) return null
+          return { ...rows[0], socialLinks: rows[0].socialLinks as Record<string, string> | null } as import('../types').User
+        } catch (err) {
+          lastErr = err
+          if (attempt < 2) await new Promise(r => setTimeout(r, 200 * (attempt + 1)))
+        }
+      }
+      throw lastErr
     },
     async upsert(data) {
       const { id: _id, ...updateData } = data
