@@ -136,9 +136,25 @@ export function JobsClient({ initialJobs, jobAssignments, planInfo, translations
             )}
           </p>
         </div>
-        <Link href={`/${locale}/jobs/new`} className="btn-primary btn-sm">
-          <Plus size={14} /> {t.new}
-        </Link>
+        <div className="flex items-center gap-3">
+          <div className="flex rounded-lg overflow-hidden" style={{ border: '1px solid var(--wp-border-v2)' }}>
+            <button onClick={() => setViewMode('kanban')} className="text-xs px-3 py-1.5 font-medium"
+              style={{ background: viewMode === 'kanban' ? 'var(--wp-brand)' : 'var(--wp-surface)', color: viewMode === 'kanban' ? 'white' : 'var(--wp-text-3)' }}>
+              Kanban
+            </button>
+            <button onClick={() => setViewMode('list')} className="text-xs px-3 py-1.5 font-medium"
+              style={{ background: viewMode === 'list' ? 'var(--wp-brand)' : 'var(--wp-surface)', color: viewMode === 'list' ? 'white' : 'var(--wp-text-3)' }}>
+              List
+            </button>
+            <button onClick={() => router.push(`/${locale}/schedule`)} className="text-xs px-3 py-1.5 font-medium"
+              style={{ background: 'var(--wp-surface)', color: 'var(--wp-text-3)' }}>
+              Calendar
+            </button>
+          </div>
+          <Link href={`/${locale}/jobs/new`} className="btn-primary btn-sm">
+            <Plus size={14} /> {t.new}
+          </Link>
+        </div>
       </div>
 
       {/* KPI row */}
@@ -195,27 +211,11 @@ export function JobsClient({ initialJobs, jobAssignments, planInfo, translations
           onSearchChange={setSearch}
           searchPlaceholder={locale === 'es' ? 'Buscar por job o cliente...' : 'Search by job or client...'}
           right={
-            <div className="flex items-center gap-3">
-              <Segmented
-                value={filter}
-                onChange={setFilter}
-                options={desktopFilterOptions}
-              />
-              <div className="flex rounded-lg overflow-hidden" style={{ border: '1px solid var(--wp-border-v2)' }}>
-                <button onClick={() => setViewMode('list')} className="p-2" title="List view"
-                  style={{ background: viewMode === 'list' ? 'var(--wp-brand)' : 'var(--wp-surface)', color: viewMode === 'list' ? 'white' : 'var(--wp-text-3)' }}>
-                  <List size={14} />
-                </button>
-                <button onClick={() => setViewMode('kanban')} className="p-2" title="Kanban view"
-                  style={{ background: viewMode === 'kanban' ? 'var(--wp-brand)' : 'var(--wp-surface)', color: viewMode === 'kanban' ? 'white' : 'var(--wp-text-3)' }}>
-                  <LayoutGrid size={14} />
-                </button>
-                <button onClick={() => router.push(`/${locale}/schedule`)} className="p-2" title="Calendar view"
-                  style={{ background: 'var(--wp-surface)', color: 'var(--wp-text-3)' }}>
-                  <Calendar size={14} />
-                </button>
-              </div>
-            </div>
+            <Segmented
+              value={filter}
+              onChange={setFilter}
+              options={desktopFilterOptions}
+            />
           }
         />
       </div>
