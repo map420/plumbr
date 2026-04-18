@@ -89,8 +89,8 @@ export function ShoppingListDetailClient({ list, job: initialJob, materialSpent:
           className="sl-grid"
           style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 280px',
-            gap: 16,
+            gridTemplateColumns: '1fr 260px',
+            gap: 20,
             alignItems: 'start',
           }}
         >

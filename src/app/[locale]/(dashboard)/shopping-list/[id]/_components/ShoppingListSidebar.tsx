@@ -30,47 +30,47 @@ export function ShoppingListSidebar({
   return (
     <>
       {/* Total card */}
-      <div className="rounded-xl p-5" style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', color: 'white' }}>
+      <div className="rounded-xl p-4" style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', color: 'white' }}>
         <div className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ opacity: 0.6 }}>Total</div>
-        <div className="text-2xl font-extrabold tabular-nums mb-3" style={{ letterSpacing: '-0.02em' }}>
+        <div className="text-xl font-extrabold tabular-nums mb-2.5" style={{ letterSpacing: '-0.02em' }}>
           ${total.toLocaleString('en-US', { minimumFractionDigits: 2 })}
         </div>
-        <div className="space-y-1 text-xs" style={{ opacity: 0.85 }}>
+        <div className="space-y-1 text-[11px]" style={{ opacity: 0.85 }}>
           <div className="flex justify-between">
             <span>{locale === 'es' ? 'Ya comprado' : 'Already bought'}</span>
-            <span>${alreadyBought.toLocaleString()}</span>
+            <span className="tabular-nums">${alreadyBought.toLocaleString()}</span>
           </div>
           <div className="flex justify-between">
             <span>{locale === 'es' ? 'Pendiente' : 'Remaining'}</span>
-            <span>${remaining.toLocaleString()}</span>
+            <span className="tabular-nums">${remaining.toLocaleString()}</span>
           </div>
         </div>
       </div>
 
       {/* Linked jobs */}
       {job && (
-        <div className="card p-4">
-          <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--wp-text-3)' }}>
+        <div className="card p-3">
+          <div className="text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--wp-text-3)' }}>
             {locale === 'es' ? 'Jobs vinculados' : 'Linked jobs'}
           </div>
-          <Link href={`/${locale}/jobs/${job.id}`} className="flex items-center justify-between text-xs py-1" style={{ color: 'var(--wp-text-2)' }}>
-            <span className="font-medium" style={{ color: 'var(--wp-brand)' }}>{job.name}</span>
-            <span>{items.length} items</span>
+          <Link href={`/${locale}/jobs/${job.id}`} className="flex items-center justify-between text-[11px] py-0.5" style={{ color: 'var(--wp-text-2)' }}>
+            <span className="font-medium truncate" style={{ color: 'var(--wp-brand)' }}>{job.name}</span>
+            <span className="shrink-0 ml-2">{items.length} items</span>
           </Link>
         </div>
       )}
 
       {/* Vendors summary */}
       {hasRealVendors && (
-        <div className="card p-4">
-          <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--wp-text-3)' }}>
+        <div className="card p-3">
+          <div className="text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--wp-text-3)' }}>
             {locale === 'es' ? 'Proveedores' : 'Vendors'}
           </div>
           <div className="space-y-1">
             {vendorEntries.map(([vendor, vItems]) => (
-              <div key={vendor} className="flex items-center justify-between text-xs">
-                <span className="font-medium" style={{ color: 'var(--wp-text)' }}>{vendor}</span>
-                <span style={{ color: 'var(--wp-text-3)' }}>
+              <div key={vendor} className="flex items-center justify-between text-[11px]">
+                <span className="font-medium truncate" style={{ color: 'var(--wp-text)' }}>{vendor}</span>
+                <span className="shrink-0 ml-2" style={{ color: 'var(--wp-text-3)' }}>
                   {vItems.length} · ${vItems.reduce((s, it) => s + parseFloat(it.estimatedCost), 0).toLocaleString()}
                 </span>
               </div>
@@ -79,12 +79,12 @@ export function ShoppingListSidebar({
         </div>
       )}
 
-      {/* AI tip */}
-      <div className="card p-4" style={{ background: 'var(--wp-surface-2)' }}>
+      {/* AI tip — navy gradient matching Total card */}
+      <div className="rounded-xl p-4" style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', color: 'white' }}>
         <div className="flex items-center gap-1.5 mb-2">
-          <span className="text-xs font-semibold" style={{ color: 'var(--wp-brand)' }}>◆ WorkPilot AI</span>
+          <span className="text-xs font-semibold" style={{ color: 'var(--wp-ai-accent, #A5B4FC)' }}>◆ WorkPilot AI</span>
         </div>
-        <p className="text-[11px] leading-relaxed" style={{ color: 'var(--wp-text-2)' }}>
+        <p className="text-[11px] leading-relaxed" style={{ opacity: 0.85 }}>
           {locale === 'es'
             ? 'Optimiza tu ruta de compras agrupando por proveedor. Ahorra tiempo y combustible.'
             : 'Optimize your shopping route by grouping by vendor. Save time and fuel.'}
