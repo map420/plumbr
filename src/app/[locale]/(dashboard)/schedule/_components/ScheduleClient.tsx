@@ -427,40 +427,10 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
           const totalWeekJobs = displayDays.reduce((s, d) => s + jobsForDay(filteredJobs, d).length, 0)
           const weekNum = Math.ceil((weekDays[0].getDate() + new Date(weekDays[0].getFullYear(), weekDays[0].getMonth(), 1).getDay()) / 7)
 
-          return (
-            <div>
-              {/* Calendar header — aligned with sidebar */}
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <div className="text-lg font-bold" style={{ color: 'var(--wp-text)' }}>
-                    {weekDays[0].toLocaleString(locale === 'es' ? 'es' : 'en', { month: 'long' })} {weekDays[0].getDate()} – {weekDays[6].getDate()}, {weekDays[0].getFullYear()}
-                  </div>
-                  <div className="text-xs mt-0.5" style={{ color: 'var(--wp-text-3)' }}>
-                    {locale === 'es' ? 'Semana' : 'Week'} {weekNum} · {totalWeekJobs} {locale === 'es' ? 'eventos' : 'events'}
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <button onClick={() => setWeekStart(d => { const n = new Date(d); n.setDate(n.getDate() - 7); return n })}
-                    className="p-1.5 rounded-lg" style={{ border: '1px solid var(--wp-border-v2)', color: 'var(--wp-text-3)' }}>
-                    <ChevronLeft size={14} />
-                  </button>
-                  <button onClick={() => { setWeekStart(startOfWeek(new Date())) }}
-                    className="text-xs px-3 py-1.5 rounded-lg font-medium" style={{ border: '1px solid var(--wp-border-v2)', color: 'var(--wp-text-2)' }}>
-                    Today
-                  </button>
-                  <button onClick={() => setWeekStart(d => { const n = new Date(d); n.setDate(n.getDate() + 7); return n })}
-                    className="p-1.5 rounded-lg" style={{ border: '1px solid var(--wp-border-v2)', color: 'var(--wp-text-3)' }}>
-                    <ChevronRight size={14} />
-                  </button>
-                  <div className="flex rounded-lg overflow-hidden ml-1" style={{ border: '1px solid var(--wp-border-v2)' }}>
-                    <button className="text-[10px] px-2 py-1.5 font-medium" style={{ color: 'var(--wp-text-3)' }}>Day</button>
-                    <button className="text-[10px] px-2 py-1.5 font-medium" style={{ background: 'var(--wp-brand)', color: 'white' }}>Week</button>
-                    <button onClick={() => setView('month')} className="text-[10px] px-2 py-1.5 font-medium" style={{ color: 'var(--wp-text-3)' }}>Month</button>
-                  </div>
-                </div>
-              </div>
+          const calTitle = `${weekDays[0].toLocaleString(locale === 'es' ? 'es' : 'en', { month: 'long' })} ${weekDays[0].getDate()} – ${weekDays[6].getDate()}, ${weekDays[0].getFullYear()}`
+          const calSub = `${locale === 'es' ? 'Semana' : 'Week'} ${weekNum} · ${totalWeekJobs} ${locale === 'es' ? 'eventos' : 'events'}`
 
-              {/* Time-slot grid — scrollable */}
+          return (
               <TimeSlotGrid
                 hours={hours}
                 displayDays={displayDays}
@@ -470,9 +440,14 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
                 locale={locale}
                 START_HOUR={START_HOUR}
                 HOUR_HEIGHT={HOUR_HEIGHT}
-                HEADER_HEIGHT={HEADER_HEIGHT}
+                HEADER_HEIGHT={68}
+                calTitle={calTitle}
+                calSub={calSub}
+                onPrev={() => setWeekStart(d => { const n = new Date(d); n.setDate(n.getDate() - 7); return n })}
+                onNext={() => setWeekStart(d => { const n = new Date(d); n.setDate(n.getDate() + 7); return n })}
+                onToday={() => setWeekStart(startOfWeek(new Date()))}
+                onMonthView={() => setView('month')}
               />
-            </div>
           )
         })()}
 
@@ -559,9 +534,10 @@ function DraggableMonthJob({ job, locale }: { job: Job; locale: string }) {
 }
 
 // ── TimeSlotGrid: scrollable calendar with current-time line ──
-function TimeSlotGrid({ hours, displayDays, filteredJobs, techAssignments, techColorMap, locale, START_HOUR, HOUR_HEIGHT, HEADER_HEIGHT }: {
+function TimeSlotGrid({ hours, displayDays, filteredJobs, techAssignments, techColorMap, locale, START_HOUR, HOUR_HEIGHT, HEADER_HEIGHT, calTitle, calSub, onPrev, onNext, onToday, onMonthView }: {
   hours: number[]; displayDays: Date[]; filteredJobs: Job[]; techAssignments: TechAssignment[]
   techColorMap: Map<string, string>; locale: string; START_HOUR: number; HOUR_HEIGHT: number; HEADER_HEIGHT: number
+  calTitle: string; calSub: string; onPrev: () => void; onNext: () => void; onToday: () => void; onMonthView: () => void
 }) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [now, setNow] = useState(new Date())
@@ -590,17 +566,41 @@ function TimeSlotGrid({ hours, displayDays, filteredJobs, techAssignments, techC
 
   return (
     <div className="card overflow-hidden" style={{ padding: 0 }}>
-      {/* Sticky day headers */}
+      {/* Calendar title + nav + day headers — all inside the card */}
+      <div className="px-4 py-3 flex items-start justify-between" style={{ borderBottom: '1px solid var(--wp-border-v2)' }}>
+        <div>
+          <div className="text-lg font-bold" style={{ color: 'var(--wp-text)' }}>{calTitle}</div>
+          <div className="text-xs mt-0.5" style={{ color: 'var(--wp-text-3)' }}>{calSub}</div>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <button onClick={onPrev} className="p-1.5 rounded-lg" style={{ border: '1px solid var(--wp-border-v2)', color: 'var(--wp-text-3)' }}>
+            <ChevronLeft size={14} />
+          </button>
+          <button onClick={onToday} className="text-xs px-3 py-1.5 rounded-lg font-medium" style={{ border: '1px solid var(--wp-border-v2)', color: 'var(--wp-text-2)' }}>
+            Today
+          </button>
+          <button onClick={onNext} className="p-1.5 rounded-lg" style={{ border: '1px solid var(--wp-border-v2)', color: 'var(--wp-text-3)' }}>
+            <ChevronRight size={14} />
+          </button>
+          <div className="flex rounded-lg overflow-hidden ml-1" style={{ border: '1px solid var(--wp-border-v2)' }}>
+            <button className="text-[10px] px-2 py-1.5 font-medium" style={{ color: 'var(--wp-text-3)' }}>Day</button>
+            <button className="text-[10px] px-2 py-1.5 font-medium" style={{ background: 'var(--wp-brand)', color: 'white' }}>Week</button>
+            <button onClick={onMonthView} className="text-[10px] px-2 py-1.5 font-medium" style={{ color: 'var(--wp-text-3)' }}>Month</button>
+          </div>
+        </div>
+      </div>
+
+      {/* Day column headers */}
       <div style={{ display: 'grid', gridTemplateColumns: '50px repeat(5, 1fr)' }}>
-        <div style={{ height: HEADER_HEIGHT, background: 'var(--wp-surface-2)', borderBottom: '1px solid var(--wp-border-v2)' }} />
+        <div style={{ height: 44, background: 'var(--wp-surface-2)', borderBottom: '1px solid var(--wp-border-v2)' }} />
         {displayDays.map((day, di) => {
           const isToday = sameDay(day, now)
           return (
-            <div key={di} className="text-center py-2" style={{ height: HEADER_HEIGHT, background: 'var(--wp-surface-2)', borderBottom: '1px solid var(--wp-border-v2)', borderLeft: '1px solid var(--wp-border-light)' }}>
-              <div className="text-xs font-medium" style={{ color: isToday ? 'var(--wp-brand)' : 'var(--wp-text-3)' }}>
+            <div key={di} className="text-center py-1.5" style={{ height: 44, background: isToday ? 'color-mix(in srgb, var(--wp-info-v2) 8%, white)' : 'var(--wp-surface-2)', borderBottom: '1px solid var(--wp-border-v2)', borderLeft: '1px solid var(--wp-border-light)' }}>
+              <div className="text-[10px] font-medium" style={{ color: isToday ? 'var(--wp-brand)' : 'var(--wp-text-3)' }}>
                 {DAY_NAMES[day.getDay()]}
               </div>
-              <div className="text-lg font-bold" style={{ color: isToday ? 'var(--wp-brand)' : 'var(--wp-text)' }}>
+              <div className="text-base font-bold" style={{ color: isToday ? 'var(--wp-brand)' : 'var(--wp-text)' }}>
                 {day.getDate()}
               </div>
             </div>
