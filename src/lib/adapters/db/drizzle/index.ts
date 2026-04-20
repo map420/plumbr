@@ -264,10 +264,25 @@ export const drizzleAdapter: DbAdapter = {
       throw lastErr
     },
     async upsert(data) {
-      const { id: _id, ...updateData } = data
-      const [user] = await db.insert(users).values({ ...data })
-        .onConflictDoUpdate({ target: users.id, set: { ...updateData, updatedAt: new Date() } })
-        .returning()
+      // ON CONFLICT (id) solo intercepta colisiones por id. La tabla tiene UNIQUE
+      // en email también, y cuando Clerk regenera un usuario (mismo email, nuevo id)
+      // el INSERT explota con users_email_unique ANTES del ON CONFLICT.
+      // Fix: detectar fila existente por id OR email y actualizar; si el id cambió,
+      // actualizarlo también para preservar FKs a jobs/estimates/invoices/etc.
+      const existing = await db.select().from(users)
+        .where(or(eq(users.id, data.id), eq(users.email, data.email)))
+        .limit(1)
+
+      if (existing[0]) {
+        const { id: _id, ...updateData } = data
+        const [user] = await db.update(users)
+          .set({ ...updateData, id: data.id, email: data.email, updatedAt: new Date() })
+          .where(eq(users.id, existing[0].id))
+          .returning()
+        return { ...user, socialLinks: user.socialLinks as Record<string, string> | null } as import('../types').User
+      }
+
+      const [user] = await db.insert(users).values({ ...data }).returning()
       return { ...user, socialLinks: user.socialLinks as Record<string, string> | null } as import('../types').User
     },
     async update(id, data) {
