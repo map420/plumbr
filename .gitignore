@@ -44,3 +44,7 @@ next-env.d.ts
 /drizzle/
 
 .vercel
+
+# Docs helper node_modules
+docs/node_modules/
+docs/package-lock.json
