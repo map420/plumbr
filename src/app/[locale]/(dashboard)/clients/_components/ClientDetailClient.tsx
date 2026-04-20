@@ -8,10 +8,11 @@ import { useRouter } from 'next/navigation'
 import { updateClient } from '@/lib/actions/clients'
 import { EstimateStatusBadge } from '@/components/estimates/EstimateStatusBadge'
 import { JobStatusBadge } from '@/components/jobs/JobStatusBadge'
+import { deriveEstimateStatus, deriveJobStatus, deriveInvoiceStatus } from '@/lib/status/derived'
 import { Toast } from '@/components/Toast'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { BottomSheet } from '@/components/BottomSheet'
-import { Mail, Phone, MapPin, FileText, Briefcase, Receipt, Edit2, Check, X, ChevronLeft, MoreHorizontal, PhoneCall, Plus } from 'lucide-react'
+import { Mail, Phone, MapPin, FileText, Briefcase, Receipt, Edit2, Check, X, ChevronLeft, MoreHorizontal, PhoneCall, Plus, PenLine, DollarSign, Paperclip } from 'lucide-react'
 import type { EstimateStatus } from '@/lib/store/estimates'
 import type { JobStatus } from '@/lib/store/jobs'
 import {
@@ -22,9 +23,9 @@ import {
 } from '@/components/ui'
 
 type Client = { id: string; name: string; email: string | null; phone: string | null; address: string | null; notes: string | null }
-type Job = { id: string; name: string; status: string; budgetedCost: string }
-type Estimate = { id: string; number: string; status: string; total: string; createdAt: Date }
-type Invoice = { id: string; number: string; status: string; total: string; dueDate: Date | null }
+type Job = { id: string; name: string; status: string; budgetedCost: string; startDate?: Date | null }
+type Estimate = { id: string; number: string; status: string; total: string; createdAt: Date; jobId: string | null; validUntil?: Date | null; allowExpire?: boolean | null; signatureDataUrl?: string | null; depositPaid?: boolean | null; contractId?: string | null }
+type Invoice = { id: string; number: string; status: string; total: string; dueDate: Date | null; paidAt: Date | null; jobId: string | null }
 
 export function ClientDetailClient({ client, jobs, estimates, invoices }: {
   client: Client; jobs: Job[]; estimates: Estimate[]; invoices: Invoice[]
@@ -37,9 +38,12 @@ export function ClientDetailClient({ client, jobs, estimates, invoices }: {
   const [showMoreMenu, setShowMoreMenu] = useState(false)
   const [form, setForm] = useState({ name: client.name, email: client.email ?? '', phone: client.phone ?? '', address: client.address ?? '', notes: client.notes ?? '' })
 
+  // E5 / TRV-008 — billed = Σ emitidas (sent/overdue/paid); lifetimeValue = Σ pagadas
+  const totalBilled = invoices.filter(i => i.status !== 'draft' && i.status !== 'cancelled').reduce((s, i) => s + parseFloat(i.total), 0)
   const totalRevenue = invoices.filter(i => i.status === 'paid').reduce((s, i) => s + parseFloat(i.total), 0)
-  const outstanding = invoices.filter(i => i.status !== 'paid' && i.status !== 'cancelled').reduce((s, i) => s + parseFloat(i.total), 0)
+  const outstanding = invoices.filter(i => { const d = deriveInvoiceStatus(i); return d === 'sent' || d === 'overdue' }).reduce((s, i) => s + parseFloat(i.total), 0)
   const activeJobs = jobs.filter(j => j.status === 'active').length
+  const jobById = new Map(jobs.map(j => [j.id, j]))
 
   function handleSave() {
     startTransition(async () => {
@@ -52,7 +56,7 @@ export function ClientDetailClient({ client, jobs, estimates, invoices }: {
 
   return (
     <>
-      {saved && <Toast message="Client updated successfully!" onDone={() => setSaved(false)} />}
+      {saved && <Toast message={locale === 'es' ? 'Cliente actualizado' : 'Client updated'} onDone={() => setSaved(false)} />}
 
       {/* More menu bottom sheet (mobile) */}
       <BottomSheet open={showMoreMenu} onClose={() => setShowMoreMenu(false)} title="Actions">
@@ -61,7 +65,7 @@ export function ClientDetailClient({ client, jobs, estimates, invoices }: {
             className="w-full flex items-center gap-3 px-5 py-3.5 text-sm text-left" style={{ color: 'var(--wp-text)' }}>
             <Edit2 size={18} style={{ color: 'var(--wp-text-3)' }} /> Edit Client
           </button>
-          <Link href={`/${locale}/jobs/new`} onClick={() => setShowMoreMenu(false)}
+          <Link href={`/${locale}/projects/new?clientId=${client.id}`} onClick={() => setShowMoreMenu(false)}
             className="flex items-center gap-3 px-5 py-3.5 text-sm" style={{ color: 'var(--wp-text)' }}>
             <Briefcase size={18} style={{ color: 'var(--wp-text-3)' }} /> New Job
           </Link>
@@ -73,7 +77,7 @@ export function ClientDetailClient({ client, jobs, estimates, invoices }: {
       </BottomSheet>
 
       {/* ══════════════ MOBILE LAYOUT (preserved) ══════════════ */}
-      <div className="md:hidden bg-white min-h-full">
+      <div className="md:hidden bg-card min-h-full">
         <div className="flex items-center px-4 py-2.5" style={{ borderBottom: '1px solid var(--wp-border-light)' }}>
           <div className="flex-1 flex items-center justify-start">
             <button onClick={() => router.push(`/${locale}/clients`)}
@@ -95,7 +99,7 @@ export function ClientDetailClient({ client, jobs, estimates, invoices }: {
           {[
             { icon: PhoneCall, label: 'CALL', action: () => client.phone && window.open(`tel:${client.phone}`) },
             { icon: Mail, label: 'EMAIL', action: () => client.email && window.open(`mailto:${client.email}`) },
-            { icon: Briefcase, label: 'NEW JOB', action: () => router.push(`/${locale}/jobs/new`) },
+            { icon: Briefcase, label: 'NEW PROJECT', action: () => router.push(`/${locale}/projects/new?clientId=${client.id}`) },
             { icon: MoreHorizontal, label: 'MORE', action: () => setShowMoreMenu(true) },
           ].map(btn => (
             <button key={btn.label} onClick={btn.action} className="flex flex-col items-center gap-1 py-1.5">
@@ -107,7 +111,7 @@ export function ClientDetailClient({ client, jobs, estimates, invoices }: {
 
         <div className="grid grid-cols-3 gap-px mx-4 my-4" style={{ background: 'var(--wp-border-v2)', borderRadius: '0.75rem', overflow: 'hidden' }}>
           {[
-            { label: 'Jobs', value: jobs.length },
+            { label: locale === 'es' ? 'Proyectos' : 'Projects', value: jobs.length },
             { label: 'Estimates', value: estimates.length },
             { label: 'Revenue', value: `$${formatCurrencyCompact(totalRevenue)}` },
           ].map(s => (
@@ -148,15 +152,18 @@ export function ClientDetailClient({ client, jobs, estimates, invoices }: {
         <div className="px-4 pb-4">
           <div className="flex items-center justify-between mb-2">
             <p style={{ fontSize: '0.6rem', fontWeight: 600, letterSpacing: '0.08em', color: 'var(--wp-text-3)', textTransform: 'uppercase' }}>Jobs</p>
-            <Link href={`/${locale}/jobs/new`} style={{ fontSize: '0.75rem', color: 'var(--wp-brand)' }}>+ New</Link>
+            <Link href={`/${locale}/projects/new?clientId=${client.id}`} style={{ fontSize: '0.75rem', color: 'var(--wp-brand)' }}>+ New</Link>
           </div>
           {jobs.length === 0 ? <p className="text-sm py-2" style={{ color: 'var(--wp-text-3)' }}>No jobs yet.</p> : (
             <div>
               {jobs.map((j, idx) => (
-                <Link key={j.id} href={`/${locale}/jobs/${j.id}`} className="flex items-center justify-between py-3 border-b" style={{ borderColor: 'var(--wp-border-light)', animation: `fadeSlideIn 0.3s ease both`, animationDelay: `${idx * 30}ms` }}>
+                <Link key={j.id} href={`/${locale}/projects/${j.id}`} className="flex items-center justify-between py-3 border-b" style={{ borderColor: 'var(--wp-border-light)', animation: `fadeSlideIn 0.3s ease both`, animationDelay: `${idx * 30}ms` }}>
                   <div>
                     <p className="text-sm font-medium" style={{ color: 'var(--wp-text)' }}>{j.name}</p>
-                    <JobStatusBadge status={j.status as JobStatus} label={j.status.charAt(0).toUpperCase() + j.status.slice(1)} />
+                    {(() => {
+                      const derived = deriveJobStatus(j)
+                      return <JobStatusBadge status={derived} label={derived.charAt(0).toUpperCase() + derived.slice(1)} />
+                    })()}
                   </div>
                   <span className="text-sm font-medium tabular-nums" style={{ color: 'var(--wp-text-2)' }}>${formatCurrency(j.budgetedCost)}</span>
                 </Link>
@@ -175,8 +182,16 @@ export function ClientDetailClient({ client, jobs, estimates, invoices }: {
               {estimates.map((e, idx) => (
                 <Link key={e.id} href={`/${locale}/estimates/${e.id}`} className="flex items-center justify-between py-3 border-b" style={{ borderColor: 'var(--wp-border-light)', animation: `fadeSlideIn 0.3s ease both`, animationDelay: `${idx * 30}ms` }}>
                   <div>
-                    <p className="text-sm font-medium" style={{ color: 'var(--wp-text)' }}>{e.number}</p>
-                    <EstimateStatusBadge status={e.status as EstimateStatus} label={e.status.charAt(0).toUpperCase() + e.status.slice(1)} />
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-medium" style={{ color: 'var(--wp-text)' }}>{e.number}</p>
+                      {e.signatureDataUrl && <PenLine size={12} style={{ color: 'var(--wp-success-v2)' }} aria-label="Signed" />}
+                      {e.depositPaid && <DollarSign size={12} style={{ color: 'var(--wp-success-v2)' }} aria-label="Deposit paid" />}
+                      {e.contractId && <Paperclip size={12} style={{ color: 'var(--wp-text-3)' }} aria-label="Contract attached" />}
+                    </div>
+                    {(() => {
+                      const derived = deriveEstimateStatus(e)
+                      return <EstimateStatusBadge status={derived as EstimateStatus} label={derived.charAt(0).toUpperCase() + derived.slice(1)} />
+                    })()}
                   </div>
                   <span className="text-sm font-medium tabular-nums" style={{ color: 'var(--wp-text-2)' }}>${formatCurrency(e.total)}</span>
                 </Link>
@@ -193,7 +208,7 @@ export function ClientDetailClient({ client, jobs, estimates, invoices }: {
                 <Link key={i.id} href={`/${locale}/invoices/${i.id}`} className="flex items-center justify-between py-3 border-b" style={{ borderColor: 'var(--wp-border-light)', animation: `fadeSlideIn 0.3s ease both`, animationDelay: `${idx * 30}ms` }}>
                   <div>
                     <p className="text-sm font-medium" style={{ color: 'var(--wp-text)' }}>{i.number}</p>
-                    <span className="text-xs" style={{ color: 'var(--wp-text-3)' }}>{i.dueDate ? new Date(i.dueDate).toLocaleDateString() : '—'}</span>
+                    <span className="text-xs" style={{ color: 'var(--wp-text-3)' }}>{i.dueDate ? new Date(i.dueDate).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US') : '—'}</span>
                   </div>
                   <span className="text-sm font-medium tabular-nums" style={{ color: 'var(--wp-text-2)' }}>${formatCurrency(i.total)}</span>
                 </Link>
@@ -222,7 +237,7 @@ export function ClientDetailClient({ client, jobs, estimates, invoices }: {
                     </div>
                   )
               }
-              sub={`${locale === 'es' ? 'Cliente desde' : 'Client since'} ${new Date().getFullYear()} · ${jobs.length} ${jobs.length === 1 ? 'job' : 'jobs'}${client.address ? ` · ${client.address}` : ''}`}
+              sub={`${locale === 'es' ? 'Cliente desde' : 'Client since'} ${new Date().getFullYear()} · ${jobs.length} ${jobs.length === 1 ? (locale === 'es' ? 'proyecto' : 'project') : (locale === 'es' ? 'proyectos' : 'projects')}${client.address ? ` · ${client.address}` : ''}`}
               actions={
                 editing ? (
                   <>
@@ -241,8 +256,8 @@ export function ClientDetailClient({ client, jobs, estimates, invoices }: {
                 )
               }
             >
-              <DocMeta k="Jobs" v={<>{jobs.length} <span style={{ color: 'var(--wp-text-3)', fontWeight: 400, fontSize: '0.7rem' }}>({activeJobs} active)</span></>} />
-              <DocMeta k={locale === 'es' ? 'Facturado' : 'Total billed'} v={`$${formatCurrencyCompact(totalRevenue)}`} />
+              <DocMeta k={locale === 'es' ? 'Proyectos' : 'Projects'} v={<>{jobs.length} <span style={{ color: 'var(--wp-text-3)', fontWeight: 400, fontSize: '0.7rem' }}>({activeJobs} active)</span></>} />
+              <DocMeta k={locale === 'es' ? 'Facturado' : 'Total billed'} v={`$${formatCurrencyCompact(totalBilled)}`} />
               {outstanding > 0 && (
                 <DocMeta k="Balance" v={
                   <span style={{ color: 'var(--wp-warning-v2)', fontWeight: 600 }}>${formatCurrencyCompact(outstanding)}</span>
@@ -315,7 +330,7 @@ export function ClientDetailClient({ client, jobs, estimates, invoices }: {
                   <Briefcase size={14} style={{ color: 'var(--wp-text-3)' }} /> Jobs
                   <span className="text-xs font-normal ml-1" style={{ color: 'var(--wp-text-3)' }}>· {jobs.length}</span>
                 </h2>
-                <Link href={`/${locale}/jobs/new`} className="text-xs font-semibold hover:underline" style={{ color: 'var(--wp-brand)' }}>
+                <Link href={`/${locale}/projects/new?clientId=${client.id}`} className="text-xs font-semibold hover:underline" style={{ color: 'var(--wp-brand)' }}>
                   + New Job
                 </Link>
               </div>
@@ -327,10 +342,13 @@ export function ClientDetailClient({ client, jobs, estimates, invoices }: {
                     {jobs.map(j => (
                       <tr key={j.id} className="hover:bg-[var(--wp-surface-2)] transition-colors" style={{ borderBottom: '1px solid var(--wp-border-light)' }}>
                         <td className="px-5 py-3">
-                          <Link href={`/${locale}/jobs/${j.id}`} className="font-medium hover:underline" style={{ color: 'var(--wp-text)' }}>{j.name}</Link>
+                          <Link href={`/${locale}/projects/${j.id}`} className="font-medium hover:underline" style={{ color: 'var(--wp-text)' }}>{j.name}</Link>
                         </td>
                         <td className="px-5 py-3">
-                          <JobStatusBadge status={j.status as JobStatus} label={j.status.charAt(0).toUpperCase() + j.status.slice(1)} />
+                          {(() => {
+                            const derived = deriveJobStatus(j)
+                            return <JobStatusBadge status={derived} label={derived.charAt(0).toUpperCase() + derived.slice(1)} />
+                          })()}
                         </td>
                         <td className="px-5 py-3 text-right tabular-nums font-semibold" style={{ color: 'var(--wp-text)' }}>
                           ${formatCurrency(j.budgetedCost)}
@@ -358,19 +376,40 @@ export function ClientDetailClient({ client, jobs, estimates, invoices }: {
               ) : (
                 <table className="w-full text-sm">
                   <tbody>
-                    {estimates.map(e => (
-                      <tr key={e.id} className="hover:bg-[var(--wp-surface-2)] transition-colors" style={{ borderBottom: '1px solid var(--wp-border-light)' }}>
-                        <td className="px-5 py-3">
-                          <Link href={`/${locale}/estimates/${e.id}`} className="font-medium font-mono text-xs hover:underline" style={{ color: 'var(--wp-text-2)' }}>{e.number}</Link>
-                        </td>
-                        <td className="px-5 py-3">
-                          <EstimateStatusBadge status={e.status as EstimateStatus} label={e.status.charAt(0).toUpperCase() + e.status.slice(1)} />
-                        </td>
-                        <td className="px-5 py-3 text-right tabular-nums font-semibold" style={{ color: 'var(--wp-text)' }}>
-                          ${formatCurrency(e.total)}
-                        </td>
-                      </tr>
-                    ))}
+                    {estimates.map(e => {
+                      const linkedJob = e.jobId ? jobById.get(e.jobId) : null
+                      return (
+                        <tr key={e.id} className="hover:bg-[var(--wp-surface-2)] transition-colors" style={{ borderBottom: '1px solid var(--wp-border-light)' }}>
+                          <td className="px-5 py-3">
+                            <div className="flex items-center gap-1.5">
+                              <Link href={`/${locale}/estimates/${e.id}`} className="font-medium font-mono text-xs hover:underline" style={{ color: 'var(--wp-text-2)' }}>{e.number}</Link>
+                              {e.signatureDataUrl && <PenLine size={11} style={{ color: 'var(--wp-success-v2)' }} aria-label="Signed" />}
+                              {e.depositPaid && <DollarSign size={11} style={{ color: 'var(--wp-success-v2)' }} aria-label="Deposit paid" />}
+                              {e.contractId && <Paperclip size={11} style={{ color: 'var(--wp-text-3)' }} aria-label="Contract attached" />}
+                            </div>
+                          </td>
+                          <td className="px-5 py-3">
+                            {(() => {
+                              const derived = deriveEstimateStatus(e)
+                              return <EstimateStatusBadge status={derived as EstimateStatus} label={derived.charAt(0).toUpperCase() + derived.slice(1)} />
+                            })()}
+                          </td>
+                          <td className="px-5 py-3 text-xs">
+                            {linkedJob ? (
+                              <Link href={`/${locale}/projects/${linkedJob.id}`} className="hover:underline inline-flex items-center gap-1 truncate max-w-[180px]" style={{ color: 'var(--wp-brand)' }}>
+                                <Briefcase size={11} />
+                                <span className="truncate">{linkedJob.name}</span>
+                              </Link>
+                            ) : (
+                              <span style={{ color: 'var(--wp-text-3)' }}>—</span>
+                            )}
+                          </td>
+                          <td className="px-5 py-3 text-right tabular-nums font-semibold" style={{ color: 'var(--wp-text)' }}>
+                            ${formatCurrency(e.total)}
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
               )}
@@ -389,24 +428,42 @@ export function ClientDetailClient({ client, jobs, estimates, invoices }: {
               ) : (
                 <table className="w-full text-sm">
                   <tbody>
-                    {invoices.map(i => (
-                      <tr key={i.id} className="hover:bg-[var(--wp-surface-2)] transition-colors" style={{ borderBottom: '1px solid var(--wp-border-light)' }}>
-                        <td className="px-5 py-3">
-                          <Link href={`/${locale}/invoices/${i.id}`} className="font-medium font-mono text-xs hover:underline" style={{ color: 'var(--wp-text-2)' }}>{i.number}</Link>
-                        </td>
-                        <td className="px-5 py-3">
-                          <span className="text-xs" style={{ color: i.status === 'paid' ? 'var(--wp-success-v2)' : i.status === 'overdue' ? 'var(--wp-error-v2)' : 'var(--wp-text-3)' }}>
-                            {i.status}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3" style={{ color: 'var(--wp-text-3)' }}>
-                          {i.dueDate ? new Date(i.dueDate).toLocaleDateString() : '—'}
-                        </td>
-                        <td className="px-5 py-3 text-right tabular-nums font-semibold" style={{ color: 'var(--wp-text)' }}>
-                          ${formatCurrency(i.total)}
-                        </td>
-                      </tr>
-                    ))}
+                    {invoices.map(i => {
+                      const linkedJob = i.jobId ? jobById.get(i.jobId) : null
+                      return (
+                        <tr key={i.id} className="hover:bg-[var(--wp-surface-2)] transition-colors" style={{ borderBottom: '1px solid var(--wp-border-light)' }}>
+                          <td className="px-5 py-3">
+                            <Link href={`/${locale}/invoices/${i.id}`} className="font-medium font-mono text-xs hover:underline" style={{ color: 'var(--wp-text-2)' }}>{i.number}</Link>
+                          </td>
+                          <td className="px-5 py-3">
+                            {(() => {
+                              const d = deriveInvoiceStatus(i)
+                              return (
+                                <span className="text-xs" style={{ color: d === 'paid' ? 'var(--wp-success-v2)' : d === 'overdue' ? 'var(--wp-error-v2)' : 'var(--wp-text-3)' }}>
+                                  {d}
+                                </span>
+                              )
+                            })()}
+                          </td>
+                          <td className="px-5 py-3 text-xs">
+                            {linkedJob ? (
+                              <Link href={`/${locale}/projects/${linkedJob.id}`} className="hover:underline inline-flex items-center gap-1 truncate max-w-[180px]" style={{ color: 'var(--wp-brand)' }}>
+                                <Briefcase size={11} />
+                                <span className="truncate">{linkedJob.name}</span>
+                              </Link>
+                            ) : (
+                              <span style={{ color: 'var(--wp-text-3)' }}>—</span>
+                            )}
+                          </td>
+                          <td className="px-5 py-3" style={{ color: 'var(--wp-text-3)' }}>
+                            {i.dueDate ? new Date(i.dueDate).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US') : '—'}
+                          </td>
+                          <td className="px-5 py-3 text-right tabular-nums font-semibold" style={{ color: 'var(--wp-text)' }}>
+                            ${formatCurrency(i.total)}
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
               )}
@@ -416,12 +473,12 @@ export function ClientDetailClient({ client, jobs, estimates, invoices }: {
           {/* Right sidebar */}
           <DetailSidebar>
             <TotalsCard
-              label="Lifetime value"
+              label={locale === 'es' ? 'Resumen de cuenta' : 'Account summary'}
               total={`$${formatCurrencyCompact(totalRevenue + outstanding)}`}
               rows={[
                 { k: locale === 'es' ? 'Pagado' : 'Paid', v: `$${formatCurrencyCompact(totalRevenue)}` },
                 ...(outstanding > 0 ? [{ k: locale === 'es' ? 'Pendiente' : 'Outstanding', v: `$${formatCurrencyCompact(outstanding)}`, emphasis: true }] : []),
-                ...(activeJobs > 0 ? [{ k: locale === 'es' ? 'En progreso' : 'In progress', v: `${activeJobs} jobs` }] : []),
+                ...(activeJobs > 0 ? [{ k: locale === 'es' ? 'En progreso' : 'In progress', v: `${activeJobs} ${locale === 'es' ? 'proyectos' : 'projects'}` }] : []),
               ]}
             />
 

@@ -125,13 +125,13 @@ export default function SignaturePad({ onSave, onClear }: SignaturePadProps) {
         ref={canvasRef}
         width={400}
         height={200}
-        className="w-full max-w-[400px] h-auto border border-slate-200 rounded-xl bg-white cursor-crosshair touch-none"
+        className="w-full max-w-[400px] h-auto border border-border rounded-xl bg-card cursor-crosshair touch-none"
       />
       <div className="flex gap-2">
         <button
           type="button"
           onClick={handleClear}
-          className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+          className="px-4 py-2 text-sm font-medium text-muted-foreground bg-muted hover:bg-slate-200 rounded-lg transition-colors"
         >
           Clear
         </button>

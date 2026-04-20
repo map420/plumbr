@@ -38,20 +38,21 @@ function nextNumber(rows: { number: string }[], prefix: string) {
 export const drizzleAdapter: DbAdapter = {
   technicians: {
     async findAll(userId) {
-      return db.select().from(technicians).where(eq(technicians.userId, userId)).orderBy(technicians.name)
+      const rows = await db.select().from(technicians).where(eq(technicians.userId, userId)).orderBy(technicians.name)
+      return rows as unknown as import('../types').Technician[]
     },
     async findById(id, userId) {
       const rows = await db.select().from(technicians).where(and(eq(technicians.id, id), eq(technicians.userId, userId)))
-      return rows[0] ?? null
+      return (rows[0] ?? null) as unknown as import('../types').Technician | null
     },
     async create(userId, data) {
       const [t] = await db.insert(technicians).values({ ...data, userId }).returning()
-      return t
+      return t as unknown as import('../types').Technician
     },
     async update(id, userId, data) {
       const [t] = await db.update(technicians).set({ ...data, updatedAt: new Date() })
         .where(and(eq(technicians.id, id), eq(technicians.userId, userId))).returning()
-      return t
+      return t as unknown as import('../types').Technician
     },
     async delete(id, userId) {
       await db.delete(technicians).where(and(eq(technicians.id, id), eq(technicians.userId, userId)))
@@ -66,7 +67,7 @@ export const drizzleAdapter: DbAdapter = {
       const rows = await db.select({ technician: technicians }).from(jobTechnicians)
         .innerJoin(technicians, eq(jobTechnicians.technicianId, technicians.id))
         .where(eq(jobTechnicians.jobId, jobId))
-      return rows.map(r => r.technician)
+      return rows.map(r => r.technician) as unknown as import('../types').Technician[]
     },
     async findJobsByTechnician(technicianId) {
       const rows = await db.select({ jobId: jobTechnicians.jobId }).from(jobTechnicians)

@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Manual Operativo — WorkPilot</title>
+  <link rel="stylesheet" href="_styles.css">
+</head>
+<body>
+
+  <div class="cover">
+    <div class="cover-header">
+      <div class="cover-logo"><span class="cover-logo-mark">W</span>WorkPilot</div>
+      <span class="cover-badge">Confidencial · Uso interno</span>
+    </div>
+    <div class="cover-body">
+      <div class="cover-kicker">DOCUMENTO OPERATIVO · 02</div>
+      <h1 class="cover-title">Manual Operativo</h1>
+      <p class="cover-subtitle">Cómo funciona WorkPilot por dentro: features, flujos end-to-end, automatizaciones, roles y ciclo de vida del cliente.</p>
+    </div>
+    <div class="cover-footer">
+      <div class="cover-meta">
+        <span><strong>Versión</strong> 1.0</span>
+        <span><strong>Fecha</strong> Abril 2026</span>
+      </div>
+      <div class="cover-meta" style="text-align: right;">
+        <span><strong>Audiencia</strong> Equipo interno · Partners · Nuevos empleados</span>
+        <span>workpilot.io</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <nav class="toc">
+      <h2>Tabla de contenidos</h2>
+      <ul class="toc-list">
+        <li><span class="toc-title">1. Mapa de features</span><span class="toc-page">3</span></li>
+        <li><span class="toc-title">2. Flujo Lead → Pago</span><span class="toc-page">5</span></li>
+        <li><span class="toc-title">3. Flujo Shopping List → Expense</span><span class="toc-page">8</span></li>
+        <li><span class="toc-title">4. Portal cliente: firma + pago</span><span class="toc-page">10</span></li>
+        <li><span class="toc-title">5. Change Orders y Work Orders</span><span class="toc-page">12</span></li>
+        <li><span class="toc-title">6. Las 8 automatizaciones</span><span class="toc-page">14</span></li>
+        <li><span class="toc-title">7. Roles y permisos</span><span class="toc-page">16</span></li>
+        <li><span class="toc-title">8. Ciclo de vida del cliente</span><span class="toc-page">17</span></li>
+        <li><span class="toc-title">9. Settings críticos</span><span class="toc-page">19</span></li>
+        <li><span class="toc-title">10. Primeros 30 días del nuevo usuario</span><span class="toc-page">20</span></li>
+      </ul>
+    </nav>
+
+    <!-- 1. MAPA DE FEATURES -->
+    <section>
+      <h2>1. Mapa de features</h2>
+      <p>WorkPilot se organiza en cinco grandes áreas funcionales que interactúan entre sí. Un contratista típico usa las cinco en su semana.</p>
+
+      <div class="mermaid">
+graph TB
+    subgraph COM["COMERCIAL"]
+      J[Jobs]
+      E[Estimates]
+      C[Clients]
+      CO[Change Orders]
+      CAT[Catalog Items]
+    end
+
+    subgraph FIN["FINANZAS"]
+      INV[Invoices]
+      EXP[Expenses]
+      PAY[Payments]
+      SL[Shopping Lists]
+    end
+
+    subgraph FIELD["CAMPO"]
+      WO[Work Orders]
+      TECH[Technicians]
+      PHO[Photos]
+      SCH[Schedule]
+      FLD[Field Mode PWA]
+    end
+
+    subgraph AI_BLK["INTELIGENCIA"]
+      AI[WorkPilot AI]
+      VC[Voice Mode]
+      RB[Rich Blocks]
+    end
+
+    subgraph CLI_BLK["CLIENTE"]
+      POR[Portal Sin Login]
+      FIR[Firma Digital]
+    end
+
+    E --> INV
+    J --> E
+    J --> WO
+    E --> CO
+    INV --> PAY
+    SL --> EXP
+    AI --> E
+    AI --> INV
+    AI --> SL
+    E --> POR
+    INV --> POR
+    CO --> POR
+      </div>
+
+      <h3>Áreas en una tabla</h3>
+      <table class="compact">
+        <thead><tr><th>Área</th><th>Entidades clave</th><th>Rol</th></tr></thead>
+        <tbody>
+          <tr><td>Comercial</td><td>Jobs, Estimates, Clients, Change Orders, Catalog</td><td>Captar y cotizar</td></tr>
+          <tr><td>Finanzas</td><td>Invoices, Expenses, Payments, Shopping Lists</td><td>Cobrar y rastrear</td></tr>
+          <tr><td>Campo</td><td>Work Orders, Technicians, Photos, Schedule, Field Mode</td><td>Ejecutar trabajo</td></tr>
+          <tr><td>Inteligencia</td><td>WorkPilot AI, Voice Mode, Rich Blocks</td><td>Automatizar operación</td></tr>
+          <tr><td>Cliente</td><td>Portal token-based, Firma digital</td><td>Aprobar y pagar</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 2. FLUJO LEAD → PAGO -->
+    <section class="page-break">
+      <h2>2. Flujo Lead → Estimate → Job → Invoice → Pago</h2>
+      <p>El flujo comercial core. Empieza con un lead entrante (cliente pide presupuesto) y termina con el pago cobrado.</p>
+
+      <div class="mermaid">
+sequenceDiagram
+    participant Cli as Cliente
+    participant Con as Contractor
+    participant WP as WorkPilot
+    participant AI as WorkPilot AI
+    participant Stp as Stripe
+
+    Cli->>Con: Solicita presupuesto
+    Con->>AI: "Crea estimate para Cliente X"
+    AI->>WP: create_estimate (draft)
+    Con->>WP: Revisa y envía
+    WP->>Cli: Email con portal link
+    Cli->>WP: Ve estimate en portal
+    Cli->>WP: Firma y aprueba
+    WP->>Con: Notificación "approved"
+    WP->>WP: Job → Active automático
+    Con->>Con: Ejecuta el trabajo
+    Con->>AI: "Crea invoice desde estimate"
+    AI->>WP: create_invoice_from_estimate
+    WP->>Cli: Email con pago Stripe
+    Cli->>Stp: Paga
+    Stp->>WP: Webhook paid
+    WP->>Con: Notificación "invoice paid"
+      </div>
+
+      <h3>Paso a paso, con código</h3>
+      <ol>
+        <li><strong>Lead entra.</strong> Contractor crea un Job con <code>status: lead</code>.</li>
+        <li><strong>Estimate creado.</strong> Vía AI o manual. Incluye line items (labor + material + subcontractor), tax rate automática, depósito opcional.</li>
+        <li><strong>Estimate enviado.</strong> Email al cliente con link de portal (<code>shareToken</code> UUID). <span class="pill success">Automatización #1</span> dispara.</li>
+        <li><strong>Cliente firma en portal.</strong> Sin login. Signature pad → <code>signatureDataUrl</code> stored. Status → <code>approved</code>.</li>
+        <li><strong>Job activado.</strong> <span class="pill success">Automatización #2</span>: job pasa de <code>lead</code> a <code>active</code>.</li>
+        <li><strong>Ejecución.</strong> Technicians reciben Work Orders, registran expenses, toman fotos.</li>
+        <li><strong>Invoice generado.</strong> Desde el estimate aprobado con <code>create_invoice_from_estimate</code>. Opción de auto-generate configurada en el estimate.</li>
+        <li><strong>Invoice enviado.</strong> Email con Stripe payment link.</li>
+        <li><strong>Cliente paga.</strong> Stripe webhook actualiza <code>status: paid</code>. Notificación al contractor.</li>
+      </ol>
+
+      <div class="callout insight">
+        <span class="callout-label">Rol del AI en el flujo</span>
+        <div class="callout-body">
+          El AI puede ejecutar los pasos 2, 3, 7 y 8 con comandos naturales. Ejemplo: <em>"Envía el estimate #12 a María"</em> → dispara send_estimate_email sin que el contractor abra la pantalla de estimates.
+        </div>
+      </div>
+
+      <h3>Estados del Estimate</h3>
+      <div class="mermaid">
+stateDiagram-v2
+    [*] --> draft
+    draft --> sent: Enviar
+    sent --> approved: Cliente firma
+    sent --> rejected: Cliente rechaza
+    sent --> expired: validUntil vencido
+    approved --> converted: Invoice creado
+    converted --> [*]
+    rejected --> [*]
+    expired --> [*]
+      </div>
+
+      <h3>Estados del Invoice</h3>
+      <div class="mermaid">
+stateDiagram-v2
+    [*] --> draft
+    draft --> sent: Enviar
+    sent --> paid: Stripe webhook
+    sent --> overdue: dueDate + cron
+    overdue --> paid: Pago tardío
+    paid --> [*]
+      </div>
+    </section>
+
+    <!-- 3. SHOPPING LIST → EXPENSE -->
+    <section class="page-break">
+      <h2>3. Flujo Shopping List → Expense</h2>
+      <p>Feature distintiva de WorkPilot: el AI genera checklists de materiales dentro del chat, el contratista marca lo comprado, y se convierte automáticamente en expenses registrados contra el job.</p>
+
+      <div class="mermaid">
+sequenceDiagram
+    participant Con as Contractor
+    participant AI as WorkPilot AI
+    participant SL as Shopping List
+    participant EXP as Expenses
+    participant J as Job
+
+    Con->>AI: "Qué materiales necesito para el baño de Carlos?"
+    AI->>Con: Lista checklist + costos estimados
+    Note over AI: Marcador oculto<br/>&lt;!-- job:id --&gt;
+    Con->>Con: Marca items comprados
+    Con->>SL: Click "Ya compré todo"
+    SL->>EXP: Crea expense por cada item
+    SL->>SL: Lista cerrada (status completed)
+    EXP->>J: Suma a actualCost del job
+    Con->>AI: "Cuánto gasté en ese job?"
+    AI->>J: get_job_profitability
+      </div>
+
+      <h3>Dos botones, dos intenciones</h3>
+      <table>
+        <thead><tr><th>Botón</th><th>Acción</th><th>Lista status</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Ya compré todo</strong></td><td>Registra expenses de items marcados + cierra lista</td><td><span class="pill success">completed</span></td></tr>
+          <tr><td><strong>Comprar después</strong></td><td>Solo guarda la lista para seguir usándola</td><td><span class="pill primary">active</span></td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout insight">
+        <span class="callout-label">Por qué esto importa</span>
+        <div class="callout-body">
+          Un contratista promedio <strong>no registra el 60% de sus gastos de materiales</strong> porque olvida hacerlo al volver del depósito. Con este flujo, marcar los items ya es el registro — cero fricción.
+        </div>
+      </div>
+
+      <div class="persona-box">
+        <p><span class="persona-name">Carlos</span> va al Home Depot con la lista que el AI le generó. Mientras hace fila para pagar, abre la app, tilda los 5 items que está llevando, ajusta un precio que difiere del estimado, y toca "Ya compré todo". Al salir del depósito, los <span class="amount">$480</span> ya están registrados contra el job de baño de Mendoza.</p>
+      </div>
+    </section>
+
+    <!-- 4. PORTAL CLIENTE -->
+    <section class="page-break">
+      <h2>4. Portal cliente: firma y pago sin login</h2>
+      <p>El portal cliente es la interfaz pública de WorkPilot. Los clientes nunca crean cuenta — reciben un link único con token (<code>shareToken</code>) y acceden directo al documento.</p>
+
+      <h3>Qué se ve en el portal</h3>
+      <ul>
+        <li>Estimate / Invoice / Change Order con todos los line items</li>
+        <li>Galería de fotos asociadas al job</li>
+        <li>Datos del contratista (logo, contacto, dirección de negocio)</li>
+        <li>Signature pad (dibujo en canvas → dataURL)</li>
+        <li>Botón "Review &amp; Approve" o "Reject with reason"</li>
+        <li>Link de pago Stripe (si es invoice)</li>
+      </ul>
+
+      <h3>Seguridad del portal</h3>
+      <div class="two-col">
+        <div class="col-box">
+          <h4>Lo que ofrece</h4>
+          <ul>
+            <li>Token UUID no guesseable</li>
+            <li>Sin exposición de IDs internos</li>
+            <li>Token revocable si es comprometido</li>
+            <li>HTTPS obligatorio</li>
+          </ul>
+        </div>
+        <div class="col-box">
+          <h4>Lo que no ofrece (por diseño)</h4>
+          <ul>
+            <li>Password protection (simplicidad)</li>
+            <li>2FA (overkill para este uso)</li>
+            <li>Expiration automática (solo manual)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout warning">
+        <span class="callout-label">Consideración</span>
+        <div class="callout-body">
+          Si el cliente reenvía el link, cualquiera con el URL puede ver el documento y firmar. Mitigación: tracking de views (<code>document_views</code> table) y opción de regenerar token desde el contractor.
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. CHANGE ORDERS Y WORK ORDERS -->
+    <section class="page-break">
+      <h2>5. Change Orders y Work Orders</h2>
+      <p>Dos features <strong>Pro-only</strong> críticas para profesionalizar la operación del contratista.</p>
+
+      <h3>Change Order — trabajo extra en job activo</h3>
+      <p>Un Change Order (CO) es un estimate complementario que se suma a un job ya aprobado. Mismo flujo: draft → sent → approved (firmado en portal) → suma a <code>job.budgetedCost</code>.</p>
+
+      <div class="callout insight">
+        <span class="callout-label">Por qué es esencial</span>
+        <div class="callout-body">
+          El <em>scope creep</em> es la razón #1 de jobs no rentables. Sin CO formal, el contratista hace el trabajo extra gratis. Con CO firmado, cada expansión del scope tiene precio, firma y trazabilidad.
+        </div>
+      </div>
+
+      <h3>Work Order — instrucción al técnico</h3>
+      <p>Un Work Order (WO) es una tarea asignada a uno o varios técnicos dentro de un job. Tiene título, instrucciones, fecha programada, técnicos asignados. Auto-generate posible desde estimate aprobado: extrae descripciones de line items como scope.</p>
+
+      <table class="compact">
+        <thead><tr><th>Campo</th><th>Descripción</th></tr></thead>
+        <tbody>
+          <tr><td><code>number</code></td><td>WO-001 (auto-incremental)</td></tr>
+          <tr><td><code>title</code></td><td>"Instalar grifería baño"</td></tr>
+          <tr><td><code>instructions</code></td><td>Texto libre con pasos, notas, warnings</td></tr>
+          <tr><td><code>scheduledDate</code></td><td>Fecha planeada</td></tr>
+          <tr><td><code>assignedTechnicianIds</code></td><td>Array JSON de technician IDs</td></tr>
+          <tr><td><code>status</code></td><td>pending → in_progress → completed</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 6. AUTOMATIZACIONES -->
+    <section class="page-break">
+      <h2>6. Las 8 automatizaciones activas</h2>
+      <p>Corren vía dos mecanismos: <strong>event-driven</strong> (disparadas al cambiar un estado) y <strong>cron diario</strong> (a las 8 AM UTC).</p>
+
+      <table>
+        <thead><tr><th>#</th><th>Trigger</th><th>Acción</th><th>Tipo</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Estimate → <span class="pill info">sent</span></td><td>Email al cliente con portal link</td><td>Event</td></tr>
+          <tr><td>2</td><td>Estimate → <span class="pill success">approved</span></td><td>Job status cambia a <span class="pill success">active</span></td><td>Event</td></tr>
+          <tr><td>3</td><td>Estimate sent 3 días sin respuesta</td><td>Email follow-up automático</td><td>Cron</td></tr>
+          <tr><td>4</td><td>Job → <span class="pill success">completed</span> con invoice <span class="pill neutral">draft</span></td><td>Email al contractor "invoice ready to send"</td><td>Event</td></tr>
+          <tr><td>5</td><td>Invoice dueDate a 3 días</td><td>Email reminder al cliente</td><td>Cron</td></tr>
+          <tr><td>6</td><td>Invoice vencido</td><td>Status → <span class="pill error">overdue</span> + email</td><td>Cron</td></tr>
+          <tr><td>7</td><td>Estimate validUntil vencido</td><td>Auto-reject + notificación</td><td>Cron</td></tr>
+          <tr><td>8</td><td>Job completado 3+ días sin invoice</td><td>Alert "unbilled" al contractor</td><td>Cron</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout insight">
+        <span class="callout-label">Valor acumulado</span>
+        <div class="callout-body">
+          Estas 8 automatizaciones le ahorran al contratista ~4 horas/semana en tareas de seguimiento manual. Equivalente a <strong class="amount">~$400/mes</strong> en tiempo facturable recuperado — más que el costo del plan Pro.
+        </div>
+      </div>
+
+      <h3>Código detrás</h3>
+      <p>Event-driven en <code>src/lib/actions/*.ts</code>. Cron daily en <code>src/app/api/cron/daily/route.ts</code>, configurado en Vercel Cron. Todas las automatizaciones usan el adapter <code>emailAdapter</code> (Resend por default).</p>
+    </section>
+
+    <!-- 7. ROLES Y PERMISOS -->
+    <section class="page-break">
+      <h2>7. Roles y permisos</h2>
+
+      <h3>Dos roles en la app</h3>
+      <table>
+        <thead><tr><th>Rol</th><th>Acceso</th><th>No puede</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Admin</strong> (owner)</td>
+            <td>Todo: crear/editar/borrar jobs, estimates, invoices, clients, team, settings, billing</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><strong>Technician</strong></td>
+            <td>Ver jobs asignados, actualizar work orders propios, subir fotos, registrar expenses, usar field mode</td>
+            <td>Ver estimates/invoices/billing, ver todos los clientes, modificar settings</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Planes: qué se desbloquea</h3>
+      <table>
+        <thead><tr><th>Feature</th><th>Starter (Free)</th><th>Pro ($29/mes)</th></tr></thead>
+        <tbody>
+          <tr><td>Jobs</td><td>5 máx</td><td>Ilimitados</td></tr>
+          <tr><td>Estimates</td><td>5 máx</td><td>Ilimitados</td></tr>
+          <tr><td>Clients</td><td>10 máx</td><td>Ilimitados</td></tr>
+          <tr><td>Catalog items</td><td>10 máx</td><td>Ilimitados</td></tr>
+          <tr><td>Photos</td><td>5 máx</td><td>Ilimitadas</td></tr>
+          <tr><td>Equipo / Technicians</td><td>❌</td><td>✅ Ilimitado</td></tr>
+          <tr><td>Field mode</td><td>❌</td><td>✅</td></tr>
+          <tr><td>Schedule</td><td>❌</td><td>✅</td></tr>
+          <tr><td>Change Orders</td><td>❌</td><td>✅</td></tr>
+          <tr><td>Work Orders</td><td>❌</td><td>✅</td></tr>
+          <tr><td>WorkPilot AI</td><td>❌</td><td>✅</td></tr>
+          <tr><td>Email automations</td><td>❌</td><td>✅</td></tr>
+          <tr><td>Firma digital</td><td>❌</td><td>✅</td></tr>
+          <tr><td>QuickBooks sync</td><td>❌</td><td>✅</td></tr>
+          <tr><td>SMS delivery</td><td>❌</td><td>✅</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 8. CICLO DE VIDA DEL CLIENTE -->
+    <section class="page-break">
+      <h2>8. Ciclo de vida del cliente</h2>
+      <p>Desde sign-up hasta power user. Cada etapa tiene objetivos específicos que definen conversión.</p>
+
+      <div class="mermaid">
+graph LR
+    A[Sign-up] --> B[Setup<br/>Empresa]
+    B --> C[1er Client<br/>creado]
+    C --> D[1er Estimate<br/>creado]
+    D --> E[1er Estimate<br/>enviado]
+    E --> F[1er Approved]
+    F --> G[1er Invoice<br/>pagado]
+    G --> H[Power User<br/>AI activo]
+    H --> I[Retained<br/>6+ meses]
+      </div>
+
+      <table>
+        <thead><tr><th>Etapa</th><th>Duración objetivo</th><th>Señal de éxito</th></tr></thead>
+        <tbody>
+          <tr><td>Sign-up → Setup</td><td>&lt; 5 min</td><td>Logo + tax rate cargados</td></tr>
+          <tr><td>Setup → 1er Client</td><td>&lt; 15 min</td><td>Cliente creado</td></tr>
+          <tr><td>1er Client → 1er Estimate enviado</td><td>&lt; 30 min</td><td>Email enviado al cliente</td></tr>
+          <tr><td>1er Estimate → Approved</td><td>2–5 días</td><td>Cliente firmó en portal</td></tr>
+          <tr><td>Approved → Invoice pagado</td><td>2–4 semanas</td><td>Pago recibido</td></tr>
+          <tr><td>Invoice → Power User</td><td>30–45 días</td><td>10+ estimates + AI usado 5+ veces</td></tr>
+          <tr><td>Power User → Retained</td><td>180 días</td><td>Aún activo en mes 6</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout critical">
+        <span class="callout-label">Puntos de caída</span>
+        <div class="callout-body">
+          Los dos momentos críticos donde se pierde el usuario: <strong>(1) Setup vacío</strong> — user abandona antes de crear nada. <strong>(2) Estimate sin aprobar</strong> — primer deal se cae y el user dejá de creer en el producto. Ambos se mitigan con onboarding guiado + sample data.
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. SETTINGS -->
+    <section class="page-break">
+      <h2>9. Settings críticos</h2>
+      <p>Las 7 configuraciones que todo contratista debe completar antes de operar.</p>
+
+      <table>
+        <thead><tr><th>Setting</th><th>Por qué importa</th><th>Bloquea si falta?</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Company name</strong></td><td>Aparece en estimates, invoices, portal, emails</td><td>Sí</td></tr>
+          <tr><td><strong>Logo</strong></td><td>Branding en documentos impresos/digitales</td><td>No (pero recomendado)</td></tr>
+          <tr><td><strong>Tax rate</strong></td><td>Cálculo automático en line items</td><td>No (default 10%)</td></tr>
+          <tr><td><strong>Document footer</strong></td><td>Términos y condiciones en documentos</td><td>No</td></tr>
+          <tr><td><strong>Stripe connect</strong></td><td>Recibir pagos online</td><td>Sí (para invoice con pago)</td></tr>
+          <tr><td><strong>QBO integration</strong></td><td>Sync de invoices a contabilidad</td><td>No (opcional Pro)</td></tr>
+          <tr><td><strong>Email/SMS preferences</strong></td><td>Qué notificaciones recibe el user</td><td>No</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 10. PRIMEROS 30 DÍAS -->
+    <section class="page-break">
+      <h2>10. Primeros 30 días del nuevo usuario</h2>
+      <p>El camino ideal que debería recorrer un nuevo contratista en su primer mes con WorkPilot.</p>
+
+      <table>
+        <thead><tr><th>Semana</th><th>Hitos esperados</th><th>Apoyo que damos</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Semana 1</strong></td>
+            <td>
+              Sign-up · Setup empresa · 1 cliente creado · 1er estimate enviado · AI usado ≥ 3 veces
+            </td>
+            <td>Email de bienvenida · Video tutorial · Chat de soporte</td>
+          </tr>
+          <tr>
+            <td><strong>Semana 2</strong></td>
+            <td>
+              1er estimate aprobado · Job activado · Expenses registrados · 1 work order creado
+            </td>
+            <td>Email "Tu primer estimate aprobado" · Link a plantillas</td>
+          </tr>
+          <tr>
+            <td><strong>Semana 3</strong></td>
+            <td>
+              1er invoice enviado · 1er técnico invitado · Catalog con 10+ items
+            </td>
+            <td>Email "Acelera cotizaciones con catálogo" · Webinar opcional</td>
+          </tr>
+          <tr>
+            <td><strong>Semana 4</strong></td>
+            <td>
+              1er pago recibido · Shopping list usada · Schedule configurado · Upgrade a Pro si hace sentido
+            </td>
+            <td>Email "Tu primer pago" · Oferta upgrade 20% off primer mes</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="recommendations">
+        <h3>Recomendaciones operativas</h3>
+        <ol>
+          <li><strong>Instrumentar cada hito</strong> con evento Vercel Analytics para medir activation funnel real.</li>
+          <li><strong>Email drip</strong> de 4 semanas alineado a estos hitos; si el user no hace el hito, enviarle ayuda específica.</li>
+          <li><strong>"Sample company"</strong> pre-cargada opcional al sign-up para que exploren sin empezar de cero.</li>
+          <li><strong>Revisar trimestralmente</strong> cuál etapa tiene más drop-off y redoblar recursos ahí.</li>
+          <li><strong>Document views</strong> del portal cliente son señal temprana — si el cliente vio y no firmó, follow-up manual del contratista (ayudar al AI a detectarlo).</li>
+        </ol>
+      </div>
+    </section>
+  </div>
+
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#1E3A5F',
+        primaryTextColor: '#ffffff',
+        primaryBorderColor: '#0F2440',
+        lineColor: '#64748B',
+        secondaryColor: '#3B82F6',
+        tertiaryColor: '#F1F5F9',
+        fontFamily: 'Inter, sans-serif',
+      },
+    });
+    await mermaid.run();
+    window.mermaid_ready = true;
+  </script>
+</body>
+</html>

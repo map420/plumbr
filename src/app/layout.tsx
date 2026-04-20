@@ -14,7 +14,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: 'WorkPilot — Estimate, Invoice & Job Costing App for Contractors',
+    default: 'WorkPilot — Estimate, Invoice & Project Costing App for Contractors',
     template: '%s | WorkPilot',
   },
   description: siteConfig.description,
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     'contractor app',
     'estimate app for contractors',
     'invoicing software contractors',
-    'job costing',
+    'project costing',
     'crew scheduling',
     'plumbing software',
     'construction management app',
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: `${siteConfig.url}/en`,
     siteName: siteConfig.name,
-    title: 'WorkPilot — Estimate, Invoice & Job Costing App for Contractors',
+    title: 'WorkPilot — Estimate, Invoice & Project Costing App for Contractors',
     description: siteConfig.description,
     images: [
       {
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'WorkPilot — Estimate, Invoice & Job Costing App for Contractors',
+    title: 'WorkPilot — Estimate, Invoice & Project Costing App for Contractors',
     description: siteConfig.description,
     images: [siteConfig.ogImage],
     creator: siteConfig.twitter,
@@ -77,9 +77,17 @@ export const metadata: Metadata = {
   },
 }
 
+// Blocking script — se ejecuta sync antes del paint para evitar FOUC del tema.
+// Lee localStorage y aplica `.dark` al <html> antes de que React hidrate.
+// Usar suppressHydrationWarning en <html> porque la clase se añade antes del SSR → hydration.
+const themeInitScript = `(function(){try{var t=localStorage.getItem('wp-theme')||'light';var r=t==='system'?(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):t;if(r==='dark')document.documentElement.classList.add('dark');}catch(e){}})();`
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className="h-full" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className={`${inter.className} h-full antialiased`} style={{ background: 'var(--wp-bg-secondary)', color: 'var(--wp-text-primary)' }}>
         {children}
       </body>

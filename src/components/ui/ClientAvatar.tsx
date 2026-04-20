@@ -48,11 +48,13 @@ export interface ClientAvatarProps {
   src?: string | null
   size?: AvatarSize
   className?: string
+  /** Override the deterministic background color (e.g., category differentiation). */
+  color?: string
 }
 
-export function ClientAvatar({ name, src, size = 'md', className }: ClientAvatarProps) {
+export function ClientAvatar({ name, src, size = 'md', className, color }: ClientAvatarProps) {
   const initials = initialsFromName(name)
-  const bg = PALETTE[hashString(name) % PALETTE.length]
+  const bg = color ?? PALETTE[hashString(name) % PALETTE.length]
   if (src) {
     return (
       <img

@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>plumbr — v2 Gallery 1 · Business views</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAFAFA;
+    --surface: #FFFFFF;
+    --surface-2: #F7F7F8;
+    --surface-3: #F1F1F3;
+    --border: #EAEAEC;
+    --border-hover: #D4D4D8;
+    --text: #18181B;
+    --text-2: #52525B;
+    --text-3: #A1A1AA;
+    --brand: #0F172A;
+    --brand-hover: #1E293B;
+    --brand-subtle: #F1F5F9;
+    --success: #15803D;
+    --success-bg: #F0FDF4;
+    --success-border: #BBF7D0;
+    --warning: #B45309;
+    --warning-bg: #FFFBEB;
+    --warning-border: #FDE68A;
+    --danger: #B91C1C;
+    --danger-bg: #FEF2F2;
+    --danger-border: #FECACA;
+    --info: #1D4ED8;
+    --info-bg: #EFF6FF;
+    --info-border: #BFDBFE;
+    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.04);
+    --shadow-2: 0 2px 4px rgb(0 0 0 / 0.04), 0 1px 2px rgb(0 0 0 / 0.06);
+    --r-sm: 6px; --r-md: 8px; --r-lg: 10px; --r-xl: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+  a { color: inherit; text-decoration: none; }
+  code, .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+  .shell { max-width: 1320px; margin: 0 auto; padding: 40px 24px 80px; }
+  .page-header { margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-end; }
+  .page-header h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+  .page-header p { font-size: 14px; color: var(--text-2); margin-top: 4px; }
+  .tag-ver { padding: 3px 10px; background: var(--brand); color: white; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+  .nav-back {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; color: var(--text-2); font-weight: 500;
+    padding: 6px 12px; border-radius: var(--r-md);
+    background: var(--surface); border: 1px solid var(--border);
+  }
+  .nav-back:hover { border-color: var(--brand); color: var(--brand); }
+
+  h2.section-h { font-size: 13px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-3); margin: 56px 0 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); scroll-margin-top: 20px; }
+  h2.section-h .num { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 6px; background: var(--brand); color: white; font-size: 11px; margin-right: 8px; vertical-align: middle; }
+
+  .mock { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl); overflow: hidden; box-shadow: var(--shadow-1); margin-bottom: 20px; }
+  .mock-label { padding: 10px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); background: var(--surface-2); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
+  .mock-label .title { color: var(--text); }
+  .mock-body { padding: 24px; background: var(--bg); }
+
+  .ic { display: inline-block; vertical-align: middle; }
+
+  /* Shared primitives */
+  .btn { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; padding: 8px 14px; border-radius: var(--r-md); border: 1px solid transparent; cursor: pointer; font-family: inherit; transition: all 120ms; }
+  .btn.primary { background: var(--brand); color: white; }
+  .btn.primary:hover { background: var(--brand-hover); }
+  .btn.secondary { background: var(--surface); color: var(--text); border-color: var(--border); box-shadow: var(--shadow-1); }
+  .btn.ghost { background: transparent; color: var(--text-2); }
+  .btn.sm { padding: 6px 10px; font-size: 12px; }
+
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; background: var(--surface-3); color: var(--text-2); border: 1px solid var(--border); }
+  .pill .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0.7; }
+  .pill.paid { background: var(--success-bg); color: var(--success); border-color: var(--success-border); }
+  .pill.pending { background: var(--info-bg); color: var(--info); border-color: var(--info-border); }
+  .pill.overdue { background: var(--danger-bg); color: var(--danger); border-color: var(--danger-border); }
+  .pill.partial { background: var(--warning-bg); color: var(--warning); border-color: var(--warning-border); }
+  .pill.active { background: var(--info-bg); color: var(--info); border-color: var(--info-border); }
+  .pill.done { background: var(--success-bg); color: var(--success); border-color: var(--success-border); }
+  .pill.lead { background: #F0F9FF; color: #075985; border-color: #BAE6FD; }
+
+  .avatar { width: 32px; height: 32px; border-radius: 50%; color: white; font-weight: 600; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; background: var(--text); flex-shrink: 0; }
+  .avatar.a2 { background: #52525B; }
+  .avatar.a3 { background: #3F3F46; }
+  .avatar.a4 { background: #18181B; }
+  .avatar.a5 { background: #27272A; }
+
+  /* Common table */
+  .toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
+  .toolbar .search { flex: 1; position: relative; }
+  .toolbar .search input { width: 100%; border: 1px solid var(--border); background: var(--surface); padding: 8px 12px 8px 34px; font-size: 13px; border-radius: var(--r-md); outline: none; font-family: inherit; }
+  .toolbar .search svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-3); }
+  .seg { display: flex; gap: 2px; padding: 3px; background: var(--surface-3); border-radius: var(--r-md); }
+  .seg button { padding: 5px 10px; background: transparent; border: none; font-size: 12px; font-weight: 500; color: var(--text-2); border-radius: 5px; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 5px; }
+  .seg button .count { color: var(--text-3); font-weight: 500; }
+  .seg button.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow-1); }
+
+  table.t { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; }
+  table.t thead { background: var(--surface-2); }
+  table.t th { text-align: left; padding: 10px 16px; font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.03em; border-bottom: 1px solid var(--border); }
+  table.t th.r { text-align: right; }
+  table.t td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--border); }
+  table.t tr:last-child td { border-bottom: none; }
+  table.t tbody tr:hover { background: var(--surface-2); cursor: pointer; }
+  table.t td.r { text-align: right; font-variant-numeric: tabular-nums; }
+  table.t tr.grp td { background: var(--surface-2); padding: 8px 16px; font-size: 11px; font-weight: 600; color: var(--text-2); letter-spacing: 0.02em; }
+  .num-col { font-family: 'JetBrains Mono', monospace; color: var(--text-2); font-size: 12px; }
+
+  .client-cell { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .client-cell .nm { font-weight: 500; color: var(--text); line-height: 1.3; }
+  .client-cell .sub { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 14px 16px; }
+  .kpi-label { font-size: 11px; color: var(--text-3); font-weight: 500; display: flex; align-items: center; gap: 6px; }
+  .kpi-label .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-3); }
+  .kpi-value { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; margin-top: 6px; line-height: 1; font-variant-numeric: tabular-nums; }
+  .kpi-sub { font-size: 12px; color: var(--text-2); margin-top: 6px; }
+  .kpi-sub.up { color: var(--success); }
+  .kpi-sub.down { color: var(--danger); }
+
+  .list-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; }
+  .list-title h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .list-title p { font-size: 13px; color: var(--text-2); margin-top: 2px; }
+
+  /* JOBS — kanban */
+  .kanban { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .kan-col { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 12px; min-height: 400px; }
+  .kan-col-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 4px; }
+  .kan-col-head .t { font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .kan-col-head .t .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .kan-col-head .count { font-size: 11px; color: var(--text-3); background: var(--surface); border: 1px solid var(--border); padding: 1px 7px; border-radius: 999px; }
+  .kan-col.lead .dot { background: var(--text-3); }
+  .kan-col.scheduled .dot { background: var(--info); }
+  .kan-col.active .dot { background: var(--warning); }
+  .kan-col.done .dot { background: var(--success); }
+  .kan-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: 10px 12px; margin-bottom: 8px; cursor: pointer; box-shadow: var(--shadow-1); }
+  .kan-card:hover { border-color: var(--border-hover); }
+  .kan-card .num { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-3); font-weight: 500; }
+  .kan-card .title { font-size: 13px; font-weight: 600; margin-top: 2px; line-height: 1.3; }
+  .kan-card .client { font-size: 11px; color: var(--text-2); margin-top: 3px; display: flex; align-items: center; gap: 4px; }
+  .kan-card .meta { display: flex; justify-content: space-between; margin-top: 8px; font-size: 10px; color: var(--text-3); }
+  .kan-card .amount { font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+  .kan-card .progress { margin-top: 8px; height: 3px; background: var(--surface-3); border-radius: 999px; overflow: hidden; }
+  .kan-card .progress .bar { height: 100%; background: var(--brand); }
+  .kan-card.tag-urgent { border-left: 2px solid var(--danger); }
+
+  /* Detail shared */
+  .breadcrumb { font-size: 12px; color: var(--text-3); display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
+  .breadcrumb svg { color: var(--text-3); }
+  .detail-grid { display: grid; grid-template-columns: 1fr 300px; gap: 16px; align-items: flex-start; }
+  .doc-hero { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 20px 24px; }
+  .doc-hero-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .doc-hero-title { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
+  .doc-hero-sub { font-size: 12px; color: var(--text-3); margin-top: 4px; }
+  .doc-hero-actions { display: flex; align-items: center; gap: 6px; }
+  .doc-meta-row { display: flex; gap: 20px; flex-wrap: wrap; }
+  .meta-item .k { font-size: 11px; color: var(--text-3); font-weight: 500; text-transform: uppercase; letter-spacing: 0.03em; }
+  .meta-item .v { font-size: 14px; color: var(--text); font-weight: 500; margin-top: 2px; }
+  .meta-item .v.total { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+
+  .doc-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); margin-top: 12px; overflow: hidden; }
+  .doc-section .head { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--border); }
+  .doc-section .head h3 { font-size: 13px; font-weight: 600; color: var(--text); }
+  .doc-section .body { padding: 20px; }
+
+  .side-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 16px 18px; margin-bottom: 12px; }
+  .side-card.dark { background: var(--brand); color: white; border: none; }
+  .side-card .label { font-size: 11px; font-weight: 500; color: var(--text-3); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .side-card.dark .label { color: rgb(255 255 255 / 0.6); }
+  .side-card .total { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1; }
+
+  .timeline .item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+  .timeline .item:last-child { border-bottom: none; }
+  .timeline .dot { width: 7px; height: 7px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; background: var(--text-3); }
+  .timeline .dot.info { background: var(--info); }
+  .timeline .dot.success { background: var(--success); }
+  .timeline .dot.warning { background: var(--warning); }
+  .timeline .event { font-weight: 500; color: var(--text); }
+  .timeline .time { color: var(--text-3); font-size: 11px; margin-top: 1px; }
+
+  /* TOC nav */
+  .toc { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 14px 18px; margin-bottom: 24px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .toc a { display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-sm); font-size: 12px; color: var(--text-2); font-weight: 500; }
+  .toc a:hover { border-color: var(--brand); color: var(--brand); }
+  .toc a .n { display: inline-flex; width: 16px; height: 16px; background: var(--brand); color: white; border-radius: 3px; font-size: 9px; font-weight: 700; align-items: center; justify-content: center; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="page-header">
+    <div>
+      <h1>plumbr · v2 Gallery 1 — Business views</h1>
+      <p>Clients · Jobs · Invoices · Payments · Expenses</p>
+    </div>
+    <a class="nav-back" href="v2-all-views-index.html">← Índice</a>
+  </div>
+
+  <div class="toc">
+    <a href="#clients"><span class="n">1</span>Clients · list</a>
+    <a href="#client-detail"><span class="n">2</span>Client detail</a>
+    <a href="#jobs"><span class="n">3</span>Jobs · kanban</a>
+    <a href="#job-detail"><span class="n">4</span>Job detail</a>
+    <a href="#invoices"><span class="n">5</span>Invoices · list</a>
+    <a href="#invoice-detail"><span class="n">6</span>Invoice detail</a>
+    <a href="#payments"><span class="n">7</span>Payments</a>
+    <a href="#expenses"><span class="n">8</span>Expenses</a>
+  </div>
+
+  <!-- ═══════ 1 · CLIENTS LIST ═══════ -->
+  <h2 id="clients" class="section-h"><span class="num">1</span>Clients · /clients</h2>
+  <div class="mock">
+    <div class="mock-label"><span class="title">Directorio de clientes</span><span class="mono">Desktop</span></div>
+    <div class="mock-body">
+      <div class="list-head">
+        <div class="list-title">
+          <h1>Clients</h1>
+          <p>148 clientes · 32 activos este mes · <span style="color: var(--success); font-weight: 500;">$28.4k</span> facturado MTD</p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn secondary"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg>Import CSV</button>
+          <button class="btn primary"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New client</button>
+        </div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-label"><span class="dot" style="background: var(--info);"></span>Total clientes</div><div class="kpi-value">148</div><div class="kpi-sub">12 nuevos este mes</div></div>
+        <div class="kpi"><div class="kpi-label"><span class="dot" style="background: var(--success);"></span>Activos MTD</div><div class="kpi-value">32</div><div class="kpi-sub up">↑ 8 vs mes pasado</div></div>
+        <div class="kpi"><div class="kpi-label"><span class="dot" style="background: var(--warning);"></span>Con saldo</div><div class="kpi-value">7</div><div class="kpi-sub down">$6,420 unpaid</div></div>
+        <div class="kpi"><div class="kpi-label"><span class="dot" style="background: var(--brand);"></span>LTV promedio</div><div class="kpi-value">$3,240</div><div class="kpi-sub">Top: Linda Chen ($18.2k)</div></div>
+      </div>
+
+      <div class="toolbar">
+        <div class="search">
+          <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input placeholder="Buscar por nombre, email, teléfono o dirección...">
+        </div>
+        <div class="seg">
+          <button class="active">All <span class="count">148</span></button>
+          <button>Active <span class="count">32</span></button>
+          <button>Leads <span class="count">15</span></button>
+          <button>With balance <span class="count">7</span></button>
+          <button>Inactive <span class="count">94</span></button>
+        </div>
+      </div>
+
+      <table class="t">
+        <thead>
+          <tr>
+            <th>Client</th>
+            <th>Ubicación</th>
+            <th>Jobs</th>
+            <th>Last activity</th>
+            <th class="r">Total billed</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="grp"><td colspan="6">A</td></tr>
+          <tr>
+            <td><div class="client-cell"><div class="avatar">AM</div><div><div class="nm">Ana Martínez</div><div class="sub">ana@example.com · (555) 112-3344</div></div></div></td>
+            <td style="color: var(--text-2);">Queens, NY</td>
+            <td style="color: var(--text-2);">3</td>
+            <td style="color: var(--text-2);">Apr 10</td>
+            <td class="r" style="font-weight: 600;">$4,820.00</td>
+            <td><span class="pill active"><span class="dot"></span>Active</span></td>
+          </tr>
+          <tr>
+            <td><div class="client-cell"><div class="avatar a2">AR</div><div><div class="nm">Arturo Rivera</div><div class="sub">(555) 998-1221</div></div></div></td>
+            <td style="color: var(--text-2);">Brooklyn, NY</td>
+            <td style="color: var(--text-2);">1</td>
+            <td style="color: var(--text-2);">Feb 22</td>
+            <td class="r" style="font-weight: 600;">$890.00</td>
+            <td><span class="pill"><span class="dot"></span>Inactive</span></td>
+          </tr>
+          <tr class="grp"><td colspan="6">C</td></tr>
+          <tr>
+            <td><div class="client-cell"><div class="avatar a3">LC</div><div><div class="nm">Linda Chen</div><div class="sub">linda.chen@example.com · (555) 234-1211</div></div></div></td>
+            <td style="color: var(--text-2);">Queens, NY · 5 mi</td>
+            <td style="color: var(--text-2);">12 <span style="color: var(--text-3); font-size: 11px;">· 3 activos</span></td>
+            <td style="color: var(--text-2);">Apr 14 · <span style="color: var(--warning);">deuda 15d</span></td>
+            <td class="r" style="font-weight: 600;">$18,240.00</td>
+            <td><span class="pill overdue"><span class="dot"></span>With balance</span></td>
+          </tr>
+          <tr class="grp"><td colspan="6">G</td></tr>
+          <tr>
+            <td><div class="client-cell"><div class="avatar a4">MG</div><div><div class="nm">María González</div><div class="sub">maria@example.com · (555) 234-9811</div></div></div></td>
+            <td style="color: var(--text-2);">Manhattan, NY</td>
+            <td style="color: var(--text-2);">8</td>
+            <td style="color: var(--text-2);">Apr 16 · <span style="color: var(--success);">en curso</span></td>
+            <td class="r" style="font-weight: 600;">$11,450.00</td>
+            <td><span class="pill active"><span class="dot"></span>Active</span></td>
+          </tr>
+          <tr class="grp"><td colspan="6">S</td></tr>
+          <tr>
+            <td><div class="client-cell"><div class="avatar a5">RS</div><div><div class="nm">Roberto Sánchez</div><div class="sub">rob@example.com · Kitchen pro</div></div></div></td>
+            <td style="color: var(--text-2);">Bronx, NY</td>
+            <td style="color: var(--text-2);">5</td>
+            <td style="color: var(--text-2);">Apr 12</td>
+            <td class="r" style="font-weight: 600;">$8,120.00</td>
+            <td><span class="pill active"><span class="dot"></span>Active</span></td>
+          </tr>
+          <tr>
+            <td><div class="client-cell"><div class="avatar">SM</div><div><div class="nm">Sofia Martínez</div><div class="sub">Lead · referida por Chen</div></div></div></td>
+            <td style="color: var(--text-2);">Queens, NY</td>
+            <td style="color: var(--text-2);">0 <span style="color: var(--text-3); font-size: 11px;">· 1 estimate</span></td>
+            <td style="color: var(--text-2);">Apr 8</td>
+            <td class="r" style="color: var(--text-3);">—</td>
+            <td><span class="pill lead"><span class="dot"></span>Lead</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════ 2 · CLIENT DETAIL ═══════ -->
+  <h2 id="client-detail" class="section-h"><span class="num">2</span>Client · /clients/[id]</h2>
+  <div class="mock">
+    <div class="mock-label"><span class="title">Ficha del cliente + historial + financials</span><span class="mono">Desktop</span></div>
+    <div class="mock-body">
+      <div class="breadcrumb"><a>Clients</a><svg class="ic" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg><span>Linda Chen</span></div>
+
+      <div class="detail-grid">
+        <div>
+          <div class="doc-hero">
+            <div class="doc-hero-top">
+              <div style="display: flex; gap: 14px; align-items: center;">
+                <div class="avatar a3" style="width: 56px; height: 56px; font-size: 16px; border-radius: 14px;">LC</div>
+                <div>
+                  <div class="doc-hero-title">Linda Chen</div>
+                  <div class="doc-hero-sub">Cliente desde Jun 2024 · 5 mi de distancia · Queens, NY</div>
+                </div>
+              </div>
+              <div class="doc-hero-actions">
+                <button class="btn primary"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>New estimate</button>
+                <button class="btn secondary">Edit</button>
+                <button class="btn ghost" style="padding: 8px;"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
+              </div>
+            </div>
+            <div class="doc-meta-row">
+              <div class="meta-item"><div class="k">Jobs</div><div class="v">12 <span style="color: var(--text-3); font-size: 12px;">(3 activos)</span></div></div>
+              <div class="meta-item"><div class="k">Total billed</div><div class="v total">$18,240</div></div>
+              <div class="meta-item"><div class="k">Balance</div><div class="v" style="color: var(--warning);">$1,200 <span style="color: var(--danger); font-size: 11px;">15d overdue</span></div></div>
+              <div class="meta-item"><div class="k">Avg project</div><div class="v">$1,520</div></div>
+              <div class="meta-item"><div class="k">Last contact</div><div class="v">Apr 14</div></div>
+            </div>
+          </div>
+
+          <div class="doc-section">
+            <div class="head"><h3>Recent activity</h3><span style="font-size: 11px; color: var(--text-3);">últimos 6 meses</span></div>
+            <div class="body" style="padding: 0;">
+              <table class="t" style="border: none; border-radius: 0;">
+                <thead><tr><th>Document</th><th>Type</th><th>Date</th><th class="r">Amount</th><th>Status</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td class="num-col">EST-1042</td><td>Estimate</td><td style="color: var(--text-2);">Apr 14</td><td class="r" style="font-weight: 600;">$2,850</td><td><span class="pill pending"><span class="dot"></span>Sent</span></td>
+                  </tr>
+                  <tr>
+                    <td class="num-col">INV-234</td><td>Invoice</td><td style="color: var(--text-2);">Apr 10</td><td class="r" style="font-weight: 600;">$3,450</td><td><span class="pill partial"><span class="dot"></span>Partial</span></td>
+                  </tr>
+                  <tr>
+                    <td class="num-col">INV-232</td><td>Invoice</td><td style="color: var(--text-2);">Mar 28</td><td class="r" style="font-weight: 600;">$1,200</td><td><span class="pill overdue"><span class="dot"></span>15d overdue</span></td>
+                  </tr>
+                  <tr>
+                    <td class="num-col">JOB-87</td><td>Job</td><td style="color: var(--text-2);">Mar 22</td><td class="r" style="font-weight: 600;">$5,780</td><td><span class="pill done"><span class="dot"></span>Done</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="doc-section">
+            <div class="head"><h3>Notas</h3><button class="btn ghost sm">+ Add note</button></div>
+            <div class="body" style="font-size: 13px; color: var(--text-2); line-height: 1.6;">
+              Prefers text over email. Husband is out of town weekdays — agendar trabajos mayores en fines de semana. Tiene 2 perros en el sótano. Puerta trasera código #4421.
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="side-card dark">
+            <div class="label">Lifetime value</div>
+            <div class="total">$18,240</div>
+            <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid rgb(255 255 255 / 0.12); font-size: 12px; opacity: 0.85;">
+              <div style="display: flex; justify-content: space-between; padding: 3px 0;"><span>Paid</span><span>$16,240</span></div>
+              <div style="display: flex; justify-content: space-between; padding: 3px 0;"><span>Outstanding</span><span>$1,200</span></div>
+              <div style="display: flex; justify-content: space-between; padding: 3px 0;"><span>In progress</span><span>$800</span></div>
+            </div>
+          </div>
+          <div class="side-card">
+            <div class="label">Contact</div>
+            <div style="font-size: 13px; line-height: 1.6;">
+              <div style="display: flex; gap: 8px; color: var(--text-2);"><span>📧</span><span style="color: var(--text);">linda.chen@example.com</span></div>
+              <div style="display: flex; gap: 8px; color: var(--text-2); margin-top: 4px;"><span>📱</span><span style="color: var(--text);">(555) 234-1211</span></div>
+              <div style="display: flex; gap: 8px; color: var(--text-2); margin-top: 4px;"><span>🏠</span><span style="color: var(--text);">124 Kew Gardens Rd<br>Queens, NY 11415</span></div>
+            </div>
+            <div style="display: flex; gap: 6px; margin-top: 12px;">
+              <button class="btn secondary sm" style="flex: 1;">Call</button>
+              <button class="btn secondary sm" style="flex: 1;">SMS</button>
+              <button class="btn secondary sm" style="flex: 1;">Email</button>
+            </div>
+          </div>
+          <div class="side-card">
+            <div class="label">Tags</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+              <span class="pill">VIP</span>
+              <span class="pill">Repeat customer</span>
+              <span class="pill">Referrer ×3</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ 3 · JOBS KANBAN ═══════ -->
+  <h2 id="jobs" class="section-h"><span class="num">3</span>Jobs · /jobs · Kanban</h2>
+  <div class="mock">
+    <div class="mock-label"><span class="title">Pipeline de trabajos por estado</span><span class="mono">Desktop</span></div>
+    <div class="mock-body">
+      <div class="list-head">
+        <div class="list-title">
+          <h1>Jobs</h1>
+          <p>23 jobs totales · 8 activos · 3 agendados para hoy</p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <div class="seg" style="padding: 2px;">
+            <button class="active">Kanban</button>
+            <button>List</button>
+            <button>Calendar</button>
+          </div>
+          <button class="btn primary">+ New job</button>
+        </div>
+      </div>
+
+      <div class="kanban">
+        <div class="kan-col lead">
+          <div class="kan-col-head"><div class="t"><span class="dot"></span>Lead</div><span class="count">4</span></div>
+          <div class="kan-card">
+            <div class="num">JOB-104</div>
+            <div class="title">Leak inspection 2nd floor</div>
+            <div class="client">👤 Sofia Martínez</div>
+            <div class="meta"><span>Queens</span><span class="amount">~$400</span></div>
+          </div>
+          <div class="kan-card">
+            <div class="num">JOB-103</div>
+            <div class="title">Kitchen faucet upgrade</div>
+            <div class="client">👤 Robert King</div>
+            <div class="meta"><span>Brooklyn</span><span class="amount">~$650</span></div>
+          </div>
+          <div class="kan-card">
+            <div class="num">JOB-102</div>
+            <div class="title">Bathroom renovation</div>
+            <div class="client">👤 Sarah Goldman</div>
+            <div class="meta"><span>Manhattan</span><span class="amount">~$8,200</span></div>
+          </div>
+        </div>
+
+        <div class="kan-col scheduled">
+          <div class="kan-col-head"><div class="t"><span class="dot"></span>Scheduled</div><span class="count">6</span></div>
+          <div class="kan-card tag-urgent">
+            <div class="num">JOB-101</div>
+            <div class="title">Water heater replacement</div>
+            <div class="client">👤 Linda Chen</div>
+            <div class="meta"><span>Apr 18 · 9:00 AM</span><span class="amount">$1,987</span></div>
+            <div class="progress"><div class="bar" style="width: 15%;"></div></div>
+          </div>
+          <div class="kan-card">
+            <div class="num">JOB-100</div>
+            <div class="title">Sewer line snake</div>
+            <div class="client">👤 James Walker</div>
+            <div class="meta"><span>Apr 19 · 2:00 PM</span><span class="amount">$450</span></div>
+          </div>
+          <div class="kan-card">
+            <div class="num">JOB-99</div>
+            <div class="title">Garbage disposal swap</div>
+            <div class="client">👤 María González</div>
+            <div class="meta"><span>Apr 22 · 10:00 AM</span><span class="amount">$320</span></div>
+          </div>
+        </div>
+
+        <div class="kan-col active">
+          <div class="kan-col-head"><div class="t"><span class="dot"></span>Active</div><span class="count">8</span></div>
+          <div class="kan-card">
+            <div class="num">JOB-98</div>
+            <div class="title">Kitchen sink replacement</div>
+            <div class="client">👤 María González</div>
+            <div class="meta"><span>Started today 9am</span><span class="amount">$1,512</span></div>
+            <div class="progress"><div class="bar" style="width: 60%;"></div></div>
+          </div>
+          <div class="kan-card">
+            <div class="num">JOB-97</div>
+            <div class="title">Bathroom remodel — fase 2</div>
+            <div class="client">👤 Sofia Martínez</div>
+            <div class="meta"><span>Day 3 of 5</span><span class="amount">$5,780</span></div>
+            <div class="progress"><div class="bar" style="width: 60%;"></div></div>
+          </div>
+          <div class="kan-card">
+            <div class="num">JOB-96</div>
+            <div class="title">Pipe repair main</div>
+            <div class="client">👤 Roberto Sánchez</div>
+            <div class="meta"><span>Pending materials</span><span class="amount">$1,240</span></div>
+            <div class="progress"><div class="bar" style="width: 25%;"></div></div>
+          </div>
+        </div>
+
+        <div class="kan-col done">
+          <div class="kan-col-head"><div class="t"><span class="dot"></span>Done</div><span class="count">5</span></div>
+          <div class="kan-card">
+            <div class="num">JOB-95</div>
+            <div class="title">Leak repair — kitchen</div>
+            <div class="client">👤 James Walker</div>
+            <div class="meta"><span>Done Apr 14</span><span class="amount">$780</span></div>
+            <div class="progress"><div class="bar" style="width: 100%; background: var(--success);"></div></div>
+          </div>
+          <div class="kan-card">
+            <div class="num">JOB-94</div>
+            <div class="title">Toilet install</div>
+            <div class="client">👤 Linda Chen</div>
+            <div class="meta"><span>Apr 10 · paid</span><span class="amount">$680</span></div>
+            <div class="progress"><div class="bar" style="width: 100%; background: var(--success);"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ 4 · JOB DETAIL ═══════ -->
+  <h2 id="job-detail" class="section-h"><span class="num">4</span>Job · /jobs/[id]</h2>
+  <div class="mock">
+    <div class="mock-label"><span class="title">Job en progreso con checklist, tiempo y documentos vinculados</span><span class="mono">Desktop</span></div>
+    <div class="mock-body">
+      <div class="breadcrumb"><a>Jobs</a><svg class="ic" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg><span>JOB-98 · Kitchen sink replacement</span></div>
+
+      <div class="detail-grid">
+        <div>
+          <div class="doc-hero">
+            <div class="doc-hero-top">
+              <div>
+                <div class="doc-hero-title">Kitchen sink replacement</div>
+                <div class="doc-hero-sub">JOB-98 · Iniciado hoy 9:00 AM · ETA 11:00 AM</div>
+              </div>
+              <div class="doc-hero-actions">
+                <button class="btn primary"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Marcar completado</button>
+                <button class="btn secondary">Field mode</button>
+                <button class="btn ghost" style="padding: 8px;"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
+              </div>
+            </div>
+            <div class="doc-meta-row">
+              <div class="meta-item"><div class="k">Status</div><div class="v"><span class="pill active"><span class="dot"></span>En curso</span></div></div>
+              <div class="meta-item"><div class="k">Client</div><div class="v">María González</div></div>
+              <div class="meta-item"><div class="k">Dirección</div><div class="v" style="font-size: 13px;">124 E 86th St, Manhattan</div></div>
+              <div class="meta-item" style="margin-left: auto; text-align: right;">
+                <div class="k">Budgeted</div>
+                <div class="v total">$1,512</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="doc-section">
+            <div class="head">
+              <h3>Checklist del día</h3>
+              <span style="font-size: 11px; color: var(--success); font-weight: 600;">4 / 7 completados · 57%</span>
+            </div>
+            <div class="body" style="padding: 12px 20px;">
+              <div style="display: flex; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px;">
+                <input type="checkbox" checked style="accent-color: var(--brand);"><div><b style="font-weight: 500;">Llamar cliente 30min antes</b><div style="font-size: 11px; color: var(--text-3); margin-top: 2px;">Confirmado 8:30 AM</div></div>
+              </div>
+              <div style="display: flex; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px;">
+                <input type="checkbox" checked style="accent-color: var(--brand);"><div><b style="font-weight: 500;">Cortar agua del fregadero</b></div>
+              </div>
+              <div style="display: flex; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px;">
+                <input type="checkbox" checked style="accent-color: var(--brand);"><div><b style="font-weight: 500;">Desmontar fregadero viejo</b><div style="font-size: 11px; color: var(--text-3); margin-top: 2px;">Foto documentada ✓</div></div>
+              </div>
+              <div style="display: flex; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px;">
+                <input type="checkbox" checked style="accent-color: var(--brand);"><div><b style="font-weight: 500;">Preparar superficie y sellador</b></div>
+              </div>
+              <div style="display: flex; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px;">
+                <input type="checkbox" style="accent-color: var(--brand);"><div><b style="font-weight: 500; color: var(--info);">Instalar nuevo fregadero <span style="color: var(--warning);">← en progreso</span></b></div>
+              </div>
+              <div style="display: flex; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px;">
+                <input type="checkbox" style="accent-color: var(--brand);"><div><b style="font-weight: 500;">Conectar P-trap y pressure test</b></div>
+              </div>
+              <div style="display: flex; gap: 8px; padding: 8px 0; font-size: 13px;">
+                <input type="checkbox" style="accent-color: var(--brand);"><div><b style="font-weight: 500;">Cobrar balance ($512)</b><div style="font-size: 11px; color: var(--text-3); margin-top: 2px;">$1,000 de depósito ya pagado</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="doc-section">
+            <div class="head"><h3>Fotos del trabajo</h3><span style="font-size: 11px; color: var(--text-3);">3 fotos</span></div>
+            <div class="body" style="padding: 16px 20px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;">
+              <div style="aspect-ratio: 1; background: linear-gradient(135deg, #64748B, #94A3B8); border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; color: white; font-size: 10px;">Antes</div>
+              <div style="aspect-ratio: 1; background: linear-gradient(135deg, #52525B, #71717A); border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; color: white; font-size: 10px;">Desmontaje</div>
+              <div style="aspect-ratio: 1; background: linear-gradient(135deg, #3F3F46, #52525B); border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; color: white; font-size: 10px;">Superficie</div>
+              <div style="aspect-ratio: 1; background: var(--surface-2); border: 1px dashed var(--border); border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; color: var(--text-3); font-size: 20px;">+</div>
+              <div></div>
+            </div>
+          </div>
+
+          <div class="doc-section">
+            <div class="head"><h3>Documentos vinculados</h3></div>
+            <div class="body" style="padding: 10px 0;">
+              <div style="padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);">
+                <div><span class="num-col">EST-1040</span> · <span style="font-size: 13px;">Estimate original</span></div>
+                <span class="pill done"><span class="dot"></span>Approved</span>
+              </div>
+              <div style="padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);">
+                <div><span class="num-col">INV-231</span> · <span style="font-size: 13px;">Depósito 50%</span></div>
+                <span class="pill done"><span class="dot"></span>Paid</span>
+              </div>
+              <div style="padding: 10px 20px; display: flex; justify-content: space-between; align-items: center;">
+                <div><span class="num-col">SL-23</span> · <span style="font-size: 13px;">Shopping list materials</span></div>
+                <span class="pill"><span class="dot"></span>7/7 bought</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="side-card dark">
+            <div class="label">Clock in</div>
+            <div style="font-size: 12px; opacity: 0.7;">Iniciado hoy 9:00 AM</div>
+            <div class="total" style="margin-top: 4px; font-size: 32px;">2h 14m</div>
+            <div style="margin-top: 12px; display: flex; gap: 6px;">
+              <button class="btn" style="background: white; color: var(--brand); flex: 1; padding: 8px;">Pausar</button>
+              <button class="btn" style="background: var(--danger); color: white; border: none; flex: 1; padding: 8px;">Stop</button>
+            </div>
+          </div>
+
+          <div class="side-card">
+            <div class="label">Schedule</div>
+            <div style="font-size: 13px;">
+              <div style="padding: 4px 0;"><b>Hoy</b> · 9:00 AM – 11:00 AM</div>
+              <div style="padding: 4px 0; color: var(--text-2);">Estimated duration: 2h</div>
+              <div style="padding: 4px 0; color: var(--success);">● On schedule</div>
+            </div>
+          </div>
+
+          <div class="side-card">
+            <div class="label">Client</div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <div class="avatar a4">MG</div>
+              <div>
+                <div style="font-weight: 600; font-size: 13px;">María González</div>
+                <div style="font-size: 11px; color: var(--text-3);">8 jobs · $11.4k LTV</div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 6px; margin-top: 10px;">
+              <button class="btn secondary sm" style="flex: 1;">Call</button>
+              <button class="btn secondary sm" style="flex: 1;">SMS</button>
+            </div>
+          </div>
+
+          <div class="side-card">
+            <div class="label">Timeline</div>
+            <div class="timeline">
+              <div class="item"><div class="dot info"></div><div><div class="event">Clocked in</div><div class="time">Hoy 9:00 AM</div></div></div>
+              <div class="item"><div class="dot success"></div><div><div class="event">Materials picked up</div><div class="time">Hoy 8:15 AM</div></div></div>
+              <div class="item"><div class="dot"></div><div><div class="event">Scheduled</div><div class="time">Apr 12 (hace 4 días)</div></div></div>
+              <div class="item"><div class="dot"></div><div><div class="event">Estimate approved</div><div class="time">Apr 10 · EST-1040</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ 5 · INVOICES LIST ═══════ -->
+  <h2 id="invoices" class="section-h"><span class="num">5</span>Invoices · /invoices</h2>
+  <div class="mock">
+    <div class="mock-label"><span class="title">Facturas con estado de pago</span><span class="mono">Desktop</span></div>
+    <div class="mock-body">
+      <div class="list-head">
+        <div class="list-title">
+          <h1>Invoices</h1>
+          <p>34 facturas · <span style="color: var(--success); font-weight: 500;">$28,450</span> cobrado MTD · <span style="color: var(--warning); font-weight: 500;">$6,420</span> pendiente</p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn secondary">Export</button>
+          <button class="btn primary">+ New invoice</button>
+        </div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-label"><span class="dot" style="background: var(--success);"></span>Paid MTD</div><div class="kpi-value">$28,450</div><div class="kpi-sub up">↑ 12% vs marzo</div></div>
+        <div class="kpi"><div class="kpi-label"><span class="dot" style="background: var(--warning);"></span>Outstanding</div><div class="kpi-value">$6,420</div><div class="kpi-sub">7 facturas abiertas</div></div>
+        <div class="kpi"><div class="kpi-label"><span class="dot" style="background: var(--danger);"></span>Overdue</div><div class="kpi-value">$3,600</div><div class="kpi-sub down">2 facturas · 8+ días</div></div>
+        <div class="kpi"><div class="kpi-label"><span class="dot" style="background: var(--info);"></span>Avg days to pay</div><div class="kpi-value">8.4</div><div class="kpi-sub">Target: 7</div></div>
+      </div>
+
+      <div class="toolbar">
+        <div class="search">
+          <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input placeholder="Buscar facturas...">
+        </div>
+        <div class="seg">
+          <button class="active">All <span class="count">34</span></button>
+          <button>Draft <span class="count">2</span></button>
+          <button>Sent <span class="count">5</span></button>
+          <button>Overdue <span class="count">2</span></button>
+          <button>Paid <span class="count">25</span></button>
+        </div>
+      </div>
+
+      <table class="t">
+        <thead><tr><th>Invoice</th><th>Client</th><th>Due</th><th>Status</th><th class="r">Balance</th><th class="r">Total</th></tr></thead>
+        <tbody>
+          <tr class="grp"><td colspan="6"><span>Overdue · requiere atención</span><span style="float: right;">$3,600</span></td></tr>
+          <tr>
+            <td class="num-col">#232</td>
+            <td><div class="client-cell"><div class="avatar a3">LC</div><div><div class="nm">Linda Chen</div><div class="sub">Kitchen remodel</div></div></div></td>
+            <td style="color: var(--danger); font-weight: 500;">15 días vencida</td>
+            <td><span class="pill overdue"><span class="dot"></span>Overdue</span></td>
+            <td class="r" style="color: var(--danger); font-weight: 600;">$1,200.00</td>
+            <td class="r" style="font-weight: 500;">$1,200.00</td>
+          </tr>
+          <tr>
+            <td class="num-col">#228</td>
+            <td><div class="client-cell"><div class="avatar">JW</div><div><div class="nm">James Walker</div><div class="sub">Leak repair</div></div></div></td>
+            <td style="color: var(--danger); font-weight: 500;">8 días vencida</td>
+            <td><span class="pill overdue"><span class="dot"></span>Overdue</span></td>
+            <td class="r" style="color: var(--danger); font-weight: 600;">$2,400.00</td>
+            <td class="r" style="font-weight: 500;">$2,400.00</td>
+          </tr>
+          <tr class="grp"><td colspan="6"><span>This week</span><span style="float: right;">$2,820</span></td></tr>
+          <tr>
+            <td class="num-col">#235</td>
+            <td><div class="client-cell"><div class="avatar a5">RS</div><div><div class="nm">Roberto Sánchez</div><div class="sub">Water heater</div></div></div></td>
+            <td style="color: var(--text-2);">Apr 18</td>
+            <td><span class="pill pending"><span class="dot"></span>Sent</span></td>
+            <td class="r" style="font-weight: 600;">$1,380.00</td>
+            <td class="r" style="font-weight: 500;">$1,380.00</td>
+          </tr>
+          <tr>
+            <td class="num-col">#234</td>
+            <td><div class="client-cell"><div class="avatar">SM</div><div><div class="nm">Sofia Martínez</div><div class="sub">Bathroom renov.</div></div></div></td>
+            <td style="color: var(--text-2);">Apr 17</td>
+            <td><span class="pill pending"><span class="dot"></span>Sent</span></td>
+            <td class="r" style="font-weight: 600;">$1,440.00</td>
+            <td class="r" style="font-weight: 500;">$2,880.00</td>
+          </tr>
+          <tr class="grp"><td colspan="6"><span>Paid · April 2026</span><span style="float: right;">$28,450</span></td></tr>
+          <tr>
+            <td class="num-col">#231</td>
+            <td><div class="client-cell"><div class="avatar a4">MG</div><div><div class="nm">María González</div><div class="sub">Depósito Kitchen sink</div></div></div></td>
+            <td style="color: var(--text-2);">Apr 10 · paid</td>
+            <td><span class="pill paid"><span class="dot"></span>Paid</span></td>
+            <td class="r" style="color: var(--text-3);">$0.00</td>
+            <td class="r" style="font-weight: 500;">$1,000.00</td>
+          </tr>
+          <tr>
+            <td class="num-col">#230</td>
+            <td><div class="client-cell"><div class="avatar a3">LC</div><div><div class="nm">Linda Chen</div><div class="sub">Toilet install</div></div></div></td>
+            <td style="color: var(--text-2);">Apr 12 · paid</td>
+            <td><span class="pill paid"><span class="dot"></span>Paid</span></td>
+            <td class="r" style="color: var(--text-3);">$0.00</td>
+            <td class="r" style="font-weight: 500;">$680.00</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════ 6 · INVOICE DETAIL ═══════ -->
+  <h2 id="invoice-detail" class="section-h"><span class="num">6</span>Invoice · /invoices/[id]</h2>
+  <div class="mock">
+    <div class="mock-label"><span class="title">Factura con tracking de pago + historial</span><span class="mono">Desktop</span></div>
+    <div class="mock-body">
+      <div class="breadcrumb"><a>Invoices</a><svg class="ic" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg><span>#234</span></div>
+
+      <div class="detail-grid">
+        <div>
+          <div class="doc-hero">
+            <div class="doc-hero-top">
+              <div>
+                <div class="doc-hero-title">Invoice #234</div>
+                <div class="doc-hero-sub">Issued Apr 3 · Due Apr 17 · Linked to JOB-97</div>
+              </div>
+              <div class="doc-hero-actions">
+                <button class="btn primary"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22 6 12 13 2 6"/></svg>Send reminder</button>
+                <button class="btn secondary">Mark paid</button>
+                <button class="btn ghost" style="padding: 8px;"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
+              </div>
+            </div>
+            <div class="doc-meta-row">
+              <div class="meta-item"><div class="k">Status</div><div class="v"><span class="pill partial"><span class="dot"></span>Partial · 50% paid</span></div></div>
+              <div class="meta-item"><div class="k">Client</div><div class="v">Sofia Martínez</div></div>
+              <div class="meta-item" style="margin-left: auto; text-align: right;">
+                <div class="k">Balance</div>
+                <div class="v total" style="color: var(--warning);">$1,440.00</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="doc-section">
+            <div class="head"><h3>Payment progress</h3><span style="font-size: 11px; color: var(--text-3);">$1,440 of $2,880</span></div>
+            <div class="body" style="padding: 20px;">
+              <div style="height: 8px; background: var(--surface-3); border-radius: 999px; overflow: hidden; margin-bottom: 12px;">
+                <div style="width: 50%; height: 100%; background: linear-gradient(90deg, var(--success) 0%, #22C55E 100%);"></div>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px;">
+                <div style="color: var(--success); font-weight: 600;">● $1,440 cobrado</div>
+                <div style="color: var(--warning); font-weight: 600;">$1,440 pendiente ·  vence en 1 día</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="doc-section">
+            <div class="head"><h3>Line items</h3><span style="font-size: 11px; color: var(--text-3);">8 items</span></div>
+            <div class="body" style="padding: 0;">
+              <table class="t" style="border: none; border-radius: 0;">
+                <thead><tr><th>Description</th><th style="text-align: center;">Qty</th><th class="r">Rate</th><th class="r">Amount</th></tr></thead>
+                <tbody>
+                  <tr><td>Bathroom demo &amp; prep</td><td style="text-align: center;">1</td><td class="r">$640</td><td class="r" style="font-weight: 600;">$640.00</td></tr>
+                  <tr><td>Rough plumbing relocation</td><td style="text-align: center;">8h</td><td class="r">$125</td><td class="r" style="font-weight: 600;">$1,000.00</td></tr>
+                  <tr><td>Tile backer + waterproofing</td><td style="text-align: center;">1</td><td class="r">$380</td><td class="r" style="font-weight: 600;">$380.00</td></tr>
+                  <tr><td>Fixtures install (toilet, vanity, shower)</td><td style="text-align: center;">1</td><td class="r">$860</td><td class="r" style="font-weight: 600;">$860.00</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="side-card dark">
+            <div class="label">Total</div>
+            <div class="total">$2,880.00</div>
+            <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid rgb(255 255 255 / 0.12); font-size: 12px; opacity: 0.9;">
+              <div style="display: flex; justify-content: space-between; padding: 3px 0;"><span>Subtotal</span><span>$2,666.67</span></div>
+              <div style="display: flex; justify-content: space-between; padding: 3px 0;"><span>Tax (8%)</span><span>$213.33</span></div>
+              <div style="display: flex; justify-content: space-between; padding: 6px 0 3px; border-top: 1px solid rgb(255 255 255 / 0.15); margin-top: 6px; color: var(--ai-accent, #A5B4FC); font-weight: 600;"><span>Paid</span><span>−$1,440</span></div>
+              <div style="display: flex; justify-content: space-between; padding: 3px 0; font-weight: 600;"><span>Balance</span><span style="color: #FBBF24;">$1,440</span></div>
+            </div>
+          </div>
+
+          <div class="side-card">
+            <div class="label">Payments received</div>
+            <div class="timeline">
+              <div class="item">
+                <div class="dot success"></div>
+                <div>
+                  <div class="event">$1,440 via Stripe</div>
+                  <div class="time">Apr 3 · 50% deposit</div>
+                </div>
+              </div>
+            </div>
+            <button class="btn secondary sm" style="width: 100%; margin-top: 10px;">+ Registrar pago manual</button>
+          </div>
+
+          <div class="side-card">
+            <div class="label">Enviar recordatorio</div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <button class="btn secondary sm">📧 Email</button>
+              <button class="btn secondary sm">📱 SMS</button>
+              <button class="btn secondary sm" style="border-color: var(--brand); color: var(--brand);">◆ Let AI draft one</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ 7 · PAYMENTS ═══════ -->
+  <h2 id="payments" class="section-h"><span class="num">7</span>Payments · /payments</h2>
+  <div class="mock">
+    <div class="mock-label"><span class="title">Historial de ingresos por fuente</span><span class="mono">Desktop</span></div>
+    <div class="mock-body">
+      <div class="list-head">
+        <div class="list-title">
+          <h1>Payments received</h1>
+          <p>Vista consolidada de todos los ingresos · últimos 30 días</p>
+        </div>
+        <button class="btn secondary">Export to CSV</button>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-label"><span class="dot" style="background: var(--success);"></span>Total received</div><div class="kpi-value">$28,450</div><div class="kpi-sub up">↑ 12% MoM</div></div>
+        <div class="kpi"><div class="kpi-label"><span class="dot" style="background: var(--info);"></span>Via Stripe</div><div class="kpi-value">$19,800</div><div class="kpi-sub">70% del total</div></div>
+        <div class="kpi"><div class="kpi-label"><span class="dot" style="background: var(--warning);"></span>Cash / check</div><div class="kpi-value">$8,650</div><div class="kpi-sub">30% del total</div></div>
+        <div class="kpi"><div class="kpi-label"><span class="dot" style="background: var(--brand);"></span>Avg fee (Stripe)</div><div class="kpi-value">2.9%</div><div class="kpi-sub">$574 total fees</div></div>
+      </div>
+
+      <div class="toolbar">
+        <div class="search">
+          <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input placeholder="Buscar pagos por cliente o invoice...">
+        </div>
+        <div class="seg">
+          <button class="active">All</button>
+          <button>Stripe</button>
+          <button>Cash</button>
+          <button>Check</button>
+          <button>Bank transfer</button>
+        </div>
+      </div>
+
+      <table class="t">
+        <thead><tr><th>Date</th><th>Client</th><th>Invoice</th><th>Method</th><th class="r">Fee</th><th class="r">Net</th><th class="r">Amount</th></tr></thead>
+        <tbody>
+          <tr>
+            <td style="color: var(--text-2);">Apr 16 · 11:24 AM</td>
+            <td><div class="client-cell"><div class="avatar a4">MG</div><div class="nm">María González</div></div></td>
+            <td class="num-col">#231</td>
+            <td><span class="pill" style="background: #F5F3FF; color: #7C3AED; border-color: #DDD6FE;"><span class="dot"></span>Stripe</span></td>
+            <td class="r" style="color: var(--text-3);">$29.20</td>
+            <td class="r" style="color: var(--success); font-weight: 600;">$970.80</td>
+            <td class="r" style="font-weight: 500;">$1,000.00</td>
+          </tr>
+          <tr>
+            <td style="color: var(--text-2);">Apr 14 · 3:45 PM</td>
+            <td><div class="client-cell"><div class="avatar a3">LC</div><div class="nm">Linda Chen</div></div></td>
+            <td class="num-col">#230</td>
+            <td><span class="pill"><span class="dot"></span>Check #4421</span></td>
+            <td class="r" style="color: var(--text-3);">—</td>
+            <td class="r" style="color: var(--success); font-weight: 600;">$680.00</td>
+            <td class="r" style="font-weight: 500;">$680.00</td>
+          </tr>
+          <tr>
+            <td style="color: var(--text-2);">Apr 12 · 9:00 AM</td>
+            <td><div class="client-cell"><div class="avatar a5">RS</div><div class="nm">Roberto Sánchez</div></div></td>
+            <td class="num-col">#229</td>
+            <td><span class="pill" style="background: #F5F3FF; color: #7C3AED; border-color: #DDD6FE;"><span class="dot"></span>Stripe</span></td>
+            <td class="r" style="color: var(--text-3);">$41.35</td>
+            <td class="r" style="color: var(--success); font-weight: 600;">$1,374.65</td>
+            <td class="r" style="font-weight: 500;">$1,416.00</td>
+          </tr>
+          <tr>
+            <td style="color: var(--text-2);">Apr 10 · 4:12 PM</td>
+            <td><div class="client-cell"><div class="avatar">SM</div><div class="nm">Sofia Martínez</div></div></td>
+            <td class="num-col">#234 <span style="color: var(--text-3); font-size: 11px;">(50%)</span></td>
+            <td><span class="pill" style="background: #F5F3FF; color: #7C3AED; border-color: #DDD6FE;"><span class="dot"></span>Stripe</span></td>
+            <td class="r" style="color: var(--text-3);">$42.06</td>
+            <td class="r" style="color: var(--success); font-weight: 600;">$1,397.94</td>
+            <td class="r" style="font-weight: 500;">$1,440.00</td>
+          </tr>
+          <tr>
+            <td style="color: var(--text-2);">Apr 8 · 10:30 AM</td>
+            <td><div class="client-cell"><div class="avatar a2">AR</div><div class="nm">Arturo Rivera</div></div></td>
+            <td class="num-col">#227</td>
+            <td><span class="pill"><span class="dot"></span>Cash</span></td>
+            <td class="r" style="color: var(--text-3);">—</td>
+            <td class="r" style="color: var(--success); font-weight: 600;">$890.00</td>
+            <td class="r" style="font-weight: 500;">$890.00</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════ 8 · EXPENSES ═══════ -->
+  <h2 id="expenses" class="section-h"><span class="num">8</span>Expenses · /expenses</h2>
+  <div class="mock">
+    <div class="mock-label"><span class="title">Gastos con categorización y vinculación a jobs</span><span class="mono">Desktop</span></div>
+    <div class="mock-body">
+      <div class="list-head">
+        <div class="list-title">
+          <h1>Expenses</h1>
+          <p>68 gastos · $9,840 MTD · Margen bruto proyectado: <span style="color: var(--success); font-weight: 500;">72%</span></p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn secondary">Scan receipt</button>
+          <button class="btn primary">+ Log expense</button>
+        </div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-label"><span class="dot" style="background: var(--danger);"></span>Total spent</div><div class="kpi-value">$9,840</div><div class="kpi-sub">este mes</div></div>
+        <div class="kpi"><div class="kpi-label"><span class="dot" style="background: var(--info);"></span>Materiales</div><div class="kpi-value">$6,420</div><div class="kpi-sub">65%</div></div>
+        <div class="kpi"><div class="kpi-label"><span class="dot" style="background: var(--warning);"></span>Herramientas</div><div class="kpi-value">$1,240</div><div class="kpi-sub">13%</div></div>
+        <div class="kpi"><div class="kpi-label"><span class="dot" style="background: var(--text-2);"></span>Combustible + otros</div><div class="kpi-value">$2,180</div><div class="kpi-sub">22%</div></div>
+      </div>
+
+      <div class="toolbar">
+        <div class="search">
+          <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input placeholder="Buscar por vendor, categoría o job...">
+        </div>
+        <div class="seg">
+          <button class="active">All</button>
+          <button>Materials <span class="count">42</span></button>
+          <button>Tools <span class="count">8</span></button>
+          <button>Fuel <span class="count">12</span></button>
+          <button>Subs <span class="count">4</span></button>
+          <button>Other <span class="count">2</span></button>
+        </div>
+      </div>
+
+      <table class="t">
+        <thead><tr><th>Date</th><th>Vendor</th><th>Description</th><th>Category</th><th>Linked job</th><th>Receipt</th><th class="r">Amount</th></tr></thead>
+        <tbody>
+          <tr class="grp"><td colspan="7"><span>April 16 · hoy</span><span style="float: right;">$845.40</span></td></tr>
+          <tr>
+            <td style="color: var(--text-2);">8:15 AM</td>
+            <td>Home Depot</td>
+            <td>PEX pipe + fittings</td>
+            <td><span class="pill" style="background: var(--info-bg); color: var(--info); border-color: var(--info-border);"><span class="dot"></span>Materials</span></td>
+            <td class="num-col">JOB-101</td>
+            <td><span style="color: var(--success); font-size: 11px;">📷 attached</span></td>
+            <td class="r" style="font-weight: 600; color: var(--danger);">$185.00</td>
+          </tr>
+          <tr>
+            <td style="color: var(--text-2);">8:45 AM</td>
+            <td>Home Depot</td>
+            <td>Rheem 50gal water heater</td>
+            <td><span class="pill" style="background: var(--info-bg); color: var(--info); border-color: var(--info-border);"><span class="dot"></span>Materials</span></td>
+            <td class="num-col">JOB-101</td>
+            <td><span style="color: var(--success); font-size: 11px;">📷 attached</span></td>
+            <td class="r" style="font-weight: 600; color: var(--danger);">$780.00</td>
+          </tr>
+          <tr>
+            <td style="color: var(--text-2);">7:30 AM</td>
+            <td>Shell station</td>
+            <td>Gas — van</td>
+            <td><span class="pill"><span class="dot"></span>Fuel</span></td>
+            <td style="color: var(--text-3);">—</td>
+            <td><span style="color: var(--text-3); font-size: 11px;">No receipt</span></td>
+            <td class="r" style="font-weight: 600; color: var(--danger);">$82.40</td>
+          </tr>
+          <tr class="grp"><td colspan="7"><span>April 15</span><span style="float: right;">$420.00</span></td></tr>
+          <tr>
+            <td style="color: var(--text-2);">2:00 PM</td>
+            <td>Ferguson</td>
+            <td>Copper fittings variety pack</td>
+            <td><span class="pill" style="background: var(--info-bg); color: var(--info); border-color: var(--info-border);"><span class="dot"></span>Materials</span></td>
+            <td class="num-col">JOB-96</td>
+            <td><span style="color: var(--success); font-size: 11px;">📷 attached</span></td>
+            <td class="r" style="font-weight: 600; color: var(--danger);">$185.00</td>
+          </tr>
+          <tr>
+            <td style="color: var(--text-2);">11:00 AM</td>
+            <td>Milwaukee Tool</td>
+            <td>Impact driver battery</td>
+            <td><span class="pill" style="background: var(--warning-bg); color: var(--warning); border-color: var(--warning-border);"><span class="dot"></span>Tools</span></td>
+            <td style="color: var(--text-3);">—</td>
+            <td><span style="color: var(--success); font-size: 11px;">📷 attached</span></td>
+            <td class="r" style="font-weight: 600; color: var(--danger);">$145.00</td>
+          </tr>
+          <tr>
+            <td style="color: var(--text-2);">9:30 AM</td>
+            <td>Joe's Plumbing Supply</td>
+            <td>Caulk + sealants variety</td>
+            <td><span class="pill" style="background: var(--info-bg); color: var(--info); border-color: var(--info-border);"><span class="dot"></span>Materials</span></td>
+            <td class="num-col">Multi</td>
+            <td><span style="color: var(--text-3); font-size: 11px;">Pending</span></td>
+            <td class="r" style="font-weight: 600; color: var(--danger);">$90.00</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 20px 24px; margin-top: 40px; display: flex; justify-content: space-between; align-items: center;">
+    <p style="color: var(--text-2);">Continúa con Schedule, Shopping List, Field, Team, Referrals, Settings.</p>
+    <a class="btn primary" href="v2-gallery-2.html">Gallery 2 →</a>
+  </div>
+</div>
+</body>
+</html>

@@ -67,7 +67,7 @@ export async function createChangeOrder(data: {
     notes: data.notes || null,
   }, lineItems)
 
-  revalidatePath('/[locale]/jobs', 'page')
+  revalidatePath('/[locale]/projects', 'page')
   return co
 }
 
@@ -121,13 +121,13 @@ export async function updateChangeOrder(id: string, data: Partial<{
     }
   }
 
-  revalidatePath('/[locale]/jobs', 'page')
-  revalidatePath('/[locale]/jobs/[id]', 'page')
+  revalidatePath('/[locale]/projects', 'page')
+  revalidatePath('/[locale]/projects/[id]', 'page')
   return co
 }
 
 export async function deleteChangeOrder(id: string) {
   const userId = await requirePro()
   await dbAdapter.changeOrders.delete(id, userId)
-  revalidatePath('/[locale]/jobs', 'page')
+  revalidatePath('/[locale]/projects', 'page')
 }

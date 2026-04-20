@@ -19,6 +19,26 @@ export async function recordPayment(data: {
   referenceNumber?: string
 }) {
   const userId = await requireAuth()
+
+  if (!Number.isFinite(data.amount) || data.amount <= 0) {
+    throw new Error('Payment amount must be greater than zero.')
+  }
+
+  // A2 — overpayment constraint: Σ(paid) + new <= invoice.total (with 1 cent tolerance)
+  if (data.invoiceId) {
+    const invoice = await dbAdapter.invoices.findById(data.invoiceId, userId)
+    if (!invoice) throw new Error('Invoice not found.')
+    const existingPayments = await dbAdapter.payments.findByInvoice(data.invoiceId)
+    const existingPaid = existingPayments
+      .filter(p => p.status === 'paid')
+      .reduce((s, p) => s + parseFloat(p.amount), 0)
+    const invoiceTotal = parseFloat(invoice.total)
+    const remainingBalance = invoiceTotal - existingPaid
+    if (data.amount > remainingBalance + 0.01) {
+      throw new Error(`Payment of $${data.amount.toFixed(2)} exceeds remaining balance $${remainingBalance.toFixed(2)} on invoice ${invoice.number}.`)
+    }
+  }
+
   const payment = await dbAdapter.payments.create(userId, {
     invoiceId: data.invoiceId ?? null,
     estimateId: data.estimateId ?? null,

@@ -8,9 +8,11 @@ import { deleteEstimate } from '@/lib/actions/estimates'
 import { generateEstimateShareToken } from '@/lib/actions/portal'
 import { getTemplates } from '@/lib/actions/templates'
 import { EstimateStatusBadge } from '@/components/estimates/EstimateStatusBadge'
+import { deriveEstimateStatus } from '@/lib/status/derived'
 import { PlanLimitBanner } from '@/components/PlanLimitBanner'
 import { ConfirmModal } from '@/components/ConfirmModal'
-import { FileText, Plus, Trash2, Share2, Check, FileStack, Mail, MailOpen, ChevronDown, AlertTriangle } from 'lucide-react'
+import { Toast } from '@/components/Toast'
+import { FileText, Plus, Trash2, Share2, Check, FileStack, Mail, MailOpen, ChevronDown, AlertTriangle, PenLine, DollarSign, Paperclip } from 'lucide-react'
 import { SwipeableRow } from '@/components/SwipeableRow'
 import {
   StatusPill, KpiCard, ClientAvatar, Segmented, Toolbar, EmptyState,
@@ -18,7 +20,7 @@ import {
 } from '@/components/ui'
 
 type EstimateStatus = 'draft' | 'sent' | 'approved' | 'rejected' | 'converted' | 'expired'
-type Estimate = { id: string; number: string; clientName: string; clientEmail?: string | null; status: string; total: string; createdAt: Date }
+type Estimate = { id: string; number: string; clientName: string; clientEmail?: string | null; status: string; total: string; createdAt: Date; validUntil?: Date | null; allowExpire?: boolean | null; signatureDataUrl?: string | null; depositPaid?: boolean | null; contractId?: string | null }
 type T = { title: string; new: string; empty: string; status: Record<EstimateStatus, string>; fields: { number: string; clientName: string; total: string } }
 
 type FilterValue = 'all' | EstimateStatus
@@ -43,6 +45,8 @@ export function EstimatesClient({ initialEstimates, viewCounts = {}, planInfo, t
   const [filter, setFilter] = useState<FilterValue>('all')
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ message: string; variant?: 'success' | 'error' | 'warning' } | null>(null)
+  const notify = (message: string, variant: 'success' | 'error' | 'warning' = 'success') => setToast({ message, variant })
   const [showTemplates, setShowTemplates] = useState(false)
   const [templates, setTemplates] = useState<{ id: string; name: string }[]>([])
   const [showDrafts, setShowDrafts] = useState(false)
@@ -71,26 +75,29 @@ export function EstimatesClient({ initialEstimates, viewCounts = {}, planInfo, t
     const url = await generateEstimateShareToken(id)
     await navigator.clipboard.writeText(url)
     setCopiedId(id)
+    notify(locale === 'es' ? 'Link copiado' : 'Link copied')
     setTimeout(() => setCopiedId(null), 2000)
   }
 
   const visible = initialEstimates
     .filter(e => {
       if (e.status === 'draft') return false // Drafts shown in collapsible section
+      const derived = deriveEstimateStatus(e)
       const q = search.toLowerCase()
       const matchesSearch = e.clientName.toLowerCase().includes(q) || e.number.toLowerCase().includes(q)
       const matchesFilter = filter === 'all'
-        || (filter === 'sent' && e.status === 'sent')
-        || (filter === 'approved' && (e.status === 'approved' || e.status === 'converted'))
-        || (filter === 'rejected' && e.status === 'rejected')
-        || e.status === filter
+        || (filter === 'sent' && derived === 'sent')
+        || (filter === 'approved' && (derived === 'approved' || derived === 'converted'))
+        || (filter === 'rejected' && derived === 'rejected')
+        || (filter === 'expired' && derived === 'expired')
+        || derived === filter
       return matchesSearch && matchesFilter
     })
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
   // Group by month/year
   const grouped = visible.reduce<Record<string, Estimate[]>>((acc, est) => {
-    const key = new Date(est.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
+    const key = new Date(est.createdAt).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { year: 'numeric', month: 'long' })
     if (!acc[key]) acc[key] = []
     acc[key].push(est)
     return acc
@@ -99,33 +106,42 @@ export function EstimatesClient({ initialEstimates, viewCounts = {}, planInfo, t
 
   function handleDelete() {
     if (!deleteId) return
-    startTransition(async () => { await deleteEstimate(deleteId); router.refresh() })
+    startTransition(async () => {
+      try {
+        await deleteEstimate(deleteId)
+        notify(locale === 'es' ? 'Estimate eliminado' : 'Estimate deleted')
+        router.refresh()
+      } catch (e) {
+        notify(e instanceof Error ? e.message : 'Error', 'error')
+      }
+    })
     setDeleteId(null)
   }
 
-  // Build segmented options with live counts (desktop & mobile)
+  // Build segmented options con derived status (incluye 'expired' que es sólo derivado, no DB enum)
   const desktopFilterOptions = [
-    { value: 'all' as FilterValue, label: 'All', count: initialEstimates.length - drafts.length },
+    { value: 'all' as FilterValue, label: 'All', count: initialEstimates.length },
     ...DESKTOP_FILTERS
-      .filter(s => initialEstimates.some(e => e.status === s))
+      .filter(s => initialEstimates.some(e => deriveEstimateStatus(e) === s))
       .map(s => ({
         value: s as FilterValue,
         label: t.status[s],
-        count: initialEstimates.filter(e => e.status === s).length,
+        count: initialEstimates.filter(e => deriveEstimateStatus(e) === s).length,
       })),
   ]
 
   const mobileFilterOptions = [
     { value: 'sent' as FilterValue, label: locale === 'es' ? 'Pendiente' : 'Pending', count: pending.length },
     { value: 'approved' as FilterValue, label: locale === 'es' ? 'Aprobado' : 'Approved', count: approved.length },
-    { value: 'rejected' as FilterValue, label: locale === 'es' ? 'Rechazado' : 'Declined', count: declined.length },
+    { value: 'rejected' as FilterValue, label: locale === 'es' ? 'Rechazado' : 'Rejected', count: declined.length },
   ]
 
   const formatCurrency = (n: number) =>
     n >= 1000 ? `$${(n / 1000).toFixed(1)}k` : `$${n.toFixed(0)}`
 
   return (
-    <div className="px-4 pt-2 pb-4 md:p-8 bg-white md:bg-transparent min-h-full">
+    <div className="px-4 pt-2 pb-4 md:p-8 bg-card md:bg-transparent min-h-full">
+      {toast && <Toast message={toast.message} variant={toast.variant} onDone={() => setToast(null)} />}
       {deleteId && (
         <ConfirmModal
           title="Delete Estimate"
@@ -142,6 +158,9 @@ export function EstimatesClient({ initialEstimates, viewCounts = {}, planInfo, t
           <h1 className="page-title mb-0">{t.title}</h1>
           <p className="text-sm mt-1" style={{ color: 'var(--wp-text-2)' }}>
             {initialEstimates.length} {locale === 'es' ? 'total' : 'total'}
+            {drafts.length > 0 && (
+              <span style={{ color: 'var(--wp-text-3)' }}> · {drafts.length} draft{drafts.length === 1 ? '' : 's'}</span>
+            )}
             {approved.length > 0 && (
               <>
                 {' · '}
@@ -196,7 +215,7 @@ export function EstimatesClient({ initialEstimates, viewCounts = {}, planInfo, t
           />
           <KpiCard
             tone="danger"
-            label={locale === 'es' ? 'Rechazados' : 'Declined'}
+            label={locale === 'es' ? 'Rechazados' : 'Rejected'}
             value={declined.length}
             sub={declined.length > 0 ? formatCurrency(totalDeclinedValue) : undefined}
           />
@@ -344,8 +363,8 @@ export function EstimatesClient({ initialEstimates, viewCounts = {}, planInfo, t
                     <SwipeableRow
                       key={est.id}
                       actions={[
-                        { label: 'Share', icon: <Share2 size={16} />, color: 'white', bg: 'var(--wp-brand)', onClick: () => handleShare({} as React.MouseEvent, est.id) },
-                        { label: 'Delete', icon: <Trash2 size={16} />, color: 'white', bg: 'var(--wp-error-v2)', onClick: () => setDeleteId(est.id) },
+                        { label: 'Share', icon: <Share2 size={16} />, color: 'var(--wp-text-inverse)', bg: 'var(--wp-brand)', onClick: () => handleShare({} as React.MouseEvent, est.id) },
+                        { label: 'Delete', icon: <Trash2 size={16} />, color: 'var(--wp-text-inverse)', bg: 'var(--wp-error-v2)', onClick: () => setDeleteId(est.id) },
                       ]}
                     >
                       <div
@@ -366,8 +385,11 @@ export function EstimatesClient({ initialEstimates, viewCounts = {}, planInfo, t
                             <span className="text-price" style={{ fontSize: '0.9375rem', color: 'var(--wp-text)' }}>${parseFloat(est.total).toFixed(2)}</span>
                           </div>
                           <div className="flex items-center justify-between mt-1">
-                            <span style={{ fontSize: '0.75rem', color: 'var(--wp-text-3)' }}>
-                              {new Date(est.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · #{est.number.replace('EST-', '')}
+                            <span className="flex items-center gap-1.5" style={{ fontSize: '0.75rem', color: 'var(--wp-text-3)' }}>
+                              {new Date(est.createdAt).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { month: 'short', day: 'numeric' })} · #{est.number.replace('EST-', '')}
+                              {est.signatureDataUrl && <PenLine size={11} style={{ color: 'var(--wp-success-v2)' }} aria-label="Signed" />}
+                              {est.depositPaid && <DollarSign size={11} style={{ color: 'var(--wp-success-v2)' }} aria-label="Deposit paid" />}
+                              {est.contractId && <Paperclip size={11} style={{ color: 'var(--wp-text-3)' }} aria-label="Contract attached" />}
                             </span>
                             <div className="flex items-center gap-1.5">
                               {est.status === 'sent' && (
@@ -375,7 +397,10 @@ export function EstimatesClient({ initialEstimates, viewCounts = {}, planInfo, t
                                   ? <MailOpen size={12} style={{ color: 'var(--wp-success-v2)' }} />
                                   : <Mail size={12} style={{ color: 'var(--wp-text-3)' }} />
                               )}
-                              <EstimateStatusBadge status={est.status as EstimateStatus} label={t.status[est.status as EstimateStatus] ?? est.status} />
+                              {(() => {
+                                const derived = deriveEstimateStatus(est) as EstimateStatus
+                                return <EstimateStatusBadge status={derived} label={t.status[derived] ?? derived} />
+                              })()}
                             </div>
                           </div>
                         </div>
@@ -438,7 +463,12 @@ export function EstimatesClient({ initialEstimates, viewCounts = {}, planInfo, t
                               style={{ borderBottom: '1px solid var(--wp-border-light)' }}
                             >
                               <td className="px-4 py-3 font-mono text-xs" style={{ color: 'var(--wp-text-2)' }}>
-                                #{est.number.replace('EST-', '')}
+                                <div className="flex items-center gap-1.5">
+                                  <span>#{est.number.replace('EST-', '')}</span>
+                                  {est.signatureDataUrl && <PenLine size={11} style={{ color: 'var(--wp-success-v2)' }} aria-label="Signed" />}
+                                  {est.depositPaid && <DollarSign size={11} style={{ color: 'var(--wp-success-v2)' }} aria-label="Deposit paid" />}
+                                  {est.contractId && <Paperclip size={11} style={{ color: 'var(--wp-text-3)' }} aria-label="Contract attached" />}
+                                </div>
                               </td>
                               <td className="px-4 py-3">
                                 <div className="flex items-center gap-2.5">
@@ -457,12 +487,17 @@ export function EstimatesClient({ initialEstimates, viewCounts = {}, planInfo, t
                                 </div>
                               </td>
                               <td className="px-4 py-3">
-                                <StatusPill tone={STATUS_TONE[est.status as EstimateStatus] ?? 'neutral'}>
-                                  {t.status[est.status as EstimateStatus] ?? est.status}
-                                </StatusPill>
+                                {(() => {
+                                  const derived = deriveEstimateStatus(est) as EstimateStatus
+                                  return (
+                                    <StatusPill tone={STATUS_TONE[derived] ?? 'neutral'}>
+                                      {t.status[derived] ?? derived}
+                                    </StatusPill>
+                                  )
+                                })()}
                               </td>
                               <td className="px-4 py-3" style={{ color: 'var(--wp-text-2)' }}>
-                                {new Date(est.createdAt).toLocaleDateString()}
+                                {new Date(est.createdAt).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US')}
                               </td>
                               <td className="px-4 py-3 text-right text-price tabular-nums" style={{ color: 'var(--wp-text)' }}>
                                 ${parseFloat(est.total).toFixed(2)}

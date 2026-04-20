@@ -14,7 +14,7 @@ const TRADES = [
 
 export function Footer({ locale }: { locale: string }) {
   return (
-    <footer className="bg-[#0F2440] text-white/40">
+    <footer className="bg-navy text-white/70">
       {/* Main grid */}
       <div className="max-w-7xl mx-auto px-6 py-16">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-14">
@@ -26,7 +26,7 @@ export function Footer({ locale }: { locale: string }) {
               </div>
               <span className="text-xl font-extrabold text-white">WorkPilot</span>
             </Link>
-            <p className="text-white/30 text-sm leading-relaxed mb-5">
+            <p className="text-white/70 text-sm leading-relaxed mb-5">
               Run your contracting business like a pro. Built for contractors under $5M revenue.
             </p>
             <div className="flex items-center gap-3">
@@ -35,18 +35,18 @@ export function Footer({ locale }: { locale: string }) {
                 aria-label="WorkPilot on X"
                 rel="noopener noreferrer"
                 target="_blank"
-                className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors text-white/50 text-xs font-bold"
+                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors text-white text-xs font-bold"
               >
-                𝕏
+                <span aria-hidden="true">𝕏</span>
               </a>
               <a
                 href="https://linkedin.com"
                 aria-label="WorkPilot on LinkedIn"
                 rel="noopener noreferrer"
                 target="_blank"
-                className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors text-white/50 text-xs font-bold"
+                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors text-white text-xs font-bold"
               >
-                in
+                <span aria-hidden="true">in</span>
               </a>
             </div>
           </div>
@@ -97,11 +97,11 @@ export function Footer({ locale }: { locale: string }) {
           </div>
         </div>
 
-        <div className="border-t border-white/5 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/20">
+        <div className="border-t border-white/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/60">
           <p>© {new Date().getFullYear()} WorkPilot. All rights reserved.</p>
           <p>
             Built by{' '}
-            <a href="https://mrlabs.io" className="hover:text-white/40 transition-colors">Mr Labs</a>
+            <a href="https://mrlabs.io" className="hover:text-white transition-colors">Mr Labs</a>
           </p>
         </div>
       </div>

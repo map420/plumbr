@@ -7,7 +7,7 @@ export default async function SignInPage() {
     <div className="min-h-screen flex items-center justify-center bg-slate-50">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-[#1E3A5F]">{t('title')}</h1>
+          <h1 className="text-3xl font-bold text-navy-500">{t('title')}</h1>
           <p className="text-slate-500 mt-1">{t('subtitle')}</p>
         </div>
         <SignIn />

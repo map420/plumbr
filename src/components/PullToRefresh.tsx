@@ -71,7 +71,7 @@ export function PullToRefresh({ children, className = '' }: { children: React.Re
           style={{ top: Math.max(pullDistance - 36, 4), transition: refreshing ? 'top 0.2s' : 'none' }}
         >
           <div
-            className="w-8 h-8 rounded-full flex items-center justify-center bg-white"
+            className="w-8 h-8 rounded-full flex items-center justify-center bg-card"
             style={{ boxShadow: 'var(--wp-shadow-md)', opacity: progress }}
           >
             <Loader2

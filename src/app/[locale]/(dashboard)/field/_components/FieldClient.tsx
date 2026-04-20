@@ -9,7 +9,7 @@ import { isScheduledToday } from '@/lib/schedule'
 import { ClientAvatar, Segmented, EmptyState } from '@/components/ui'
 
 type JobStatus = 'lead' | 'active' | 'on_hold' | 'completed' | 'cancelled'
-type Job = { id: string; name: string; clientName: string; status: string; address: string | null; startDate: Date | null }
+type Job = { id: string; name: string; clientName: string; status: string; address: string | null; startDate: Date | null; endDate?: Date | null }
 type Technician = { id: string; name: string }
 type T = {
   title: string; todaysJobs: string; noJobs: string
@@ -65,11 +65,11 @@ export function FieldClient({ initialJobs, technicians, selectedTechId, translat
         {todayJobs.length === 0 ? (
           <EmptyState
             icon={<Calendar size={32} />}
-            title={selectedTech ? `No jobs for ${selectedTech.name}` : 'No jobs today'}
-            description={selectedTech ? 'Try a different technician or schedule a new job.' : t.noJobs}
+            title={selectedTech ? `No projects for ${selectedTech.name}` : 'No projects today'}
+            description={selectedTech ? 'Try a different technician or schedule a new project.' : t.noJobs}
             cta={
-              <Link href={`/${locale}/jobs/new`} className="btn-primary btn-sm">
-                + Schedule a job
+              <Link href={`/${locale}/projects/new`} className="btn-primary btn-sm">
+                + Schedule a project
               </Link>
             }
           />

@@ -26,8 +26,10 @@ export default async function ShoppingListDetailPage({ params }: { params: Promi
       job = { id: jobData.id, name: jobData.name, clientName: jobData.clientName, status: jobData.status }
     }
 
+    // A5 — solo expenses con date <= hoy cuentan como gasto real (materiales futuros son proyección).
+    const nowMs = Date.now()
     materialSpent = expenses
-      .filter(e => e.type === 'material')
+      .filter(e => e.type === 'material' && (!e.date || new Date(e.date).getTime() <= nowMs))
       .reduce((s, e) => s + parseFloat(e.amount), 0)
 
     // Prefer latest approved/sent estimate's material line items for budget

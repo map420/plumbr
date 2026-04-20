@@ -121,7 +121,8 @@ export function VoiceAssistant({ onClose }: { onClose: () => void }) {
           )}
           {status === 'connected' ? (
             <button onClick={stopConversation}
-              className="relative z-10 w-20 h-20 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg">
+              className="relative z-10 w-20 h-20 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
+              aria-label="Stop conversation">
               <Square size={24} fill="white" />
             </button>
           ) : (

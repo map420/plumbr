@@ -12,12 +12,12 @@ import { Footer } from '@/app/[locale]/(marketing)/_components/Footer'
 export const metadata: Metadata = {
   title: 'Features — WorkPilot Contractor Software',
   description:
-    'Explore every feature in WorkPilot: estimates, invoicing, job costing, crew scheduling, mobile field app, client management and more. Built for contractors under $5M.',
+    'Explore every feature in WorkPilot: estimates, invoicing, project costing, crew scheduling, mobile field app, client management and more. Built for contractors under $5M.',
   alternates: { canonical: `${siteConfig.url}/en/features` },
   keywords: [
     'contractor estimate software features',
     'contractor invoicing features',
-    'job costing software features',
+    'project costing software features',
     'crew scheduling app',
     'contractor management features',
   ],
@@ -27,8 +27,8 @@ const FEATURES = [
   {
     icon: FileText,
     title: 'Estimates & Templates',
-    badge: 'Win more jobs',
-    desc: 'Build professional estimates in under 3 minutes using your own material and labor templates. No more starting from scratch on every job.',
+    badge: 'Win more projects',
+    desc: 'Build professional estimates in under 3 minutes using your own material and labor templates. No more starting from scratch on every project.',
     bullets: [
       'Reusable cost templates per trade',
       'Itemized material + labor breakdowns',
@@ -50,11 +50,11 @@ const FEATURES = [
   },
   {
     icon: BarChart2,
-    title: 'Real-Time Job Costing',
+    title: 'Real-Time Project Costing',
     badge: 'Know your margins',
-    desc: "Know your profit margin before the job ends. Track budgeted vs actual costs across labor, materials and subcontractors in real time.",
+    desc: "Know your profit margin before the project ends. Track budgeted vs actual costs across labor, materials and subcontractors in real time.",
     bullets: [
-      'Budget vs actual tracking per job',
+      'Budget vs actual tracking per project',
       'Labor cost per technician',
       'Material cost tracking',
       'Profit margin visibility',
@@ -64,10 +64,10 @@ const FEATURES = [
     icon: Calendar,
     title: 'Visual Crew Scheduling',
     badge: 'No more text chaos',
-    desc: 'See every crew member and every job in a single weekly calendar. Assign, move and reschedule with drag and drop.',
+    desc: 'See every crew member and every project in a single weekly calendar. Assign, move and reschedule with drag and drop.',
     bullets: [
       'Weekly drag-and-drop calendar',
-      'Assign techs to jobs',
+      'Assign techs to projects',
       'Conflict detection',
       'Mobile-accessible for crews',
     ],
@@ -76,9 +76,9 @@ const FEATURES = [
     icon: Smartphone,
     title: 'Mobile Field App',
     badge: 'Works offline',
-    desc: 'Your techs have everything they need on-site: job details, checklists, photo upload and hour logging — even without cell signal.',
+    desc: 'Your techs have everything they need on-site: project details, checklists, photo upload and hour logging — even without cell signal.',
     bullets: [
-      'Photo documentation per job',
+      'Photo documentation per project',
       'Task checklists',
       'Hour logging',
       'Works offline (PWA)',
@@ -88,10 +88,10 @@ const FEATURES = [
     icon: Users,
     title: 'Client Management',
     badge: 'All your clients',
-    desc: 'Every client in one place with their full job history, estimates, invoices and contact info. No more digging through emails.',
+    desc: 'Every client in one place with their full project history, estimates, invoices and contact info. No more digging through emails.',
     bullets: [
       'Full client profile',
-      'Job history per client',
+      'Project history per client',
       'All estimates and invoices',
       'Quick contact access',
     ],
@@ -112,9 +112,9 @@ const FEATURES = [
     icon: CreditCard,
     title: 'Expense Tracking',
     badge: 'Every dollar counted',
-    desc: 'Log every job expense as you go — materials bought, subcontractors paid, equipment rented. Know your true cost.',
+    desc: 'Log every project expense as you go — materials bought, subcontractors paid, equipment rented. Know your true cost.',
     bullets: [
-      'Expense logging per job',
+      'Expense logging per project',
       'Material vs labor split',
       'Subcontractor costs',
       'Expense reports',
@@ -124,9 +124,9 @@ const FEATURES = [
     icon: Shield,
     title: 'Client Portal',
     badge: 'Coming soon',
-    desc: 'Give clients a private link to view job progress, approve change orders and pay invoices online — without needing an account.',
+    desc: 'Give clients a private link to view project progress, approve change orders and pay invoices online — without needing an account.',
     bullets: [
-      'Shareable job progress link',
+      'Shareable project progress link',
       'Change order approvals',
       'Online invoice payment',
       'No client login required',
@@ -148,10 +148,10 @@ export default async function FeaturesPage() {
         {/* Hero */}
         <section className="py-20 bg-[#F8FAFC]">
           <div className="max-w-3xl mx-auto px-6 text-center">
-            <span className="text-xs font-bold uppercase tracking-widest text-[#F97316] mb-3 block" style={{ letterSpacing: '0.08em' }}>
+            <span className="text-xs font-bold uppercase tracking-widest text-cta mb-3 block" style={{ letterSpacing: '0.08em' }}>
               Features
             </span>
-            <h1 className="text-4xl md:text-5xl font-extrabold text-[#1E3A5F] tracking-tight mb-4">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-navy-500 tracking-tight mb-4">
               Everything you need.<br />Nothing you don&apos;t.
             </h1>
             <p className="text-slate-500 text-lg max-w-xl mx-auto">
@@ -170,22 +170,22 @@ export default async function FeaturesPage() {
                   <div
                     key={feat.title}
                     className="group bg-white rounded-2xl p-7 border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-200"
-                    style={{ borderTop: '3px solid #F97316' }}
+                    style={{ borderTop: '3px solid var(--wp-cta)' }}
                   >
                     <div className="flex items-start justify-between mb-5">
-                      <div className="w-11 h-11 bg-[#F97316]/10 rounded-xl flex items-center justify-center">
-                        <Icon size={22} className="text-[#F97316]" />
+                      <div className="w-11 h-11 bg-cta/10 rounded-xl flex items-center justify-center">
+                        <Icon size={22} className="text-cta" />
                       </div>
-                      <span className="text-xs font-semibold text-[#F97316] bg-[#F97316]/10 px-2.5 py-1 rounded-full">
+                      <span className="text-xs font-semibold text-cta bg-cta/10 px-2.5 py-1 rounded-full">
                         {feat.badge}
                       </span>
                     </div>
-                    <h2 className="font-bold text-[#1E3A5F] text-lg mb-2">{feat.title}</h2>
+                    <h2 className="font-bold text-navy-500 text-lg mb-2">{feat.title}</h2>
                     <p className="text-slate-500 text-sm leading-relaxed mb-4">{feat.desc}</p>
                     <ul className="space-y-1.5">
                       {feat.bullets.map(b => (
                         <li key={b} className="flex items-center gap-2 text-xs text-slate-600">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#F97316] shrink-0" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-cta shrink-0" />
                           {b}
                         </li>
                       ))}
@@ -200,7 +200,7 @@ export default async function FeaturesPage() {
         {/* CTA */}
         <section
           className="py-20"
-          style={{ background: 'linear-gradient(135deg, #0F2440 0%, #1E3A5F 100%)' }}
+          style={{ background: 'linear-gradient(135deg, var(--wp-navy) 0%, var(--wp-navy-500) 100%)' }}
         >
           <div className="max-w-2xl mx-auto px-6 text-center">
             <h2 className="text-3xl font-extrabold text-white mb-4">
@@ -210,7 +210,7 @@ export default async function FeaturesPage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href={`/${locale}/sign-up`}
-                className="inline-flex items-center gap-2 bg-[#F97316] text-white font-bold px-8 py-4 rounded-xl hover:bg-[#ea6c0a] transition-all hover:scale-[1.02] shadow-lg shadow-orange-500/25"
+                className="inline-flex items-center gap-2 bg-cta text-white font-bold px-8 py-4 rounded-xl hover:bg-cta-hover transition-all hover:scale-[1.02] shadow-lg shadow-amber-500/25"
               >
                 Start free trial <ArrowRight size={18} />
               </Link>

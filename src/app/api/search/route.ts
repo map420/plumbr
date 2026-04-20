@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
 
   for (const j of jobs) {
     if (j.name.toLowerCase().includes(q) || (j as any).clientName?.toLowerCase().includes(q)) {
-      results.push({ type: 'job', id: j.id, title: j.name, subtitle: (j as any).clientName || 'Job' })
+      results.push({ type: 'job', id: j.id, title: j.name, subtitle: (j as any).clientName || 'Project' })
     }
   }
 

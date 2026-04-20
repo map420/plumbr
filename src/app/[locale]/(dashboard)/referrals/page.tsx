@@ -10,8 +10,8 @@ export default async function ReferralsPage({ params }: { params: Promise<{ loca
 
   return (
     <div className="p-4 md:p-8 max-w-2xl">
-      <h1 className="text-2xl font-bold text-slate-900 mb-2">Referrals</h1>
-      <p className="text-sm text-slate-600 mb-6">Invite other contractors and earn credit when they subscribe.</p>
+      <h1 className="text-2xl font-bold text-foreground mb-2">Referrals</h1>
+      <p className="text-sm text-muted-foreground mb-6">Invite other contractors and earn credit when they subscribe.</p>
       <ReferralsClient referrals={referrals} referralLink={referralLink} />
     </div>
   )

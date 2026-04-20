@@ -1,0 +1,60 @@
+/* Shared tokens for all plumbr-ui previews */
+:root {
+  --wp-primary: #1E3A5F;
+  --wp-primary-dark: #0F2440;
+  --wp-primary-light: #2A4F7A;
+  --wp-accent: #F97316;
+  --wp-accent-hover: #ea6c0a;
+  --wp-accent-subtle: #FFF7ED;
+  --wp-success: #059669;
+  --wp-success-bg: #ECFDF5;
+  --wp-warning: #D97706;
+  --wp-warning-bg: #FFFBEB;
+  --wp-error: #DC2626;
+  --wp-error-bg: #FEF2F2;
+  --wp-info: #2563EB;
+  --wp-info-bg: #EFF6FF;
+  --wp-purple: #7C3AED;
+  --wp-purple-bg: #F5F3FF;
+  --wp-text-primary: #0F172A;
+  --wp-text-secondary: #475569;
+  --wp-text-muted: #94A3B8;
+  --wp-bg-primary: #FFFFFF;
+  --wp-bg-secondary: #F8FAFC;
+  --wp-bg-muted: #F1F5F9;
+  --wp-border: #E2E8F0;
+  --wp-border-light: #F1F5F9;
+  --wp-elevation-1: 0 1px 2px rgb(15 23 42 / 0.04), 0 1px 3px rgb(15 23 42 / 0.06);
+  --wp-elevation-2: 0 4px 12px rgb(15 23 42 / 0.05), 0 2px 4px rgb(15 23 42 / 0.04);
+  --wp-elevation-3: 0 12px 40px rgb(15 23 42 / 0.08), 0 4px 12px rgb(15 23 42 / 0.04);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: #EEF2F6;
+  color: var(--wp-text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+.shell { max-width: 1480px; margin: 0 auto; padding: 32px 24px 64px; }
+.page-header {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 24px; padding-bottom: 16px;
+  border-bottom: 1px solid var(--wp-border);
+}
+.page-header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+.page-header p { font-size: 13px; color: var(--wp-text-muted); }
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.compare-col {
+  background: white; border: 1px solid var(--wp-border);
+  border-radius: 14px; overflow: hidden;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.03);
+}
+.compare-label {
+  padding: 14px 20px; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  border-bottom: 1px solid var(--wp-border-light);
+  background: var(--wp-bg-secondary);
+}
+.compare-label.before { color: #64748B; }
+.compare-label.after { color: var(--wp-accent); background: var(--wp-accent-subtle); }
+.viewport { padding: 16px; background: var(--wp-bg-secondary); min-height: 680px; }

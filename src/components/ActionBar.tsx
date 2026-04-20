@@ -13,7 +13,7 @@ type ActionItem = {
 
 export function ActionBar({ actions }: { actions: ActionItem[] }) {
   return (
-    <div className="flex items-center justify-around bg-white px-2 py-2" style={{ borderBottom: '1px solid var(--wp-border)' }}>
+    <div className="flex items-center justify-around bg-card px-2 py-2" style={{ borderBottom: '1px solid var(--wp-border)' }}>
       {actions.map((action, i) => {
         const baseStyle: React.CSSProperties = {
           color: action.disabled ? 'var(--wp-text-muted)' :

@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Estimate Print — Before / After</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --wp-primary: #1E3A5F; --wp-primary-dark: #0F2440; --wp-primary-light: #2A4F7A;
+    --wp-accent: #F97316; --wp-accent-hover: #ea6c0a; --wp-accent-subtle: #FFF7ED;
+    --wp-success: #059669; --wp-success-bg: #ECFDF5;
+    --wp-warning: #D97706; --wp-warning-bg: #FFFBEB;
+    --wp-error: #DC2626; --wp-error-bg: #FEF2F2;
+    --wp-info: #2563EB; --wp-info-bg: #EFF6FF;
+    --wp-purple: #7C3AED; --wp-purple-bg: #F5F3FF;
+    --wp-text-primary: #0F172A; --wp-text-secondary: #475569; --wp-text-muted: #94A3B8;
+    --wp-bg-primary: #FFFFFF; --wp-bg-secondary: #F8FAFC; --wp-bg-muted: #F1F5F9;
+    --wp-border: #E2E8F0; --wp-border-light: #F1F5F9;
+    --wp-elevation-1: 0 1px 2px rgb(15 23 42 / 0.04), 0 1px 3px rgb(15 23 42 / 0.06);
+    --wp-elevation-2: 0 4px 12px rgb(15 23 42 / 0.05), 0 2px 4px rgb(15 23 42 / 0.04);
+    --wp-elevation-3: 0 12px 40px rgb(15 23 42 / 0.08), 0 4px 12px rgb(15 23 42 / 0.04);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #EEF2F6; color: var(--wp-text-primary); -webkit-font-smoothing: antialiased; }
+  .shell { max-width: 1480px; margin: 0 auto; padding: 32px 24px 64px; }
+  .page-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--wp-border); }
+  .page-header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .page-header p { font-size: 13px; color: var(--wp-text-muted); }
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .compare-col { background: white; border: 1px solid var(--wp-border); border-radius: 14px; overflow: hidden; box-shadow: 0 1px 2px rgb(0 0 0 / 0.03); }
+  .compare-label { padding: 14px 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 1px solid var(--wp-border-light); background: var(--wp-bg-secondary); }
+  .compare-label.before { color: #64748B; }
+  .compare-label.after { color: var(--wp-accent); background: var(--wp-accent-subtle); }
+  .viewport { padding: 16px; background: var(--wp-bg-secondary); min-height: 680px; }
+  .viewport.paper {
+    background: #E0E6ED;
+    padding: 24px;
+    min-height: 900px;
+  }
+  .paper-sheet {
+    background: white;
+    box-shadow: 0 4px 20px rgb(0 0 0 / 0.08);
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 40px 44px;
+    font-size: 13px;
+    color: var(--wp-text-primary);
+  }
+
+  /* BEFORE */
+  .b-print-hdr { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; }
+  .b-print-hdr h1 { font-size: 22px; font-weight: 700; color: var(--wp-primary); }
+  .b-print-hdr .meta { color: #64748B; font-size: 12px; margin-top: 4px; }
+  .b-print-hdr .right { text-align: right; }
+  .b-print-hdr .right .lbl { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #94A3B8; }
+  .b-print-hdr .right h2 { font-size: 18px; font-weight: 700; margin: 2px 0 4px; }
+  .b-prepared {
+    background: var(--wp-bg-secondary); border-radius: 8px; padding: 14px; margin-bottom: 24px;
+  }
+  .b-prepared .lbl { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #94A3B8; margin-bottom: 6px; }
+  .b-prepared .name { font-size: 15px; font-weight: 700; }
+  .b-prepared .sub { font-size: 12px; color: #475569; }
+  .b-print-table { width: 100%; font-size: 12px; border-collapse: collapse; margin-bottom: 20px; }
+  .b-print-table thead { border-bottom: 2px solid var(--wp-primary); }
+  .b-print-table th { text-align: left; padding: 8px 0; font-weight: 600; font-size: 11px; color: #475569; }
+  .b-print-table td { padding: 8px 0; font-size: 12px; }
+  .b-print-table tr.alt { background: var(--wp-bg-secondary); }
+  .b-print-totals { margin-left: auto; max-width: 200px; font-size: 12px; padding-top: 10px; border-top: 1px solid var(--wp-border); }
+  .b-print-totals .row { display: flex; justify-content: space-between; padding: 2px 0; color: #64748B; }
+  .b-print-totals .row.total { font-weight: 700; color: var(--wp-primary); font-size: 15px; padding-top: 10px; margin-top: 6px; border-top: 2px solid var(--wp-primary); }
+  .b-footer-qr {
+    display: flex; gap: 12px; align-items: center;
+    padding-top: 16px; margin-top: 24px;
+    border-top: 1px solid var(--wp-border);
+  }
+  .b-qr { width: 72px; height: 72px; background: repeating-linear-gradient(45deg, #000 0 3px, white 3px 6px); border: 1px solid #ccc; }
+
+  /* AFTER */
+  .a-print-hdr {
+    display: flex; justify-content: space-between;
+    padding-bottom: 20px;
+    border-bottom: 3px solid var(--wp-primary);
+    margin-bottom: 28px;
+  }
+  .a-print-logo {
+    display: flex; gap: 12px; align-items: center;
+  }
+  .a-print-logo-box {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--wp-primary); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 16px;
+  }
+  .a-print-logo-name {
+    font-size: 17px; font-weight: 800; letter-spacing: -0.02em;
+    color: var(--wp-primary);
+  }
+  .a-print-logo-sub { font-size: 11px; color: var(--wp-text-muted); margin-top: 1px; }
+  .a-print-num-block { text-align: right; }
+  .a-print-num-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.12em; color: var(--wp-text-muted);
+  }
+  .a-print-num { font-size: 26px; font-weight: 800; letter-spacing: -0.025em; line-height: 1.1; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .a-print-dates { font-size: 11px; color: var(--wp-text-secondary); margin-top: 6px; line-height: 1.5; }
+
+  .a-print-parties {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 24px; margin-bottom: 28px;
+  }
+  .a-print-party-label {
+    font-size: 9px; font-weight: 700; color: var(--wp-text-muted);
+    text-transform: uppercase; letter-spacing: 0.12em;
+    padding-bottom: 6px; margin-bottom: 8px;
+    border-bottom: 1px solid var(--wp-border-light);
+  }
+  .a-print-party-name { font-size: 14px; font-weight: 700; color: var(--wp-text-primary); line-height: 1.3; }
+  .a-print-party-sub { font-size: 11px; color: var(--wp-text-secondary); margin-top: 2px; line-height: 1.5; }
+
+  .a-print-table { width: 100%; font-size: 12px; border-collapse: collapse; margin-bottom: 16px; }
+  .a-print-table thead {
+    background: var(--wp-bg-secondary);
+  }
+  .a-print-table th {
+    text-align: left; padding: 10px 12px;
+    font-size: 10px; font-weight: 700; color: var(--wp-text-primary);
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .a-print-table th.center { text-align: center; }
+  .a-print-table th.right { text-align: right; }
+  .a-print-table td { padding: 12px; border-bottom: 1px solid var(--wp-border-light); font-size: 12px; }
+  .a-print-table td.center { text-align: center; color: var(--wp-text-muted); }
+  .a-print-table td.right { text-align: right; font-variant-numeric: tabular-nums; }
+  .a-print-table td.right.bold { font-weight: 700; color: var(--wp-text-primary); }
+  .a-print-table .tc {
+    font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px;
+    display: inline-block; margin-bottom: 2px;
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .a-print-table .tc.labor { background: #EFF6FF; color: #1D4ED8; }
+  .a-print-table .tc.material { background: #F0FDF4; color: #15803D; }
+
+  .a-print-totals-wrap { display: flex; justify-content: flex-end; margin-bottom: 24px; }
+  .a-print-totals {
+    width: 260px;
+    background: var(--wp-bg-secondary);
+    border-radius: 12px; padding: 16px;
+  }
+  .a-print-total-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; color: var(--wp-text-secondary); }
+  .a-print-total-row.total {
+    margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid var(--wp-border);
+    font-size: 20px; font-weight: 800;
+    color: var(--wp-primary);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+  .a-print-deposit {
+    background: var(--wp-warning-bg); border: 1px solid #FED7AA;
+    border-radius: 10px; padding: 12px 14px;
+    margin-bottom: 20px;
+    display: flex; gap: 10px; align-items: center;
+    font-size: 12px;
+  }
+  .a-print-deposit-icon {
+    width: 28px; height: 28px; border-radius: 8px; background: var(--wp-warning);
+    color: white; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; flex-shrink: 0;
+  }
+  .a-print-deposit-body { flex: 1; color: #78350F; }
+  .a-print-deposit-body strong { color: var(--wp-warning); }
+
+  .a-print-footer {
+    display: grid; grid-template-columns: 96px 1fr;
+    gap: 14px; padding-top: 16px; margin-top: 16px;
+    border-top: 1px solid var(--wp-border-light);
+  }
+  .a-print-qr-box {
+    width: 96px; height: 96px;
+    background: repeating-linear-gradient(45deg, #0F172A 0 3px, white 3px 6px);
+    border-radius: 8px; border: 1px solid var(--wp-border);
+  }
+  .a-print-footer-info .title {
+    font-size: 12px; font-weight: 700; color: var(--wp-text-primary);
+    margin-bottom: 2px;
+  }
+  .a-print-footer-info .sub { font-size: 11px; color: var(--wp-text-muted); line-height: 1.5; }
+  .a-print-footer-info .portal {
+    font-family: ui-monospace, 'SF Mono', Monaco, monospace;
+    font-size: 10px; color: var(--wp-primary);
+    background: var(--wp-bg-secondary); padding: 4px 8px;
+    border-radius: 4px; display: inline-block; margin-top: 6px;
+  }
+
+  .a-print-accept {
+    background: var(--wp-primary); color: white;
+    border-radius: 12px; padding: 14px 18px;
+    margin-top: 16px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .a-print-accept-text { font-size: 12px; }
+  .a-print-accept-text .big { font-size: 14px; font-weight: 700; }
+  .a-print-accept-text .small { opacity: 0.8; margin-top: 2px; }
+  .a-print-accept-btn {
+    background: var(--wp-accent); color: white;
+    padding: 8px 16px; border-radius: 8px;
+    font-size: 12px; font-weight: 700; border: none;
+  }
+
+  .a-print-legal {
+    font-size: 9px; color: var(--wp-text-muted);
+    text-align: center;
+    margin-top: 16px; line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="page-header">
+    <div>
+      <h1>Estimate Print · [id]/print</h1>
+      <p>Versión imprimible del presupuesto</p>
+    </div>
+  </div>
+
+  <div class="compare-grid">
+    <!-- BEFORE -->
+    <div class="compare-col">
+      <div class="compare-label before">● Actual (Before)</div>
+      <div class="viewport paper">
+        <div class="paper-sheet">
+          <div class="b-print-hdr">
+            <div>
+              <h1>WorkPilot</h1>
+              <div class="meta">(555) 100-2000</div>
+              <div class="meta">ops@workpilot.com</div>
+              <div class="meta">Tax #: 12-3456789</div>
+            </div>
+            <div class="right">
+              <div class="lbl">Estimate</div>
+              <h2>EST-1042</h2>
+              <div class="meta">Date: April 14, 2026</div>
+              <div class="meta">Valid Until: May 14, 2026</div>
+            </div>
+          </div>
+          <div class="b-prepared">
+            <div class="lbl">Prepared For</div>
+            <div class="name">María González</div>
+            <div class="sub">maria@example.com</div>
+            <div class="sub">(555) 234-9811</div>
+          </div>
+          <table class="b-print-table">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th style="text-align:center; width: 50px;">Qty</th>
+                <th style="text-align:right; width: 80px;">Unit Price</th>
+                <th style="text-align:right; width: 80px;">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Kitchen sink replacement</td>
+                <td style="text-align:center; color: #94A3B8;">4</td>
+                <td style="text-align:right; color: #94A3B8;">$125.00</td>
+                <td style="text-align:right; font-weight: 500;">$500.00</td>
+              </tr>
+              <tr class="alt">
+                <td>PEX pipe, fittings, valves</td>
+                <td style="text-align:center; color: #94A3B8;">1</td>
+                <td style="text-align:right; color: #94A3B8;">$185.00</td>
+                <td style="text-align:right; font-weight: 500;">$185.00</td>
+              </tr>
+              <tr>
+                <td>Dishwasher line installation</td>
+                <td style="text-align:center; color: #94A3B8;">3</td>
+                <td style="text-align:right; color: #94A3B8;">$125.00</td>
+                <td style="text-align:right; font-weight: 500;">$375.00</td>
+              </tr>
+              <tr class="alt">
+                <td>Faucet (brushed nickel)</td>
+                <td style="text-align:center; color: #94A3B8;">1</td>
+                <td style="text-align:right; color: #94A3B8;">$340.00</td>
+                <td style="text-align:right; font-weight: 500;">$340.00</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="b-print-totals">
+            <div class="row"><span>Subtotal</span><span>$1,400.00</span></div>
+            <div class="row"><span>Tax</span><span>$112.00</span></div>
+            <div class="row total"><span>Total</span><span>$1,512.00</span></div>
+          </div>
+          <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--wp-border); font-size: 12px; color: #64748B;">
+            <strong style="color: #334155;">Notes</strong>
+            <p style="margin-top: 4px;">Work to start within 2 weeks of approval. 50% deposit required to schedule.</p>
+          </div>
+          <div class="b-footer-qr">
+            <div class="b-qr"></div>
+            <div>
+              <p style="font-size: 11px; font-weight: 500; color: #334155;">View & approve online</p>
+              <p style="font-size: 10px; color: #94A3B8; margin-top: 2px;">Scan this QR code to view and approve this estimate online.</p>
+            </div>
+          </div>
+          <p style="margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--wp-border-light); font-size: 10px; color: #94A3B8; text-align: center;">
+            Thank you for your business · WorkPilot
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- AFTER -->
+    <div class="compare-col">
+      <div class="compare-label after">◆ Rediseño (After)</div>
+      <div class="viewport paper">
+        <div class="paper-sheet">
+          <div class="a-print-hdr">
+            <div class="a-print-logo">
+              <div class="a-print-logo-box">WP</div>
+              <div>
+                <div class="a-print-logo-name">WorkPilot</div>
+                <div class="a-print-logo-sub">Licensed Plumbing Contractor · Lic #C-36-982</div>
+              </div>
+            </div>
+            <div class="a-print-num-block">
+              <div class="a-print-num-label">Estimate</div>
+              <div class="a-print-num">#1042</div>
+              <div class="a-print-dates">
+                <strong>Issued</strong> · Apr 14, 2026<br>
+                <strong>Valid until</strong> · May 14, 2026
+              </div>
+            </div>
+          </div>
+
+          <div class="a-print-parties">
+            <div>
+              <div class="a-print-party-label">From</div>
+              <div class="a-print-party-name">WorkPilot</div>
+              <div class="a-print-party-sub">
+                (555) 100-2000 · ops@workpilot.com<br>
+                Tax #: 12-3456789
+              </div>
+            </div>
+            <div>
+              <div class="a-print-party-label">Billed to</div>
+              <div class="a-print-party-name">María González</div>
+              <div class="a-print-party-sub">
+                maria@example.com<br>
+                (555) 234-9811
+              </div>
+            </div>
+          </div>
+
+          <table class="a-print-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th class="center" style="width: 50px;">Qty</th>
+                <th class="right" style="width: 70px;">Rate</th>
+                <th class="right" style="width: 80px;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <span class="tc labor">Labor</span>
+                  <div>Kitchen sink replacement</div>
+                </td>
+                <td class="center">4</td>
+                <td class="right">$125.00</td>
+                <td class="right bold">$500.00</td>
+              </tr>
+              <tr>
+                <td>
+                  <span class="tc material">Material</span>
+                  <div>PEX pipe, fittings, valves</div>
+                </td>
+                <td class="center">1</td>
+                <td class="right">$185.00</td>
+                <td class="right bold">$185.00</td>
+              </tr>
+              <tr>
+                <td>
+                  <span class="tc labor">Labor</span>
+                  <div>Dishwasher line installation</div>
+                </td>
+                <td class="center">3</td>
+                <td class="right">$125.00</td>
+                <td class="right bold">$375.00</td>
+              </tr>
+              <tr>
+                <td>
+                  <span class="tc material">Material</span>
+                  <div>Faucet (brushed nickel)</div>
+                </td>
+                <td class="center">1</td>
+                <td class="right">$340.00</td>
+                <td class="right bold">$340.00</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="a-print-totals-wrap">
+            <div class="a-print-totals">
+              <div class="a-print-total-row"><span>Subtotal</span><span>$1,400.00</span></div>
+              <div class="a-print-total-row"><span>Tax (8%)</span><span>$112.00</span></div>
+              <div class="a-print-total-row total"><span>Total</span><span>$1,512.00</span></div>
+            </div>
+          </div>
+
+          <div class="a-print-deposit">
+            <div class="a-print-deposit-icon">%</div>
+            <div class="a-print-deposit-body">
+              <strong>Deposit required</strong> · 50% = <strong>$756.00</strong> upon approval to schedule the work.
+            </div>
+          </div>
+
+          <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--wp-border-light);">
+            <div class="a-print-party-label">Scope & notes</div>
+            <p style="font-size: 11px; color: var(--wp-text-secondary); line-height: 1.6;">
+              Work to start within 2 weeks of approval. Includes all materials and labor listed above.
+              One-year warranty on workmanship. Any additional scope will require a change order.
+            </p>
+          </div>
+
+          <div class="a-print-accept">
+            <div class="a-print-accept-text">
+              <div class="big">Ready to approve?</div>
+              <div class="small">Scan the QR or visit the portal link to sign digitally.</div>
+            </div>
+            <button class="a-print-accept-btn">Approve online →</button>
+          </div>
+
+          <div class="a-print-footer">
+            <div class="a-print-qr-box"></div>
+            <div class="a-print-footer-info">
+              <div class="title">Scan to view & approve</div>
+              <div class="sub">Secure client portal · view line items, ask questions and sign digitally</div>
+              <span class="portal">workpilot.mrlabs.io/en/portal/tok_8f3n2...</span>
+            </div>
+          </div>
+
+          <div class="a-print-legal">
+            By approving, the customer agrees to the services and conditions outlined in this estimate.<br>
+            WorkPilot · Thank you for your business.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

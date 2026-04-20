@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Executive Brief — WorkPilot</title>
+  <link rel="stylesheet" href="_styles.css">
+</head>
+<body>
+
+  <!-- PORTADA -->
+  <div class="cover">
+    <div class="cover-header">
+      <div class="cover-logo">
+        <span class="cover-logo-mark">W</span>WorkPilot
+      </div>
+      <span class="cover-badge">Confidencial · Uso interno</span>
+    </div>
+
+    <div class="cover-body">
+      <div class="cover-kicker">DOCUMENTO EJECUTIVO · 01</div>
+      <h1 class="cover-title">Executive Brief</h1>
+      <p class="cover-subtitle">El AI-first contractor OS: qué es WorkPilot, qué resuelve, a quién sirve y por qué ganamos.</p>
+    </div>
+
+    <div class="cover-footer">
+      <div class="cover-meta">
+        <span><strong>Versión</strong> 1.0</span>
+        <span><strong>Fecha</strong> Abril 2026</span>
+      </div>
+      <div class="cover-meta" style="text-align: right;">
+        <span><strong>Audiencia</strong> Founders · Inversores · Partners</span>
+        <span>workpilot.io</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ÍNDICE -->
+    <nav class="toc">
+      <h2>Tabla de contenidos</h2>
+      <ul class="toc-list">
+        <li><span class="toc-title">1. Resumen en una página</span><span class="toc-page">3</span></li>
+        <li><span class="toc-title">2. El problema que resolvemos</span><span class="toc-page">4</span></li>
+        <li><span class="toc-title">3. Propuesta única de valor</span><span class="toc-page">5</span></li>
+        <li><span class="toc-title">4. Estado actual del producto</span><span class="toc-page">6</span></li>
+        <li><span class="toc-title">5. Arquitectura alto nivel</span><span class="toc-page">8</span></li>
+        <li><span class="toc-title">6. Mercado objetivo</span><span class="toc-page">9</span></li>
+        <li><span class="toc-title">7. Moats estratégicos</span><span class="toc-page">10</span></li>
+        <li><span class="toc-title">8. Métricas clave</span><span class="toc-page">11</span></li>
+        <li><span class="toc-title">9. Prioridades 90 días</span><span class="toc-page">12</span></li>
+      </ul>
+    </nav>
+
+    <!-- 1. RESUMEN UNA PÁGINA -->
+    <section>
+      <h2>1. Resumen en una página</h2>
+      <p><strong>WorkPilot</strong> es el sistema operativo conversacional para contratistas de servicios residenciales: plomeros, electricistas, HVAC, paisajismo, limpieza y mantenimiento. Reemplaza hojas de cálculo, WhatsApps dispersos, y software enterprise complejo con una app móvil-first guiada por una IA que entiende el negocio del contratista.</p>
+
+      <div class="callout insight">
+        <span class="callout-label">En una frase</span>
+        <div class="callout-body">
+          Un copiloto conversacional + portal cliente + operaciones de campo, diseñado para contratistas de 1 a 20 empleados que quieren cotizar, facturar y cobrar sin fricciones. <strong class="amount">$29/mes</strong>.
+        </div>
+      </div>
+
+      <div class="kpi-grid cols-4">
+        <div class="kpi-card">
+          <div class="kpi-value">37</div>
+          <div class="kpi-label">Tools de IA</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">23</div>
+          <div class="kpi-label">Tablas DB</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">8</div>
+          <div class="kpi-label">Automatizaciones</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">2</div>
+          <div class="kpi-label">Idiomas (ES/EN)</div>
+        </div>
+      </div>
+
+      <h3>Cinco hechos sobre el negocio</h3>
+      <ol>
+        <li><strong>Producto maduro:</strong> cubre ciclo completo Lead → Estimate → Job → Invoice → Pago, con portal cliente firmado y automatizaciones de email.</li>
+        <li><strong>AI-first por diseño:</strong> 37 tools conectadas al modelo Claude (Sonnet 4.5 + Haiku fallback) permiten crear estimates, facturar, analizar rentabilidad y enviar emails desde conversación natural.</li>
+        <li><strong>Mobile-first real:</strong> PWA instalable, funciona offline, diseñada para técnicos en campo sin necesidad de app stores.</li>
+        <li><strong>Precio agresivo:</strong> <span class="amount">$29/mes</span> vs Jobber (<span class="amount">$25–$249</span>), Housecall Pro (<span class="amount">$49–$249</span>), ServiceTitan (<span class="amount">$99+</span>). Starter gratis con límites.</li>
+        <li><strong>Bilingüe out-of-the-box:</strong> español + inglés nativos. Competidores grandes son solo inglés.</li>
+      </ol>
+    </section>
+
+    <!-- 2. PROBLEMA -->
+    <section class="page-break">
+      <h2>2. El problema que resolvemos</h2>
+
+      <p>El contratista promedio de pymes opera con un stack de herramientas heterogéneo: WhatsApp para clientes, Excel para presupuestos, libreta para gastos, email para facturas, banco para cobrar. El costo es triple: tiempo perdido administrando, dinero no cobrado por olvidos, y trabajos perdidos por cotizar tarde.</p>
+
+      <div class="two-col">
+        <div class="col-box">
+          <h4>Síntomas diarios</h4>
+          <ul>
+            <li>Cotizaciones tardan horas en Excel</li>
+            <li>Facturas se envían días después del trabajo</li>
+            <li>Gastos de materiales no se rastrean por job</li>
+            <li>Clientes olvidan pagar, el contratista no da seguimiento</li>
+            <li>Técnicos no saben qué hacer en cada visita</li>
+            <li>No hay visibilidad de cuál job fue rentable</li>
+          </ul>
+        </div>
+        <div class="col-box">
+          <h4>Causa raíz</h4>
+          <ul>
+            <li>Software enterprise es caro y complejo (ServiceTitan <span class="amount">$300+/mes</span>)</li>
+            <li>Software SMB está fragmentado (Jobber sin AI, HCP sin portal decente)</li>
+            <li>Contratistas hispanohablantes no tienen producto nativo</li>
+            <li>UX de la competencia es desktop-first, no field-first</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout critical">
+        <span class="callout-label">Pain point más grande</span>
+        <div class="callout-body">
+          El 40% del tiempo productivo de un contratista se va en <strong>tareas administrativas</strong> (cotizar, facturar, cobrar, coordinar). Cada hora ahí es una hora menos vendiendo o ejecutando trabajo cobrable.
+        </div>
+      </div>
+
+      <div class="persona-box">
+        <p><span class="persona-name">Carlos</span>, plomero con 3 técnicos en Miami, factura <span class="amount">$220K/año</span>. Pierde ~<span class="amount">$30K anuales</span> entre trabajos que cotiza tarde y pagos que olvida cobrar. Tiene un spreadsheet de jobs, 14 clientes en el teléfono, y sus técnicos le preguntan por WhatsApp qué hacer en cada visita. Quiere crecer a 6 técnicos pero no puede escalar la operación actual.</p>
+      </div>
+    </section>
+
+    <!-- 3. PROPUESTA ÚNICA -->
+    <section class="page-break">
+      <h2>3. Propuesta única de valor</h2>
+
+      <p>WorkPilot resuelve los 4 pain points estructurales del contratista pyme en una plataforma integrada:</p>
+
+      <table>
+        <thead>
+          <tr><th style="width: 25%;">Pain</th><th>Solución WorkPilot</th><th style="width: 18%;">Diferenciador</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Cotizar tarde</strong></td>
+            <td>WorkPilot AI genera estimates desde conversación natural en español/inglés, con line items, tax y descuentos. Se envía con portal firmable al cliente.</td>
+            <td>AI + portal sin login</td>
+          </tr>
+          <tr>
+            <td><strong>No cobrar</strong></td>
+            <td>Invoice se genera desde el estimate aprobado, se envía automáticamente, y las 8 automatizaciones recuerdan al cliente antes y después del vencimiento.</td>
+            <td>Cron diario + email</td>
+          </tr>
+          <tr>
+            <td><strong>No saber si es rentable</strong></td>
+            <td>Expenses se registran contra jobs (incluyendo materiales vía Shopping List AI). Dashboard muestra profitability en vivo.</td>
+            <td>Shopping List ↔ Expense</td>
+          </tr>
+          <tr>
+            <td><strong>Coordinar técnicos</strong></td>
+            <td>Work Orders con instrucciones y fotos. Field mode PWA funciona offline. Los técnicos ven exactamente qué hacer.</td>
+            <td>PWA offline-first</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout insight">
+        <span class="callout-label">El diferenciador que compone todo</span>
+        <div class="callout-body">
+          <strong>WorkPilot AI</strong> no es un chatbot. Es un copiloto que <em>ejecuta</em>: crea estimates, registra gastos, envía emails, analiza rentabilidad. Es la única plataforma SMB con un AI que <strong>opera el negocio</strong>, no solo lo describe.
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. ESTADO ACTUAL -->
+    <section class="page-break">
+      <h2>4. Estado actual del producto</h2>
+
+      <h3>Features lanzadas</h3>
+      <div class="two-col">
+        <div>
+          <h4>Comercial</h4>
+          <ul>
+            <li>Jobs (leads → activos → completados)</li>
+            <li>Estimates con line items, tax, depósitos, firma</li>
+            <li>Invoices con pago online Stripe</li>
+            <li>Change Orders versionadas</li>
+            <li>Clients y Catalog items reutilizables</li>
+          </ul>
+          <h4>Campo</h4>
+          <ul>
+            <li>Work Orders asignables a técnicos</li>
+            <li>Field mode (PWA offline)</li>
+            <li>Photos por job/estimate</li>
+            <li>Schedule / calendario</li>
+            <li>Job checklists</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Finanzas</h4>
+          <ul>
+            <li>Expenses por job (labor, material, sub, other)</li>
+            <li>Shopping Lists integradas con expenses</li>
+            <li>Payments y milestones</li>
+            <li>Tax rate configurable</li>
+          </ul>
+          <h4>IA + Portal</h4>
+          <ul>
+            <li>WorkPilot AI con 37 tools</li>
+            <li>Voice mode (ElevenLabs)</li>
+            <li>Rich Blocks visuales en chat</li>
+            <li>Portal cliente sin login (token)</li>
+            <li>Firma digital en estimates/COs</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Automatizaciones activas</h3>
+      <table class="compact">
+        <thead><tr><th>#</th><th>Trigger</th><th>Acción</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Estimate enviado</td><td>Email cliente con portal link</td></tr>
+          <tr><td>2</td><td>Estimate aprobado</td><td>Job pasa a <span class="pill success">Active</span></td></tr>
+          <tr><td>3</td><td>Estimate sin respuesta 3 días</td><td>Email follow-up</td></tr>
+          <tr><td>4</td><td>Job completado + invoice draft</td><td>Email al contractor "invoice ready"</td></tr>
+          <tr><td>5</td><td>Invoice a 3 días del vencimiento</td><td>Email reminder al cliente</td></tr>
+          <tr><td>6</td><td>Invoice vencido</td><td>Marca <span class="pill error">Overdue</span> + email</td></tr>
+          <tr><td>7</td><td>Estimate vencido (validUntil)</td><td>Auto-rechazar + notificación</td></tr>
+          <tr><td>8</td><td>Job completado sin pago 3+ días</td><td>Alert "unbilled" al contractor</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Integraciones en producción</h3>
+      <div class="kpi-grid cols-4">
+        <div class="kpi-card"><div class="kpi-value" style="font-size:13pt;">Clerk</div><div class="kpi-label">Auth + SSO</div></div>
+        <div class="kpi-card"><div class="kpi-value" style="font-size:13pt;">Stripe</div><div class="kpi-label">Pagos + Subs</div></div>
+        <div class="kpi-card"><div class="kpi-value" style="font-size:13pt;">Anthropic</div><div class="kpi-label">IA Claude</div></div>
+        <div class="kpi-card"><div class="kpi-value" style="font-size:13pt;">Resend</div><div class="kpi-label">Email</div></div>
+        <div class="kpi-card"><div class="kpi-value" style="font-size:13pt;">Supabase</div><div class="kpi-label">Postgres + Storage</div></div>
+        <div class="kpi-card"><div class="kpi-value" style="font-size:13pt;">ElevenLabs</div><div class="kpi-label">Voice AI</div></div>
+        <div class="kpi-card"><div class="kpi-value" style="font-size:13pt;">QBO</div><div class="kpi-label">Parcial</div></div>
+        <div class="kpi-card"><div class="kpi-value" style="font-size:13pt;">Vercel</div><div class="kpi-label">Deploy + Analytics</div></div>
+      </div>
+    </section>
+
+    <!-- 5. ARQUITECTURA -->
+    <section class="page-break">
+      <h2>5. Arquitectura alto nivel</h2>
+      <p>Stack moderno serverless-first, optimizado para velocidad de desarrollo y costos operativos bajos.</p>
+
+      <div class="mermaid">
+graph TB
+    subgraph CLIENT["Cliente"]
+      Browser["Browser / PWA<br/>Next.js 16 + React 19"]
+      Mobile["Móvil<br/>PWA offline-first"]
+    end
+
+    subgraph EDGE["Vercel Edge"]
+      App["App Next.js<br/>App Router + i18n"]
+      Cron["Cron Daily 8am UTC<br/>8 automatizaciones"]
+    end
+
+    subgraph DB["Datos"]
+      PG[(PostgreSQL<br/>Supabase)]
+      Storage[(Supabase<br/>Storage)]
+    end
+
+    subgraph SERVICES["Servicios externos"]
+      Clerk["Clerk<br/>Auth"]
+      Stripe["Stripe<br/>Pagos"]
+      Claude["Anthropic<br/>Claude Sonnet 4.5"]
+      Resend["Resend<br/>Email"]
+      EL["ElevenLabs<br/>Voice"]
+      QBO["QuickBooks<br/>OAuth"]
+    end
+
+    Browser --> App
+    Mobile --> App
+    App --> PG
+    App --> Storage
+    App --> Clerk
+    App --> Stripe
+    App --> Claude
+    App --> Resend
+    App --> EL
+    App --> QBO
+    Cron --> PG
+    Cron --> Resend
+      </div>
+
+      <h3>Principios arquitectónicos</h3>
+      <ul>
+        <li><strong>Serverless-first:</strong> Vercel + Supabase escalan a cero. Sin servidores que mantener.</li>
+        <li><strong>Edge-ready:</strong> PWA con service workers, funciona offline para técnicos en campo.</li>
+        <li><strong>Multi-adapter:</strong> db/email/storage tienen adapter pattern, permite cambiar proveedor sin reescribir código.</li>
+        <li><strong>Type-safe end to end:</strong> TypeScript + Drizzle ORM → autocompletado desde DB hasta UI.</li>
+      </ul>
+    </section>
+
+    <!-- 6. MERCADO OBJETIVO -->
+    <section class="page-break">
+      <h2>6. Mercado objetivo</h2>
+
+      <p>El mercado global de service contractors (home services) supera los <strong class="amount">$600B USD</strong> anuales, con millones de pymes que aún operan sin software especializado. WorkPilot ataca el segmento pyme (1–20 empleados) con foco inicial en EE.UU. hispanohablante y LATAM.</p>
+
+      <div class="kpi-grid cols-3">
+        <div class="kpi-card">
+          <div class="kpi-value">~10M</div>
+          <div class="kpi-label">TAM (negocios globales)</div>
+          <div class="kpi-delta neutral">Plomería, eléctrica, HVAC, etc.</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">~2M</div>
+          <div class="kpi-label">SAM (US + LATAM)</div>
+          <div class="kpi-delta neutral">1–20 empleados</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">50K</div>
+          <div class="kpi-label">SOM a 3 años</div>
+          <div class="kpi-delta up">Target realista</div>
+        </div>
+      </div>
+
+      <h3>Cuatro segmentos objetivo</h3>
+      <table>
+        <thead><tr><th>Segmento</th><th>Tamaño equipo</th><th>Dolor principal</th><th>Plan ideal</th></tr></thead>
+        <tbody>
+          <tr><td>Solo practitioner</td><td>1 persona</td><td>Cotizar + cobrar rápido</td><td>Starter → Pro</td></tr>
+          <tr><td>Small crew</td><td>2–5 técnicos</td><td>Coordinar técnicos + rentabilidad</td><td>Pro</td></tr>
+          <tr><td>Growing business</td><td>6–20 técnicos</td><td>Escalabilidad sin sumar admins</td><td>Pro + add-ons</td></tr>
+          <tr><td>Multi-trade</td><td>Variable</td><td>Un sistema para múltiples oficios</td><td>Pro (futuro: Growth)</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout insight">
+        <span class="callout-label">Sweet spot</span>
+        <div class="callout-body">
+          Nuestro ICP primario es el <strong>Small crew (2–5 técnicos) hispanohablante</strong>. Tamaño suficiente para pagar, dolor suficiente para adoptar, idioma que los competidores grandes ignoran.
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. MOATS -->
+    <section class="page-break">
+      <h2>7. Moats estratégicos</h2>
+
+      <p>Los <em>moats</em> (fosos defensivos) son las razones por las que un cliente no se va aunque aparezca una alternativa. En WorkPilot son 5:</p>
+
+      <ol>
+        <li><strong>Datos históricos del negocio.</strong> Cada job, estimate, invoice, cliente, catalog item queda en la plataforma. Exportar es posible pero migrar toda la operación es costoso. Valor aumenta con el tiempo.</li>
+
+        <li><strong>AI aprendido con preferencias.</strong> La tabla <code>ai_preferences</code> guarda patrones aprendidos de cada contratista (tasas, márgenes, zonas, proveedores). El AI se vuelve cada vez mejor con ese negocio específico. No es replicable en otro software.</li>
+
+        <li><strong>Catalog entrenado.</strong> El catálogo de items (labor + material) se expande con uso. Un contratista con 200 catalog items ya armados tiene ventaja de velocidad que no quiere perder.</li>
+
+        <li><strong>Integraciones activas.</strong> QuickBooks sync, Stripe Connect, tokens de portal compartidos con cientos de clientes. Cambiar plataforma implica reconfigurar todo.</li>
+
+        <li><strong>Network effects potenciales.</strong> Cada cliente que aprueba un estimate vía portal nos da data de conversión. Futuro: marketplace de técnicos + proveedores locales dentro de la app.</li>
+      </ol>
+
+      <div class="callout warning">
+        <span class="callout-label">Moats que aún no tenemos</span>
+        <div class="callout-body">
+          <strong>Costos de cambio hardware</strong> (no usamos dispositivos propietarios). <strong>Network effects directos entre contratistas</strong> (un contratista no depende de que otro esté en la plataforma). Estos son moats clase A que no tendremos — por eso los 5 anteriores deben ser sólidos.
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. MÉTRICAS -->
+    <section class="page-break">
+      <h2>8. Métricas clave</h2>
+
+      <h3>Métricas que monitoreamos</h3>
+      <table>
+        <thead><tr><th>Categoría</th><th>Métrica</th><th>Target</th><th>Frecuencia</th></tr></thead>
+        <tbody>
+          <tr><td rowspan="3">Adquisición</td><td>Sign-ups / mes</td><td>[Por definir]</td><td>Diaria</td></tr>
+          <tr><td>CAC por canal</td><td>&lt; <span class="amount">$100</span></td><td>Mensual</td></tr>
+          <tr><td>Tiempo a primer estimate</td><td>&lt; 30 min</td><td>Cohort</td></tr>
+          <tr><td rowspan="3">Activación</td><td>% users con 1er estimate enviado</td><td>&gt; 60%</td><td>Semanal</td></tr>
+          <tr><td>% users con 1er invoice pagado</td><td>&gt; 40%</td><td>Semanal</td></tr>
+          <tr><td>% users que usan AI</td><td>&gt; 50%</td><td>Mensual</td></tr>
+          <tr><td rowspan="3">Retención</td><td>MRR churn mensual</td><td>&lt; 5%</td><td>Mensual</td></tr>
+          <tr><td>Net Revenue Retention</td><td>&gt; 100%</td><td>Trimestral</td></tr>
+          <tr><td>Engagement: MAU/WAU</td><td>&gt; 60%</td><td>Semanal</td></tr>
+          <tr><td rowspan="2">Negocio</td><td>LTV</td><td>&gt; <span class="amount">$800</span></td><td>Trimestral</td></tr>
+          <tr><td>LTV:CAC</td><td>&gt; 3:1</td><td>Trimestral</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout info">
+        <span class="callout-label">Nota sobre datos</span>
+        <div class="callout-body">
+          Las métricas actuales son objetivos. Una vez instrumentadas con Vercel Analytics + eventos custom, se reemplazarán con valores reales en este documento (versión 1.1).
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. PRIORIDADES 90 DÍAS -->
+    <section class="page-break">
+      <h2>9. Prioridades de los próximos 90 días</h2>
+
+      <p>Foco en cerrar gaps competitivos de alto impacto y acelerar activación de usuarios nuevos.</p>
+
+      <table>
+        <thead><tr><th style="width: 10%;">Prioridad</th><th>Iniciativa</th><th>Impacto esperado</th></tr></thead>
+        <tbody>
+          <tr><td><span class="pill error">P0</span></td><td>Instrumentar métricas (Vercel events + dashboard interno)</td><td>Toma de decisiones basada en datos</td></tr>
+          <tr><td><span class="pill error">P0</span></td><td>Scheduling con drag &amp; drop visual</td><td>Cerrar gap vs Jobber; desbloquea Small Crew</td></tr>
+          <tr><td><span class="pill warning">P1</span></td><td>QuickBooks sync bidireccional (invoice paid → QB)</td><td>Quita fricción de contadores del cliente</td></tr>
+          <tr><td><span class="pill warning">P1</span></td><td>Onboarding guiado (tour + sample data)</td><td>Activation rate +20–30%</td></tr>
+          <tr><td><span class="pill warning">P1</span></td><td>Reporte de profitability por cliente</td><td>Valor agregado del AI, upgrade driver</td></tr>
+          <tr><td><span class="pill neutral">P2</span></td><td>GPS tracking opcional para técnicos</td><td>Cierra gap vs ServiceTitan en Small Crew</td></tr>
+          <tr><td><span class="pill neutral">P2</span></td><td>Plan Growth activado (entre Starter y Pro)</td><td>Experimentar con conversión intermedia</td></tr>
+        </tbody>
+      </table>
+
+      <div class="recommendations">
+        <h3>Recomendaciones ejecutivas</h3>
+        <ol>
+          <li><strong>Doble clic en AI.</strong> Es nuestro mayor diferenciador. Invertir en más tools, foto → estimate, autonomía creciente. Comunicarlo agresivamente en marketing.</li>
+          <li><strong>Instrumentar YA.</strong> Sin métricas no hay decisiones. Sprint dedicado en semana 1.</li>
+          <li><strong>Cerrar Scheduling.</strong> Es el gap más mencionado en comparativas con Jobber. Sin esto perdemos deals.</li>
+          <li><strong>LATAM-first en GTM.</strong> Somos el único producto SMB bilingüe — explotalo con SEO en español y partnerships regionales.</li>
+          <li><strong>Freemium viral.</strong> Starter es gratis — diseñar features que empujen al user a invitar técnicos/clientes (expansion loop).</li>
+        </ol>
+      </div>
+    </section>
+  </div>
+
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#1E3A5F',
+        primaryTextColor: '#ffffff',
+        primaryBorderColor: '#0F2440',
+        lineColor: '#64748B',
+        secondaryColor: '#3B82F6',
+        tertiaryColor: '#F1F5F9',
+        fontFamily: 'Inter, sans-serif',
+      },
+    });
+    await mermaid.run();
+    window.mermaid_ready = true;
+  </script>
+</body>
+</html>

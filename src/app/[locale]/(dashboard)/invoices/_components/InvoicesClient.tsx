@@ -9,10 +9,12 @@ import { generateInvoiceShareToken } from '@/lib/actions/portal'
 import { InvoiceStatusBadge } from '@/components/invoices/InvoiceStatusBadge'
 import { Receipt, Plus, Share2, Check, AlertTriangle } from 'lucide-react'
 import { SwipeableRow } from '@/components/SwipeableRow'
+import { Toast } from '@/components/Toast'
 import {
   StatusPill, KpiCard, ClientAvatar, Segmented, Toolbar, EmptyState,
   type StatusTone,
 } from '@/components/ui'
+import { deriveInvoiceStatus } from '@/lib/status/derived'
 
 type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
 type Invoice = { id: string; number: string; clientName: string; status: string; dueDate: Date | null; total: string; paidAt: Date | null }
@@ -29,8 +31,8 @@ const STATUS_TONE: Record<InvoiceStatus, StatusTone> = {
 }
 
 function effectiveStatus(inv: Invoice): InvoiceStatus {
-  if (inv.status === 'sent' && inv.dueDate && new Date(inv.dueDate) < new Date()) return 'overdue'
-  return inv.status as InvoiceStatus
+  // Wrap del helper shared para mantener compat con el uso local.
+  return deriveInvoiceStatus({ status: inv.status, dueDate: inv.dueDate, paidAt: inv.paidAt }) as InvoiceStatus
 }
 
 export function InvoicesClient({ initialInvoices, translations: t }: { initialInvoices: Invoice[]; translations: T }) {
@@ -40,17 +42,28 @@ export function InvoicesClient({ initialInvoices, translations: t }: { initialIn
   const [filter, setFilter] = useState<FilterValue>('all')
   const [search, setSearch] = useState('')
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ message: string; variant?: 'success' | 'error' | 'warning' } | null>(null)
+  const notify = (message: string, variant: 'success' | 'error' | 'warning' = 'success') => setToast({ message, variant })
 
   async function handleShare(e: React.MouseEvent, id: string) {
     e.stopPropagation()
     const url = await generateInvoiceShareToken(id)
     await navigator.clipboard.writeText(url)
     setCopiedId(id)
+    notify(locale === 'es' ? 'Link copiado' : 'Link copied')
     setTimeout(() => setCopiedId(null), 2000)
   }
 
   function handleMarkPaid(id: string) {
-    startTransition(async () => { await updateInvoice(id, { status: 'paid', paidAt: new Date().toISOString() }); router.refresh() })
+    startTransition(async () => {
+      try {
+        await updateInvoice(id, { status: 'paid', paidAt: new Date().toISOString() })
+        notify(locale === 'es' ? 'Factura marcada como pagada' : 'Invoice marked as paid')
+        router.refresh()
+      } catch (e) {
+        notify(e instanceof Error ? e.message : 'Error', 'error')
+      }
+    })
   }
 
   const filteredInvoices = initialInvoices
@@ -80,7 +93,7 @@ export function InvoicesClient({ initialInvoices, translations: t }: { initialIn
   // Group by month/year
   const grouped = filteredInvoices.reduce<Record<string, Invoice[]>>((acc, inv) => {
     const dateRef = inv.dueDate ?? inv.paidAt ?? new Date()
-    const key = new Date(dateRef).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
+    const key = new Date(dateRef).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { year: 'numeric', month: 'long' })
     if (!acc[key]) acc[key] = []
     acc[key].push(inv)
     return acc
@@ -110,7 +123,8 @@ export function InvoicesClient({ initialInvoices, translations: t }: { initialIn
   ]
 
   return (
-    <div className="px-4 pt-2 pb-4 md:p-8 bg-white md:bg-transparent min-h-full">
+    <div className="px-4 pt-2 pb-4 md:p-8 bg-card md:bg-transparent min-h-full">
+      {toast && <Toast message={toast.message} variant={toast.variant} onDone={() => setToast(null)} />}
       {/* ── Desktop header ─────────────────────────────── */}
       <div className="hidden md:flex items-end justify-between mb-5">
         <div>
@@ -261,13 +275,17 @@ export function InvoicesClient({ initialInvoices, translations: t }: { initialIn
                       <SwipeableRow
                         key={inv.id}
                         actions={[
-                          { label: 'Share', icon: <Share2 size={16} />, color: 'white', bg: 'var(--wp-brand)', onClick: () => handleShare({} as React.MouseEvent, inv.id) },
-                          ...(status !== 'paid' ? [{ label: 'Paid', icon: <Check size={16} />, color: 'white', bg: 'var(--wp-success-v2)', onClick: () => handleMarkPaid(inv.id) }] : []),
+                          { label: 'Share', icon: <Share2 size={16} />, color: 'var(--wp-text-inverse)', bg: 'var(--wp-brand)', onClick: () => handleShare({} as React.MouseEvent, inv.id) },
+                          ...(status !== 'paid' ? [{ label: 'Paid', icon: <Check size={16} />, color: 'var(--wp-text-inverse)', bg: 'var(--wp-success-v2)', onClick: () => handleMarkPaid(inv.id) }] : []),
                         ]}
                       >
                         <div onClick={() => router.push(`/${locale}/invoices/${inv.id}`)}
                           onTouchStart={() => router.prefetch(`/${locale}/invoices/${inv.id}`)}
-                          className="cursor-pointer active:bg-[var(--wp-surface-2)] flex gap-3 items-start"
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push(`/${locale}/invoices/${inv.id}`) } }}
+                          role="link"
+                          tabIndex={0}
+                          aria-label={`Open invoice ${inv.number}`}
+                          className="cursor-pointer active:bg-[var(--wp-surface-2)] flex gap-3 items-start focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--wp-brand)] focus-visible:ring-offset-1 rounded-sm"
                           style={{
                             padding: '0.75rem 0',
                             borderBottom: '1px solid var(--wp-border-light)',
@@ -282,7 +300,10 @@ export function InvoicesClient({ initialInvoices, translations: t }: { initialIn
                             </div>
                             <div className="flex items-center justify-between mt-1">
                               <span style={{ fontSize: '0.75rem', color: 'var(--wp-text-3)' }}>
-                                {(inv.dueDate ? new Date(inv.dueDate) : new Date()).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · #{inv.number.replace('INV-', '')}
+                                {inv.dueDate
+                                  ? `${locale === 'es' ? 'Vence' : 'Due'} ${new Date(inv.dueDate).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { month: 'short', day: 'numeric' })}`
+                                  : (locale === 'es' ? 'Sin vencimiento' : 'No due date')}
+                                {' · '}#{inv.number.replace('INV-', '')}
                               </span>
                               <InvoiceStatusBadge status={status} label={t.status[status]} />
                             </div>
@@ -365,7 +386,7 @@ export function InvoicesClient({ initialInvoices, translations: t }: { initialIn
                                 <StatusPill tone={STATUS_TONE[status]}>{t.status[status]}</StatusPill>
                               </td>
                               <td className="px-4 py-3" style={{ color: status === 'overdue' ? 'var(--wp-error-v2)' : 'var(--wp-text-2)', fontWeight: status === 'overdue' ? 500 : 400 }}>
-                                {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '—'}
+                                {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US') : '—'}
                               </td>
                               <td className="px-4 py-3 text-right text-price tabular-nums" style={{ color: 'var(--wp-text)' }}>
                                 ${parseFloat(inv.total).toFixed(2)}

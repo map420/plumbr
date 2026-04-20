@@ -6,7 +6,7 @@ export const runtime = 'edge'
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
   const title = searchParams.get('title') ?? 'WorkPilot — Contractor Business Software'
-  const subtitle = searchParams.get('subtitle') ?? 'Estimates, invoices & job costing for contractors under $5M'
+  const subtitle = searchParams.get('subtitle') ?? 'Estimates, invoices & project costing for contractors under $5M'
   const tag = searchParams.get('tag') ?? ''
 
   return new ImageResponse(
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
           height: '630px',
           display: 'flex',
           flexDirection: 'column',
-          background: 'linear-gradient(135deg, #0F2440 0%, #1E3A5F 100%)',
+          background: 'linear-gradient(135deg, var(--wp-navy) 0%, var(--wp-navy-500) 100%)',
           fontFamily: 'system-ui, sans-serif',
           position: 'relative',
           overflow: 'hidden',
@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
               style={{
                 width: '44px',
                 height: '44px',
-                background: '#F97316',
+                background: 'var(--wp-cta)',
                 borderRadius: '10px',
                 display: 'flex',
                 alignItems: 'center',
@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
                   borderRadius: '100px',
                   padding: '6px 16px',
                   width: 'fit-content',
-                  color: '#F97316',
+                  color: 'var(--wp-cta)',
                   fontSize: '14px',
                   fontWeight: '700',
                   letterSpacing: '0.08em',
@@ -133,7 +133,7 @@ export async function GET(req: NextRequest) {
             </span>
             <div
               style={{
-                background: '#F97316',
+                background: 'var(--wp-cta)',
                 color: 'white',
                 fontSize: '15px',
                 fontWeight: '700',

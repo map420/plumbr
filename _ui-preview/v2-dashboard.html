@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>plumbr — v2 Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAFAFA;
+    --surface: #FFFFFF;
+    --surface-2: #F7F7F8;
+    --surface-3: #F1F1F3;
+    --border: #EAEAEC;
+    --border-hover: #D4D4D8;
+    --text: #18181B;
+    --text-2: #52525B;
+    --text-3: #A1A1AA;
+    --brand: #0F172A;
+    --brand-hover: #1E293B;
+    --brand-subtle: #F1F5F9;
+    --success: #15803D;
+    --success-bg: #F0FDF4;
+    --success-border: #BBF7D0;
+    --warning: #B45309;
+    --warning-bg: #FFFBEB;
+    --warning-border: #FDE68A;
+    --danger: #B91C1C;
+    --danger-bg: #FEF2F2;
+    --danger-border: #FECACA;
+    --info: #1D4ED8;
+    --info-bg: #EFF6FF;
+    --info-border: #BFDBFE;
+    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.04);
+    --shadow-2: 0 2px 4px rgb(0 0 0 / 0.04), 0 1px 2px rgb(0 0 0 / 0.06);
+    --shadow-3: 0 8px 24px rgb(0 0 0 / 0.06), 0 2px 6px rgb(0 0 0 / 0.04);
+    --r-sm: 6px;
+    --r-md: 8px;
+    --r-lg: 10px;
+    --r-xl: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--bg); color: var(--text);
+    -webkit-font-smoothing: antialiased; line-height: 1.5;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  .shell { max-width: 1320px; margin: 0 auto; padding: 40px 24px 80px; }
+  .page-header { margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+  .page-header h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+  .page-header p { font-size: 14px; color: var(--text-2); margin-top: 4px; }
+  .tag-ver { display: inline-block; padding: 3px 10px; margin-top: 10px; background: var(--brand); color: white; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+
+  h2.section-h { font-size: 13px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-3); margin: 48px 0 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  h2.section-h .num { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 6px; background: var(--brand); color: white; font-size: 11px; margin-right: 8px; vertical-align: middle; }
+
+  .mock { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl); overflow: hidden; box-shadow: var(--shadow-1); margin-bottom: 24px; }
+  .mock-label { padding: 10px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); background: var(--surface-2); border-bottom: 1px solid var(--border); }
+  .mock-body { padding: 24px; background: var(--bg); }
+
+  .btn { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; padding: 8px 14px; border-radius: var(--r-md); border: 1px solid transparent; cursor: pointer; transition: all 120ms; white-space: nowrap; font-family: inherit; }
+  .btn.primary { background: var(--brand); color: white; }
+  .btn.primary:hover { background: var(--brand-hover); }
+  .btn.secondary { background: var(--surface); color: var(--text); border-color: var(--border); box-shadow: var(--shadow-1); }
+  .btn.ghost { background: transparent; color: var(--text-2); }
+  .btn.sm { padding: 6px 10px; font-size: 12px; }
+  .ic { display: inline-block; vertical-align: middle; }
+
+  /* ═════════ DASHBOARD ═════════ */
+  .greeting {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 24px;
+  }
+  .greeting h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+  .greeting h1 .wave { font-size: 22px; margin-left: 4px; }
+  .greeting p { font-size: 13px; color: var(--text-2); margin-top: 2px; }
+  .greeting .date { font-size: 12px; color: var(--text-3); text-align: right; }
+
+  /* Dashboard grid */
+  .dash-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 16px;
+  }
+
+  /* Money block */
+  .money-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-lg); padding: 20px;
+  }
+  .money-row {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 24px; padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .money-item .k {
+    font-size: 11px; color: var(--text-3); font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    margin-bottom: 4px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .money-item .v {
+    font-size: 28px; font-weight: 700; letter-spacing: -0.025em;
+    font-variant-numeric: tabular-nums; line-height: 1;
+  }
+  .money-item .trend {
+    font-size: 12px; margin-top: 6px;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .trend.up { color: var(--success); }
+  .trend.down { color: var(--danger); }
+  .trend.neutral { color: var(--text-3); }
+  .money-sparkline {
+    margin-top: 8px; height: 28px; display: flex; align-items: flex-end; gap: 2px;
+  }
+  .spark-bar {
+    flex: 1; background: var(--brand);
+    border-radius: 1px; opacity: 0.3;
+    transition: opacity 200ms;
+  }
+  .spark-bar.active { opacity: 1; }
+
+  /* Pipeline */
+  .pipeline {
+    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 8px; margin-top: 16px;
+  }
+  .pipe-cell {
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: var(--r-md); padding: 10px 12px;
+    transition: all 120ms;
+  }
+  .pipe-cell:hover { border-color: var(--border-hover); background: var(--surface); }
+  .pipe-cell .k {
+    font-size: 10px; color: var(--text-3);
+    text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .pipe-cell .k .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .pipe-cell.sent .k .dot { background: var(--info); }
+  .pipe-cell.approved .k .dot { background: var(--success); }
+  .pipe-cell.unpaid .k .dot { background: var(--warning); }
+  .pipe-cell.paid .k .dot { background: var(--text); }
+  .pipe-cell .v {
+    font-size: 18px; font-weight: 700; margin-top: 4px;
+    letter-spacing: -0.01em; font-variant-numeric: tabular-nums;
+  }
+  .pipe-cell .sub { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+  /* Chart card */
+  .chart-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-lg); padding: 20px;
+    margin-top: 16px;
+  }
+  .chart-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px;
+  }
+  .chart-head h3 { font-size: 14px; font-weight: 600; }
+  .chart-head .seg { display: flex; gap: 2px; padding: 2px; background: var(--surface-3); border-radius: var(--r-sm); }
+  .chart-head .seg button {
+    padding: 3px 8px; background: transparent; border: none;
+    font-size: 11px; font-weight: 500; color: var(--text-2);
+    border-radius: 4px; cursor: pointer; font-family: inherit;
+  }
+  .chart-head .seg button.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow-1); }
+  .chart-wrap { height: 180px; position: relative; }
+  .chart-svg { width: 100%; height: 100%; }
+  .chart-legend { display: flex; gap: 16px; margin-top: 10px; font-size: 11px; }
+  .legend-item { display: inline-flex; align-items: center; gap: 6px; color: var(--text-2); }
+  .legend-item .sq { width: 10px; height: 10px; border-radius: 2px; }
+  .legend-item.actual .sq { background: var(--brand); }
+  .legend-item.projected .sq { background: var(--text-3); opacity: 0.4; }
+
+  /* Action items / alerts */
+  .side-col { display: flex; flex-direction: column; gap: 12px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-lg); overflow: hidden;
+  }
+  .card-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 18px; border-bottom: 1px solid var(--border);
+  }
+  .card-head h3 { font-size: 13px; font-weight: 600; }
+  .card-head .meta { font-size: 11px; color: var(--text-3); }
+  .card-head .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 600;
+    padding: 2px 8px; border-radius: 999px;
+    background: var(--warning-bg); color: var(--warning);
+    border: 1px solid var(--warning-border);
+  }
+  .card-body { padding: 8px 0; }
+
+  .action-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 18px; border-bottom: 1px solid var(--border);
+    transition: background 120ms;
+    cursor: pointer;
+  }
+  .action-item:last-child { border-bottom: none; }
+  .action-item:hover { background: var(--surface-2); }
+  .action-item .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .action-item.danger .dot { background: var(--danger); }
+  .action-item.warning .dot { background: var(--warning); }
+  .action-item.info .dot { background: var(--info); }
+  .action-item .body { flex: 1; min-width: 0; }
+  .action-item .title {
+    font-size: 13px; color: var(--text);
+    font-weight: 500;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .action-item .meta {
+    font-size: 11px; color: var(--text-3); margin-top: 2px;
+  }
+  .action-item svg { color: var(--text-3); flex-shrink: 0; }
+
+  /* Today jobs */
+  .job-item {
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex; gap: 12px; align-items: center;
+  }
+  .job-item:last-child { border-bottom: none; }
+  .job-time {
+    width: 52px; flex-shrink: 0;
+    text-align: right;
+    font-size: 12px; color: var(--text-2);
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+  }
+  .job-time .day { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.04em; }
+  .job-body { flex: 1; min-width: 0; border-left: 2px solid var(--border); padding-left: 12px; }
+  .job-body.active { border-left-color: var(--info); }
+  .job-body .t { font-weight: 500; font-size: 13px; }
+  .job-body .s { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+  .job-status {
+    font-size: 10px; font-weight: 600; padding: 2px 7px;
+    background: var(--info-bg); color: var(--info);
+    border-radius: 999px;
+    flex-shrink: 0;
+    border: 1px solid var(--info-border);
+  }
+  .job-status.done { background: var(--success-bg); color: var(--success); border-color: var(--success-border); }
+
+  /* AI insights card - prominent */
+  .ai-card {
+    background: linear-gradient(135deg, var(--brand) 0%, #1E293B 100%);
+    color: white;
+    border: 1px solid var(--brand);
+    border-radius: var(--r-lg);
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .ai-card::before {
+    content: ''; position: absolute; top: -40px; right: -40px;
+    width: 140px; height: 140px;
+    background: radial-gradient(circle, rgb(255 255 255 / 0.06) 0%, transparent 70%);
+  }
+  .ai-card-head {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+    position: relative;
+  }
+  .ai-icon {
+    width: 28px; height: 28px; border-radius: var(--r-sm);
+    background: rgb(255 255 255 / 0.08);
+    display: flex; align-items: center; justify-content: center;
+    color: #A5B4FC;
+  }
+  .ai-card h3 { font-size: 13px; font-weight: 600; letter-spacing: -0.01em; }
+  .ai-card .tag {
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; opacity: 0.5; margin-left: auto;
+  }
+  .ai-insight {
+    position: relative; padding: 8px 0;
+    border-bottom: 1px solid rgb(255 255 255 / 0.08);
+  }
+  .ai-insight:last-child { border-bottom: none; }
+  .ai-insight p {
+    font-size: 12px; color: rgb(255 255 255 / 0.85);
+    line-height: 1.5;
+  }
+  .ai-insight p strong { color: white; font-weight: 600; }
+  .ai-insight .cta {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 600;
+    color: #A5B4FC; margin-top: 4px;
+  }
+
+  /* Quick actions row */
+  .quick-actions {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+    margin-top: 16px;
+  }
+  .qa-item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-md); padding: 14px;
+    cursor: pointer; transition: all 120ms;
+  }
+  .qa-item:hover { border-color: var(--border-hover); background: var(--surface-2); }
+  .qa-item .ic-wrap {
+    width: 32px; height: 32px; border-radius: var(--r-sm);
+    background: var(--surface-3); color: var(--text-2);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 10px;
+  }
+  .qa-item .t { font-size: 13px; font-weight: 500; }
+  .qa-item .s { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+  /* Notes / Layout helpers */
+  .note-fix { padding: 10px 14px; background: var(--info-bg); border-left: 3px solid var(--info); color: var(--text-2); font-size: 12px; margin-bottom: 12px; border-radius: 0 var(--r-sm) var(--r-sm) 0; }
+  .note-fix strong { color: var(--info); font-weight: 700; }
+
+  /* Mobile view */
+  .mobile-viewport { background: #E5E5E7; padding: 32px; display: flex; justify-content: center; }
+  .phone {
+    width: 395px; background: #1a1a1a;
+    border-radius: 32px; padding: 10px;
+    box-shadow: var(--shadow-3);
+  }
+  .phone-screen {
+    background: var(--bg); border-radius: 24px; overflow: hidden;
+    min-height: 760px;
+  }
+  .mob-top {
+    padding: 14px 18px 10px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .mob-top h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+  .mob-top p { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+
+  .mob-money {
+    padding: 18px;
+  }
+  .mob-money-big {
+    font-size: 32px; font-weight: 700; letter-spacing: -0.025em;
+    font-variant-numeric: tabular-nums; line-height: 1; margin-bottom: 4px;
+  }
+  .mob-money-label { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 500; }
+  .mob-money-trend { font-size: 12px; color: var(--success); margin-top: 6px; }
+
+  .mob-pipeline {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+    padding: 0 18px 18px;
+  }
+  .mob-pipe-item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-md); padding: 10px;
+    text-align: center;
+  }
+  .mob-pipe-item .v { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+  .mob-pipe-item .k { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+
+  .mob-sec-head {
+    padding: 10px 18px 6px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .mob-sec-head h3 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); }
+  .mob-sec-head a { font-size: 12px; color: var(--text-2); font-weight: 500; }
+
+  .mob-ai-card {
+    margin: 0 18px 14px;
+    background: linear-gradient(135deg, var(--brand) 0%, #1E293B 100%);
+    color: white;
+    border-radius: var(--r-lg);
+    padding: 14px 16px;
+  }
+  .mob-ai-head {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 8px;
+  }
+  .mob-ai-head .t { font-size: 12px; font-weight: 600; }
+  .mob-ai-body {
+    font-size: 13px; line-height: 1.5; color: rgb(255 255 255 / 0.92);
+  }
+  .mob-ai-body b { color: white; }
+  .mob-ai-cta {
+    display: inline-flex; align-items: center; gap: 4px; margin-top: 8px;
+    font-size: 12px; color: #A5B4FC; font-weight: 600;
+  }
+
+  .mob-action {
+    padding: 10px 18px;
+    display: flex; gap: 10px; align-items: center;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .mob-action .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .mob-action .body { flex: 1; min-width: 0; }
+  .mob-action .t { font-size: 13px; font-weight: 500; }
+  .mob-action .s { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="page-header">
+    <h1>plumbr — Dashboard v2</h1>
+    <p>Home del contratista · Paleta refinada · Sección inteligente de AI prominente</p>
+    <span class="tag-ver">Mock dashboard · v2 palette</span>
+  </div>
+
+  <!-- ═══════ DASHBOARD DESKTOP ═══════ -->
+  <h2 class="section-h"><span class="num">◆</span>Dashboard · /dashboard (desktop)</h2>
+  <div class="note-fix">
+    <strong>Cambios clave:</strong> fuera la grid de 4 stat cards iguales (era visualmente plano). Ahora: bloque hero de Dinero con Revenue + Unpaid destacados y sparkline, pipeline como 4 celdas conectadas, chart con proyección (línea punteada para months futuros), sidebar con Action Items + Today's Jobs + <strong>AI Insights</strong> en card navy destacada arriba.
+  </div>
+
+  <div class="mock">
+    <div class="mock-label">Desktop · /dashboard</div>
+    <div class="mock-body">
+      <div class="greeting">
+        <div>
+          <h1>Buenos días, Moises<span class="wave">👋</span></h1>
+          <p>Aquí está el pulso de tu negocio · jueves 16 de abril</p>
+        </div>
+        <div class="date">
+          Last sync: hace 2min<br>
+          <span style="color: var(--success);">● Conectado</span>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <!-- Left column -->
+        <div>
+          <div class="money-card">
+            <div class="money-row">
+              <div class="money-item">
+                <div class="k"><span>💰</span>Ingresos de abril</div>
+                <div class="v">$28,450</div>
+                <div class="trend up">
+                  <svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>
+                  +12% vs marzo
+                </div>
+                <div class="money-sparkline">
+                  <div class="spark-bar" style="height: 30%"></div>
+                  <div class="spark-bar" style="height: 45%"></div>
+                  <div class="spark-bar" style="height: 35%"></div>
+                  <div class="spark-bar" style="height: 60%"></div>
+                  <div class="spark-bar" style="height: 55%"></div>
+                  <div class="spark-bar" style="height: 70%"></div>
+                  <div class="spark-bar" style="height: 65%"></div>
+                  <div class="spark-bar" style="height: 80%"></div>
+                  <div class="spark-bar active" style="height: 85%"></div>
+                </div>
+              </div>
+              <div class="money-item">
+                <div class="k"><span>⏳</span>Por cobrar</div>
+                <div class="v">$6,420</div>
+                <div class="trend" style="color: var(--warning);">3 facturas vencidas</div>
+              </div>
+            </div>
+
+            <div class="pipeline">
+              <div class="pipe-cell sent">
+                <div class="k"><span class="dot"></span>Pending</div>
+                <div class="v">4</div>
+                <div class="sub">$9,240 estimates</div>
+              </div>
+              <div class="pipe-cell approved">
+                <div class="k"><span class="dot"></span>Approved</div>
+                <div class="v">5</div>
+                <div class="sub">$18,140 estimates</div>
+              </div>
+              <div class="pipe-cell unpaid">
+                <div class="k"><span class="dot"></span>Unpaid</div>
+                <div class="v">7</div>
+                <div class="sub">$6,420 invoices</div>
+              </div>
+              <div class="pipe-cell paid">
+                <div class="k"><span class="dot"></span>Paid MTD</div>
+                <div class="v">12</div>
+                <div class="sub">$28,450</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-head">
+              <h3>Ingresos — últimos 6 meses</h3>
+              <div class="seg">
+                <button>3M</button>
+                <button class="active">6M</button>
+                <button>1Y</button>
+                <button>All</button>
+              </div>
+            </div>
+            <div class="chart-wrap">
+              <svg class="chart-svg" viewBox="0 0 600 180" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="grad" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stop-color="#0F172A" stop-opacity="0.15"/>
+                    <stop offset="100%" stop-color="#0F172A" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <!-- grid lines -->
+                <line x1="0" y1="40" x2="600" y2="40" stroke="#EAEAEC" stroke-width="1" stroke-dasharray="2 4"/>
+                <line x1="0" y1="90" x2="600" y2="90" stroke="#EAEAEC" stroke-width="1" stroke-dasharray="2 4"/>
+                <line x1="0" y1="140" x2="600" y2="140" stroke="#EAEAEC" stroke-width="1" stroke-dasharray="2 4"/>
+                <!-- area -->
+                <path d="M 30 120 L 130 105 L 230 85 L 330 70 L 430 55 L 530 45 L 530 160 L 30 160 Z" fill="url(#grad)"/>
+                <!-- actual line -->
+                <polyline points="30,120 130,105 230,85 330,70 430,55 530,45" fill="none" stroke="#0F172A" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+                <!-- projected line -->
+                <polyline points="530,45 590,38" fill="none" stroke="#A1A1AA" stroke-width="2" stroke-linejoin="round" stroke-dasharray="4 3"/>
+                <!-- dots -->
+                <circle cx="30" cy="120" r="3" fill="#FAFAFA" stroke="#0F172A" stroke-width="2"/>
+                <circle cx="130" cy="105" r="3" fill="#FAFAFA" stroke="#0F172A" stroke-width="2"/>
+                <circle cx="230" cy="85" r="3" fill="#FAFAFA" stroke="#0F172A" stroke-width="2"/>
+                <circle cx="330" cy="70" r="3" fill="#FAFAFA" stroke="#0F172A" stroke-width="2"/>
+                <circle cx="430" cy="55" r="3" fill="#FAFAFA" stroke="#0F172A" stroke-width="2"/>
+                <circle cx="530" cy="45" r="4" fill="#0F172A" stroke="white" stroke-width="2"/>
+                <!-- X labels -->
+                <text x="30" y="175" font-size="10" fill="#A1A1AA" text-anchor="middle">Nov</text>
+                <text x="130" y="175" font-size="10" fill="#A1A1AA" text-anchor="middle">Dic</text>
+                <text x="230" y="175" font-size="10" fill="#A1A1AA" text-anchor="middle">Ene</text>
+                <text x="330" y="175" font-size="10" fill="#A1A1AA" text-anchor="middle">Feb</text>
+                <text x="430" y="175" font-size="10" fill="#A1A1AA" text-anchor="middle">Mar</text>
+                <text x="530" y="175" font-size="10" fill="#0F172A" text-anchor="middle" font-weight="600">Abr</text>
+              </svg>
+            </div>
+            <div class="chart-legend">
+              <span class="legend-item actual"><span class="sq"></span>Actual</span>
+              <span class="legend-item projected"><span class="sq"></span>Proyección AI</span>
+              <span style="margin-left: auto; color: var(--text-3); font-size: 11px;">Proyectado cerrar abril en <strong style="color: var(--text);">$32,800</strong></span>
+            </div>
+          </div>
+
+          <!-- Quick actions -->
+          <div class="quick-actions">
+            <div class="qa-item">
+              <div class="ic-wrap">
+                <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              </div>
+              <div class="t">New estimate</div>
+              <div class="s">Create for a client</div>
+            </div>
+            <div class="qa-item">
+              <div class="ic-wrap">
+                <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+              </div>
+              <div class="t">New job</div>
+              <div class="s">Schedule work</div>
+            </div>
+            <div class="qa-item">
+              <div class="ic-wrap">
+                <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+              </div>
+              <div class="t">Invoice</div>
+              <div class="s">Bill a job</div>
+            </div>
+            <div class="qa-item" style="background: var(--brand); color: white; border: none;">
+              <div class="ic-wrap" style="background: rgb(255 255 255 / 0.1); color: #A5B4FC;">
+                <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="10" rx="2" ry="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>
+              </div>
+              <div class="t">Ask WorkPilot AI</div>
+              <div class="s" style="color: rgb(255 255 255 / 0.65);">Analyze, draft, plan</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right sidebar -->
+        <div class="side-col">
+          <!-- AI insights - premium position -->
+          <div class="ai-card">
+            <div class="ai-card-head">
+              <div class="ai-icon">
+                <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="10" rx="2" ry="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>
+              </div>
+              <h3>WorkPilot AI</h3>
+              <span class="tag">Insights</span>
+            </div>
+            <div class="ai-insight">
+              <p><strong>Riesgo de flujo:</strong> tienes $2,400 en facturas vencidas hace 15+ días. Tu runway de efectivo baja a 22 días si no se cobran.</p>
+              <a class="cta">Enviar recordatorios →</a>
+            </div>
+            <div class="ai-insight">
+              <p><strong>Oportunidad:</strong> Kitchen remodel de Chen tiene 40% de margen — superior al promedio. Dupliquemos el patrón con próximas propuestas.</p>
+              <a class="cta">Ver análisis →</a>
+            </div>
+            <div class="ai-insight">
+              <p><strong>Agenda:</strong> 2 jobs del viernes aún no tienen materiales asignados. Te recomiendo generar shopping list ahora.</p>
+              <a class="cta">Generar lista →</a>
+            </div>
+          </div>
+
+          <!-- Action items -->
+          <div class="card">
+            <div class="card-head">
+              <h3>Require tu atención</h3>
+              <span class="badge">5</span>
+            </div>
+            <div class="card-body">
+              <div class="action-item danger">
+                <div class="dot"></div>
+                <div class="body">
+                  <div class="title">Factura INV-232 vencida hace 12 días</div>
+                  <div class="meta">Linda Chen · $1,200</div>
+                </div>
+                <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+              <div class="action-item danger">
+                <div class="dot"></div>
+                <div class="body">
+                  <div class="title">Factura INV-228 vencida hace 8 días</div>
+                  <div class="meta">James Walker · $1,200</div>
+                </div>
+                <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+              <div class="action-item warning">
+                <div class="dot"></div>
+                <div class="body">
+                  <div class="title">EST-1040 sin respuesta 3 días</div>
+                  <div class="meta">María González · $2,850</div>
+                </div>
+                <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+              <div class="action-item info">
+                <div class="dot"></div>
+                <div class="body">
+                  <div class="title">Factura INV-234 vence mañana</div>
+                  <div class="meta">Sofia Martínez · $980</div>
+                </div>
+                <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+              <div class="action-item info">
+                <div class="dot"></div>
+                <div class="body">
+                  <div class="title">Job #94 cliente espera confirmación</div>
+                  <div class="meta">Robert King · Bathroom renov.</div>
+                </div>
+                <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Today's schedule -->
+          <div class="card">
+            <div class="card-head">
+              <h3>Agenda de hoy</h3>
+              <span class="meta">3 jobs</span>
+            </div>
+            <div class="card-body">
+              <div class="job-item">
+                <div class="job-time">9:00<div class="day">AM</div></div>
+                <div class="job-body active">
+                  <div class="t">Kitchen sink replacement</div>
+                  <div class="s">María González · 2h estimadas</div>
+                </div>
+                <span class="job-status">En curso</span>
+              </div>
+              <div class="job-item">
+                <div class="job-time">1:30<div class="day">PM</div></div>
+                <div class="job-body">
+                  <div class="t">Water heater install</div>
+                  <div class="s">Roberto Sánchez · 4h estimadas</div>
+                </div>
+                <span class="job-status" style="background: var(--surface-3); color: var(--text-2); border-color: var(--border);">Próximo</span>
+              </div>
+              <div class="job-item">
+                <div class="job-time">5:00<div class="day">PM</div></div>
+                <div class="job-body">
+                  <div class="t">Faucet repair (quick visit)</div>
+                  <div class="s">Walker residence · 45min</div>
+                </div>
+                <span class="job-status" style="background: var(--surface-3); color: var(--text-2); border-color: var(--border);">Pendiente</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ DASHBOARD MOBILE ═══════ -->
+  <h2 class="section-h"><span class="num">M</span>Dashboard Mobile</h2>
+  <div class="mock">
+    <div class="mock-label">Mobile 375px · /dashboard</div>
+    <div class="mobile-viewport">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="mob-top">
+            <h1>Buenos días, Moises 👋</h1>
+            <p>Jueves 16 de abril</p>
+          </div>
+          <div class="mob-money">
+            <div class="mob-money-label">Ingresos de abril</div>
+            <div class="mob-money-big">$28,450</div>
+            <div class="mob-money-trend">↑ +12% vs marzo · <span style="color: var(--text-3);">Cerrar en ~$32.8k</span></div>
+          </div>
+          <div class="mob-pipeline">
+            <div class="mob-pipe-item"><div class="v" style="color: var(--info);">4</div><div class="k">Pending</div></div>
+            <div class="mob-pipe-item"><div class="v" style="color: var(--success);">5</div><div class="k">Approved</div></div>
+            <div class="mob-pipe-item"><div class="v" style="color: var(--warning);">$6.4k</div><div class="k">Unpaid</div></div>
+          </div>
+
+          <div class="mob-ai-card">
+            <div class="mob-ai-head">
+              <div class="ai-icon" style="width: 22px; height: 22px;">
+                <svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="10" rx="2" ry="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg>
+              </div>
+              <span class="t">WorkPilot AI · 3 insights</span>
+            </div>
+            <div class="mob-ai-body">
+              <b>Riesgo de flujo:</b> $2,400 en facturas vencidas 15+ días — te recomiendo reenviar recordatorios automáticos ahora.
+            </div>
+            <div class="mob-ai-cta">Ver todos →</div>
+          </div>
+
+          <div class="mob-sec-head">
+            <h3>Require tu atención</h3>
+            <a>Ver todo</a>
+          </div>
+          <div class="mob-action">
+            <div class="dot" style="background: var(--danger);"></div>
+            <div class="body">
+              <div class="t">INV-232 vencida 12 días</div>
+              <div class="s">Linda Chen · $1,200</div>
+            </div>
+            <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A1A1AA" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="mob-action">
+            <div class="dot" style="background: var(--warning);"></div>
+            <div class="body">
+              <div class="t">EST-1040 sin respuesta</div>
+              <div class="s">María González · 3 días</div>
+            </div>
+            <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A1A1AA" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+
+          <div class="mob-sec-head">
+            <h3>Agenda de hoy</h3>
+            <a>3 jobs</a>
+          </div>
+          <div class="mob-action" style="display: flex; gap: 12px; align-items: flex-start;">
+            <div style="width: 52px; text-align: right; font-size: 12px; color: var(--text-2); font-weight: 600; padding-top: 2px;">9:00<div style="font-size: 10px; color: var(--text-3);">AM</div></div>
+            <div class="body" style="border-left: 2px solid var(--info); padding-left: 10px;">
+              <div class="t">Kitchen sink · M. González</div>
+              <div class="s">En curso · ETA 11am</div>
+            </div>
+          </div>
+          <div class="mob-action" style="display: flex; gap: 12px; align-items: flex-start;">
+            <div style="width: 52px; text-align: right; font-size: 12px; color: var(--text-2); font-weight: 600; padding-top: 2px;">1:30<div style="font-size: 10px; color: var(--text-3);">PM</div></div>
+            <div class="body" style="border-left: 2px solid var(--border); padding-left: 10px;">
+              <div class="t">Water heater · R. Sánchez</div>
+              <div class="s">4h estimadas</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 20px 24px; margin-top: 32px;">
+    <p style="color: var(--text-2); line-height: 1.6;">
+      Sigue con <a href="v2-workpilot-ai.html" style="color: var(--info); font-weight: 600;">→ WorkPilot AI con casos de uso</a>.
+    </p>
+  </div>
+</div>
+</body>
+</html>

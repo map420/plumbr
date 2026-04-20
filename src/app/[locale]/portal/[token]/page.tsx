@@ -4,54 +4,67 @@ import { recordDocumentView } from '@/lib/actions/tracking'
 import { dbAdapter } from '@/lib/adapters/db'
 import { PortalClient } from './_components/PortalClient'
 
-export default async function PortalPage({ params }: { params: Promise<{ token: string }> }) {
-  const { token } = await params
-  const data = await getPortalData(token)
+export default async function PortalPage({ params }: { params: Promise<{ token: string; locale: string }> }) {
+  const { token, locale } = await params
+  // POR-003 — token inválido/expirado → 404 limpio sin leak de stack
+  let data: Awaited<ReturnType<typeof getPortalData>> = null
+  try {
+    data = await getPortalData(token)
+  } catch {
+    data = null
+  }
   if (!data) notFound()
 
-  // Fetch photos for the document — check estimate, job, and related jobs by client
-  let photos: { id: string; url: string; description: string | null }[] = []
-  try {
-    if (data.type === 'estimate') {
-      const est = data.estimate
-      const estPhotos = await dbAdapter.photos.findByEstimate(est.id)
-      let jobPhotos: typeof estPhotos = []
-      if (est.jobId) {
-        jobPhotos = await dbAdapter.photos.findByJob(est.jobId)
-      } else {
-        // No jobId on estimate — find jobs by same client and get their photos
-        const jobs = await dbAdapter.jobs.findAll(est.userId)
-        const clientJobs = jobs.filter(j => j.clientName === est.clientName)
-        for (const j of clientJobs) {
-          const jp = await dbAdapter.photos.findByJob(j.id)
-          jobPhotos.push(...jp)
-        }
-      }
-      photos = [...estPhotos, ...jobPhotos].filter((p, i, arr) => arr.findIndex(x => x.id === p.id) === i)
-    } else if (data.type === 'invoice') {
-      const inv = data.invoice
-      if ((inv as any).jobId) {
-        photos = await dbAdapter.photos.findByJob((inv as any).jobId)
-      } else {
+  const contractorUserId = data.type === 'estimate' ? data.estimate.userId : data.type === 'invoice' ? data.invoice.userId : data.changeOrder.userId
+
+  // Fire-and-forget tracking — don't block rendering on analytics write
+  const doc = data.type === 'estimate' ? data.estimate : data.type === 'invoice' ? data.invoice : data.changeOrder
+  const documentType = data.type === 'change_order' ? 'estimate' : data.type
+  void recordDocumentView({ userId: contractorUserId, documentId: doc.id, documentType, ip: '', userAgent: '' }).catch(() => null)
+
+  async function loadPhotos() {
+    try {
+      if (data!.type === 'estimate') {
+        const est = data!.estimate
+        // Parallel: own estimate photos + related job photos
+        const [estPhotos, jobPhotos] = await Promise.all([
+          dbAdapter.photos.findByEstimate(est.id),
+          est.jobId
+            ? dbAdapter.photos.findByJob(est.jobId)
+            : dbAdapter.jobs.findAll(est.userId).then(async jobs => {
+                const clientJobs = jobs.filter(j => j.clientName === est.clientName)
+                const arrs = await Promise.all(clientJobs.map(j => dbAdapter.photos.findByJob(j.id)))
+                return arrs.flat()
+              }),
+        ])
+        return [...estPhotos, ...jobPhotos].filter((p, i, arr) => arr.findIndex(x => x.id === p.id) === i)
+      } else if (data!.type === 'invoice') {
+        const inv = data!.invoice
+        const jobId = (inv as { jobId?: string }).jobId
+        if (jobId) return await dbAdapter.photos.findByJob(jobId)
         const jobs = await dbAdapter.jobs.findAll(inv.userId)
         const clientJobs = jobs.filter(j => j.clientName === inv.clientName)
-        for (const j of clientJobs) {
-          const jp = await dbAdapter.photos.findByJob(j.id)
-          photos.push(...jp)
-        }
+        const arrs = await Promise.all(clientJobs.map(j => dbAdapter.photos.findByJob(j.id)))
+        return arrs.flat()
       }
-    }
-  } catch { /* Don't block portal if photo fetch fails */ }
-
-  try {
-    const doc = data.type === 'estimate' ? data.estimate : data.type === 'invoice' ? data.invoice : data.changeOrder
-    const userId = (doc as any).userId
-    const documentId = doc.id
-    const documentType = data.type === 'change_order' ? 'estimate' : data.type
-    await recordDocumentView({ userId, documentId, documentType, ip: '', userAgent: '' })
-  } catch {
-    // Don't block rendering if tracking fails
+      return []
+    } catch { return [] }
   }
 
-  return <PortalClient token={token} data={data} photos={photos.map(p => ({ id: p.id, url: p.url, description: p.description }))} />
+  async function loadContractor() {
+    try {
+      const u = await dbAdapter.users.findById(contractorUserId)
+      return u ? {
+        companyName: u.companyName || u.name || 'WorkPilot',
+        phone: u.phone || '',
+        email: u.email || '',
+        logoUrl: u.logoUrl || null,
+      } : { companyName: 'WorkPilot', phone: '', email: '', logoUrl: null as string | null }
+    } catch { return { companyName: 'WorkPilot', phone: '', email: '', logoUrl: null as string | null } }
+  }
+
+  // Photos + contractor independientes — ejecutan en paralelo
+  const [photos, contractor] = await Promise.all([loadPhotos(), loadContractor()])
+
+  return <PortalClient token={token} locale={locale} data={data} contractor={contractor} photos={photos.map(p => ({ id: p.id, url: p.url, description: p.description }))} />
 }

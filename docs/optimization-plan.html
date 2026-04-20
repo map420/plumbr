@@ -1,0 +1,1453 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>WorkPilot — Diagnóstico de optimización</title>
+<style>
+  :root {
+    --wp-primary: #1E3A5F;
+    --wp-primary-dark: #0F2440;
+    --wp-primary-light: #2A4F7A;
+    --wp-accent: #F97316;
+    --wp-accent-hover: #ea6c0a;
+    --wp-accent-subtle: #FFF7ED;
+    --wp-success: #059669;
+    --wp-success-bg: #ECFDF5;
+    --wp-warning: #D97706;
+    --wp-warning-bg: #FFFBEB;
+    --wp-error: #DC2626;
+    --wp-error-bg: #FEF2F2;
+    --wp-text-primary: #0F172A;
+    --wp-text-secondary: #475569;
+    --wp-text-muted: #94A3B8;
+    --wp-text-inverse: #FFFFFF;
+    --wp-bg-primary: #FFFFFF;
+    --wp-bg-secondary: #F8FAFC;
+    --wp-bg-muted: #F1F5F9;
+    --wp-border: #E2E8F0;
+    --wp-border-strong: #CBD5E1;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, .05);
+    --shadow: 0 4px 12px rgba(15, 23, 42, .08);
+    --shadow-lg: 0 12px 32px rgba(15, 23, 42, .12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --wp-primary: #3B82F6;
+      --wp-primary-dark: #1E3A5F;
+      --wp-primary-light: #60A5FA;
+      --wp-accent: #FB923C;
+      --wp-accent-hover: #F97316;
+      --wp-accent-subtle: #431407;
+      --wp-success: #34D399;
+      --wp-success-bg: #064E3B;
+      --wp-warning: #FBBF24;
+      --wp-warning-bg: #451A03;
+      --wp-error: #F87171;
+      --wp-error-bg: #450A0A;
+      --wp-text-primary: #F1F5F9;
+      --wp-text-secondary: #94A3B8;
+      --wp-text-muted: #64748B;
+      --wp-text-inverse: #0F172A;
+      --wp-bg-primary: #0F172A;
+      --wp-bg-secondary: #1E293B;
+      --wp-bg-muted: #334155;
+      --wp-border: #334155;
+      --wp-border-strong: #475569;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    color: var(--wp-text-primary);
+    background: var(--wp-bg-secondary);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--wp-primary); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ──────────── Header ──────────── */
+  .header {
+    background: linear-gradient(135deg, var(--wp-primary-dark) 0%, var(--wp-primary) 100%);
+    color: var(--wp-text-inverse);
+    padding: 28px 32px 20px;
+    border-bottom: 1px solid var(--wp-border);
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+  .brand-mark {
+    width: 36px; height: 36px;
+    background: var(--wp-accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 18px;
+    color: #fff;
+  }
+  .brand-name { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+  .brand-sub { font-size: 13px; opacity: .7; }
+  .title {
+    font-size: 28px; font-weight: 700; margin: 8px 0 4px;
+    letter-spacing: -0.02em;
+  }
+  .subtitle { font-size: 14px; opacity: .8; max-width: 720px; }
+
+  /* ──────────── KPI strip ──────────── */
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .kpi {
+    background: rgba(255,255,255,.08);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    min-width: 0;
+  }
+  .kpi-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: .06em;
+    opacity: .7; margin-bottom: 4px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .kpi-value { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+  .kpi-unit { font-size: 12px; opacity: .6; margin-left: 3px; font-weight: 500; }
+  .kpi.highlight { background: var(--wp-accent); border-color: var(--wp-accent); }
+
+  @media (max-width: 900px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .title { font-size: 22px; }
+    .header { padding: 20px; }
+  }
+
+  /* ──────────── Main layout ──────────── */
+  .main {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 24px;
+    padding: 24px 32px 80px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+  @media (max-width: 1100px) {
+    .main { grid-template-columns: 1fr; padding: 20px; }
+    .sidebar { order: -1; position: static !important; }
+  }
+
+  /* ──────────── Filters ──────────── */
+  .filters { margin-bottom: 20px; }
+  .filter-group {
+    display: flex; align-items: center; flex-wrap: wrap;
+    gap: 8px; margin-bottom: 10px;
+  }
+  .filter-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--wp-text-muted); margin-right: 4px;
+    min-width: 72px;
+  }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    font-size: 12px; font-weight: 500;
+    background: var(--wp-bg-primary);
+    color: var(--wp-text-secondary);
+    border: 1px solid var(--wp-border);
+    cursor: pointer;
+    transition: all .15s ease;
+    white-space: nowrap;
+  }
+  .chip:hover { border-color: var(--wp-border-strong); color: var(--wp-text-primary); }
+  .chip.active {
+    background: var(--wp-primary);
+    color: var(--wp-text-inverse);
+    border-color: var(--wp-primary);
+  }
+  .chip .count {
+    background: rgba(255,255,255,.22);
+    padding: 0 6px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .chip:not(.active) .count {
+    background: var(--wp-bg-muted);
+    color: var(--wp-text-muted);
+  }
+  .chip.sev-critica.active { background: var(--wp-error); border-color: var(--wp-error); }
+  .chip.sev-alta.active { background: var(--wp-warning); border-color: var(--wp-warning); }
+  .chip.sev-media.active { background: var(--wp-primary); border-color: var(--wp-primary); }
+  .chip.sev-baja.active { background: var(--wp-text-secondary); border-color: var(--wp-text-secondary); }
+
+  .toolbar {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 6px;
+  }
+  .toggle {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--wp-text-secondary);
+    cursor: pointer;
+    user-select: none;
+  }
+  .toggle input { accent-color: var(--wp-accent); width: 16px; height: 16px; cursor: pointer; }
+  .btn {
+    font-size: 12px; font-weight: 600;
+    padding: 7px 12px;
+    border-radius: var(--radius-sm);
+    background: var(--wp-bg-primary);
+    color: var(--wp-text-primary);
+    border: 1px solid var(--wp-border);
+    cursor: pointer;
+    transition: all .15s ease;
+  }
+  .btn:hover { background: var(--wp-bg-muted); }
+  .btn.btn-primary {
+    background: var(--wp-accent); color: #fff; border-color: var(--wp-accent);
+  }
+  .btn.btn-primary:hover { background: var(--wp-accent-hover); border-color: var(--wp-accent-hover); }
+
+  /* ──────────── Cards ──────────── */
+  .cards { display: flex; flex-direction: column; gap: 12px; }
+  .card {
+    background: var(--wp-bg-primary);
+    border: 1px solid var(--wp-border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow .15s ease, border-color .15s ease;
+  }
+  .card:hover { box-shadow: var(--shadow); border-color: var(--wp-border-strong); }
+  .card.selected {
+    border-color: var(--wp-accent);
+    box-shadow: 0 0 0 1px var(--wp-accent), var(--shadow);
+  }
+  .card-top {
+    display: flex; align-items: flex-start; gap: 12px;
+    margin-bottom: 8px;
+  }
+  .card-check {
+    width: 20px; height: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    accent-color: var(--wp-accent);
+    cursor: pointer;
+  }
+  .card-title {
+    font-size: 15px; font-weight: 600; flex: 1;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+  }
+  .card-meta {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-bottom: 10px;
+  }
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10.5px; font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+  }
+  .tag.cat { background: var(--wp-bg-muted); color: var(--wp-text-secondary); }
+  .tag.sev-critica { background: var(--wp-error-bg); color: var(--wp-error); }
+  .tag.sev-alta { background: var(--wp-warning-bg); color: var(--wp-warning); }
+  .tag.sev-media { background: #E0F2FE; color: #0369A1; }
+  .tag.sev-baja { background: var(--wp-bg-muted); color: var(--wp-text-muted); }
+  .tag.eff-quick { background: var(--wp-success-bg); color: var(--wp-success); }
+  .tag.eff-medio { background: #FEF3C7; color: #92400E; }
+  .tag.eff-grande { background: #EDE9FE; color: #5B21B6; }
+  @media (prefers-color-scheme: dark) {
+    .tag.sev-media { background: #082F49; color: #7DD3FC; }
+    .tag.eff-medio { background: #451A03; color: #FBBF24; }
+    .tag.eff-grande { background: #2E1065; color: #C4B5FD; }
+  }
+
+  .card-files { margin: 8px 0 8px; display: flex; flex-wrap: wrap; gap: 4px 6px; }
+  .path {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 11.5px;
+    background: var(--wp-bg-muted);
+    color: var(--wp-text-secondary);
+    padding: 2px 7px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all .12s ease;
+  }
+  .path:hover { border-color: var(--wp-border-strong); color: var(--wp-text-primary); }
+  .path.copied { background: var(--wp-success-bg); color: var(--wp-success); border-color: var(--wp-success); }
+
+  .card-body { font-size: 13.5px; color: var(--wp-text-secondary); }
+  .card-body strong { color: var(--wp-text-primary); font-weight: 600; }
+  .card-body p { margin: 6px 0; }
+  .card-body .label {
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--wp-text-muted); font-weight: 600;
+    margin-right: 6px;
+  }
+  .gain {
+    display: inline-block;
+    background: var(--wp-accent-subtle);
+    color: var(--wp-accent-hover);
+    padding: 3px 9px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 4px;
+  }
+  @media (prefers-color-scheme: dark) {
+    .gain { color: var(--wp-accent); }
+  }
+
+  .detail-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    margin-top: 8px;
+    font-size: 12px; font-weight: 500;
+    color: var(--wp-primary);
+    cursor: pointer;
+    background: none; border: none; padding: 0;
+  }
+  .detail-btn:hover { text-decoration: underline; }
+  .detail {
+    display: none;
+    margin-top: 10px;
+    padding: 12px 14px;
+    background: var(--wp-bg-muted);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--wp-primary);
+  }
+  .detail.open { display: block; }
+  .detail pre {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+    background: var(--wp-bg-primary);
+    color: var(--wp-text-primary);
+    padding: 10px 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 6px 0 0;
+    border: 1px solid var(--wp-border);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  .detail p { margin: 0 0 6px; font-size: 13px; color: var(--wp-text-secondary); }
+
+  /* ──────────── Sidebar ──────────── */
+  .sidebar {
+    position: sticky;
+    top: 20px;
+    align-self: flex-start;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+  }
+  .panel {
+    background: var(--wp-bg-primary);
+    border: 1px solid var(--wp-border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow-sm);
+  }
+  .panel h3 {
+    margin: 0 0 12px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--wp-text-muted);
+    font-weight: 600;
+  }
+
+  /* Impact bars */
+  .bar-row { margin-bottom: 10px; }
+  .bar-row:last-child { margin-bottom: 0; }
+  .bar-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+  .bar-label { color: var(--wp-text-secondary); font-weight: 500; }
+  .bar-val { color: var(--wp-text-primary); font-weight: 700; font-size: 13px; }
+  .bar-val .u { color: var(--wp-text-muted); font-size: 11px; font-weight: 500; margin-left: 2px; }
+  .bar-track {
+    height: 6px;
+    background: var(--wp-bg-muted);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--wp-accent) 0%, var(--wp-accent-hover) 100%);
+    border-radius: 4px;
+    transition: width .35s cubic-bezier(.4,0,.2,1);
+  }
+  .bar-fill.success { background: linear-gradient(90deg, var(--wp-success) 0%, #047857 100%); }
+  .bar-fill.primary { background: linear-gradient(90deg, var(--wp-primary) 0%, var(--wp-primary-dark) 100%); }
+
+  /* Execution order */
+  .order-list {
+    list-style: none; padding: 0; margin: 0;
+    counter-reset: order;
+  }
+  .order-list li {
+    counter-increment: order;
+    padding: 8px 0 8px 32px;
+    position: relative;
+    border-bottom: 1px solid var(--wp-border);
+    font-size: 13px;
+    color: var(--wp-text-secondary);
+  }
+  .order-list li:last-child { border-bottom: none; }
+  .order-list li::before {
+    content: counter(order);
+    position: absolute; left: 0; top: 8px;
+    width: 22px; height: 22px;
+    background: var(--wp-primary);
+    color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+  }
+  .order-list li.done { color: var(--wp-text-muted); text-decoration: line-through; }
+  .order-list li.done::before { background: var(--wp-success); }
+
+  .empty {
+    color: var(--wp-text-muted);
+    font-size: 13px;
+    text-align: center;
+    padding: 20px 10px;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--wp-primary);
+    color: var(--wp-text-inverse);
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    transition: all .25s ease;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Progress ring for header */
+  .progress-ring {
+    display: inline-block;
+    margin-left: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Accessible focus */
+  .chip:focus-visible,
+  .btn:focus-visible,
+  .detail-btn:focus-visible,
+  .path:focus-visible {
+    outline: 2px solid var(--wp-accent);
+    outline-offset: 2px;
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="brand">
+    <div class="brand-mark">W</div>
+    <div>
+      <div class="brand-name">WorkPilot</div>
+      <div class="brand-sub">Diagnóstico de optimización técnica</div>
+    </div>
+  </div>
+  <h1 class="title">Plan interactivo de mejoras — Plumbr → WorkPilot</h1>
+  <p class="subtitle">
+    Filtra, prioriza y marca las optimizaciones que quieres ejecutar. El impacto acumulado en carga, latencia de IA y coste se calcula en tiempo real. Tu selección se guarda en el navegador.
+  </p>
+  <div class="kpis" id="kpis">
+    <div class="kpi"><div class="kpi-label">Hallazgos</div><div class="kpi-value" id="k-total">0</div></div>
+    <div class="kpi"><div class="kpi-label">Severidad alta/crítica</div><div class="kpi-value" id="k-critical">0</div></div>
+    <div class="kpi"><div class="kpi-label">Quick wins</div><div class="kpi-value" id="k-quick">0</div></div>
+    <div class="kpi highlight"><div class="kpi-label">Seleccionados</div><div class="kpi-value" id="k-selected">0<span class="progress-ring" id="k-pct"></span></div></div>
+    <div class="kpi"><div class="kpi-label">Ganancia total bundle</div><div class="kpi-value" id="k-bundle">0<span class="kpi-unit">kB</span></div></div>
+  </div>
+</header>
+
+<main class="main">
+  <div>
+    <div class="filters">
+      <div class="filter-group" id="f-cat">
+        <span class="filter-label">Categoría</span>
+      </div>
+      <div class="filter-group" id="f-sev">
+        <span class="filter-label">Severidad</span>
+      </div>
+      <div class="filter-group" id="f-eff">
+        <span class="filter-label">Esfuerzo</span>
+      </div>
+      <div class="toolbar">
+        <label class="toggle">
+          <input type="checkbox" id="only-selected" /> Solo seleccionados
+        </label>
+        <label class="toggle">
+          <input type="checkbox" id="only-unchecked" /> Ocultar completados
+        </label>
+        <button class="btn" id="btn-expand-all">Expandir todo</button>
+        <button class="btn" id="btn-reset">Limpiar selección</button>
+      </div>
+    </div>
+
+    <div class="cards" id="cards"></div>
+    <div class="empty" id="empty" style="display:none">No hay hallazgos que coincidan con los filtros.</div>
+  </div>
+
+  <aside class="sidebar">
+    <section class="panel">
+      <h3>Impacto acumulado</h3>
+      <div class="bar-row">
+        <div class="bar-head"><span class="bar-label">Latencia IA (TTFT)</span><span class="bar-val" id="imp-ttft-val">0<span class="u">ms</span></span></div>
+        <div class="bar-track"><div class="bar-fill primary" id="imp-ttft-bar" style="width:0%"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-head"><span class="bar-label">LCP</span><span class="bar-val" id="imp-lcp-val">0<span class="u">ms</span></span></div>
+        <div class="bar-track"><div class="bar-fill" id="imp-lcp-bar" style="width:0%"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-head"><span class="bar-label">Bundle JS</span><span class="bar-val" id="imp-bundle-val">0<span class="u">kB</span></span></div>
+        <div class="bar-track"><div class="bar-fill success" id="imp-bundle-bar" style="width:0%"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-head"><span class="bar-label">DB queries</span><span class="bar-val" id="imp-db-val">0<span class="u">ms</span></span></div>
+        <div class="bar-track"><div class="bar-fill primary" id="imp-db-bar" style="width:0%"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-head"><span class="bar-label">Coste tokens</span><span class="bar-val" id="imp-token-val">0<span class="u">%</span></span></div>
+        <div class="bar-track"><div class="bar-fill" id="imp-token-bar" style="width:0%"></div></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h3>Orden de ejecución</h3>
+      <ol class="order-list" id="order-list">
+        <li class="empty-order" style="padding-left:0">Marca items para ver el orden.</li>
+      </ol>
+    </section>
+
+    <section class="panel">
+      <h3>Exportar</h3>
+      <button class="btn btn-primary" id="btn-export-md" style="width:100%; margin-bottom:6px">Descargar checklist (.md)</button>
+      <button class="btn" id="btn-copy-prompt" style="width:100%">Copiar prompt para ejecutar</button>
+    </section>
+  </aside>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ────────────────────────────────────────────────────────────────
+// FINDINGS — 30 hallazgos del diagnóstico completo de Plumbr
+// Cada finding puede aportar a: ttft_ms, lcp_ms, bundle_kb, db_ms, token_pct
+// ────────────────────────────────────────────────────────────────
+const FINDINGS = [
+  // ─── BRANDING ─────────────────────────────────────
+  {
+    id: 'brand-en-subtitle', category: 'Branding', severity: 'alta', effort: 'quick',
+    title: 'Home EN: "Plumbr gives you estimates..."',
+    files: ['messages/en.json:165'],
+    problem: 'El subtítulo del hero en inglés menciona literalmente "Plumbr" en vez de "WorkPilot".',
+    solution: 'Reemplazar "Plumbr" por "WorkPilot" en la key subtitle.',
+    gain: { summary: 'Consistencia de marca visible en home EN' },
+    detail: `"subtitle": "Stop juggling WhatsApp, Excel, and QuickBooks. WorkPilot gives you estimates, job costing, crew scheduling, and invoicing — in one place."`
+  },
+  {
+    id: 'brand-en-footer', category: 'Branding', severity: 'alta', effort: 'quick',
+    title: 'Footer EN: "© 2025 Plumbr"',
+    files: ['messages/en.json:194'],
+    problem: 'El copyright del footer dice "© 2025 Plumbr. Built by Mr Labs."',
+    solution: 'Cambiar a "© 2025 WorkPilot. Built by Mr Labs."',
+    gain: { summary: 'Footer consistente en todas las páginas' },
+    detail: `"copy": "© 2025 WorkPilot. Built by Mr Labs."`
+  },
+  {
+    id: 'brand-en-signup', category: 'Branding', severity: 'media', effort: 'quick',
+    title: 'Sign-up EN: title "Plumbr"',
+    files: ['messages/en.json:204'],
+    problem: 'La página de sign-up muestra "Plumbr" como título principal.',
+    solution: 'Cambiar a "WorkPilot".',
+    gain: { summary: 'Primera impresión coherente' },
+    detail: `"title": "WorkPilot"`
+  },
+  {
+    id: 'brand-es-subtitle', category: 'Branding', severity: 'alta', effort: 'quick',
+    title: 'Home ES: "Plumbr te da presupuestos..."',
+    files: ['messages/es.json:165'],
+    problem: 'Subtítulo ES del hero menciona "Plumbr" en lugar de "WorkPilot".',
+    solution: 'Reemplazar en la traducción ES.',
+    gain: { summary: 'Consistencia de marca en ES' },
+    detail: `"subtitle": "Deja de hacer malabares con WhatsApp, Excel y QuickBooks. WorkPilot te da presupuestos, costos de trabajo, horarios de equipo y facturación — en un solo lugar."`
+  },
+  {
+    id: 'brand-es-footer', category: 'Branding', severity: 'alta', effort: 'quick',
+    title: 'Footer ES: "© 2025 Plumbr"',
+    files: ['messages/es.json:194'],
+    problem: 'Copyright del footer en ES dice "© 2025 Plumbr. Hecho por Mr Labs."',
+    solution: 'Cambiar a "© 2025 WorkPilot. Hecho por Mr Labs."',
+    gain: { summary: 'Footer ES consistente' },
+    detail: `"copy": "© 2025 WorkPilot. Hecho por Mr Labs."`
+  },
+  {
+    id: 'brand-es-signup', category: 'Branding', severity: 'media', effort: 'quick',
+    title: 'Sign-up ES: title "Plumbr"',
+    files: ['messages/es.json:204'],
+    problem: 'Página de sign-up ES muestra "Plumbr".',
+    solution: 'Cambiar a "WorkPilot".',
+    gain: { summary: 'Primera impresión coherente en ES' },
+    detail: `"title": "WorkPilot"`
+  },
+  {
+    id: 'brand-billing-url', category: 'Branding', severity: 'media', effort: 'quick',
+    title: 'billing.ts: fallback a plumbr.vercel.app',
+    files: ['src/lib/actions/billing.ts:33'],
+    problem: 'Si falta el header Origin, cae en la URL hardcoded "https://plumbr.vercel.app". Es la URL que Stripe verá como success/cancel.',
+    solution: 'Leer process.env.NEXT_PUBLIC_APP_URL como fallback; si falta, lanzar error en build en lugar de caer a una URL antigua.',
+    gain: { summary: 'Evita redirects de Stripe al dominio viejo' },
+    detail: `const origin = headersList.get('origin') ?? process.env.NEXT_PUBLIC_APP_URL
+if (!origin) throw new Error('NEXT_PUBLIC_APP_URL must be set')
+return origin`
+  },
+  {
+    id: 'brand-jobs-url', category: 'Branding', severity: 'media', effort: 'quick',
+    title: 'jobs.ts: email con link a plumbr.vercel.app',
+    files: ['src/lib/actions/jobs.ts:121'],
+    problem: 'El email de invoice auto-generada al completar job tiene fallback a "https://plumbr.vercel.app/en/invoices/". El cliente del contratista recibe un link al dominio viejo.',
+    solution: 'Eliminar el fallback; usar solo NEXT_PUBLIC_APP_URL (definir en env como obligatoria).',
+    gain: { summary: 'Emails al cliente final con dominio correcto' },
+    detail: `const appUrl = \`\${process.env.NEXT_PUBLIC_APP_URL}/en/invoices/\${draftInvoice.id}\``
+  },
+
+  // ─── IA / LATENCIA ─────────────────────────────────
+  {
+    id: 'ai-prompt-cache', category: 'IA/Latencia', severity: 'crítica', effort: 'medio',
+    title: 'Prompt caching Anthropic (cache_control ephemeral)',
+    files: ['src/lib/ai/assistant.ts:223-228', 'src/lib/ai/assistant.ts:273-283', 'src/lib/ai/assistant.ts:325-326'],
+    problem: 'El SYSTEM_PROMPT (~3KB) + tools (~3K tokens) se reenvían intactos en cada request. No se usa cache_control, por lo que Anthropic cobra input tokens al 100% cada vez.',
+    solution: 'Segmentar system en array con cache_control ephemeral en la parte estática. Marcar también el último tool del array con cache_control para cachear toda la definición de tools.',
+    gain: { ttft_ms: 60, token_pct: 35, summary: '-60ms TTFT, ~50-70% menos input tokens en mensajes con cache hit' },
+    detail: `// Antes: system: systemPrompt (string con todo concatenado)
+// Después:
+const params = {
+  max_tokens: 1024,
+  system: [
+    { type: 'text', text: SYSTEM_PROMPT + voiceInstructions, cache_control: { type: 'ephemeral' } },
+    { type: 'text', text: context }   // snapshot dinámico, no cacheable
+  ],
+  tools: [
+    ...essentialTools.slice(0, -1),
+    { ...essentialTools[essentialTools.length - 1], cache_control: { type: 'ephemeral' } }
+  ],
+  messages
+}`
+  },
+  {
+    id: 'ai-snapshot-cache', category: 'IA/Latencia', severity: 'crítica', effort: 'medio',
+    title: 'Snapshot contexto: cachear con unstable_cache + límite',
+    files: ['src/lib/ai/assistant.ts:100-142'],
+    problem: 'preloadContext hace 5 findAll() sin límite en cada mensaje — incluso cuando el usuario solo saluda. Escala O(n) con datos del contratista.',
+    solution: 'Envolver con unstable_cache (revalidate 60s, tag por userId) + usar findRecent(userId, 50) en vez de findAll. Invalidar tag desde server actions que mutan.',
+    gain: { ttft_ms: 300, db_ms: 200, summary: '-200-400ms por mensaje con cache hit' },
+    detail: `import { unstable_cache, revalidateTag } from 'next/cache'
+
+const getCachedContext = (userId) => unstable_cache(
+  async () => preloadContext(userId),
+  ['ai-context', userId],
+  { revalidate: 60, tags: [\`ai-context:\${userId}\`] }
+)()
+
+// En src/lib/actions/jobs.ts etc, tras create/update/delete:
+revalidateTag(\`ai-context:\${userId}\`)`
+  },
+  {
+    id: 'ai-model-intent', category: 'IA/Latencia', severity: 'alta', effort: 'medio',
+    title: 'Modelo inicial por intención (evita doble round-trip)',
+    files: ['src/lib/ai/assistant.ts:166-168', 'src/lib/ai/assistant.ts:237-283'],
+    problem: 'Arranca siempre con Haiku; si detecta tool_use, hace un SEGUNDO round-trip con Sonnet. Duplica latencia en el ~50% de mensajes con acción.',
+    solution: 'Heurística regex sobre el último mensaje: si matchea verbos de acción (crear/enviar/pagar/actualizar/send/create/delete/mark), arrancar directo en Sonnet.',
+    gain: { ttft_ms: 500, summary: '-400-700ms en mensajes con acción' },
+    detail: `const ACTION_RE = /\\b(crea|crear|envia|enviar|pagar|marca|marcar|elimina|actualiza|send|create|delete|update|mark|pay)\\b/i
+const last = messages[messages.length - 1]?.content || ''
+const needsAction = ACTION_RE.test(last)
+const resolvedModel = modelPref === 'sonnet' ? PRIMARY_MODEL
+  : modelPref === 'haiku' ? FALLBACK_MODEL
+  : needsAction ? PRIMARY_MODEL : FALLBACK_MODEL`
+  },
+  {
+    id: 'ai-max-tokens', category: 'IA/Latencia', severity: 'media', effort: 'quick',
+    title: 'max_tokens dinámico (voz 256 / Haiku 512 / Sonnet 1024)',
+    files: ['src/lib/ai/assistant.ts:224', 'src/lib/ai/assistant.ts:275', 'src/lib/ai/assistant.ts:325', 'src/lib/ai/assistant.ts:347', 'src/lib/ai/assistant.ts:363'],
+    problem: 'max_tokens fijo en 1024 en 5 llamadas. Para voz (1-3 frases) es excesivo; para Haiku ≥ suficiente con 512.',
+    solution: 'Calcular según modo: voiceMode ? 256 : (model === FALLBACK_MODEL ? 512 : 1024).',
+    gain: { ttft_ms: 40, token_pct: 5, summary: '-30-80ms en respuestas Haiku, menos tokens truncados' },
+    detail: `const maxTokens = voiceMode ? 256
+  : resolvedModel === FALLBACK_MODEL ? 512
+  : 1024
+// Aplicar en los 5 lugares de anthropic.messages.create / .stream`
+  },
+  {
+    id: 'ai-voice-patch', category: 'IA/Latencia', severity: 'alta', effort: 'medio',
+    title: 'Voz: eliminar PATCH bloqueante al agente ElevenLabs',
+    files: ['src/app/api/voice/route.ts:54-83'],
+    problem: 'Antes de devolver signed_url se hace un PATCH al agente global de ElevenLabs para inyectar el contexto. Añade 400-800ms y crea race condition entre usuarios concurrentes (el segundo pisa el contexto del primero).',
+    solution: 'Pasar el contexto como dynamic_variables en la conversación (por request) en vez de PATCH al agente global. Si no es viable, disparar el PATCH con unstable_after / waitUntil para no bloquear la respuesta.',
+    gain: { ttft_ms: 600, summary: '-500-800ms hasta primer audio, corrige bug de contexto cruzado' },
+    detail: `// Opción A (preferida): dynamic_variables por conversación
+const res = await fetch(
+  \`https://api.elevenlabs.io/v1/convai/conversation/get_signed_url?agent_id=\${agentId}\`,
+  {
+    method: 'POST',
+    headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      conversation_config_override: {
+        agent: { prompt: { prompt: basePrompt }, first_message, language: 'es' }
+      },
+      dynamic_variables: { business_context: businessContext }
+    })
+  }
+)
+
+// Opción B: mantener PATCH pero en background
+import { unstable_after as after } from 'next/server'
+after(patchAgentPrompt(agentId, apiKey, businessContext))`
+  },
+  {
+    id: 'ai-abort', category: 'IA/Latencia', severity: 'baja', effort: 'quick',
+    title: 'AbortController en stream del asistente',
+    files: ['src/lib/ai/assistant.ts:206', 'src/app/api/assistant/route.ts:22'],
+    problem: 'Si el usuario cierra el chat a mitad de respuesta, el stream sigue consumiendo tokens porque no se propaga AbortSignal.',
+    solution: 'Aceptar signal desde la Route (req.signal) y pasarlo a anthropic.messages.stream({ signal }).',
+    gain: { token_pct: 10, summary: '-20-30% consumo cuando usuarios navegan rápido' },
+    detail: `// En route.ts:
+const stream = await streamAssistant(userId, messages, companyName, model, voiceMode, req.signal)
+
+// En assistant.ts signature:
+export async function streamAssistant(
+  userId, messages, companyName, modelPref = 'auto', voiceMode = false, signal?: AbortSignal
+)
+// y pasar { signal } en anthropic.messages.create / .stream`
+  },
+
+  // ─── BASE DE DATOS ────────────────────────────────
+  {
+    id: 'db-indexes', category: 'Base de datos', severity: 'crítica', effort: 'medio',
+    title: 'Índices Drizzle sobre userId + status',
+    files: ['src/db/schema/jobs.ts', 'src/db/schema/estimates.ts', 'src/db/schema/invoices.ts', 'src/db/schema/clients.ts', 'src/db/schema/expenses.ts', 'src/db/schema/notifications.ts'],
+    problem: 'Cero índices declarados. TODAS las queries filtran por userId (+status). Postgres hace Seq Scan. Degrada linealmente al crecer los datos del contratista.',
+    solution: 'Añadir índice compuesto (userId, status) en todas las tablas con owner + estado. Índice simple por userId en line-items, photos, payments. Generar migración con drizzle-kit generate y aplicar.',
+    gain: { db_ms: 300, summary: '-50-500ms en queries del dashboard y asistente' },
+    detail: `import { pgTable, index, /* ... */ } from 'drizzle-orm/pg-core'
+
+export const jobs = pgTable('jobs', {
+  // ... columns
+}, (t) => ({
+  userIdIdx: index('jobs_user_id_idx').on(t.userId),
+  userStatusIdx: index('jobs_user_status_idx').on(t.userId, t.status),
+  createdAtIdx: index('jobs_created_at_idx').on(t.userId, t.createdAt.desc())
+}))
+
+// Luego: pnpm drizzle-kit generate && pnpm drizzle-kit migrate`
+  },
+  {
+    id: 'db-find-recent', category: 'Base de datos', severity: 'alta', effort: 'medio',
+    title: 'findRecent(userId, limit) para el asistente y voz',
+    files: ['src/lib/adapters/db/drizzle/index.ts', 'src/lib/adapters/db/types.ts', 'src/lib/ai/assistant.ts:100-108', 'src/app/api/voice/route.ts:15-21'],
+    problem: 'El asistente y el endpoint de voz usan findAll (sin límite) para el snapshot. Carga TODO el histórico aunque solo necesita los últimos 50 registros.',
+    solution: 'Añadir findRecent en el adapter con orderBy(desc(createdAt)).limit(50). Usarlo SOLO en el asistente/voz. Dashboard legítimo sigue con findAll.',
+    gain: { db_ms: 400, ttft_ms: 200, summary: '-200-500ms preload con 1K+ registros' },
+    detail: `// En types.ts agregar signature:
+findRecent(userId: string, limit?: number): Promise<Job[]>
+
+// En drizzle/index.ts:
+async findRecent(userId, limit = 50) {
+  return db.select().from(jobs)
+    .where(eq(jobs.userId, userId))
+    .orderBy(desc(jobs.createdAt))
+    .limit(limit)
+}
+
+// En assistant.ts preloadContext:
+const [jobs, estimates, invoices, clients] = await Promise.all([
+  dbAdapter.jobs.findRecent(userId, 50),
+  dbAdapter.estimates.findRecent(userId, 50),
+  dbAdapter.invoices.findRecent(userId, 50),
+  dbAdapter.clients.findAll(userId)   // clients suelen ser pocos
+])`
+  },
+  {
+    id: 'db-n-plus-1', category: 'Base de datos', severity: 'media', effort: 'medio',
+    title: 'Resolvers en tool-handlers: findById en lugar de findAll+filter',
+    files: ['src/lib/ai/tool-handlers.ts:15-42'],
+    problem: 'Tools que reciben un ID hacen dbAdapter.X.findAll(userId) y luego .find() en memoria. Es O(n) y carga datos innecesarios.',
+    solution: 'Usar findById(id, userId) directamente (ya existe en el adapter).',
+    gain: { db_ms: 150, ttft_ms: 150, summary: '-150-300ms por tool call que resuelve un ID' },
+    detail: `// Antes:
+const all = await dbAdapter.jobs.findAll(userId)
+const job = all.find(j => j.id === jobId)
+
+// Después:
+const job = await dbAdapter.jobs.findById(jobId, userId)`
+  },
+
+  // ─── BUNDLE / CARGA ───────────────────────────────
+  {
+    id: 'bundle-next-config', category: 'Bundle/Carga', severity: 'alta', effort: 'quick',
+    title: 'next.config.ts: añadir optimizaciones clave',
+    files: ['next.config.ts'],
+    problem: 'El NextConfig está vacío ({}). Falta compress, reactStrictMode, optimizePackageImports, imágenes avif/webp.',
+    solution: 'Poblar config con las optimizaciones estándar de Next 16. optimizePackageImports reescribe barrel imports a imports puntuales.',
+    gain: { bundle_kb: 80, lcp_ms: 150, summary: '-50-120kB JS inicial, -100-200ms LCP' },
+    detail: `const nextConfig: NextConfig = {
+  reactStrictMode: true,
+  compress: true,
+  typedRoutes: true,
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    remotePatterns: [
+      { protocol: 'https', hostname: '*.supabase.co' },
+      { protocol: 'https', hostname: 'img.clerk.com' }
+    ]
+  },
+  experimental: {
+    optimizePackageImports: [
+      'recharts', 'framer-motion', 'lucide-react',
+      '@elevenlabs/client', '@dnd-kit/core', '@dnd-kit/sortable'
+    ]
+  }
+}`
+  },
+  {
+    id: 'bundle-recharts', category: 'Bundle/Carga', severity: 'alta', effort: 'medio',
+    title: 'Dynamic import de Recharts en DashboardStats',
+    files: ['src/app/[locale]/(dashboard)/dashboard/_components/DashboardStats.tsx:7'],
+    problem: 'Recharts (~95kB gzip) se importa en client component del dashboard, bloqueando el first paint.',
+    solution: 'Extraer el gráfico a un componente separado cargado con next/dynamic + ssr:false + skeleton.',
+    gain: { bundle_kb: 95, lcp_ms: 200, summary: '-95kB gzip, dashboard pinta antes' },
+    detail: `// DashboardChart.tsx (nuevo, client)
+'use client'
+import { ComposedChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
+export default function DashboardChart({ data }) { /* ... */ }
+
+// DashboardStats.tsx:
+import dynamic from 'next/dynamic'
+const DashboardChart = dynamic(() => import('./DashboardChart'), {
+  ssr: false,
+  loading: () => <div className="h-64 animate-pulse bg-slate-100 rounded-lg" />
+})`
+  },
+  {
+    id: 'bundle-framer', category: 'Bundle/Carga', severity: 'media', effort: 'medio',
+    title: 'LazyMotion + domAnimation en SwipeableRow',
+    files: ['src/components/SwipeableRow.tsx:1-4'],
+    problem: 'framer-motion completo (~60kB) cargado para todas las páginas con swipe, aunque solo usa motion values y transforms.',
+    solution: 'Usar LazyMotion con feature set "domAnimation" (~20kB) o dynamic import del componente entero.',
+    gain: { bundle_kb: 40, summary: '-40kB vs framer-motion completo' },
+    detail: `import { LazyMotion, domAnimation, m } from 'framer-motion'
+
+export function SwipeableRow({ children }) {
+  return (
+    <LazyMotion features={domAnimation} strict>
+      <m.div /* ... */>{children}</m.div>
+    </LazyMotion>
+  )
+}`
+  },
+  {
+    id: 'bundle-preconnect', category: 'Bundle/Carga', severity: 'baja', effort: 'quick',
+    title: 'Preconnect duplicado a fonts.googleapis',
+    files: ['src/app/layout.tsx:84-85'],
+    problem: 'Hay dos <link rel="preconnect"> manuales a fonts.googleapis/gstatic, pero next/font/google ya los inyecta automáticamente.',
+    solution: 'Borrar las líneas 84-85.',
+    gain: { lcp_ms: 30, summary: '-1 DNS lookup redundante' },
+    detail: `// Borrar:
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />`
+  },
+  {
+    id: 'bundle-pwa-cache', category: 'Bundle/Carga', severity: 'media', effort: 'medio',
+    title: 'PWA runtimeCaching selectivo',
+    files: ['next.config.ts:7-16'],
+    problem: 'cacheOnFrontEndNav + aggressiveFrontEndNavCaching sin reglas personalizadas. El service worker cachea indiscriminadamente y puede servir contenido obsoleto al contratista.',
+    solution: 'Reemplazar por runtimeCaching explícito: NetworkFirst para /api/*, StaleWhileRevalidate para /_next/static/*, CacheFirst con límite para imágenes.',
+    gain: { bundle_kb: 0, summary: '-200-400kB cache del SW, actualizaciones predecibles' },
+    detail: `const withPWA = withPWAInit({
+  dest: 'public',
+  disable: process.env.NODE_ENV === 'development',
+  workboxOptions: {
+    disableDevLogs: true,
+    runtimeCaching: [
+      {
+        urlPattern: /^https?.*\\/_next\\/static\\//,
+        handler: 'CacheFirst',
+        options: { cacheName: 'next-static', expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 30 } }
+      },
+      {
+        urlPattern: /\\/api\\//,
+        handler: 'NetworkFirst',
+        options: { cacheName: 'api', networkTimeoutSeconds: 5 }
+      },
+      {
+        urlPattern: /\\.(?:png|jpg|jpeg|svg|webp|avif)$/,
+        handler: 'StaleWhileRevalidate',
+        options: { cacheName: 'images', expiration: { maxEntries: 80 } }
+      }
+    ]
+  }
+})`
+  },
+  {
+    id: 'bundle-elevenlabs-dup', category: 'Bundle/Carga', severity: 'baja', effort: 'quick',
+    title: 'Deduplicar @11labs/react y @elevenlabs/client',
+    files: ['package.json:12', 'package.json:20'],
+    problem: 'Ambas dependencias instaladas. @11labs/react ya exporta el cliente internamente.',
+    solution: 'Auditar imports; si @11labs/react cubre todos los usos, eliminar @elevenlabs/client con pnpm remove.',
+    gain: { bundle_kb: 40, summary: '-40kB si hay overlap' },
+    detail: `# 1. Auditar uso:
+grep -rn "from '@elevenlabs/client'" src/
+
+# 2. Si todos los usos pueden migrar a @11labs/react:
+pnpm remove @elevenlabs/client`
+  },
+  {
+    id: 'bundle-loading-boundaries', category: 'Bundle/Carga', severity: 'media', effort: 'medio',
+    title: 'loading.tsx y error.tsx en segmentos del dashboard',
+    files: ['src/app/[locale]/(dashboard)/'],
+    problem: 'Ninguna ruta tiene loading.tsx ni error.tsx. Durante hidratación el usuario ve pantalla en blanco.',
+    solution: 'Añadir loading.tsx (skeleton del shell) y error.tsx (fallback con retry) en dashboard, estimates, invoices, jobs, clients.',
+    gain: { lcp_ms: 0, summary: 'Mejora percepción de velocidad; contadores CWV más estables' },
+    detail: `// app/[locale]/(dashboard)/loading.tsx
+export default function Loading() {
+  return (
+    <div className="animate-pulse space-y-4 p-6">
+      <div className="h-8 w-48 bg-slate-200 rounded" />
+      <div className="grid grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-24 bg-slate-100 rounded-lg" />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// app/[locale]/(dashboard)/error.tsx
+'use client'
+export default function Error({ error, reset }) {
+  return (
+    <div className="p-6 text-center">
+      <p>Algo salió mal.</p>
+      <button onClick={reset} className="btn-primary">Reintentar</button>
+    </div>
+  )
+}`
+  },
+
+  // ─── RENDERING ────────────────────────────────────
+  {
+    id: 'rnd-richblocks-split', category: 'Rendering', severity: 'alta', effort: 'grande',
+    title: 'RichBlocks.tsx: dividir ChecklistBlock + React.memo',
+    files: ['src/components/assistant/RichBlocks.tsx'],
+    problem: '709 líneas en un solo componente con 18 useState en el root del ChecklistBlock. Cada cambio re-renderiza toda la lista de items. Lag notable en mobile con 20+ items.',
+    solution: 'Extraer ChecklistBlock a archivo propio. Dentro, crear ChecklistItem memoizado que solo recibe item + handlers estables (useCallback). Usar useReducer para estado interdependiente (editing/saving/removing).',
+    gain: { summary: '-40-60% re-renders; checklist fluido en mobile' },
+    detail: `// ChecklistItem.tsx
+const ChecklistItem = React.memo(function ChecklistItem({ item, onCheck, onEdit, onDelete }) {
+  return (/* ... UI del item ... */)
+}, (prev, next) => prev.item === next.item)  // equality fuerte si items son inmutables
+
+// ChecklistBlock.tsx
+const handleCheck = useCallback((id) => {/* ... */}, [])
+const handleEdit = useCallback((id, amount) => {/* ... */}, [])
+// Los handlers no cambian entre renders → ChecklistItem no re-renderiza`
+  },
+  {
+    id: 'rnd-use-effect-deps', category: 'Rendering', severity: 'media', effort: 'quick',
+    title: 'useEffect sin dependencias explícitas (RichBlocks)',
+    files: ['src/components/assistant/RichBlocks.tsx:178-186'],
+    problem: 'El useEffect que resuelve resolvedJob podría disparar loops infinitos si resolvedJob entra en el array o si no lo hace por convención.',
+    solution: 'Declarar array de deps explícito con las variables usadas; extraer lógica a hook custom si crece.',
+    gain: { summary: 'Estabilidad; evita potencial loop de fetch' },
+    detail: `useEffect(() => {
+  if (!jobId || resolvedJob?.id === jobId) return
+  let cancelled = false
+  getJob(jobId).then(j => { if (!cancelled) setResolvedJob(j) })
+  return () => { cancelled = true }
+}, [jobId, resolvedJob?.id])`
+  },
+  {
+    id: 'rnd-dangerous-html', category: 'Rendering', severity: 'media', effort: 'medio',
+    title: 'dangerouslySetInnerHTML en bloques del asistente',
+    files: ['src/components/assistant/RichBlocks.tsx:32', 'src/components/assistant/RichBlocks.tsx:81', 'src/components/assistant/RichBlocks.tsx:97'],
+    problem: 'Tres usos de dangerouslySetInnerHTML con contenido del LLM. Hoy el prompt no pide HTML ejecutable, pero un prompt injection desde datos del cliente (nombre con <script>) podría inyectar.',
+    solution: 'Sanitizar con una whitelist mínima (solo <b>, <i>, <br>, <strong>, <em>) o migrar a un renderer controlado. Si se mantiene, agregar comentario explicando la decisión y validar en tests.',
+    gain: { summary: 'Cierra vector de XSS si el contenido se contamina' },
+    detail: `// Sanitizador mínimo sin deps:
+function safeHtml(input) {
+  return input
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    // Re-habilitar solo tags permitidos:
+    .replace(/&lt;(\\/?(?:b|i|br|strong|em))&gt;/gi, '<$1>')
+}
+
+<div className="blk-prose" dangerouslySetInnerHTML={{ __html: safeHtml(content) }} />`
+  },
+  {
+    id: 'rnd-sidebar-client', category: 'Rendering', severity: 'baja', effort: 'medio',
+    title: 'Sidebar como client completo: aislar NotificationBell',
+    files: ['src/app/[locale]/(dashboard)/_components/Sidebar.tsx', 'src/app/[locale]/(dashboard)/_components/DashboardShell.tsx'],
+    problem: 'El Sidebar completo está en un árbol client cuando solo NotificationBell necesita interactividad por polling.',
+    solution: 'Mantener DashboardShell como client (necesita usePathname) pero extraer los bloques estáticos del sidebar a un sub-componente RSC pasado como children.',
+    gain: { bundle_kb: 5, summary: '-5-10kB del sidebar a bundle de server' },
+    detail: `// DashboardShell ahora recibe navigation como prop (ya es RSC desde layout)
+<DashboardShell pro={isProPlan} navigation={<SidebarNav />}>
+  {children}
+</DashboardShell>`
+  },
+
+  // ─── META / SEO ───────────────────────────────────
+  {
+    id: 'meta-typed-routes', category: 'Meta/SEO', severity: 'baja', effort: 'quick',
+    title: 'typedRoutes para detectar links rotos en build',
+    files: ['next.config.ts'],
+    problem: 'Sin typedRoutes, un typo en /en/invoices/ pasa a producción. Importante tras el rebrand de URLs.',
+    solution: 'Activar typedRoutes: true en next.config. El build falla si hay href a rutas inexistentes.',
+    gain: { summary: 'Previene 404 en producción post-rebrand' },
+    detail: `const nextConfig: NextConfig = {
+  typedRoutes: true,
+  // ...
+}`
+  },
+  {
+    id: 'meta-sitemap', category: 'Meta/SEO', severity: 'baja', effort: 'medio',
+    title: 'Sitemap dinámico con blog + páginas "/for"',
+    files: ['src/app/sitemap.ts'],
+    problem: 'Verificar que el sitemap incluye dinámicamente posts de blog y páginas por vertical (/for/*). Si es estático, Google no indexa contenido nuevo.',
+    solution: 'generateSitemaps o función async que enumera slugs de blog y verticales desde el origen de datos.',
+    gain: { summary: 'SEO: indexación de contenido nuevo sin deploy' },
+    detail: `import { getAllBlogSlugs } from '@/lib/blog'
+import { getVerticals } from '@/lib/trades'
+
+export default async function sitemap() {
+  const base = siteConfig.url
+  const [blogs, verticals] = await Promise.all([getAllBlogSlugs(), getVerticals()])
+  const staticRoutes = ['', '/pricing', '/features', '/blog'].flatMap(r =>
+    ['en', 'es'].map(l => ({ url: \`\${base}/\${l}\${r}\`, changeFrequency: 'weekly' }))
+  )
+  return [
+    ...staticRoutes,
+    ...blogs.flatMap(s => ['en','es'].map(l => ({ url: \`\${base}/\${l}/blog/\${s}\` }))),
+    ...verticals.flatMap(v => ['en','es'].map(l => ({ url: \`\${base}/\${l}/for/\${v}\` })))
+  ]
+}`
+  },
+]
+
+// ────────────────────────────────────────────────────────────────
+// UI meta
+// ────────────────────────────────────────────────────────────────
+const CATEGORIES = ['Branding', 'IA/Latencia', 'Base de datos', 'Bundle/Carga', 'Rendering', 'Meta/SEO']
+const SEVERITIES = [
+  { id: 'crítica', label: 'Crítica' },
+  { id: 'alta', label: 'Alta' },
+  { id: 'media', label: 'Media' },
+  { id: 'baja', label: 'Baja' }
+]
+const EFFORTS = [
+  { id: 'quick', label: 'Quick (<15m)' },
+  { id: 'medio', label: 'Medio (30-60m)' },
+  { id: 'grande', label: 'Grande (>1h)' }
+]
+
+// Orden de ejecución ideal (del plan markdown)
+const EXECUTION_ORDER = [
+  'brand-en-subtitle','brand-en-footer','brand-en-signup',
+  'brand-es-subtitle','brand-es-footer','brand-es-signup',
+  'brand-billing-url','brand-jobs-url',
+  'bundle-next-config','bundle-preconnect','meta-typed-routes',
+  'ai-prompt-cache','ai-max-tokens','ai-model-intent',
+  'ai-snapshot-cache','db-find-recent','db-n-plus-1',
+  'ai-voice-patch',
+  'bundle-recharts','bundle-framer','bundle-loading-boundaries',
+  'db-indexes',
+  'rnd-use-effect-deps','rnd-richblocks-split','rnd-dangerous-html','rnd-sidebar-client',
+  'bundle-pwa-cache','bundle-elevenlabs-dup',
+  'ai-abort','meta-sitemap'
+]
+
+// ────────────────────────────────────────────────────────────────
+// State
+// ────────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'wpOptimizationSelections'
+const state = {
+  selected: new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')),
+  filters: { category: new Set(), severity: new Set(), effort: new Set() },
+  onlySelected: false,
+  onlyUnchecked: false,
+  expanded: new Set()
+}
+
+function persist() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(state.selected)))
+}
+
+// ────────────────────────────────────────────────────────────────
+// Rendering
+// ────────────────────────────────────────────────────────────────
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
+}
+
+function renderFilters() {
+  const catEl = document.getElementById('f-cat')
+  const sevEl = document.getElementById('f-sev')
+  const effEl = document.getElementById('f-eff')
+
+  CATEGORIES.forEach(cat => {
+    const n = FINDINGS.filter(f => f.category === cat).length
+    const btn = document.createElement('button')
+    btn.className = 'chip'
+    btn.type = 'button'
+    btn.innerHTML = `${escapeHtml(cat)} <span class="count">${n}</span>`
+    btn.onclick = () => toggleFilter('category', cat, btn)
+    catEl.appendChild(btn)
+  })
+  SEVERITIES.forEach(s => {
+    const n = FINDINGS.filter(f => f.severity === s.id).length
+    const btn = document.createElement('button')
+    btn.className = `chip sev-${s.id}`
+    btn.type = 'button'
+    btn.innerHTML = `${escapeHtml(s.label)} <span class="count">${n}</span>`
+    btn.onclick = () => toggleFilter('severity', s.id, btn)
+    sevEl.appendChild(btn)
+  })
+  EFFORTS.forEach(e => {
+    const n = FINDINGS.filter(f => f.effort === e.id).length
+    const btn = document.createElement('button')
+    btn.className = 'chip'
+    btn.type = 'button'
+    btn.innerHTML = `${escapeHtml(e.label)} <span class="count">${n}</span>`
+    btn.onclick = () => toggleFilter('effort', e.id, btn)
+    effEl.appendChild(btn)
+  })
+}
+
+function toggleFilter(kind, value, btn) {
+  const set = state.filters[kind]
+  if (set.has(value)) { set.delete(value); btn.classList.remove('active') }
+  else { set.add(value); btn.classList.add('active') }
+  renderCards()
+}
+
+function matchesFilters(f) {
+  if (state.filters.category.size && !state.filters.category.has(f.category)) return false
+  if (state.filters.severity.size && !state.filters.severity.has(f.severity)) return false
+  if (state.filters.effort.size && !state.filters.effort.has(f.effort)) return false
+  if (state.onlySelected && !state.selected.has(f.id)) return false
+  if (state.onlyUnchecked && state.selected.has(f.id)) return false
+  return true
+}
+
+function renderCards() {
+  const container = document.getElementById('cards')
+  const empty = document.getElementById('empty')
+  container.innerHTML = ''
+  const filtered = FINDINGS.filter(matchesFilters)
+  empty.style.display = filtered.length ? 'none' : 'block'
+
+  filtered.forEach(f => {
+    const sel = state.selected.has(f.id)
+    const expanded = state.expanded.has(f.id)
+    const card = document.createElement('article')
+    card.className = 'card' + (sel ? ' selected' : '')
+    card.dataset.id = f.id
+
+    const files = f.files.map(p =>
+      `<span class="path" data-path="${escapeHtml(p)}" tabindex="0" role="button" aria-label="Copiar ${escapeHtml(p)}">${escapeHtml(p)}</span>`
+    ).join('')
+
+    const gainText = f.gain.summary || ''
+
+    card.innerHTML = `
+      <div class="card-top">
+        <input type="checkbox" class="card-check" ${sel ? 'checked' : ''} aria-label="Marcar ${escapeHtml(f.title)}" />
+        <div class="card-title">${escapeHtml(f.title)}</div>
+      </div>
+      <div class="card-meta">
+        <span class="tag cat">${escapeHtml(f.category)}</span>
+        <span class="tag sev-${f.severity}">${escapeHtml(f.severity.toUpperCase())}</span>
+        <span class="tag eff-${f.effort}">${escapeHtml(f.effort === 'quick' ? 'QUICK' : f.effort === 'medio' ? 'MEDIO' : 'GRANDE')}</span>
+      </div>
+      <div class="card-files">${files}</div>
+      <div class="card-body">
+        <p><span class="label">Problema</span>${escapeHtml(f.problem)}</p>
+        <p><span class="label">Solución</span>${escapeHtml(f.solution)}</p>
+        ${gainText ? `<span class="gain">${escapeHtml(gainText)}</span>` : ''}
+        <div>
+          <button class="detail-btn" aria-expanded="${expanded}">${expanded ? '− Ocultar detalle' : '+ Ver detalle técnico'}</button>
+          <div class="detail ${expanded ? 'open' : ''}"><pre>${escapeHtml(f.detail)}</pre></div>
+        </div>
+      </div>
+    `
+
+    card.querySelector('.card-check').addEventListener('change', (e) => toggleSelect(f.id, e.target.checked))
+    card.querySelector('.card-title').addEventListener('click', () => {
+      const cb = card.querySelector('.card-check')
+      cb.checked = !cb.checked
+      toggleSelect(f.id, cb.checked)
+    })
+    card.querySelector('.detail-btn').addEventListener('click', () => toggleDetail(f.id))
+    card.querySelectorAll('.path').forEach(p => {
+      p.addEventListener('click', () => copyPath(p))
+      p.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); copyPath(p) } })
+    })
+
+    container.appendChild(card)
+  })
+}
+
+function toggleSelect(id, on) {
+  if (on) state.selected.add(id); else state.selected.delete(id)
+  persist()
+  const card = document.querySelector(`.card[data-id="${id}"]`)
+  if (card) card.classList.toggle('selected', on)
+  updateStats()
+  renderOrder()
+}
+
+function toggleDetail(id) {
+  if (state.expanded.has(id)) state.expanded.delete(id); else state.expanded.add(id)
+  renderCards()
+}
+
+function copyPath(el) {
+  const p = el.dataset.path
+  navigator.clipboard.writeText(p).then(() => {
+    el.classList.add('copied')
+    showToast(`Copiado: ${p}`)
+    setTimeout(() => el.classList.remove('copied'), 1200)
+  })
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast')
+  t.textContent = msg
+  t.classList.add('show')
+  clearTimeout(showToast._t)
+  showToast._t = setTimeout(() => t.classList.remove('show'), 1800)
+}
+
+// ────────────────────────────────────────────────────────────────
+// Stats + impact bars
+// ────────────────────────────────────────────────────────────────
+function sumImpact() {
+  const totals = { ttft_ms: 0, lcp_ms: 0, bundle_kb: 0, db_ms: 0, token_pct: 0 }
+  state.selected.forEach(id => {
+    const f = FINDINGS.find(x => x.id === id)
+    if (!f) return
+    totals.ttft_ms += f.gain.ttft_ms || 0
+    totals.lcp_ms += f.gain.lcp_ms || 0
+    totals.bundle_kb += f.gain.bundle_kb || 0
+    totals.db_ms += f.gain.db_ms || 0
+    totals.token_pct = Math.min(95, totals.token_pct + (f.gain.token_pct || 0))
+  })
+  return totals
+}
+
+function sumImpactAll() {
+  const totals = { ttft_ms: 0, lcp_ms: 0, bundle_kb: 0, db_ms: 0, token_pct: 0 }
+  FINDINGS.forEach(f => {
+    totals.ttft_ms += f.gain.ttft_ms || 0
+    totals.lcp_ms += f.gain.lcp_ms || 0
+    totals.bundle_kb += f.gain.bundle_kb || 0
+    totals.db_ms += f.gain.db_ms || 0
+    totals.token_pct = Math.min(95, totals.token_pct + (f.gain.token_pct || 0))
+  })
+  return totals
+}
+
+function updateStats() {
+  const sel = state.selected.size
+  const total = FINDINGS.length
+  const crit = FINDINGS.filter(f => f.severity === 'crítica' || f.severity === 'alta').length
+  const quick = FINDINGS.filter(f => f.effort === 'quick').length
+
+  document.getElementById('k-total').textContent = total
+  document.getElementById('k-critical').textContent = crit
+  document.getElementById('k-quick').textContent = quick
+  document.getElementById('k-selected').childNodes[0].nodeValue = sel
+  document.getElementById('k-pct').textContent = total ? ` · ${Math.round(sel/total*100)}%` : ''
+
+  const imp = sumImpact()
+  const max = sumImpactAll()
+
+  document.getElementById('k-bundle').childNodes[0].nodeValue = imp.bundle_kb
+
+  setBar('imp-ttft', imp.ttft_ms, max.ttft_ms, 'ms')
+  setBar('imp-lcp', imp.lcp_ms, max.lcp_ms, 'ms')
+  setBar('imp-bundle', imp.bundle_kb, max.bundle_kb, 'kB')
+  setBar('imp-db', imp.db_ms, max.db_ms, 'ms')
+  setBar('imp-token', imp.token_pct, 95, '%')
+}
+
+function setBar(id, v, max, unit) {
+  const pct = max > 0 ? Math.min(100, (v/max)*100) : 0
+  document.getElementById(id + '-bar').style.width = pct + '%'
+  const valEl = document.getElementById(id + '-val')
+  valEl.innerHTML = `${v}<span class="u">${unit}</span>`
+}
+
+// ────────────────────────────────────────────────────────────────
+// Execution order panel
+// ────────────────────────────────────────────────────────────────
+function renderOrder() {
+  const list = document.getElementById('order-list')
+  const selected = EXECUTION_ORDER.filter(id => state.selected.has(id))
+  if (!selected.length) {
+    list.innerHTML = '<li class="empty-order" style="padding-left:0; border:0; color:var(--wp-text-muted)">Marca items para ver el orden.</li>'
+    return
+  }
+  list.innerHTML = selected.map(id => {
+    const f = FINDINGS.find(x => x.id === id)
+    if (!f) return ''
+    return `<li data-id="${id}">${escapeHtml(f.title)}</li>`
+  }).join('')
+  list.querySelectorAll('li').forEach(li => {
+    li.addEventListener('click', () => li.classList.toggle('done'))
+    li.style.cursor = 'pointer'
+    li.title = 'Click para marcar como hecho'
+  })
+}
+
+// ────────────────────────────────────────────────────────────────
+// Export
+// ────────────────────────────────────────────────────────────────
+function exportMarkdown() {
+  const selected = EXECUTION_ORDER.filter(id => state.selected.has(id))
+  if (!selected.length) { showToast('No hay items seleccionados'); return }
+  const imp = sumImpact()
+  const date = new Date().toISOString().slice(0, 10)
+  const lines = [
+    `# WorkPilot — Checklist de optimización`,
+    `> Generado el ${date} · ${selected.length} de ${FINDINGS.length} items`,
+    '',
+    `## Impacto estimado`,
+    `- TTFT: −${imp.ttft_ms}ms`,
+    `- LCP: −${imp.lcp_ms}ms`,
+    `- Bundle: −${imp.bundle_kb}kB`,
+    `- DB queries: −${imp.db_ms}ms`,
+    `- Coste tokens: −${imp.token_pct}%`,
+    '',
+    `## Tareas (orden de ejecución)`,
+    ''
+  ]
+  selected.forEach((id, i) => {
+    const f = FINDINGS.find(x => x.id === id)
+    lines.push(`### ${i+1}. ${f.title}`)
+    lines.push(`**Categoría:** ${f.category} · **Severidad:** ${f.severity} · **Esfuerzo:** ${f.effort}`)
+    lines.push(`**Archivos:** ${f.files.map(p => '`' + p + '`').join(', ')}`)
+    lines.push('')
+    lines.push(`**Problema:** ${f.problem}`)
+    lines.push('')
+    lines.push(`**Solución:** ${f.solution}`)
+    if (f.gain.summary) { lines.push(''); lines.push(`**Ganancia:** ${f.gain.summary}`) }
+    lines.push('')
+    lines.push('```')
+    lines.push(f.detail)
+    lines.push('```')
+    lines.push('')
+    lines.push(`- [ ] Implementado`)
+    lines.push(`- [ ] Testeado`)
+    lines.push(`- [ ] Desplegado`)
+    lines.push('')
+    lines.push('---')
+    lines.push('')
+  })
+  const blob = new Blob([lines.join('\n')], { type: 'text/markdown' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `workpilot-optimizations-${date}.md`
+  a.click()
+  URL.revokeObjectURL(url)
+  showToast('Checklist descargado')
+}
+
+function copyPrompt() {
+  const selected = EXECUTION_ORDER.filter(id => state.selected.has(id))
+  if (!selected.length) { showToast('No hay items seleccionados'); return }
+  const lines = [
+    `Ejecuta las siguientes ${selected.length} optimizaciones en el codebase de WorkPilot (plumbr). Sigue el orden indicado. Para cada tarea: hacer el cambio, verificar que compila, avanzar a la siguiente.`,
+    ''
+  ]
+  selected.forEach((id, i) => {
+    const f = FINDINGS.find(x => x.id === id)
+    lines.push(`${i+1}. **${f.title}** — ${f.files.join(', ')}`)
+    lines.push(`   - ${f.solution}`)
+  })
+  navigator.clipboard.writeText(lines.join('\n')).then(() => showToast('Prompt copiado al portapapeles'))
+}
+
+// ────────────────────────────────────────────────────────────────
+// Init
+// ────────────────────────────────────────────────────────────────
+function init() {
+  renderFilters()
+  renderCards()
+  updateStats()
+  renderOrder()
+
+  document.getElementById('only-selected').addEventListener('change', (e) => {
+    state.onlySelected = e.target.checked
+    if (state.onlySelected) document.getElementById('only-unchecked').checked = false, state.onlyUnchecked = false
+    renderCards()
+  })
+  document.getElementById('only-unchecked').addEventListener('change', (e) => {
+    state.onlyUnchecked = e.target.checked
+    if (state.onlyUnchecked) document.getElementById('only-selected').checked = false, state.onlySelected = false
+    renderCards()
+  })
+  document.getElementById('btn-expand-all').addEventListener('click', () => {
+    const allExpanded = state.expanded.size === FINDINGS.length
+    state.expanded = allExpanded ? new Set() : new Set(FINDINGS.map(f => f.id))
+    document.getElementById('btn-expand-all').textContent = allExpanded ? 'Expandir todo' : 'Colapsar todo'
+    renderCards()
+  })
+  document.getElementById('btn-reset').addEventListener('click', () => {
+    if (state.selected.size === 0) return
+    if (!confirm(`¿Limpiar los ${state.selected.size} items seleccionados?`)) return
+    state.selected.clear()
+    persist()
+    renderCards()
+    updateStats()
+    renderOrder()
+  })
+  document.getElementById('btn-export-md').addEventListener('click', exportMarkdown)
+  document.getElementById('btn-copy-prompt').addEventListener('click', copyPrompt)
+}
+
+init()
+</script>
+</body>
+</html>

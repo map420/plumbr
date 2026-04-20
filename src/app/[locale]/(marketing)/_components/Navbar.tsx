@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { useAuth } from '@clerk/nextjs'
 import { Menu, X, Wrench, ChevronDown } from 'lucide-react'
 
 const TRADES = [
@@ -17,13 +16,11 @@ const TRADES = [
 ]
 
 /**
- * `isSignedIn` is now resolved from Clerk client-side. Removing the prop from
- * the RSC callers lets those pages (marketing home, /for/[trade], /blog,
- * /blog/[slug]) drop their `await auth()` calls — that was the last piece
- * preventing Next from statically rendering them.
+ * `isSignedIn` comes from a cookie check in the RSC caller (see getMarketingAuthState).
+ * Avoids pulling Clerk's client SDK into marketing bundles (~100KB savings).
+ * For cookie-present-but-expired sessions Clerk will still redirect at the destination.
  */
-export function Navbar({ locale }: { locale: string }) {
-  const { isSignedIn } = useAuth()
+export function Navbar({ locale, isSignedIn = false }: { locale: string; isSignedIn?: boolean }) {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
   const [tradesOpen, setTradesOpen] = useState(false)
@@ -58,15 +55,15 @@ export function Navbar({ locale }: { locale: string }) {
       <nav className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between" role="navigation" aria-label="Main navigation">
         {/* Logo */}
         <Link href={`/${locale}`} className="flex items-center gap-2 shrink-0">
-          <div className="w-7 h-7 bg-[#1E3A5F] rounded-lg flex items-center justify-center">
+          <div className="w-7 h-7 bg-navy-500 rounded-lg flex items-center justify-center">
             <Wrench size={14} className="text-white" />
           </div>
-          <span className="text-xl font-extrabold text-[#1E3A5F] tracking-tight">WorkPilot</span>
+          <span className="text-xl font-extrabold text-navy-500 tracking-tight">WorkPilot</span>
         </Link>
 
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-8">
-          <a href="#features" className="text-sm font-medium text-slate-600 hover:text-[#1E3A5F] transition-colors">
+          <a href="#features" className="text-sm font-medium text-slate-600 hover:text-navy-500 transition-colors">
             Features
           </a>
 
@@ -74,7 +71,7 @@ export function Navbar({ locale }: { locale: string }) {
           <div className="relative" ref={tradesRef}>
             <button
               onClick={() => setTradesOpen(o => !o)}
-              className="flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-[#1E3A5F] transition-colors"
+              className="flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-navy-500 transition-colors"
               aria-expanded={tradesOpen}
               aria-haspopup="true"
             >
@@ -87,7 +84,7 @@ export function Navbar({ locale }: { locale: string }) {
                     key={t.slug}
                     href={`/${locale}/for/${t.slug}`}
                     onClick={() => setTradesOpen(false)}
-                    className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#1E3A5F] transition-colors"
+                    className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-navy-500 transition-colors"
                   >
                     {t.label}
                   </Link>
@@ -96,10 +93,10 @@ export function Navbar({ locale }: { locale: string }) {
             )}
           </div>
 
-          <Link href={`/${locale}/pricing`} className="text-sm font-medium text-slate-600 hover:text-[#1E3A5F] transition-colors">
+          <Link href={`/${locale}/pricing`} className="text-sm font-medium text-slate-600 hover:text-navy-500 transition-colors">
             Pricing
           </Link>
-          <Link href={`/${locale}/blog`} className="text-sm font-medium text-slate-600 hover:text-[#1E3A5F] transition-colors">
+          <Link href={`/${locale}/blog`} className="text-sm font-medium text-slate-600 hover:text-navy-500 transition-colors">
             Blog
           </Link>
         </div>
@@ -108,17 +105,17 @@ export function Navbar({ locale }: { locale: string }) {
         <div className="hidden md:flex items-center gap-3">
           {isSignedIn ? (
             <Link href={`/${locale}/dashboard`}
-              className="text-sm font-semibold bg-[#F97316] text-white px-4 py-2 rounded-xl hover:bg-[#ea6c0a] transition-all hover:scale-[1.02] active:scale-[0.98]">
+              className="text-sm font-semibold bg-cta text-white px-4 py-2 rounded-xl hover:bg-cta-hover transition-all hover:scale-[1.02] active:scale-[0.98]">
               Dashboard
             </Link>
           ) : (
             <>
               <Link href={`/${locale}/sign-in`}
-                className="text-sm font-semibold text-[#1E3A5F] border border-[#1E3A5F]/30 px-4 py-2 rounded-xl hover:border-[#1E3A5F] transition-all">
+                className="text-sm font-semibold text-navy-500 border border-navy-500/30 px-4 py-2 rounded-xl hover:border-navy-500 transition-all">
                 Sign in
               </Link>
               <Link href={`/${locale}/sign-up`}
-                className="text-sm font-semibold bg-[#F97316] text-white px-4 py-2 rounded-xl hover:bg-[#ea6c0a] transition-all hover:scale-[1.02] active:scale-[0.98]">
+                className="text-sm font-semibold bg-cta text-white px-4 py-2 rounded-xl hover:bg-cta-hover transition-all hover:scale-[1.02] active:scale-[0.98]">
                 Start free trial
               </Link>
             </>
@@ -172,12 +169,12 @@ export function Navbar({ locale }: { locale: string }) {
           <div className="pt-3 flex flex-col gap-2 border-t border-slate-100 mt-2">
             {!isSignedIn && (
               <Link href={`/${locale}/sign-in`} onClick={() => setOpen(false)}
-                className="text-center text-sm font-semibold text-[#1E3A5F] border border-[#1E3A5F]/30 px-4 py-2.5 rounded-xl">
+                className="text-center text-sm font-semibold text-navy-500 border border-navy-500/30 px-4 py-2.5 rounded-xl">
                 Sign in
               </Link>
             )}
             <Link href={ctaHref} onClick={() => setOpen(false)}
-              className="text-center text-sm font-semibold bg-[#F97316] text-white px-4 py-2.5 rounded-xl">
+              className="text-center text-sm font-semibold bg-cta text-white px-4 py-2.5 rounded-xl">
               {ctaLabel}
             </Link>
           </div>

@@ -2,9 +2,11 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { ChevronLeft, Copy, Check, Printer } from 'lucide-react'
+import { formatCurrency } from '@/lib/format'
+import { Toast } from '@/components/Toast'
 import { ShoppingListSidebar } from './ShoppingListSidebar'
 import { ShoppingListItems, type Item } from './ShoppingListItems'
 
@@ -21,10 +23,13 @@ export function ShoppingListDetailClient({ list, job: initialJob, materialSpent:
 }) {
   const router = useRouter()
   const locale = useLocale()
+  const t = useTranslations('shoppingList')
   const [items, setItems] = useState(list.items)
   const [materialSpent, setMaterialSpent] = useState(initialSpent)
   const [copied, setCopied] = useState(false)
   const [job] = useState<JobSummary | null>(initialJob)
+  const [toast, setToast] = useState<{ message: string; variant?: 'success' | 'error' | 'warning' } | null>(null)
+  const notify = (message: string, variant: 'success' | 'error' | 'warning' = 'success') => setToast({ message, variant })
 
   const pendingItems = items.filter(it => it.status === 'pending')
   const total = items.reduce((s, it) => s + parseFloat(it.estimatedCost), 0)
@@ -35,14 +40,16 @@ export function ShoppingListDetailClient({ list, job: initialJob, materialSpent:
   })()
 
   async function handleShare() {
-    const text = `${list.name}\n\n${items.map(it => `${it.status === 'purchased' ? '✓' : '○'} ${it.description} — $${parseFloat(it.estimatedCost).toLocaleString()}`).join('\n')}\n\nTotal: $${total.toLocaleString()}`
+    const text = `${list.name}\n\n${items.map(it => `${it.status === 'purchased' ? '✓' : '○'} ${it.description} — $${formatCurrency(it.estimatedCost, locale)}`).join('\n')}\n\nTotal: $${formatCurrency(total, locale)}`
     await navigator.clipboard.writeText(text)
     setCopied(true)
+    notify(locale === 'es' ? 'Lista copiada' : 'List copied')
     setTimeout(() => setCopied(false), 2000)
   }
 
   return (
     <>
+      {toast && <Toast message={toast.message} variant={toast.variant} onDone={() => setToast(null)} />}
       {/* Mobile header */}
       <div className="flex items-center px-4 py-2.5 md:hidden" style={{ borderBottom: '1px solid var(--wp-border-light)' }}>
         <div className="flex-1 flex items-center justify-start">
@@ -65,20 +72,22 @@ export function ShoppingListDetailClient({ list, job: initialJob, materialSpent:
             <h1 className="text-xl font-bold" style={{ color: 'var(--wp-text)' }}>{list.name}</h1>
             <p className="text-xs mt-1" style={{ color: 'var(--wp-text-3)' }}>
               {locale === 'es'
-                ? `${job ? '1 job' : '0 jobs'} · $${total.toLocaleString()} estimado · ${vendorCount} proveedor${vendorCount !== 1 ? 'es' : ''}`
-                : `${job ? '1 job' : '0 jobs'} · $${total.toLocaleString()} estimated · ${vendorCount} vendor${vendorCount !== 1 ? 's' : ''}`}
+                ? `${job ? '1 proyecto' : '0 proyectos'} · $${formatCurrency(total, locale)} estimado · ${vendorCount} proveedor${vendorCount !== 1 ? 'es' : ''}`
+                : `${job ? '1 project' : '0 projects'} · $${formatCurrency(total, locale)} estimated · ${vendorCount} vendor${vendorCount !== 1 ? 's' : ''}`}
             </p>
           </div>
           <div className="flex gap-2">
             <Link href={`/${locale}/shopping-list/${list.id}/print`} className="btn-secondary btn-sm">
-              <Printer size={13} /> Print / PDF
+              <Printer size={13} /> {locale === 'es' ? 'Imprimir / PDF' : 'Print / PDF'}
             </Link>
             <button onClick={handleShare} className="btn-secondary btn-sm">
-              {copied ? <><Check size={13} /> Copied</> : <><Copy size={13} /> Share with team</>}
+              {copied
+                ? <><Check size={13} /> {t('copied')}</>
+                : <><Copy size={13} /> {t('copyList')}</>}
             </button>
             {pendingItems.length > 0 && (
               <button className="btn-primary btn-sm">
-                <Check size={13} /> Mark all bought
+                <Check size={13} /> {t('markAllBought')}
               </button>
             )}
           </div>
@@ -103,6 +112,7 @@ export function ShoppingListDetailClient({ list, job: initialJob, materialSpent:
               setItems={setItems}
               onSpentChange={(delta) => setMaterialSpent(prev => Math.max(0, prev + delta))}
               locale={locale}
+              onToast={notify}
             />
           </div>
 

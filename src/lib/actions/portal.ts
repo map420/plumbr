@@ -1,6 +1,7 @@
 'use server'
 
 import { dbAdapter } from '@/lib/adapters/db'
+import { paymentsAdapter } from '@/lib/adapters/payments'
 import { requireUser as requireAuth } from './auth-helpers'
 import { revalidatePath } from 'next/cache'
 
@@ -20,18 +21,53 @@ export async function generateInvoiceShareToken(id: string): Promise<string> {
   return `${appUrl}/en/portal/${token}`
 }
 
+/**
+ * Public payment link generation for invoice portal. Bearer auth via shareToken —
+ * anyone with the token can trigger a Stripe Checkout. Routes to contractor's
+ * connected Stripe account (Direct Charge, funds go straight to contractor).
+ * Returns { error } if contractor doesn't have Connect onboarded or invoice already paid.
+ */
+export async function createPortalInvoicePaymentLink(token: string): Promise<{ url?: string; error?: string }> {
+  const invoice = await dbAdapter.invoices.findByToken(token)
+  if (!invoice) return { error: 'Invoice not found or link expired.' }
+  if (invoice.status === 'paid' || invoice.status === 'cancelled') {
+    return { error: 'This invoice is not open for payment.' }
+  }
+
+  const user = await dbAdapter.users.findById(invoice.userId)
+  if (!user?.stripeAccountId || !user?.stripeAccountChargesEnabled) {
+    return { error: 'Online payments are not enabled for this contractor yet.' }
+  }
+
+  const amountCents = Math.round(parseFloat(invoice.total) * 100)
+  const { url } = await paymentsAdapter.createPaymentLink({
+    amountCents,
+    currency: 'usd',
+    description: `Invoice ${invoice.number} — ${invoice.clientName}`,
+    metadata: { invoiceId: invoice.id, userId: invoice.userId, source: 'portal' },
+    stripeAccount: user.stripeAccountId,
+  })
+  return { url }
+}
+
 export async function getPortalData(token: string) {
-  const estimate = await dbAdapter.estimates.findByToken(token)
+  // Parallelize the 3 findByToken lookups — only one can hit, but waiting
+  // sequentially added ~3s TTFB for portal. Line items then fetched in a
+  // second round-trip only for whichever parent exists.
+  const [estimate, invoice, changeOrder] = await Promise.all([
+    dbAdapter.estimates.findByToken(token).catch(() => null),
+    dbAdapter.invoices.findByToken(token).catch(() => null),
+    dbAdapter.changeOrders.findByToken(token).catch(() => null),
+  ])
+
   if (estimate) {
     const lineItems = await dbAdapter.lineItems.findByParent(estimate.id, 'estimate')
     return { type: 'estimate' as const, estimate, lineItems }
   }
-  const invoice = await dbAdapter.invoices.findByToken(token)
   if (invoice) {
     const lineItems = await dbAdapter.lineItems.findByParent(invoice.id, 'invoice')
     return { type: 'invoice' as const, invoice, lineItems }
   }
-  const changeOrder = await dbAdapter.changeOrders.findByToken(token)
   if (changeOrder) {
     const lineItems = await dbAdapter.lineItems.findByParent(changeOrder.id, 'change_order')
     return { type: 'change_order' as const, changeOrder, lineItems }
@@ -129,8 +165,11 @@ export async function approveEstimateByToken(
     href: `/en/estimates/${estimate.id}`,
     read: false,
   }).catch(() => null)
-  revalidatePath(`/en/estimates/${estimate.id}`)
-  revalidatePath('/[locale]/jobs', 'page')
+  // Invalidar todos los paths del estimate en ambos locales (C7 — signed chip no aparecía por cache).
+  revalidatePath('/[locale]/estimates/[id]', 'page')
+  revalidatePath('/[locale]/estimates', 'page')
+  revalidatePath('/[locale]/clients/[id]', 'page')
+  revalidatePath('/[locale]/projects', 'page')
   revalidatePath('/[locale]/invoices', 'page')
 }
 
@@ -147,7 +186,8 @@ export async function rejectEstimateByToken(token: string, reason?: string) {
     href: `/en/estimates/${estimate.id}`,
     read: false,
   }).catch(() => null)
-  revalidatePath(`/en/estimates/${estimate.id}`)
+  revalidatePath('/[locale]/estimates/[id]', 'page')
+  revalidatePath('/[locale]/estimates', 'page')
 }
 
 // Change Order approval via portal
@@ -181,11 +221,11 @@ export async function approveChangeOrderByToken(
     type: 'estimate_approved',
     title: `Change Order ${co.number} approved`,
     body: `Client approved change order for $${parseFloat(co.total).toFixed(2)}`,
-    href: `/en/jobs/${co.jobId}`,
+    href: `/en/projects/${co.jobId}`,
     read: false,
   }).catch(() => null)
 
-  revalidatePath('/[locale]/jobs', 'page')
+  revalidatePath('/[locale]/projects', 'page')
 }
 
 export async function rejectChangeOrderByToken(token: string, reason?: string) {
@@ -198,9 +238,9 @@ export async function rejectChangeOrderByToken(token: string, reason?: string) {
     type: 'estimate_approved',
     title: `Change Order ${co.number} declined`,
     body: `Client declined change order for $${parseFloat(co.total).toFixed(2)}${reasonText}`,
-    href: `/en/jobs/${co.jobId}`,
+    href: `/en/projects/${co.jobId}`,
     read: false,
   }).catch(() => null)
 
-  revalidatePath('/[locale]/jobs', 'page')
+  revalidatePath('/[locale]/projects', 'page')
 }

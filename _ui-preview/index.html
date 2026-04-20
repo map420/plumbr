@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>plumbr UI redesign — Index</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --wp-primary: #1E3A5F;
+    --wp-accent: #F97316;
+    --wp-text-primary: #0F172A;
+    --wp-text-muted: #94A3B8;
+    --wp-bg: #F8FAFC;
+    --wp-border: #E2E8F0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: linear-gradient(180deg, #F8FAFC 0%, #EEF2F6 100%);
+    color: var(--wp-text-primary);
+    min-height: 100vh;
+    padding: 60px 24px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 960px; margin: 0 auto; }
+  .hero {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .hero .brand {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 6px 14px;
+    background: var(--wp-primary); color: white;
+    border-radius: 999px;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: 36px; font-weight: 800; letter-spacing: -0.03em;
+    margin-bottom: 12px;
+    line-height: 1.1;
+  }
+  .hero h1 span { color: var(--wp-accent); }
+  .hero p {
+    font-size: 16px; color: var(--wp-text-muted);
+    max-width: 560px; margin: 0 auto; line-height: 1.5;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .card-link {
+    display: block;
+    background: white;
+    border: 1px solid var(--wp-border);
+    border-radius: 16px;
+    padding: 24px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 200ms;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  }
+  .card-link:hover {
+    transform: translateY(-2px);
+    border-color: var(--wp-accent);
+    box-shadow: 0 20px 40px rgb(249 115 22 / 0.12), 0 4px 12px rgb(0 0 0 / 0.04);
+  }
+  .card-link .step {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 8px;
+    background: var(--wp-primary); color: white;
+    font-size: 13px; font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .card-link.featured .step { background: var(--wp-accent); }
+  .card-link h3 {
+    font-size: 18px; font-weight: 700; letter-spacing: -0.01em;
+    margin-bottom: 4px;
+  }
+  .card-link p {
+    font-size: 13px; color: var(--wp-text-muted); line-height: 1.5;
+  }
+  .card-link .tag {
+    display: inline-block;
+    margin-top: 12px;
+    font-size: 11px; font-weight: 600;
+    padding: 3px 8px; border-radius: 6px;
+    background: #F1F5F9; color: #475569;
+  }
+  .card-link.featured .tag {
+    background: #FFF7ED; color: var(--wp-accent);
+  }
+
+  .footnote {
+    text-align: center;
+    font-size: 12px;
+    color: var(--wp-text-muted);
+    line-height: 1.6;
+  }
+  .footnote code {
+    font-family: ui-monospace, 'SF Mono', monospace;
+    background: white; padding: 2px 6px; border-radius: 4px;
+    border: 1px solid var(--wp-border);
+    color: var(--wp-text-primary);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="hero">
+    <div class="brand">◆ plumbr UI redesign</div>
+    <h1>Rediseño de <span>Estimates</span></h1>
+    <p>
+      Exploración visual before / after para las 4 subpáginas de Estimates, más una propuesta de sistema de diseño extensible al resto del dashboard.
+    </p>
+  </div>
+
+  <div class="grid">
+    <a href="00-design-system.html" class="card-link featured">
+      <div class="step">◆</div>
+      <h3>Design System Proposal</h3>
+      <p>Filosofía, tokens nuevos, componentes reutilizables y resumen ejecutivo de qué cambia en cada vista.</p>
+      <span class="tag">Start here</span>
+    </a>
+
+    <a href="01-estimates-list.html" class="card-link">
+      <div class="step">1</div>
+      <h3>Lista de Estimates</h3>
+      <p>Vista <code style="font-family: ui-monospace; font-size: 11px;">/estimates</code> — dashboard KPIs, toolbar, tabla con avatares y quick actions. Desktop + Mobile.</p>
+      <span class="tag">/estimates</span>
+    </a>
+
+    <a href="02-estimates-detail.html" class="card-link">
+      <div class="step">2</div>
+      <h3>Detail</h3>
+      <p>Vista <code style="font-family: ui-monospace; font-size: 11px;">/estimates/[id]</code> — layout de 2 columnas, total hero, timeline y portal link. Desktop + Mobile.</p>
+      <span class="tag">/estimates/[id]</span>
+    </a>
+
+    <a href="03-estimates-form.html" class="card-link">
+      <div class="step">3</div>
+      <h3>Form (New / Edit)</h3>
+      <p>Vista <code style="font-family: ui-monospace; font-size: 11px;">/estimates/new</code> y <code style="font-family: ui-monospace; font-size: 11px;">/[id]/edit</code> — wizard con sidebar sticky de totales. Desktop + Mobile.</p>
+      <span class="tag">/new · /edit</span>
+    </a>
+
+    <a href="04-estimates-print.html" class="card-link" style="grid-column: span 2;">
+      <div class="step">4</div>
+      <h3>Print</h3>
+      <p>Vista <code style="font-family: ui-monospace; font-size: 11px;">/estimates/[id]/print</code> — versión imprimible con licencia, parties block, CTA portal y QR.</p>
+      <span class="tag">/print</span>
+    </a>
+  </div>
+
+  <div class="footnote">
+    Abre los archivos en el navegador para ver la comparativa lado a lado.<br>
+    Código aún sin modificar — estos son los mocks para validar la dirección antes de escribir los cambios.
+  </div>
+</div>
+</body>
+</html>

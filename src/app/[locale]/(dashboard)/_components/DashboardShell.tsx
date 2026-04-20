@@ -1,6 +1,7 @@
 'use client'
 
-import { Bot, Plus, Search } from 'lucide-react'
+import { Plus, Search } from 'lucide-react'
+import { SparkleIcon } from '@/components/icons/SparkleIcon'
 import { PullToRefresh } from '@/components/PullToRefresh'
 import { usePathname, useRouter } from 'next/navigation'
 import { useLocale } from 'next-intl'
@@ -15,7 +16,7 @@ const PAGE_CONFIG: Record<string, { title: string; titleEs?: string; createRoute
   estimates: { title: 'Estimates', titleEs: 'Presupuestos', createRoute: '/estimates/new' },
   invoices: { title: 'Invoices', titleEs: 'Facturas', createRoute: '/invoices/new' },
   clients: { title: 'Clients', titleEs: 'Clientes', createRoute: '/clients/new' },
-  jobs: { title: 'Jobs', titleEs: 'Trabajos', createRoute: '/jobs/new' },
+  jobs: { title: 'Projects', titleEs: 'Proyectos', createRoute: '/projects/new' },
   schedule: { title: 'Schedule', titleEs: 'Calendario' },
   field: { title: 'Field', titleEs: 'Campo' },
   team: { title: 'Team', titleEs: 'Equipo', createRoute: '/team/new' },
@@ -59,7 +60,7 @@ function MobileHeader() {
         style={{ color: 'var(--wp-primary)' }}
         title="AI Assistant"
       >
-        <Bot size={22} />
+        <SparkleIcon size={22} />
       </button>
 
       {/* Center: Page title */}
@@ -67,12 +68,12 @@ function MobileHeader() {
 
       {/* Right: Search + Bell + Create */}
       <div className="flex items-center">
-        <button onClick={() => window.dispatchEvent(new CustomEvent('open-command-palette'))} className="p-1.5" style={{ color: 'var(--wp-primary)' }} title="Search">
+        <button onClick={() => window.dispatchEvent(new CustomEvent('open-command-palette'))} className="p-1.5" style={{ color: 'var(--wp-primary)' }} title="Search" aria-label="Search">
           <Search size={20} />
         </button>
         <NotificationBell variant="light" />
         {showCreate && (
-          <button onClick={handleCreate} className="p-1.5" style={{ color: 'var(--wp-primary)' }}>
+          <button onClick={handleCreate} className="p-1.5" style={{ color: 'var(--wp-primary)' }} aria-label="Create new">
             <Plus size={22} />
           </button>
         )}
@@ -84,6 +85,11 @@ function MobileHeader() {
 export default function DashboardShell({ children, pro }: { children: React.ReactNode; pro: boolean }) {
   return (
     <div className="flex h-screen overflow-hidden">
+      {/* a11y skip link — first focusable element, hidden until focused */}
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:rounded-md focus:bg-[var(--wp-brand)] focus:text-white focus:font-semibold focus:shadow-lg">
+        Skip to main content
+      </a>
+
       {/* Sidebar — desktop only */}
       <div className="hidden md:flex md:shrink-0">
         <Sidebar pro={pro} />
@@ -92,7 +98,7 @@ export default function DashboardShell({ children, pro }: { children: React.Reac
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         <MobileHeader />
 
-        <main className="flex-1 overflow-auto pb-16 md:pb-0" style={{ background: 'var(--wp-bg-secondary)' }}>
+        <main id="main-content" tabIndex={-1} className="flex-1 overflow-auto pb-16 md:pb-0" style={{ background: 'var(--wp-bg-secondary)' }}>
           <PullToRefresh className="min-h-full">
             {children}
           </PullToRefresh>

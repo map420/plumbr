@@ -4,7 +4,7 @@ export default function OfflinePage() {
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <div className="text-center max-w-xs">
-        <div className="w-16 h-16 rounded-2xl bg-[#1E3A5F] flex items-center justify-center mx-auto mb-5">
+        <div className="w-16 h-16 rounded-2xl bg-navy-500 flex items-center justify-center mx-auto mb-5">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="1" y1="1" x2="23" y2="23" />
             <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55" />
@@ -21,7 +21,7 @@ export default function OfflinePage() {
         </p>
         <button
           onClick={() => window.location.reload()}
-          className="px-5 py-2.5 bg-[#1E3A5F] text-white rounded-lg text-sm font-medium hover:bg-[#16304f] transition-colors"
+          className="px-5 py-2.5 bg-navy-500 text-white rounded-lg text-sm font-medium hover:bg-[#16304f] transition-colors"
         >
           Try again
         </button>

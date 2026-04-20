@@ -7,14 +7,16 @@ import { formatCurrencyCompact } from '@/lib/format'
 import { useRouter } from 'next/navigation'
 import { deleteClient } from '@/lib/actions/clients'
 import { ConfirmModal } from '@/components/ConfirmModal'
+import { Toast } from '@/components/Toast'
 import { Users, Plus, Trash2, Mail, Phone, Briefcase, LayoutGrid, List, ArrowUpDown } from 'lucide-react'
 import { SwipeableRow } from '@/components/SwipeableRow'
 import {
   KpiCard, ClientAvatar, Toolbar, Segmented, EmptyState,
 } from '@/components/ui'
+import { isInactiveClient } from '@/lib/status/derived'
 
 type Client = { id: string; name: string; email: string | null; phone: string | null; address: string | null }
-type ClientStats = { jobCount: number; revenue: number }
+type ClientStats = { jobCount: number; revenue: number; billed?: number; outstanding?: number; lastActivityAt?: Date | null; hasLiveJob?: boolean }
 type SortKey = 'name' | 'jobs' | 'revenue'
 type View = 'grid' | 'table'
 type FilterValue = 'all' | 'active' | 'withBalance'
@@ -29,6 +31,7 @@ export function ClientsClient({ initialClients, clientStats = {} }: { initialCli
   const [filter, setFilter] = useState<FilterValue>('all')
   const [isPending, startTransition] = useTransition()
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ message: string; variant?: 'success' | 'error' | 'warning' } | null>(null)
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
@@ -44,8 +47,12 @@ export function ClientsClient({ initialClients, clientStats = {} }: { initialCli
 
   const filtered = initialClients
     .filter(c => {
-      if (filter === 'active' && (clientStats[c.id]?.jobCount ?? 0) === 0) return false
-      if (filter === 'withBalance' && (clientStats[c.id]?.jobCount ?? 0) > 0) return false
+      const s = clientStats[c.id]
+      // Un cliente con job activo/lead nunca cuenta como inactive, aunque no haya señales de fecha.
+      const inactive = !s?.hasLiveJob && isInactiveClient(s?.lastActivityAt ?? null, new Date(), 60)
+      // CLI-006: "Active" ≠ "with jobs": active = had activity in last 60d. Inactive = 60d+ stale.
+      if (filter === 'active' && inactive) return false
+      if (filter === 'withBalance' && !inactive) return false
       return c.name.toLowerCase().includes(search.toLowerCase()) ||
         c.email?.toLowerCase().includes(search.toLowerCase()) ||
         c.phone?.includes(search)
@@ -60,15 +67,29 @@ export function ClientsClient({ initialClients, clientStats = {} }: { initialCli
 
   function handleDelete() {
     if (!deleteId) return
-    startTransition(async () => { await deleteClient(deleteId); router.refresh() })
+    const name = initialClients.find(c => c.id === deleteId)?.name ?? 'Cliente'
+    startTransition(async () => {
+      try {
+        await deleteClient(deleteId)
+        setToast({ message: locale === 'es' ? `${name} eliminado` : `${name} deleted`, variant: 'success' })
+        router.refresh()
+      } catch (e) {
+        setToast({ message: e instanceof Error ? e.message : 'Error', variant: 'error' })
+      }
+    })
     setDeleteId(null)
   }
 
-  const inactiveCount = initialClients.filter(c => (clientStats[c.id]?.jobCount ?? 0) === 0).length
+  const now = new Date()
+  const inactiveCount = initialClients.filter(c => {
+    const s = clientStats[c.id]
+    return !s?.hasLiveJob && isInactiveClient(s?.lastActivityAt ?? null, now, 60)
+  }).length
+  const activeCount = initialClients.length - inactiveCount
   const filterOptions = [
     { value: 'all' as FilterValue, label: locale === 'es' ? 'Todos' : 'All', count: total },
-    { value: 'active' as FilterValue, label: locale === 'es' ? 'Activos' : 'Active', count: activeClients.length },
-    { value: 'withBalance' as FilterValue, label: locale === 'es' ? 'Inactivos' : 'Inactive', count: inactiveCount },
+    { value: 'active' as FilterValue, label: locale === 'es' ? 'Activos' : 'Active', count: activeCount },
+    { value: 'withBalance' as FilterValue, label: locale === 'es' ? 'Inactivos (60d+)' : 'Inactive (60d+)', count: inactiveCount },
   ]
 
   // Alphabetical grouping for table view
@@ -83,7 +104,8 @@ export function ClientsClient({ initialClients, clientStats = {} }: { initialCli
   })()
 
   return (
-    <div className="px-4 pt-2 pb-4 md:p-8 bg-white md:bg-transparent min-h-full">
+    <div className="px-4 pt-2 pb-4 md:p-8 bg-card md:bg-transparent min-h-full">
+      {toast && <Toast message={toast.message} variant={toast.variant} onDone={() => setToast(null)} />}
       {deleteId && (
         <ConfirmModal
           title="Delete Client"
@@ -106,7 +128,7 @@ export function ClientsClient({ initialClients, clientStats = {} }: { initialCli
                   {activeClients.length}
                 </span>
                 {' '}
-                {locale === 'es' ? 'activos' : 'active'}
+                {locale === 'es' ? 'con proyectos' : 'with projects'}
               </>
             )}
             {totalRevenue > 0 && (
@@ -142,12 +164,23 @@ export function ClientsClient({ initialClients, clientStats = {} }: { initialCli
             sub={`↑ ${activeClients.length} vs ${locale === 'es' ? 'mes pasado' : 'last month'}`}
             subTone={activeClients.length > 0 ? 'up' : 'neutral'}
           />
-          <KpiCard
-            tone="warning"
-            label={locale === 'es' ? 'Con saldo' : 'With balance'}
-            value={inactiveCount}
-            sub={totalRevenue > 0 ? `$${formatCurrencyCompact(totalRevenue)} unpaid` : undefined}
-          />
+          {(() => {
+            // LST-002 + TRV-008 — billed = Σ emitidas (sent+overdue+paid), outstanding = Σ sent+overdue pendientes
+            const totalBilled = Object.values(clientStats).reduce((s, st) => s + ((st as ClientStats)?.billed ?? 0), 0)
+            const totalOutstanding = Object.values(clientStats).reduce((s, st) => s + ((st as ClientStats)?.outstanding ?? 0), 0)
+            const withBalanceCount = Object.values(clientStats).filter(st => ((st as ClientStats)?.outstanding ?? 0) > 0).length
+            return (
+              <KpiCard
+                tone="warning"
+                label={locale === 'es' ? 'Con saldo' : 'With balance'}
+                value={withBalanceCount}
+                sub={totalOutstanding > 0
+                  ? `$${formatCurrencyCompact(totalOutstanding)} ${locale === 'es' ? 'pendiente' : 'outstanding'} · $${formatCurrencyCompact(totalBilled)} billed`
+                  : (totalBilled > 0 ? `$${formatCurrencyCompact(totalBilled)} billed` : undefined)
+                }
+              />
+            )
+          })()}
           <KpiCard
             tone="brand"
             label={locale === 'es' ? 'LTV promedio' : 'Avg LTV'}
@@ -204,16 +237,20 @@ export function ClientsClient({ initialClients, clientStats = {} }: { initialCli
                 <button
                   onClick={() => setView('grid')}
                   className="p-2"
-                  style={{ background: view === 'grid' ? 'var(--wp-brand)' : 'var(--wp-surface)', color: view === 'grid' ? 'white' : 'var(--wp-text-3)' }}
+                  style={{ background: view === 'grid' ? 'var(--wp-brand)' : 'var(--wp-surface)', color: view === 'grid' ? 'var(--wp-text-inverse)' : 'var(--wp-text-3)' }}
                   title="Grid view"
+                  aria-label="Grid view"
+                  aria-pressed={view === 'grid'}
                 >
                   <LayoutGrid size={14} />
                 </button>
                 <button
                   onClick={() => setView('table')}
                   className="p-2"
-                  style={{ background: view === 'table' ? 'var(--wp-brand)' : 'var(--wp-surface)', color: view === 'table' ? 'white' : 'var(--wp-text-3)' }}
+                  style={{ background: view === 'table' ? 'var(--wp-brand)' : 'var(--wp-surface)', color: view === 'table' ? 'var(--wp-text-inverse)' : 'var(--wp-text-3)' }}
                   title="Table view"
+                  aria-label="Table view"
+                  aria-pressed={view === 'table'}
                 >
                   <List size={14} />
                 </button>
@@ -256,7 +293,7 @@ export function ClientsClient({ initialClients, clientStats = {} }: { initialCli
                   </div>
                   {withActive.map((c, idx) => (
                     <SwipeableRow key={c.id} actions={[
-                      { label: 'Delete', icon: <Trash2 size={16} />, color: 'white', bg: 'var(--wp-error-v2)', onClick: () => setDeleteId(c.id) },
+                      { label: 'Delete', icon: <Trash2 size={16} />, color: 'var(--wp-text-inverse)', bg: 'var(--wp-error-v2)', onClick: () => setDeleteId(c.id) },
                     ]}>
                       <Link
                         href={`/${locale}/clients/${c.id}`}
@@ -282,7 +319,7 @@ export function ClientsClient({ initialClients, clientStats = {} }: { initialCli
                   </div>
                   {abcGroups[letter].map((c, idx) => (
                     <SwipeableRow key={c.id} actions={[
-                      { label: 'Delete', icon: <Trash2 size={16} />, color: 'white', bg: 'var(--wp-error-v2)', onClick: () => setDeleteId(c.id) },
+                      { label: 'Delete', icon: <Trash2 size={16} />, color: 'var(--wp-text-inverse)', bg: 'var(--wp-error-v2)', onClick: () => setDeleteId(c.id) },
                     ]}>
                       <Link
                         href={`/${locale}/clients/${c.id}`}
@@ -379,7 +416,7 @@ export function ClientsClient({ initialClients, clientStats = {} }: { initialCli
                               <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
                                 style={{ background: isActive ? 'var(--wp-success-bg-v2, #F0FDF4)' : 'var(--wp-surface-2)', color: isActive ? 'var(--wp-success-v2)' : 'var(--wp-text-3)' }}>
                                 <span className="w-1.5 h-1.5 rounded-full" style={{ background: isActive ? 'var(--wp-success-v2)' : 'var(--wp-text-3)' }} />
-                                {isActive ? 'Active' : 'Inactive'}
+                                {isActive ? (locale === 'es' ? 'Activo' : 'Active') : (locale === 'es' ? 'Inactivo' : 'Inactive')}
                               </span>
                             </td>
                             <td className="px-4 py-3 text-right">
@@ -440,7 +477,7 @@ export function ClientsClient({ initialClients, clientStats = {} }: { initialCli
                       >
                         {st?.jobCount > 0 && (
                           <div className="flex items-center gap-1 text-xs font-medium" style={{ color: 'var(--wp-text-2)' }}>
-                            <Briefcase size={11} style={{ color: 'var(--wp-info-v2)' }} /> {st.jobCount} {st.jobCount !== 1 ? 'jobs' : 'job'}
+                            <Briefcase size={11} style={{ color: 'var(--wp-info-v2)' }} /> {st.jobCount} {st.jobCount !== 1 ? (locale === 'es' ? 'proyectos' : 'projects') : (locale === 'es' ? 'proyecto' : 'project')}
                           </div>
                         )}
                         {st?.revenue > 0 && (

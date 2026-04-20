@@ -28,7 +28,7 @@ export function VideoModal() {
           aria-label="Demo video"
         >
           <div
-            className="relative w-full max-w-3xl aspect-video bg-[#0F2440] rounded-2xl overflow-hidden shadow-2xl"
+            className="relative w-full max-w-3xl aspect-video bg-navy rounded-2xl overflow-hidden shadow-2xl"
             onClick={e => e.stopPropagation()}
           >
             <button

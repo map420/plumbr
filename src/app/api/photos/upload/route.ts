@@ -8,22 +8,32 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+const LOGO_MIME = new Set(['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'])
+const LOGO_MAX_BYTES = 2 * 1024 * 1024
+
 export async function POST(req: NextRequest) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  const url = new URL(req.url)
+  const kind = url.searchParams.get('kind') === 'logo' ? 'logo' : 'photo'
+
   const formData = await req.formData()
   const file = formData.get('file') as File | null
-  const jobId = formData.get('jobId') as string | null
-  const estimateId = formData.get('estimateId') as string | null
-  const lineItemId = formData.get('lineItemId') as string | null
-  const description = formData.get('description') as string | null
-
   if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 })
 
-  const ext = file.name.split('.').pop() || 'jpg'
-  const filename = `${userId}/${crypto.randomUUID()}.${ext}`
+  if (kind === 'logo') {
+    if (!LOGO_MIME.has(file.type)) {
+      return NextResponse.json({ error: 'Invalid file type. Allowed: PNG, JPG, SVG' }, { status: 400 })
+    }
+    if (file.size > LOGO_MAX_BYTES) {
+      return NextResponse.json({ error: 'File too large. Max 2 MB.' }, { status: 400 })
+    }
+  }
 
+  const ext = file.name.split('.').pop() || 'jpg'
+  const folder = kind === 'logo' ? 'logos' : 'photos'
+  const filename = `${folder}/${userId}/${crypto.randomUUID()}.${ext}`
   const buffer = Buffer.from(await file.arrayBuffer())
 
   const { error: uploadError } = await supabase.storage
@@ -35,6 +45,15 @@ export async function POST(req: NextRequest) {
   }
 
   const { data: urlData } = supabase.storage.from('photos').getPublicUrl(filename)
+
+  if (kind === 'logo') {
+    return NextResponse.json({ url: urlData.publicUrl })
+  }
+
+  const jobId = formData.get('jobId') as string | null
+  const estimateId = formData.get('estimateId') as string | null
+  const lineItemId = formData.get('lineItemId') as string | null
+  const description = formData.get('description') as string | null
 
   const photo = await createPhoto({
     jobId: jobId || undefined,

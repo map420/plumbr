@@ -13,8 +13,31 @@ export const mockAdapter: PaymentsAdapter = {
     console.log('[PAYMENTS MOCK] customer created for', email)
     return { id: `mock_cus_${email.split('@')[0]}` }
   },
-  async createPaymentLink({ amountCents, description }) {
-    console.log('[PAYMENTS MOCK] payment link —', description, amountCents)
+  async createPaymentLink({ amountCents, description, stripeAccount }) {
+    console.log('[PAYMENTS MOCK] payment link —', description, amountCents, stripeAccount ? `(→ ${stripeAccount})` : '(platform)')
     return { url: 'https://buy.stripe.com/mock', id: `mock_pl_${Date.now()}` }
+  },
+  async createConnectAccount({ email }) {
+    console.log('[PAYMENTS MOCK] connect account for', email)
+    return { accountId: `mock_acct_${email.split('@')[0]}` }
+  },
+  async createConnectAccountLink({ accountId, returnUrl }) {
+    console.log('[PAYMENTS MOCK] account link for', accountId)
+    return { url: `${returnUrl}?mock=connect` }
+  },
+  async getConnectAccount(accountId) {
+    console.log('[PAYMENTS MOCK] retrieve account', accountId)
+    return {
+      id: accountId,
+      chargesEnabled: true,
+      payoutsEnabled: true,
+      detailsSubmitted: true,
+      requirementsCurrentlyDue: [],
+      requirementsPastDue: [],
+    }
+  },
+  async createConnectLoginLink(accountId) {
+    console.log('[PAYMENTS MOCK] login link for', accountId)
+    return { url: `https://dashboard.stripe.com/mock/${accountId}` }
   },
 }

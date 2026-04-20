@@ -7,7 +7,8 @@ import { db } from '@/db'
 import { shoppingLists, shoppingListItems } from '@/db/schema/shopping-lists'
 import { eq, and, inArray, isNotNull } from 'drizzle-orm'
 import { isScheduledToday } from '@/lib/schedule'
-import { formatCurrencyCompact } from '@/lib/format'
+import { formatCurrencyCompact, sumActualExpenses } from '@/lib/format'
+import { deriveInvoiceStatus } from '@/lib/status/derived'
 import { DashboardStats } from './_components/DashboardStats'
 
 // Bulk fetch wrapped in unstable_cache per user. Tag-invalidated from server
@@ -61,7 +62,7 @@ export default async function DashboardPage() {
   const userId = await authAdapter.getUserId()
 
   const empty = {
-    stats: { activeJobs: 0, revenueThisMonth: 0, unpaidTotal: 0, unpaidCount: 0, winRate: null as number | null },
+    stats: { activeJobs: 0, revenueThisMonth: 0, unpaidTotal: 0, unpaidCount: 0, overdueCount: 0, winRate: null as number | null },
     alerts: [] as { type: string; label: string; href: string }[],
     todayJobs: [] as { id: string; name: string; clientName: string; time: string | null }[],
     activeJobs: [] as { id: string; name: string; clientName: string }[],
@@ -88,8 +89,10 @@ export default async function DashboardPage() {
     .filter(i => i.status === 'paid' && i.paidAt && new Date(i.paidAt) >= monthStart)
     .reduce((s, i) => s + parseFloat(i.total), 0)
 
-  const unpaidInvoices = allInvoices.filter(i => i.status === 'sent' || i.status === 'overdue')
-  const overdueInvoices = allInvoices.filter(i => i.status === 'overdue')
+  // O2/O3 — usar derived status consistente en todo el dashboard
+  const invoicesWithDerived = allInvoices.map(i => ({ inv: i, derived: deriveInvoiceStatus(i, now) }))
+  const unpaidInvoices = invoicesWithDerived.filter(({ derived }) => derived === 'sent' || derived === 'overdue').map(({ inv }) => inv)
+  const overdueInvoices = invoicesWithDerived.filter(({ derived }) => derived === 'overdue').map(({ inv }) => inv)
   const unpaidTotal = unpaidInvoices.reduce((s, i) => s + parseFloat(i.total), 0)
   const unpaidCount = unpaidInvoices.length
 
@@ -97,7 +100,8 @@ export default async function DashboardPage() {
   const approvedEstimates = allEstimates.filter(e => ['approved', 'converted'].includes(e.status))
   const winRate = sentEstimates.length > 0 ? Math.round((approvedEstimates.length / sentEstimates.length) * 100) : null
 
-  const stats = { activeJobs, revenueThisMonth, unpaidTotal, unpaidCount, winRate }
+  const overdueCount = overdueInvoices.length
+  const stats = { activeJobs, revenueThisMonth, unpaidTotal, unpaidCount, overdueCount, winRate }
 
   // ── Alerts ──
   const alerts: { type: string; label: string; href: string }[] = []
@@ -115,12 +119,12 @@ export default async function DashboardPage() {
 
   const jobMargins = allJobs.map(j => {
     const rev = allInvoices.filter(i => i.jobId === j.id && i.status === 'paid').reduce((s, i) => s + parseFloat(i.total), 0)
-    const cost = allExpenses.filter(e => e.jobId === j.id).reduce((s, e) => s + parseFloat(e.amount), 0)
+    const cost = sumActualExpenses(allExpenses.filter(e => e.jobId === j.id))
     return { name: j.name, margin: rev > 0 ? ((rev - cost) / rev) * 100 : null }
   })
   const negJobs = jobMargins.filter(j => j.margin !== null && j.margin < 0)
   if (negJobs.length > 0) {
-    alerts.push({ type: 'error', label: `${negJobs.length} job${negJobs.length > 1 ? 's' : ''} losing money`, href: '/jobs' })
+    alerts.push({ type: 'error', label: `${negJobs.length} project${negJobs.length > 1 ? 's' : ''} losing money`, href: '/projects' })
   }
 
   // Estimates expiring within the next 3 days
@@ -135,7 +139,7 @@ export default async function DashboardPage() {
   // Active jobs with no start date (unscheduled work)
   const unscheduledJobs = allJobs.filter(j => j.status === 'active' && !j.startDate)
   if (unscheduledJobs.length > 0) {
-    alerts.push({ type: 'warning', label: `${unscheduledJobs.length} active job${unscheduledJobs.length > 1 ? 's' : ''} without a scheduled date`, href: '/schedule' })
+    alerts.push({ type: 'warning', label: `${unscheduledJobs.length} active project${unscheduledJobs.length > 1 ? 's' : ''} without a scheduled date`, href: '/schedule' })
   }
 
   // Completed jobs with no invoice yet (uninvoiced work)
@@ -144,7 +148,7 @@ export default async function DashboardPage() {
     return !allInvoices.some(inv => inv.jobId === j.id)
   })
   if (uninvoicedCompletedJobs.length > 0) {
-    alerts.push({ type: 'warning', label: `${uninvoicedCompletedJobs.length} completed job${uninvoicedCompletedJobs.length > 1 ? 's' : ''} without an invoice`, href: '/jobs' })
+    alerts.push({ type: 'warning', label: `${uninvoicedCompletedJobs.length} completed project${uninvoicedCompletedJobs.length > 1 ? 's' : ''} without an invoice`, href: '/projects' })
   }
 
   // Shopping lists with pending materials — emergent alert (dismissable like the others)
@@ -175,7 +179,7 @@ export default async function DashboardPage() {
     .map(j => ({ id: j.id, name: j.name, clientName: j.clientName }))
 
   // ── Revenue by Month (6 past + 3 projected) ──
-  const overdueInvs = allInvoices.filter(i => i.status === 'overdue')
+  const overdueInvs = allInvoices.filter(i => deriveInvoiceStatus(i, now) === 'overdue')
   const overdueSpread = overdueInvs.reduce((s, i) => s + parseFloat(i.total), 0) * 0.7 / 3
   const approvedEstNoInvoice = allEstimates.filter(e => e.status === 'approved' && !e.convertedToInvoiceId)
   const approvedSpread = approvedEstNoInvoice.reduce((s, e) => s + parseFloat(e.total), 0) * 0.8 / 3
@@ -225,7 +229,7 @@ export default async function DashboardPage() {
 
   // ── Money Pipeline: Pending → Unpaid → Paid (exclusive counts) ──
   const pendingCount = allEstimates.filter(e => ['sent', 'approved'].includes(e.status)).length
-  const unpaidPipelineCount = allInvoices.filter(i => i.status === 'sent' || i.status === 'overdue').length
+  const unpaidPipelineCount = allInvoices.filter(i => { const d = deriveInvoiceStatus(i, now); return d === 'sent' || d === 'overdue' }).length
   const paidPipelineCount = allInvoices.filter(i => i.status === 'paid').length
   const pipeline = { pending: pendingCount, unpaid: unpaidPipelineCount, paid: paidPipelineCount }
 
@@ -252,7 +256,7 @@ export default async function DashboardPage() {
   if (overdueInvs.length > 0)
     insights.push({ text: `${overdueInvs.length} invoice${overdueInvs.length > 1 ? 's' : ''} overdue ($${formatCurrencyCompact(overdueTotal)}) — recover cash flow`, href: '/invoices', label: 'Follow Up' })
   if (allJobs.filter(j => j.status === 'lead' && new Date(j.createdAt) >= monthStart).length === 0)
-    insights.push({ text: 'No new leads this month', href: '/jobs/new', label: 'Create Job' })
+    insights.push({ text: 'No new leads this month', href: '/projects/new', label: 'Create Project' })
   if (winRate !== null && winRate < 40)
     insights.push({ text: `Low win rate (${winRate}%) — proposals aren't converting`, href: '/estimates', label: 'Review Estimates' })
 

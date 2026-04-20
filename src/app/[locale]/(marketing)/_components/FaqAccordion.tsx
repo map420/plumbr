@@ -18,7 +18,7 @@ const FAQS = [
   },
   {
     q: 'Can my field crew use it on their phones?',
-    a: 'Yes. The mobile field app works on iOS and Android. Your technicians can upload photos, check off tasks, and log hours — all from the job site. No extra cost per user.',
+    a: 'Yes. The mobile field app works on iOS and Android. Your technicians can upload photos, check off tasks, and log hours — all from the project site. No extra cost per user.',
   },
   {
     q: 'How long does it take to set up?',
@@ -26,7 +26,7 @@ const FAQS = [
   },
   {
     q: 'Does it integrate with QuickBooks?',
-    a: 'Not yet, but it\'s on our roadmap. WorkPilot handles estimates, invoicing, and job costing natively — most contractors find they no longer need QuickBooks for day-to-day operations.',
+    a: 'Not yet, but it\'s on our roadmap. WorkPilot handles estimates, invoicing, and project costing natively — most contractors find they no longer need QuickBooks for day-to-day operations.',
   },
 ]
 
@@ -46,10 +46,10 @@ export function FaqAccordion() {
             aria-expanded={open === i}
           >
             <span className="font-semibold text-slate-900 text-sm pr-4">{faq.q}</span>
-            <span className="shrink-0 w-6 h-6 rounded-full bg-[#1E3A5F]/10 flex items-center justify-center">
+            <span className="shrink-0 w-6 h-6 rounded-full bg-navy-500/10 flex items-center justify-center">
               {open === i
-                ? <Minus size={13} className="text-[#1E3A5F]" />
-                : <Plus size={13} className="text-[#1E3A5F]" />
+                ? <Minus size={13} className="text-navy-500" />
+                : <Plus size={13} className="text-navy-500" />
               }
             </span>
           </button>

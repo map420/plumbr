@@ -16,11 +16,14 @@ export default async function EstimateDetailPage({ params }: { params: Promise<{
   if (!estimate) notFound()
 
   const userId = await requireUser()
-  const [job, viewCount, estPhotos, user] = await Promise.all([
+  const [job, viewCount, estPhotos, user, linkedInvoice] = await Promise.all([
     estimate.jobId ? getJob(estimate.jobId) : null,
     getDocumentViewCount(id, 'estimate'),
     getPhotosByEstimate(id).catch(() => []),
     dbAdapter.users.findById(userId),
+    estimate.convertedToInvoiceId
+      ? dbAdapter.invoices.findById(estimate.convertedToInvoiceId, userId).catch(() => null)
+      : null,
   ])
   const jobPhotos = estimate.jobId ? await getPhotosByJob(estimate.jobId).catch(() => []) : []
   const photos = [...estPhotos, ...jobPhotos].filter((p, i, arr) => arr.findIndex(x => x.id === p.id) === i)
@@ -28,6 +31,7 @@ export default async function EstimateDetailPage({ params }: { params: Promise<{
   return (
     <EstimateDetailClient
       estimate={estimate} lineItems={lineItems} job={job ? { id: job.id, name: job.name } : null}
+      linkedInvoice={linkedInvoice ? { id: linkedInvoice.id, number: linkedInvoice.number } : null}
       viewCount={viewCount} clientPhone={estimate.clientPhone ?? null} shareToken={estimate.shareToken ?? null}
       photos={photos.map(p => ({ id: p.id, url: p.url, description: p.description, thumbnailUrl: (p as any).thumbnailUrl }))}
       company={{
@@ -37,10 +41,11 @@ export default async function EstimateDetailPage({ params }: { params: Promise<{
         logoUrl: user?.logoUrl || null,
         businessTaxId: (user as any)?.businessTaxId || null,
       }}
+      userTaxRate={user?.taxRate ?? null}
       translations={{
         back: tc('back'), edit: tc('edit'), delete: tc('delete'),
         convertToInvoice: te('convertToInvoice'),
-        status: { draft: te('status.draft'), sent: te('status.sent'), approved: te('status.approved'), rejected: te('status.rejected'), converted: te('status.converted') },
+        status: { draft: te('status.draft'), sent: te('status.sent'), approved: te('status.approved'), rejected: te('status.rejected'), converted: te('status.converted'), expired: te('status.expired') },
         fields: { clientName: te('fields.clientName'), clientEmail: te('fields.clientEmail'), validUntil: te('fields.validUntil'), notes: te('fields.notes'), subtotal: te('fields.subtotal'), tax: te('fields.tax'), total: te('fields.total') },
         lineItems: {
           type: { labor: te('lineItems.type.labor'), material: te('lineItems.type.material'), subcontractor: te('lineItems.type.subcontractor'), other: te('lineItems.type.other') },

@@ -7,8 +7,9 @@ import { useLocale } from 'next-intl'
 import {
   FileText, Receipt, Users, CreditCard, MoreHorizontal,
   LayoutDashboard, Briefcase, Calendar, Wrench, UserCog,
-  Wallet, Settings, Bot, ClipboardList, ShoppingCart,
+  Wallet, Settings, ClipboardList, ShoppingCart,
 } from 'lucide-react'
+import { SparkleIcon } from '@/components/icons/SparkleIcon'
 import { BottomSheet } from '@/components/BottomSheet'
 
 export default function BottomNav() {
@@ -24,8 +25,8 @@ export default function BottomNav() {
   ]
 
   const moreItems = [
-    { href: `/${locale}/assistant`, label: locale === 'es' ? 'Asistente IA' : 'AI Assistant', icon: Bot },
-    { href: `/${locale}/jobs`, label: locale === 'es' ? 'Trabajos' : 'Jobs', icon: Briefcase },
+    { href: `/${locale}/assistant`, label: locale === 'es' ? 'Asistente IA' : 'AI Assistant', icon: SparkleIcon },
+    { href: `/${locale}/projects`, label: locale === 'es' ? 'Trabajos' : 'Jobs', icon: Briefcase },
     { href: `/${locale}/schedule`, label: locale === 'es' ? 'Calendario' : 'Schedule', icon: Calendar },
     { href: `/${locale}/field`, label: locale === 'es' ? 'Campo' : 'Field', icon: Wrench },
     { href: `/${locale}/team`, label: locale === 'es' ? 'Equipo' : 'Team', icon: UserCog },

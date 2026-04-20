@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { formatCurrency, formatCurrencyCompact } from '@/lib/format'
 
 type Item = { id: string; description: string; estimatedCost: string; status: string; vendor?: string | null }
 type JobSummary = { id: string; name: string; clientName: string; status: string }
@@ -30,19 +31,19 @@ export function ShoppingListSidebar({
   return (
     <>
       {/* Total card */}
-      <div className="rounded-xl p-5" style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', color: 'white' }}>
+      <div className="rounded-xl p-5" style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', color: 'var(--wp-text-inverse)' }}>
         <div className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ opacity: 0.6 }}>Total</div>
         <div className="text-2xl font-extrabold tabular-nums mb-3" style={{ letterSpacing: '-0.02em' }}>
-          ${total.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+          ${formatCurrency(total, locale)}
         </div>
         <div className="space-y-1 text-xs" style={{ opacity: 0.85 }}>
           <div className="flex justify-between">
             <span>{locale === 'es' ? 'Ya comprado' : 'Already bought'}</span>
-            <span className="tabular-nums">${alreadyBought.toLocaleString()}</span>
+            <span className="tabular-nums">${formatCurrencyCompact(alreadyBought, locale)}</span>
           </div>
           <div className="flex justify-between">
             <span>{locale === 'es' ? 'Pendiente' : 'Remaining'}</span>
-            <span className="tabular-nums">${remaining.toLocaleString()}</span>
+            <span className="tabular-nums">${formatCurrencyCompact(remaining, locale)}</span>
           </div>
         </div>
       </div>
@@ -53,7 +54,7 @@ export function ShoppingListSidebar({
           <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--wp-text-3)' }}>
             {locale === 'es' ? 'Jobs vinculados' : 'Linked jobs'}
           </div>
-          <Link href={`/${locale}/jobs/${job.id}`} className="flex items-center justify-between text-xs py-1" style={{ color: 'var(--wp-text-2)' }}>
+          <Link href={`/${locale}/projects/${job.id}`} className="flex items-center justify-between text-xs py-1" style={{ color: 'var(--wp-text-2)' }}>
             <span className="font-medium truncate" style={{ color: 'var(--wp-brand)' }}>{job.name}</span>
             <span className="shrink-0 ml-2">{items.length} items</span>
           </Link>
@@ -71,7 +72,7 @@ export function ShoppingListSidebar({
               <div key={vendor} className="flex items-center justify-between text-xs">
                 <span className="font-medium truncate" style={{ color: 'var(--wp-text)' }}>{vendor}</span>
                 <span className="shrink-0 ml-2" style={{ color: 'var(--wp-text-3)' }}>
-                  {vItems.length} · ${vItems.reduce((s, it) => s + parseFloat(it.estimatedCost), 0).toLocaleString()}
+                  {vItems.length} · ${formatCurrencyCompact(vItems.reduce((s, it) => s + parseFloat(it.estimatedCost), 0), locale)}
                 </span>
               </div>
             ))}
@@ -80,7 +81,7 @@ export function ShoppingListSidebar({
       )}
 
       {/* AI tip — navy gradient matching Total card */}
-      <div className="rounded-xl p-5" style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', color: 'white' }}>
+      <div className="rounded-xl p-5" style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', color: 'var(--wp-text-inverse)' }}>
         <div className="flex items-center gap-1.5 mb-2">
           <span className="text-xs font-semibold" style={{ color: 'var(--wp-ai-accent, #A5B4FC)' }}>◆ WorkPilot AI</span>
         </div>

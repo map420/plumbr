@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Modelo de Negocio y Pricing — WorkPilot</title>
+  <link rel="stylesheet" href="_styles.css">
+</head>
+<body>
+
+  <div class="cover">
+    <div class="cover-header">
+      <div class="cover-logo"><span class="cover-logo-mark">W</span>WorkPilot</div>
+      <span class="cover-badge">Confidencial · Uso interno</span>
+    </div>
+    <div class="cover-body">
+      <div class="cover-kicker">DOCUMENTO FINANCIERO · 06</div>
+      <h1 class="cover-title">Modelo de Negocio y Pricing</h1>
+      <p class="cover-subtitle">Planes actuales, unit economics, experimentos de pricing propuestos y proyecciones por escenario.</p>
+    </div>
+    <div class="cover-footer">
+      <div class="cover-meta">
+        <span><strong>Versión</strong> 1.0</span>
+        <span><strong>Fecha</strong> Abril 2026</span>
+      </div>
+      <div class="cover-meta" style="text-align: right;">
+        <span><strong>Audiencia</strong> Founders · Finance · Ventas</span>
+        <span>workpilot.io</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <nav class="toc">
+      <h2>Tabla de contenidos</h2>
+      <ul class="toc-list">
+        <li><span class="toc-title">1. Modelo de ingresos</span><span class="toc-page">3</span></li>
+        <li><span class="toc-title">2. Planes actuales</span><span class="toc-page">4</span></li>
+        <li><span class="toc-title">3. Anatomía del precio</span><span class="toc-page">6</span></li>
+        <li><span class="toc-title">4. Unit economics</span><span class="toc-page">8</span></li>
+        <li><span class="toc-title">5. Funnel de conversión</span><span class="toc-page">10</span></li>
+        <li><span class="toc-title">6. Experimentos de pricing</span><span class="toc-page">12</span></li>
+        <li><span class="toc-title">7. Plan Growth: cuándo activarlo</span><span class="toc-page">14</span></li>
+        <li><span class="toc-title">8. Add-ons potenciales</span><span class="toc-page">15</span></li>
+        <li><span class="toc-title">9. Proyecciones por escenario</span><span class="toc-page">16</span></li>
+        <li><span class="toc-title">10. Recomendaciones</span><span class="toc-page">18</span></li>
+      </ul>
+    </nav>
+
+    <section>
+      <h2>1. Modelo de ingresos</h2>
+
+      <p>WorkPilot opera con modelo SaaS de suscripción mensual/anual recurrente. Sin setup fees, sin contratos largos, cancelación en cualquier momento.</p>
+
+      <div class="kpi-grid cols-3">
+        <div class="kpi-card">
+          <div class="kpi-value">SaaS</div>
+          <div class="kpi-label">Recurrente mensual/anual</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">$0 setup</div>
+          <div class="kpi-label">Sin onboarding pagado</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">Cancela cuando quieras</div>
+          <div class="kpi-label">No lock-in contractual</div>
+        </div>
+      </div>
+
+      <h3>Estructura de ingresos esperada</h3>
+      <table>
+        <thead><tr><th>Fuente</th><th>% Target año 1</th><th>% Target año 3</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Suscripción Pro mensual</strong></td><td>70%</td><td>55%</td></tr>
+          <tr><td><strong>Suscripción Pro anual</strong></td><td>25%</td><td>30%</td></tr>
+          <tr><td><strong>Add-ons (SMS, técnicos, etc.)</strong></td><td>5%</td><td>10%</td></tr>
+          <tr><td><strong>Transacciones (Stripe Connect fee)</strong></td><td>0%</td><td>5%</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout insight">
+        <span class="callout-label">Por qué suscripción y no transaccional</span>
+        <div class="callout-body">
+          El modelo SaaS da predictibilidad de cash flow (MRR creciente, NRR medible). Un modelo transaccional (cobrar % sobre invoices procesadas) alinea incentivos pero introduce volatilidad. <strong>Preferimos SaaS puro con add-ons transaccionales opcionales.</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="page-break">
+      <h2>2. Planes actuales</h2>
+
+      <h3>Starter (gratis) vs Pro ($29/mes o $249/año)</h3>
+
+      <div class="two-col">
+        <div class="col-box">
+          <h4>Starter · $0</h4>
+          <p style="font-size: 9pt; color: var(--text-muted); margin-top: -4pt;">Free forever, sin tarjeta</p>
+          <ul>
+            <li>Hasta 5 jobs</li>
+            <li>Hasta 5 estimates</li>
+            <li>Hasta 10 clientes</li>
+            <li>Hasta 10 catalog items</li>
+            <li>Hasta 5 fotos</li>
+            <li>Invoices básicas</li>
+            <li>Portal cliente</li>
+            <li>Pagos Stripe</li>
+            <li>Español + inglés</li>
+          </ul>
+          <p style="font-size: 9pt; color: var(--text-muted);"><strong>Excluye:</strong> Equipo/técnicos, field mode, schedule, change orders, work orders, AI, SMS, QBO, firma digital.</p>
+        </div>
+        <div class="col-box" style="border: 2pt solid var(--primary);">
+          <h4 style="color: var(--primary);">Pro · $29/mes <span style="font-size: 9pt; font-weight: 400; color: var(--text-muted);">($249/año · 29% off)</span></h4>
+          <ul>
+            <li>Jobs y estimates ilimitados</li>
+            <li>Clientes y catalog ilimitados</li>
+            <li>Fotos ilimitadas</li>
+            <li>Equipo / técnicos ilimitados</li>
+            <li>Field mode PWA</li>
+            <li>Schedule</li>
+            <li>Change orders + work orders</li>
+            <li><strong>WorkPilot AI</strong> (37 tools)</li>
+            <li><strong>SMS delivery</strong></li>
+            <li><strong>QuickBooks sync</strong></li>
+            <li>Firma digital</li>
+            <li>Email automations</li>
+            <li>Soporte prioritario</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Tabla comparativa de features</h3>
+      <table class="compact">
+        <thead><tr><th>Feature</th><th>Starter</th><th>Pro</th></tr></thead>
+        <tbody>
+          <tr><td>Jobs / Estimates / Invoices</td><td>5 / 5 / 5</td><td>Ilimitado</td></tr>
+          <tr><td>Clientes</td><td>10</td><td>Ilimitado</td></tr>
+          <tr><td>Catalog items</td><td>10</td><td>Ilimitado</td></tr>
+          <tr><td>Fotos</td><td>5</td><td>Ilimitado</td></tr>
+          <tr><td>Técnicos</td><td>0</td><td>Ilimitado</td></tr>
+          <tr><td>Field mode / Schedule</td><td>❌</td><td>✅</td></tr>
+          <tr><td>Change Orders / Work Orders</td><td>❌</td><td>✅</td></tr>
+          <tr><td>WorkPilot AI</td><td>❌</td><td>✅</td></tr>
+          <tr><td>Firma digital / contratos</td><td>❌</td><td>✅</td></tr>
+          <tr><td>Email automations</td><td>❌</td><td>✅</td></tr>
+          <tr><td>SMS delivery</td><td>❌</td><td>✅</td></tr>
+          <tr><td>QuickBooks sync</td><td>❌</td><td>✅</td></tr>
+          <tr><td>Soporte</td><td>Email/docs</td><td>Prioritario</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="page-break">
+      <h2>3. Anatomía del precio</h2>
+
+      <h3>¿Por qué $29/mes?</h3>
+      <p>El precio Pro fue calibrado en función de tres variables:</p>
+
+      <ol>
+        <li><strong>Valor entregado:</strong> un contratista con WorkPilot ahorra ~4 horas/semana (~<span class="amount">$400–600</span>/mes en tiempo facturable) y captura ~20% más gastos de materiales (~<span class="amount">$300/mes</span>). ROI real &gt; 20x.</li>
+        <li><strong>Benchmark competitivo:</strong> Jobber desde <span class="amount">$39</span>, HCP desde <span class="amount">$49</span>. <span class="amount">$29</span> es agresivamente bajo pero sostenible.</li>
+        <li><strong>Willingness to pay SMB:</strong> research informal sugiere que contratistas de 1–5 empleados gastan <span class="amount">$30–60/mes</span> en herramientas administrativas. Cabemos en el rango.</li>
+      </ol>
+
+      <div class="callout insight">
+        <span class="callout-label">Posicionamiento del precio</span>
+        <div class="callout-body">
+          <span class="amount">$29/mes</span> es el <strong>"streaming service del contratista"</strong>: menos que Netflix + Spotify juntos, decisión de compra casi impulsiva. No requiere aprobación de gerente. Esto acelera conversión y reduce CAC.
+        </div>
+      </div>
+
+      <h3>Descomposición del precio</h3>
+      <table>
+        <thead><tr><th>Componente</th><th>$/mes</th><th>% del precio</th></tr></thead>
+        <tbody>
+          <tr><td>Infra (Supabase, Vercel, Clerk)</td><td>$3.00</td><td>10%</td></tr>
+          <tr><td>AI (Claude API, avg/user)</td><td>$2.50</td><td>9%</td></tr>
+          <tr><td>Email/SMS (Resend, ElevenLabs)</td><td>$0.80</td><td>3%</td></tr>
+          <tr><td>Stripe fees (~2.9% s/pagos)</td><td>$0.50</td><td>2%</td></tr>
+          <tr><td><strong>Total COGS</strong></td><td><strong>$6.80</strong></td><td><strong>23%</strong></td></tr>
+          <tr><td>Soporte (prorrateado)</td><td>$1.50</td><td>5%</td></tr>
+          <tr><td>Marketing + ventas</td><td>$8.00</td><td>28%</td></tr>
+          <tr><td><strong>Contribution margin</strong></td><td><strong>$12.70</strong></td><td><strong>44%</strong></td></tr>
+        </tbody>
+      </table>
+
+      <p style="font-size: 9pt; color: var(--text-muted);">Nota: valores estimados para modelar decisiones. Los reales se ajustan con cohortes al escalar.</p>
+
+      <h3>Descuento anual</h3>
+      <p>Plan anual a <span class="amount">$249</span> (equivale a 10 meses = 17% off, pero se comercializa como 29% off efectivo). Objetivos:</p>
+      <ul>
+        <li><strong>Cash flow:</strong> año completo cobrado upfront</li>
+        <li><strong>Retención:</strong> lock-in natural de 12 meses</li>
+        <li><strong>Marketing:</strong> "$249/año" es título limpio en landing</li>
+      </ul>
+    </section>
+
+    <section class="page-break">
+      <h2>4. Unit economics</h2>
+
+      <h3>Métricas target año 2 (estabilizadas)</h3>
+      <div class="kpi-grid cols-4">
+        <div class="kpi-card">
+          <div class="kpi-value">$70</div>
+          <div class="kpi-label">CAC blended</div>
+          <div class="kpi-delta neutral">Acquisition cost</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">$870</div>
+          <div class="kpi-label">LTV</div>
+          <div class="kpi-delta up">Lifetime value</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">12.4x</div>
+          <div class="kpi-label">LTV:CAC</div>
+          <div class="kpi-delta up">Healthy &gt; 3x</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">5.5 meses</div>
+          <div class="kpi-label">Payback</div>
+          <div class="kpi-delta up">Healthy &lt; 12 meses</div>
+        </div>
+      </div>
+
+      <h3>Cómo se calcula</h3>
+      <table>
+        <thead><tr><th>Métrica</th><th>Cálculo</th><th>Valor target</th></tr></thead>
+        <tbody>
+          <tr><td>ARPU mensual</td><td>Paid users × (% anual × $20.75 + % mensual × $29)</td><td>$27</td></tr>
+          <tr><td>Gross margin</td><td>1 − (COGS/ARPU)</td><td>75%</td></tr>
+          <tr><td>Churn mensual</td><td>MRR lost / MRR start</td><td>4% (objetivo &lt; 5%)</td></tr>
+          <tr><td>LTV</td><td>ARPU × GM / Churn</td><td>$870</td></tr>
+          <tr><td>CAC</td><td>Spend total / new paid users</td><td>$70 (SEO + referrals dominan)</td></tr>
+          <tr><td>Payback</td><td>CAC / (ARPU × GM)</td><td>5.5 meses</td></tr>
+          <tr><td>NRR</td><td>(MRR start + expansion − churn − downgrades) / MRR start</td><td>105% (objetivo)</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout warning">
+        <span class="callout-label">Sensibilidades clave</span>
+        <div class="callout-body">
+          El modelo asume <strong>churn 4%</strong> (agresivo pero alcanzable) y <strong>CAC $70</strong> (posible solo si freemium + SEO funcionan). Si el churn sube a 8%, LTV cae a $435 y LTV:CAC cae a 6x — todavía saludable pero presionado. El riesgo #1 es churn elevado.
+        </div>
+      </div>
+    </section>
+
+    <section class="page-break">
+      <h2>5. Funnel de conversión</h2>
+
+      <p>Del visitante del sitio al power user, con las tasas target por etapa.</p>
+
+      <div class="mermaid">
+graph TB
+    V[Visitor web<br/>100K/mes] -->|8% signup| S[Sign-up<br/>8,000/mes]
+    S -->|70% setup| SU[Setup completo<br/>5,600]
+    SU -->|60% activation| A[Activated<br/>3,360]
+    A -->|35% upgrade| P[Paid Pro<br/>1,176]
+    P -->|90% retained m3| R3[Retained 3mo<br/>1,058]
+    R3 -->|80% retained m6| R6[Retained 6mo<br/>847]
+    R6 -->|70% expansion| EX[Power user<br/>593]
+      </div>
+
+      <h3>Tasas target y benchmark</h3>
+      <table>
+        <thead><tr><th>Etapa</th><th>Tasa target</th><th>Benchmark SaaS B2B</th></tr></thead>
+        <tbody>
+          <tr><td>Visit → Sign-up</td><td>8%</td><td>2–10% (depende canal)</td></tr>
+          <tr><td>Sign-up → Setup</td><td>70%</td><td>50–75%</td></tr>
+          <tr><td>Setup → Activated</td><td>60%</td><td>30–60%</td></tr>
+          <tr><td>Activated → Paid</td><td>35%</td><td>10–25% (somos agresivos)</td></tr>
+          <tr><td>Paid 3 meses retained</td><td>90%</td><td>85–95%</td></tr>
+          <tr><td>Paid 6 meses retained</td><td>80%</td><td>75–90%</td></tr>
+          <tr><td>Paid 12 meses retained</td><td>70%</td><td>65–85%</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout insight">
+        <span class="callout-label">La palanca crítica</span>
+        <div class="callout-body">
+          <strong>Setup → Activated</strong> (60%) es la etapa con mayor potencial de mejora. Cada +10% aquí se traduce en +16% usuarios paid. Por eso <em>onboarding guiado</em> es el feature #1 en el roadmap.
+        </div>
+      </div>
+
+      <h3>Definición de "activation"</h3>
+      <p>Usuario cuenta como activated cuando cumple al menos 3 de estos 5:</p>
+      <ol>
+        <li>Creó su primer estimate</li>
+        <li>Envió su primer estimate al cliente</li>
+        <li>Usó el AI al menos 3 veces</li>
+        <li>Invitó un técnico o tiene 2+ clientes</li>
+        <li>Cargó datos de empresa (logo, tax rate)</li>
+      </ol>
+    </section>
+
+    <section class="page-break">
+      <h2>6. Experimentos de pricing</h2>
+
+      <p>Hipótesis testeable para los próximos 12 meses. Cada experimento debe tener criterio claro de éxito.</p>
+
+      <h3>Experimento 1 — Subir Pro a $39</h3>
+      <p><strong>Hipótesis:</strong> willingness to pay sostiene <span class="amount">$39</span>. Perdemos 20% de conversiones pero ganamos 35% ARPU → neto +8% MRR.</p>
+      <p><strong>Método:</strong> A/B test 50/50 durante 60 días en nuevos users. Medir conversion rate y retention.</p>
+      <p><strong>Success criteria:</strong> MRR growth &gt; +5% con churn estable.</p>
+
+      <h3>Experimento 2 — Activar plan Growth a $19</h3>
+      <p><strong>Hipótesis:</strong> hay users que no justifican <span class="amount">$29</span> pero pagarían <span class="amount">$19</span> por "Pro light" sin algunas features (SMS, QBO, field mode).</p>
+      <p><strong>Método:</strong> ofrecer downgrade a Growth a users que cancelen Pro; medir % que acepta vs cancel.</p>
+      <p><strong>Success criteria:</strong> churn neto &lt; churn sin opción de downgrade.</p>
+
+      <h3>Experimento 3 — Add-on SMS a $10/mes</h3>
+      <p><strong>Hipótesis:</strong> SMS es feature premium. 25% de Pro users lo activarían como add-on.</p>
+      <p><strong>Método:</strong> remover SMS de Pro, ofrecer como add-on. Medir attach rate y revenue incremental.</p>
+      <p><strong>Success criteria:</strong> &gt;20% attach rate generando &gt;<span class="amount">$2</span> ARPU incremental.</p>
+
+      <h3>Experimento 4 — Cobrar por técnico adicional</h3>
+      <p><strong>Hipótesis:</strong> users con 5+ técnicos pagan <span class="amount">$5/técnico</span> a partir del 6to. Small crew no afectados.</p>
+      <p><strong>Método:</strong> grandfathered para actuales, nuevos usuarios con la regla. Medir upgrade de "multi-tech" users.</p>
+      <p><strong>Success criteria:</strong> ARPU promedio +<span class="amount">$4</span> sin churn elevado.</p>
+
+      <h3>Experimento 5 — Descuento LATAM regional</h3>
+      <p><strong>Hipótesis:</strong> Pro a <span class="amount">$19</span> en México/Colombia captura mercado masivo.</p>
+      <p><strong>Método:</strong> pricing por geo (detect IP + currency). Landing en español con precios locales.</p>
+      <p><strong>Success criteria:</strong> volumen LATAM justifica margen reducido (&gt;3x volumen vs pricing US).</p>
+
+      <div class="callout warning">
+        <span class="callout-label">Principio</span>
+        <div class="callout-body">
+          Todo experimento de pricing debe tener: (1) hipótesis clara, (2) tiempo fijo (60 días), (3) métrica de éxito acordada antes de arrancar, (4) plan de rollback. Si no está instrumentado, no se lanza.
+        </div>
+      </div>
+    </section>
+
+    <section class="page-break">
+      <h2>7. Plan Growth: cuándo activarlo</h2>
+
+      <p>La tabla <code>users.plan</code> acepta valor <code>growth</code> en el schema de DB, pero comercialmente el plan está dormido. Cuándo y cómo activarlo:</p>
+
+      <h3>Propuesta de Growth</h3>
+      <div class="two-col">
+        <div class="col-box">
+          <h4>Growth · $19/mes</h4>
+          <ul>
+            <li>Jobs y estimates ilimitados</li>
+            <li>Clientes ilimitados</li>
+            <li>Hasta 2 técnicos</li>
+            <li>Portal cliente + firma</li>
+            <li>Email automations</li>
+            <li><strong>Sin:</strong> AI, SMS, QBO, field mode full</li>
+          </ul>
+        </div>
+        <div class="col-box" style="border: 2pt solid var(--primary);">
+          <h4 style="color: var(--primary);">Pro · $29/mes</h4>
+          <ul>
+            <li>Todo lo de Growth</li>
+            <li>Técnicos ilimitados</li>
+            <li>WorkPilot AI completo</li>
+            <li>SMS + QBO</li>
+            <li>Change orders + work orders</li>
+            <li>Schedule + field mode</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Cuándo activarlo</h3>
+      <p>Activar Growth tiene sentido si cumplimos 2 de estas 3 condiciones:</p>
+      <ol>
+        <li>Conversion Starter → Pro se estanca &lt; 25% (sugiere usuarios con <em>willingness to pay</em> intermedio)</li>
+        <li>Churn de Pro concentrado en "sólo uso features básicas" (signal de downgrade natural)</li>
+        <li>LATAM growth acelera y requiere punto de precio regional</li>
+      </ol>
+
+      <div class="callout warning">
+        <span class="callout-label">Riesgo de cannibalization</span>
+        <div class="callout-body">
+          Si activamos Growth sin cuidado, users que hoy pagan Pro podrían downgradear. El diseño de features excluidas debe ser <strong>claramente distintivo</strong>: AI y SMS tienen que ser del Pro. Si Growth tiene AI "light", todos downgradean.
+        </div>
+      </div>
+    </section>
+
+    <section class="page-break">
+      <h2>8. Add-ons potenciales</h2>
+
+      <p>Revenue expansion vía add-ons opcionales. ARPU puede subir 30–50% con attach rate razonable.</p>
+
+      <table>
+        <thead><tr><th>Add-on</th><th>Precio</th><th>Attach target</th><th>ARPU lift</th></tr></thead>
+        <tbody>
+          <tr><td>SMS bulk (1000 msgs/mes)</td><td>$10/mes</td><td>25%</td><td>$2.50</td></tr>
+          <tr><td>Técnicos adicionales (>5)</td><td>$5/técnico</td><td>15% (users grandes)</td><td>$0.75</td></tr>
+          <tr><td>White-label portal</td><td>$19/mes</td><td>5% (users premium)</td><td>$0.95</td></tr>
+          <tr><td>Voice minutes extra (>100/mes)</td><td>$9/mes</td><td>8%</td><td>$0.72</td></tr>
+          <tr><td>Reporting avanzado + export</td><td>$15/mes</td><td>12%</td><td>$1.80</td></tr>
+          <tr><td>Dedicated success manager</td><td>$99/mes</td><td>2% (enterprise-ish)</td><td>$1.98</td></tr>
+          <tr><td><strong>Total ARPU lift</strong></td><td></td><td></td><td><strong>+$8.70 (30% sobre $29)</strong></td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout insight">
+        <span class="callout-label">Estrategia de add-ons</span>
+        <div class="callout-body">
+          No lanzar todos a la vez. Empezar con SMS y Técnicos extras (attach alto, valor claro). Medir 90 días. Si attach rate es &gt; target, agregar los siguientes. Un add-on con 5% attach es ruido operacional; uno con 25%+ es negocio.
+        </div>
+      </div>
+    </section>
+
+    <section class="page-break">
+      <h2>9. Proyecciones por escenario</h2>
+
+      <p>Tres escenarios a 24 meses. Asumen sign-ups crecientes, churn estable, ARPU blended de $27.</p>
+
+      <h3>Escenario conservador</h3>
+      <p>Sign-ups crecen 15% MoM. Conversion free→paid 20%. Churn 6%.</p>
+      <div class="kpi-grid cols-3">
+        <div class="kpi-card">
+          <div class="kpi-value">2,500</div>
+          <div class="kpi-label">Paid users mes 24</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">$67K</div>
+          <div class="kpi-label">MRR mes 24</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">$810K</div>
+          <div class="kpi-label">ARR proyectado</div>
+        </div>
+      </div>
+
+      <h3>Escenario base</h3>
+      <p>Sign-ups crecen 25% MoM. Conversion 35%. Churn 4%.</p>
+      <div class="kpi-grid cols-3">
+        <div class="kpi-card">
+          <div class="kpi-value">7,200</div>
+          <div class="kpi-label">Paid users mes 24</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">$194K</div>
+          <div class="kpi-label">MRR mes 24</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">$2.3M</div>
+          <div class="kpi-label">ARR proyectado</div>
+        </div>
+      </div>
+
+      <h3>Escenario optimista</h3>
+      <p>LATAM se abre. AI viral. Sign-ups crecen 40% MoM. Conversion 40%. Churn 3%. Add-ons activos.</p>
+      <div class="kpi-grid cols-3">
+        <div class="kpi-card">
+          <div class="kpi-value">18,000</div>
+          <div class="kpi-label">Paid users mes 24</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">$540K</div>
+          <div class="kpi-label">MRR mes 24</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">$6.5M</div>
+          <div class="kpi-label">ARR proyectado</div>
+        </div>
+      </div>
+
+      <div class="callout warning">
+        <span class="callout-label">Advertencia</span>
+        <div class="callout-body">
+          Estos son <strong>modelos financieros</strong>, no pronósticos. Las variables más sensibles son: (1) conversion free→paid, (2) churn, (3) CAC por canal. Ajustar mensualmente con datos reales.
+        </div>
+      </div>
+    </section>
+
+    <section class="page-break">
+      <h2>10. Recomendaciones</h2>
+
+      <div class="recommendations">
+        <h3>Siete decisiones de pricing para los próximos 6 meses</h3>
+        <ol>
+          <li><strong>Mantener Pro a $29</strong> por ahora. Primero optimizar conversion antes de subir precio. Un punto de conversión vale más que un dólar de precio.</li>
+          <li><strong>Lanzar add-on SMS</strong> en Q2 como primer experimento. Attach rate target 25%, lift $2.50 ARPU.</li>
+          <li><strong>NO activar Growth aún.</strong> Activar solo si conversion Starter→Pro se estanca &lt; 25% durante 3 meses consecutivos.</li>
+          <li><strong>Anual con 20% off explícito.</strong> Rebranding de "$249/año" a "$29/mes o $19/mes si pagás anual" simplifica el pitch.</li>
+          <li><strong>Regional pricing LATAM en Q3.</strong> México Pro a $19, Colombia/Argentina igual. Captura de volumen.</li>
+          <li><strong>Instrumentar métricas de pricing.</strong> Dashboard con CAC por canal, LTV por cohort, ARPU por tier. Revisar mensualmente.</li>
+          <li><strong>Empezar a cobrar por técnicos +5</strong> en Q4 (nuevos users solamente). Lift esperado $1+ ARPU.</li>
+        </ol>
+      </div>
+    </section>
+  </div>
+
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#1E3A5F',
+        primaryTextColor: '#ffffff',
+        primaryBorderColor: '#0F2440',
+        lineColor: '#64748B',
+        secondaryColor: '#3B82F6',
+        tertiaryColor: '#F1F5F9',
+        fontFamily: 'Inter, sans-serif',
+      },
+    });
+    await mermaid.run();
+    window.mermaid_ready = true;
+  </script>
+</body>
+</html>

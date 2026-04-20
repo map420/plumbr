@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>plumbr — v2 Refined (paleta profesional + layout corregido)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ════════════════════════════════════════════════════════════
+     v2 REFINED — paleta desaturada, profesional, minimalista
+     ════════════════════════════════════════════════════════════ */
+  :root {
+    /* Brand — navy profundo + ZERO orange. El acento es el propio navy,
+       como Stripe. Single color for primary action. */
+    --bg: #FAFAFA;
+    --surface: #FFFFFF;
+    --surface-2: #F7F7F8;
+    --surface-3: #F1F1F3;
+
+    --border: #EAEAEC;
+    --border-hover: #D4D4D8;
+
+    --text: #18181B;       /* casi negro — zinc-900 */
+    --text-2: #52525B;     /* zinc-600 */
+    --text-3: #A1A1AA;     /* zinc-400 */
+    --text-on-dark: #FAFAFA;
+
+    /* Acento único: navy profundo. Usado para CTA. */
+    --brand: #0F172A;      /* slate-900 */
+    --brand-hover: #1E293B;
+    --brand-subtle: #F1F5F9;
+
+    /* Status (muted, menos saturados — tailwind 700 level) */
+    --success: #15803D;    /* emerald-700 */
+    --success-bg: #F0FDF4;
+    --success-border: #BBF7D0;
+    --warning: #B45309;    /* amber-700 */
+    --warning-bg: #FFFBEB;
+    --warning-border: #FDE68A;
+    --danger: #B91C1C;     /* red-700 */
+    --danger-bg: #FEF2F2;
+    --danger-border: #FECACA;
+    --info: #1D4ED8;       /* blue-700 */
+    --info-bg: #EFF6FF;
+    --info-border: #BFDBFE;
+
+    /* Elevation — solo sombras muy sutiles */
+    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.04);
+    --shadow-2: 0 2px 4px rgb(0 0 0 / 0.04), 0 1px 2px rgb(0 0 0 / 0.06);
+    --shadow-3: 0 8px 24px rgb(0 0 0 / 0.06), 0 2px 6px rgb(0 0 0 / 0.04);
+
+    /* Radius (uniforme, sobrio) */
+    --r-sm: 6px;
+    --r-md: 8px;
+    --r-lg: 10px;
+    --r-xl: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  .shell { max-width: 1320px; margin: 0 auto; padding: 40px 24px 80px; }
+  .page-header {
+    margin-bottom: 32px; padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .page-header h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+  .page-header p { font-size: 14px; color: var(--text-2); margin-top: 4px; }
+  .tag-ver {
+    display: inline-block; padding: 3px 10px; margin-top: 10px;
+    background: var(--brand); color: white;
+    border-radius: 999px; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+
+  h2.section-h {
+    font-size: 13px; font-weight: 700; letter-spacing: 0.05em;
+    text-transform: uppercase; color: var(--text-3);
+    margin: 48px 0 16px;
+    padding-bottom: 10px; border-bottom: 1px solid var(--border);
+  }
+  h2.section-h .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 6px;
+    background: var(--brand); color: white;
+    font-size: 11px; margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  /* ───── Palette swatches ───── */
+  .palette-grid {
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px;
+    margin-bottom: 16px;
+  }
+  .sw {
+    border-radius: var(--r-md); padding: 14px;
+    font-size: 11px; font-weight: 600;
+    display: flex; flex-direction: column; justify-content: space-between;
+    min-height: 80px;
+  }
+  .sw .nm { font-size: 12px; font-weight: 700; }
+  .sw .hx { font-family: ui-monospace, 'SF Mono', monospace; opacity: 0.75; margin-top: auto; }
+  .sw.brand { background: var(--brand); color: white; }
+  .sw.surface { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+  .sw.success { background: var(--success); color: white; }
+  .sw.warning { background: var(--warning); color: white; }
+  .sw.danger { background: var(--danger); color: white; }
+  .sw.info { background: var(--info); color: white; }
+  .sw.text { background: var(--text); color: white; }
+  .sw.text-2 { background: var(--text-2); color: white; }
+  .sw.text-3 { background: var(--text-3); color: white; }
+  .sw.bg { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+  .sw.surface-2 { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+  .sw.border { background: var(--border); color: var(--text); }
+
+  .palette-note {
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: var(--r-lg); padding: 14px 16px;
+    font-size: 13px; color: var(--text-2);
+  }
+  .palette-note strong { color: var(--text); font-weight: 600; }
+
+  /* ───── Mock frame ───── */
+  .mock {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-xl); overflow: hidden;
+    box-shadow: var(--shadow-1);
+    margin-bottom: 24px;
+  }
+  .mock-label {
+    padding: 10px 16px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--text-3); background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+  }
+  .mock-body { padding: 24px; background: var(--bg); }
+
+  /* Common primitives */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 500;
+    padding: 8px 14px; border-radius: var(--r-md);
+    border: 1px solid transparent; cursor: pointer;
+    transition: all 120ms;
+    white-space: nowrap;
+    font-family: inherit;
+  }
+  .btn.primary { background: var(--brand); color: white; }
+  .btn.primary:hover { background: var(--brand-hover); }
+  .btn.secondary { background: var(--surface); color: var(--text); border-color: var(--border); box-shadow: var(--shadow-1); }
+  .btn.secondary:hover { border-color: var(--border-hover); }
+  .btn.ghost { background: transparent; color: var(--text-2); }
+  .btn.ghost:hover { background: var(--surface-3); color: var(--text); }
+  .btn.danger { background: transparent; color: var(--danger); }
+  .btn.danger:hover { background: var(--danger-bg); }
+  .btn.sm { padding: 6px 10px; font-size: 12px; }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 9px; border-radius: 999px;
+    font-size: 11px; font-weight: 600;
+    background: var(--surface-3); color: var(--text-2);
+    border: 1px solid var(--border);
+  }
+  .pill .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0.7; }
+  .pill.sent { background: var(--info-bg); color: var(--info); border-color: var(--info-border); }
+  .pill.approved { background: var(--success-bg); color: var(--success); border-color: var(--success-border); }
+  .pill.rejected { background: var(--danger-bg); color: var(--danger); border-color: var(--danger-border); }
+  .pill.converted { background: var(--surface-3); color: #6B21A8; border-color: #E9D5FF; }
+  .pill.draft { background: var(--surface-3); color: var(--text-2); border-color: var(--border); }
+
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    color: white; font-weight: 600; font-size: 11px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--text);
+    flex-shrink: 0;
+    border: 1px solid rgb(0 0 0 / 0.05);
+  }
+  .avatar.a2 { background: #52525B; }
+  .avatar.a3 { background: #3F3F46; }
+  .avatar.a4 { background: #18181B; }
+  .avatar.a5 { background: #27272A; }
+
+  /* ═════════ 01 LISTA ═════════ */
+  .list-head {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 20px;
+  }
+  .list-title h1 {
+    font-size: 22px; font-weight: 700; letter-spacing: -0.02em;
+  }
+  .list-title p { font-size: 13px; color: var(--text-2); margin-top: 2px; }
+
+  .kpi-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 10px; margin-bottom: 20px;
+  }
+  .kpi {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-lg); padding: 14px 16px;
+  }
+  .kpi-label {
+    font-size: 11px; color: var(--text-3); font-weight: 500;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .kpi-label .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-3); }
+  .kpi.sent .kpi-label .dot { background: var(--info); }
+  .kpi.approved .kpi-label .dot { background: var(--success); }
+  .kpi.rejected .kpi-label .dot { background: var(--danger); }
+  .kpi.revenue .kpi-label .dot { background: var(--brand); }
+  .kpi-value {
+    font-size: 24px; font-weight: 700; letter-spacing: -0.02em;
+    margin-top: 6px; line-height: 1;
+  }
+  .kpi-sub {
+    font-size: 12px; color: var(--text-2); margin-top: 6px;
+  }
+  .kpi-sub.up { color: var(--success); }
+
+  .toolbar {
+    display: flex; gap: 12px; align-items: center;
+    margin-bottom: 14px;
+  }
+  .toolbar .search {
+    flex: 1; position: relative;
+  }
+  .toolbar .search input {
+    width: 100%; border: 1px solid var(--border); background: var(--surface);
+    padding: 8px 12px 8px 34px; font-size: 13px;
+    border-radius: var(--r-md); outline: none; font-family: inherit;
+    transition: all 120ms;
+  }
+  .toolbar .search input:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgb(15 23 42 / 0.08);
+  }
+  .toolbar .search svg {
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+    color: var(--text-3);
+  }
+  .seg {
+    display: flex; gap: 2px; padding: 3px;
+    background: var(--surface-3); border-radius: var(--r-md);
+  }
+  .seg button {
+    padding: 5px 10px; background: transparent; border: none;
+    font-size: 12px; font-weight: 500; color: var(--text-2);
+    border-radius: 5px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+    font-family: inherit;
+  }
+  .seg button .count { color: var(--text-3); font-weight: 500; }
+  .seg button:hover { color: var(--text); }
+  .seg button.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow-1); }
+
+  /* Table — layout FIX: filas uniformes, sin overflow, hierarchy clara */
+  .table-wrap {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-lg); overflow: hidden;
+  }
+  table.t {
+    width: 100%; border-collapse: collapse;
+  }
+  table.t thead {
+    background: var(--surface-2);
+  }
+  table.t th {
+    text-align: left; padding: 10px 16px;
+    font-size: 11px; font-weight: 600; color: var(--text-3);
+    text-transform: uppercase; letter-spacing: 0.03em;
+    border-bottom: 1px solid var(--border);
+  }
+  table.t th.r { text-align: right; }
+  table.t td {
+    padding: 12px 16px; font-size: 13px;
+    border-bottom: 1px solid var(--border);
+  }
+  table.t tr:last-child td { border-bottom: none; }
+  table.t tbody tr:hover { background: var(--surface-2); cursor: pointer; }
+  table.t td.r { text-align: right; font-variant-numeric: tabular-nums; }
+  table.t tr.grp td {
+    background: var(--surface-2);
+    padding: 8px 16px; font-size: 11px; font-weight: 600;
+    color: var(--text-2); letter-spacing: 0.02em;
+    border-top: 1px solid var(--border);
+  }
+
+  .num-col { font-family: ui-monospace, 'SF Mono', monospace; color: var(--text-2); font-size: 12px; }
+  .total-strong { font-weight: 600; }
+
+  .client-cell { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .client-cell .body { min-width: 0; }
+  .client-cell .nm { font-weight: 500; color: var(--text); line-height: 1.3; }
+  .client-cell .sub { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+
+  .row-actions {
+    display: flex; gap: 2px; justify-content: flex-end;
+    opacity: 0; transition: opacity 120ms;
+  }
+  table.t tbody tr:hover .row-actions { opacity: 1; }
+  .row-actions button {
+    width: 26px; height: 26px; border: none; background: transparent;
+    color: var(--text-3); border-radius: var(--r-sm); cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .row-actions button:hover { background: var(--surface-3); color: var(--text); }
+  .row-actions button.danger:hover { background: var(--danger-bg); color: var(--danger); }
+
+  .stale-banner {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--warning-bg); border: 1px solid var(--warning-border);
+    border-radius: var(--r-md); padding: 10px 14px;
+    margin-bottom: 14px; font-size: 13px;
+    color: var(--warning);
+  }
+  .stale-banner strong { font-weight: 600; }
+  .stale-banner .link {
+    margin-left: auto; font-weight: 600; font-size: 12px;
+    padding: 4px 10px; border-radius: var(--r-sm);
+    background: white; border: 1px solid var(--warning-border);
+  }
+
+  /* ═════════ 02 DETAIL — FIX: split view, no 6-button chaos ═════════ */
+  .detail-grid {
+    display: grid; grid-template-columns: 1fr 300px; gap: 16px;
+    align-items: flex-start;
+  }
+  .breadcrumb {
+    font-size: 12px; color: var(--text-3);
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 12px;
+  }
+  .breadcrumb a:hover { color: var(--text); }
+  .breadcrumb svg { color: var(--text-3); }
+
+  .doc-hero {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 20px 24px;
+  }
+  .doc-hero-top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 16px; padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .doc-hero-title { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
+  .doc-hero-sub { font-size: 12px; color: var(--text-3); margin-top: 4px; }
+
+  .doc-hero-actions { display: flex; align-items: center; gap: 6px; }
+  .doc-hero-actions .divider {
+    width: 1px; height: 20px; background: var(--border); margin: 0 4px;
+  }
+
+  .doc-meta-row {
+    display: flex; gap: 20px; flex-wrap: wrap;
+  }
+  .meta-item {
+    display: flex; flex-direction: column;
+  }
+  .meta-item .k {
+    font-size: 11px; color: var(--text-3); font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.03em;
+  }
+  .meta-item .v {
+    font-size: 14px; color: var(--text); font-weight: 500;
+    margin-top: 2px;
+  }
+  .meta-item .v.total {
+    font-size: 20px; font-weight: 700; letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .client-block {
+    display: flex; align-items: center; gap: 12px;
+    margin-top: 12px; padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .client-block .avatar {
+    width: 40px; height: 40px; font-size: 13px;
+    border-radius: var(--r-md);
+    background: var(--surface-3); color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .client-block .body { flex: 1; }
+  .client-block .body .name { font-weight: 600; font-size: 14px; }
+  .client-block .body .sub { font-size: 12px; color: var(--text-3); margin-top: 1px; }
+
+  .doc-section {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    margin-top: 12px;
+    overflow: hidden;
+  }
+  .doc-section .head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .doc-section .head h3 {
+    font-size: 13px; font-weight: 600; color: var(--text);
+  }
+  .doc-section .head .meta {
+    font-size: 11px; color: var(--text-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .doc-section .body { padding: 20px; }
+  .doc-section .body.no-pad { padding: 0; }
+
+  table.items {
+    width: 100%; border-collapse: collapse;
+  }
+  table.items th {
+    text-align: left; padding: 10px 20px;
+    background: var(--surface-2);
+    font-size: 10px; font-weight: 600; color: var(--text-3);
+    text-transform: uppercase; letter-spacing: 0.03em;
+    border-bottom: 1px solid var(--border);
+  }
+  table.items th.c { text-align: center; }
+  table.items th.r { text-align: right; }
+  table.items td {
+    padding: 12px 20px; font-size: 13px;
+    border-bottom: 1px solid var(--border);
+  }
+  table.items tr:last-child td { border-bottom: none; }
+  table.items td.c { text-align: center; color: var(--text-2); }
+  table.items td.r { text-align: right; font-variant-numeric: tabular-nums; }
+  .type-chip {
+    display: inline-block; padding: 1px 7px; border-radius: var(--r-sm);
+    font-size: 10px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.03em;
+    background: var(--surface-3); color: var(--text-2);
+    border: 1px solid var(--border);
+  }
+  .type-chip.labor { color: var(--info); background: var(--info-bg); border-color: var(--info-border); }
+  .type-chip.material { color: var(--success); background: var(--success-bg); border-color: var(--success-border); }
+
+  /* Sidebar */
+  .side-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-lg); padding: 16px 18px;
+    margin-bottom: 12px;
+  }
+  .side-card.dark {
+    background: var(--brand); color: white; border: none;
+  }
+  .side-card .label {
+    font-size: 11px; font-weight: 500;
+    color: var(--text-3); margin-bottom: 8px;
+    text-transform: uppercase; letter-spacing: 0.03em;
+  }
+  .side-card.dark .label { color: rgb(255 255 255 / 0.6); }
+  .side-card .total {
+    font-size: 28px; font-weight: 700; letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .side-breakdown {
+    margin-top: 14px; padding-top: 12px;
+    border-top: 1px solid rgb(255 255 255 / 0.12);
+  }
+  .side-breakdown .row {
+    display: flex; justify-content: space-between;
+    font-size: 12px; padding: 3px 0;
+    opacity: 0.85;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .side-timeline .item {
+    display: flex; gap: 10px; padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .side-timeline .item:last-child { border-bottom: none; }
+  .side-timeline .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    margin-top: 5px; flex-shrink: 0;
+    background: var(--text-3);
+  }
+  .side-timeline .dot.info { background: var(--info); }
+  .side-timeline .dot.success { background: var(--success); }
+  .side-timeline .event { font-weight: 500; color: var(--text); }
+  .side-timeline .time { color: var(--text-3); font-size: 11px; margin-top: 1px; }
+
+  .portal-mini .link {
+    font-size: 11px; color: var(--text-2);
+    background: var(--surface-2); padding: 6px 8px;
+    border-radius: var(--r-sm); font-family: ui-monospace, 'SF Mono', monospace;
+    margin-bottom: 8px; word-break: break-all;
+  }
+  .portal-mini .actions { display: flex; gap: 6px; }
+
+  /* ═════════ 03 FORM — FIX: stepped, un paso a la vez ═════════ */
+  .form-grid {
+    display: grid; grid-template-columns: 1fr 300px; gap: 16px;
+    align-items: flex-start;
+  }
+  .form-header-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-lg); padding: 18px 20px;
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 12px;
+  }
+  .form-header-card .bread { font-size: 11px; color: var(--text-3); margin-bottom: 4px; }
+  .form-header-card h1 { font-size: 19px; font-weight: 700; letter-spacing: -0.02em; }
+  .form-header-card .sub { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+  .saved {
+    font-size: 11px; color: var(--success);
+    background: var(--success-bg); border: 1px solid var(--success-border);
+    padding: 4px 8px; border-radius: var(--r-sm);
+    font-weight: 500;
+  }
+
+  .stepper {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-lg); padding: 10px 14px;
+    display: flex; gap: 6px;
+    margin-bottom: 12px;
+    overflow-x: auto;
+  }
+  .step-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 12px;
+    font-size: 13px; font-weight: 500;
+    color: var(--text-3);
+    border-radius: var(--r-sm);
+    cursor: pointer;
+  }
+  .step-item:hover { background: var(--surface-2); color: var(--text); }
+  .step-item .n {
+    width: 20px; height: 20px; border-radius: 50%;
+    font-size: 10px; font-weight: 600;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--surface-3); color: var(--text-3);
+    border: 1px solid var(--border);
+  }
+  .step-item.done { color: var(--success); }
+  .step-item.done .n { background: var(--success-bg); color: var(--success); border-color: var(--success-border); }
+  .step-item.active { background: var(--brand); color: white; }
+  .step-item.active .n { background: rgb(255 255 255 / 0.15); color: white; border-color: transparent; }
+  .step-divider { color: var(--border); font-size: 14px; align-self: center; }
+
+  .form-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-lg); padding: 22px 24px;
+    margin-bottom: 12px;
+  }
+  .form-card h3 {
+    font-size: 14px; font-weight: 600; margin-bottom: 2px;
+  }
+  .form-card .desc {
+    font-size: 12px; color: var(--text-2); margin-bottom: 18px;
+  }
+  .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .field label {
+    font-size: 12px; font-weight: 500; color: var(--text-2);
+    display: block; margin-bottom: 5px;
+  }
+  .field input, .field textarea, .field select {
+    width: 100%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 8px 12px;
+    font-size: 13px;
+    border-radius: var(--r-md);
+    outline: none;
+    font-family: inherit;
+    color: var(--text);
+    transition: all 120ms;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgb(15 23 42 / 0.08);
+  }
+  .field input::placeholder { color: var(--text-3); }
+  .field input.selected {
+    background: var(--brand-subtle); border-color: var(--brand);
+    color: var(--brand); font-weight: 500;
+  }
+  .field-hint { font-size: 11px; color: var(--text-3); margin-top: 4px; }
+
+  .line-item-row {
+    display: grid;
+    grid-template-columns: 120px 1fr 80px 100px 120px 32px;
+    gap: 10px; align-items: center;
+    padding: 10px 12px;
+    border: 1px solid var(--border); border-radius: var(--r-md);
+    background: var(--surface);
+    margin-bottom: 8px;
+  }
+  .line-item-row .sel, .line-item-row .desc, .line-item-row .qty, .line-item-row .rate {
+    border: none; background: transparent;
+    font-size: 13px; outline: none; padding: 4px;
+    font-family: inherit; color: var(--text);
+  }
+  .line-item-row .sel { font-weight: 600; font-size: 12px; color: var(--text-2); }
+  .line-item-row .total {
+    text-align: right; font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .line-item-row .qty, .line-item-row .rate { text-align: center; }
+  .line-item-row button {
+    width: 26px; height: 26px; border: none; background: transparent;
+    color: var(--text-3); border-radius: var(--r-sm); cursor: pointer;
+  }
+  .line-item-row button:hover { background: var(--danger-bg); color: var(--danger); }
+
+  .add-line {
+    width: 100%; background: var(--surface); color: var(--text-2);
+    border: 1px dashed var(--border); border-radius: var(--r-md);
+    padding: 10px; font-size: 13px; font-weight: 500;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    font-family: inherit;
+  }
+  .add-line:hover { border-color: var(--brand); color: var(--brand); }
+
+  .toggle-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .toggle-row:last-child { border-bottom: none; }
+  .toggle-row .lbl .t { font-size: 13px; font-weight: 500; }
+  .toggle-row .lbl .s { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+  .tg {
+    width: 38px; height: 22px; background: var(--border);
+    border-radius: 999px; position: relative; cursor: pointer;
+    transition: all 150ms;
+  }
+  .tg::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 18px; height: 18px; background: white; border-radius: 50%;
+    box-shadow: var(--shadow-1);
+    transition: transform 150ms;
+  }
+  .tg.on { background: var(--brand); }
+  .tg.on::after { transform: translateX(16px); }
+
+  /* Form sidebar */
+  .form-side {
+    display: flex; flex-direction: column; gap: 12px;
+    position: sticky; top: 20px;
+  }
+  .total-card {
+    background: var(--brand); color: white;
+    border-radius: var(--r-lg); padding: 18px;
+  }
+  .total-card .lbl { font-size: 11px; opacity: 0.6; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+  .total-card .v { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1; margin: 6px 0 14px; }
+  .total-card .row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 12px; opacity: 0.85; font-variant-numeric: tabular-nums; border-top: 1px solid rgb(255 255 255 / 0.12); }
+  .total-card .row:first-of-type { border-top: none; padding-top: 10px; }
+
+  .form-footer {
+    position: sticky; bottom: 0;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 12px 16px;
+    display: flex; justify-content: flex-end; gap: 8px;
+    margin-top: 12px;
+  }
+
+  /* ═════════ 04 PRINT ═════════ */
+  .paper-viewport {
+    background: #E5E5E7;
+    padding: 32px;
+    border-radius: var(--r-lg);
+    display: flex; justify-content: center;
+  }
+  .paper {
+    background: white; padding: 48px 56px;
+    max-width: 620px; width: 100%;
+    box-shadow: var(--shadow-3);
+    font-size: 13px; color: var(--text);
+  }
+  .pp-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding-bottom: 28px; border-bottom: 2px solid var(--brand);
+    margin-bottom: 28px;
+  }
+  .pp-company {
+    display: flex; gap: 12px; align-items: center;
+  }
+  .pp-logo {
+    width: 44px; height: 44px; border-radius: var(--r-md);
+    background: var(--brand); color: white;
+    font-weight: 700; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pp-company-name { font-size: 16px; font-weight: 700; color: var(--brand); letter-spacing: -0.01em; }
+  .pp-company-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+  .pp-num-block { text-align: right; }
+  .pp-num-label { font-size: 10px; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.1em; }
+  .pp-num { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .pp-dates { font-size: 11px; color: var(--text-2); margin-top: 6px; line-height: 1.6; }
+  .pp-dates b { color: var(--text); font-weight: 500; }
+
+  .pp-parties {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 28px; margin-bottom: 28px;
+  }
+  .pp-party-label {
+    font-size: 10px; font-weight: 700; color: var(--text-3);
+    text-transform: uppercase; letter-spacing: 0.1em;
+    padding-bottom: 6px; margin-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .pp-party-name { font-size: 14px; font-weight: 600; line-height: 1.3; }
+  .pp-party-sub { font-size: 11px; color: var(--text-2); margin-top: 3px; line-height: 1.6; }
+
+  .pp-table {
+    width: 100%; border-collapse: collapse; margin-bottom: 16px;
+  }
+  .pp-table thead { background: var(--surface-2); }
+  .pp-table th {
+    text-align: left; padding: 10px 12px;
+    font-size: 10px; font-weight: 700; color: var(--text-2);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border);
+  }
+  .pp-table th.c { text-align: center; }
+  .pp-table th.r { text-align: right; }
+  .pp-table td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 12px; }
+  .pp-table td.c { text-align: center; color: var(--text-2); }
+  .pp-table td.r { text-align: right; font-variant-numeric: tabular-nums; }
+  .pp-table td.r.b { font-weight: 600; }
+  .pp-table .ti {
+    display: inline-block; font-size: 9px; font-weight: 600;
+    padding: 1px 6px; border-radius: 4px; margin-bottom: 2px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .pp-table .ti.labor { background: var(--info-bg); color: var(--info); }
+  .pp-table .ti.material { background: var(--success-bg); color: var(--success); }
+
+  .pp-totals-row { display: flex; justify-content: flex-end; margin-bottom: 24px; }
+  .pp-totals {
+    min-width: 240px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: 14px 16px;
+  }
+  .pp-totals .r {
+    display: flex; justify-content: space-between;
+    padding: 3px 0; font-size: 12px; color: var(--text-2);
+  }
+  .pp-totals .r.gt {
+    border-top: 1px solid var(--border); padding-top: 8px; margin-top: 6px;
+    font-size: 17px; font-weight: 700; color: var(--brand);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pp-cta {
+    background: var(--brand); color: white;
+    border-radius: var(--r-md); padding: 14px 18px;
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px;
+  }
+  .pp-cta .l { font-size: 12px; }
+  .pp-cta .l .big { font-size: 14px; font-weight: 600; }
+  .pp-cta .l .sm { opacity: 0.7; margin-top: 2px; }
+  .pp-cta .b {
+    background: white; color: var(--brand);
+    padding: 7px 14px; border-radius: var(--r-sm);
+    font-size: 12px; font-weight: 600; border: none; cursor: pointer;
+    font-family: inherit;
+  }
+
+  .pp-footer {
+    display: grid; grid-template-columns: 80px 1fr;
+    gap: 14px; padding-top: 16px;
+    border-top: 1px solid var(--border);
+    align-items: center;
+  }
+  .pp-qr {
+    width: 80px; height: 80px;
+    background: repeating-linear-gradient(45deg, #18181B 0 3px, white 3px 6px);
+    border-radius: var(--r-sm); border: 1px solid var(--border);
+  }
+  .pp-footer-info .t { font-size: 11px; font-weight: 600; }
+  .pp-footer-info .s { font-size: 10px; color: var(--text-3); line-height: 1.5; margin-top: 2px; }
+  .pp-footer-info .url {
+    display: inline-block; margin-top: 4px;
+    font-family: ui-monospace, 'SF Mono', monospace;
+    font-size: 10px; background: var(--surface-2);
+    padding: 3px 7px; border-radius: 4px; color: var(--text-2);
+  }
+
+  .pp-legal {
+    text-align: center; font-size: 9px; color: var(--text-3);
+    margin-top: 16px; line-height: 1.6;
+  }
+
+  /* Note helper */
+  .note-fix {
+    padding: 10px 14px; background: var(--info-bg);
+    border-left: 3px solid var(--info);
+    color: var(--text-2); font-size: 12px; margin-bottom: 12px;
+    border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  }
+  .note-fix strong { color: var(--info); font-weight: 700; }
+
+  /* svg helper */
+  .ic { display: inline-block; vertical-align: middle; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="page-header">
+    <h1>plumbr — v2 refined</h1>
+    <p>Paleta desaturada profesional · Layout corregido (split view, stepped form, action bar jerarquizada)</p>
+    <span class="tag-ver">Iteración 2 · Before escribir .tsx</span>
+  </div>
+
+  <!-- ─── PALETTE ─── -->
+  <h2 class="section-h"><span class="num">◆</span>Paleta v2</h2>
+  <div class="palette-grid">
+    <div class="sw brand"><div class="nm">Brand</div><div class="hx">#0F172A</div></div>
+    <div class="sw text"><div class="nm">Text</div><div class="hx">#18181B</div></div>
+    <div class="sw text-2"><div class="nm">Text 2</div><div class="hx">#52525B</div></div>
+    <div class="sw text-3"><div class="nm">Text muted</div><div class="hx">#A1A1AA</div></div>
+    <div class="sw bg"><div class="nm">Bg</div><div class="hx">#FAFAFA</div></div>
+    <div class="sw surface"><div class="nm">Surface</div><div class="hx">#FFFFFF</div></div>
+    <div class="sw success"><div class="nm">Success</div><div class="hx">#15803D</div></div>
+    <div class="sw warning"><div class="nm">Warning</div><div class="hx">#B45309</div></div>
+    <div class="sw danger"><div class="nm">Danger</div><div class="hx">#B91C1C</div></div>
+    <div class="sw info"><div class="nm">Info</div><div class="hx">#1D4ED8</div></div>
+    <div class="sw surface-2"><div class="nm">Surface 2</div><div class="hx">#F7F7F8</div></div>
+    <div class="sw border"><div class="nm">Border</div><div class="hx">#EAEAEC</div></div>
+  </div>
+  <div class="palette-note">
+    <strong>Cambios clave vs v1:</strong> Fuera el orange <code>#F97316</code> — estaba demasiado encendido para una app de gestión.
+    Ahora <strong>un solo color de marca (navy casi negro <code>#0F172A</code>)</strong> que funciona como CTA primario (estilo Stripe / Vercel / Linear).
+    Los status bajan al nivel 700 de Tailwind (menos saturados). Shadows muy sutiles. Radius uniforme entre 6 y 12px.
+    Sin gradients decorativos — los cards oscuros son planos, limpios.
+  </div>
+
+  <!-- ─── 01 LISTA ─── -->
+  <h2 class="section-h"><span class="num">1</span>Lista · /estimates</h2>
+  <div class="note-fix">
+    <strong>Fix de layout:</strong> eliminé la doble barra (tabs + pills) del v1. Ahora una sola toolbar con search + segmented control de estado.
+    La tabla tiene alineación tabular en totales, quick actions ocultas hasta hover, y el group header por mes es una fila tenue dentro de la misma tabla (no un div separado).
+  </div>
+  <div class="mock">
+    <div class="mock-label">Desktop · /estimates</div>
+    <div class="mock-body">
+      <div class="list-head">
+        <div class="list-title">
+          <h1>Estimates</h1>
+          <p>12 total · <span style="color: var(--success); font-weight: 500;">$28,380</span> aprobados este mes</p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn secondary">
+            <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/></svg>
+            Template
+          </button>
+          <button class="btn primary">
+            <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New estimate
+          </button>
+        </div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi sent">
+          <div class="kpi-label"><span class="dot"></span>Pending</div>
+          <div class="kpi-value">4</div>
+          <div class="kpi-sub">$9,240 · 2 opened</div>
+        </div>
+        <div class="kpi approved">
+          <div class="kpi-label"><span class="dot"></span>Approved</div>
+          <div class="kpi-value">5</div>
+          <div class="kpi-sub"><span class="up">$18,140</span> · 2 invoiced</div>
+        </div>
+        <div class="kpi rejected">
+          <div class="kpi-label"><span class="dot"></span>Declined</div>
+          <div class="kpi-value">1</div>
+          <div class="kpi-sub">$1,200 · 8% rate</div>
+        </div>
+        <div class="kpi revenue">
+          <div class="kpi-label"><span class="dot"></span>Expected revenue</div>
+          <div class="kpi-value">$28.4k</div>
+          <div class="kpi-sub"><span class="up">↑ 12% vs last mo.</span></div>
+        </div>
+      </div>
+
+      <div class="stale-banner">
+        <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span><strong>2 estimates</strong> pending más de 3 días — considera reenviar</span>
+        <a class="link" href="#">View all →</a>
+      </div>
+
+      <div class="toolbar">
+        <div class="search">
+          <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input placeholder="Buscar por cliente, número o estado...">
+        </div>
+        <div class="seg">
+          <button class="active">All <span class="count">12</span></button>
+          <button>Pending <span class="count">4</span></button>
+          <button>Approved <span class="count">5</span></button>
+          <button>Declined <span class="count">1</span></button>
+          <button>Draft <span class="count">2</span></button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="t">
+          <thead>
+            <tr>
+              <th style="width: 100px;">Number</th>
+              <th>Client</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th class="r">Total</th>
+              <th style="width: 70px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="grp"><td colspan="6"><span>April 2026 · 3 estimates</span><span style="float: right; font-variant-numeric: tabular-nums;">$12,480.00</span></td></tr>
+            <tr>
+              <td class="num-col">#1042</td>
+              <td>
+                <div class="client-cell">
+                  <div class="avatar">MG</div>
+                  <div class="body">
+                    <div class="nm">María González</div>
+                    <div class="sub">maria@example.com</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="pill sent"><span class="dot"></span>Sent</span></td>
+              <td style="color: var(--text-2);">Apr 14</td>
+              <td class="r total-strong">$2,850.00</td>
+              <td class="r">
+                <div class="row-actions">
+                  <button><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></button>
+                  <button class="danger"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="num-col">#1041</td>
+              <td>
+                <div class="client-cell">
+                  <div class="avatar a2">RS</div>
+                  <div class="body">
+                    <div class="nm">Roberto Sánchez</div>
+                    <div class="sub">Kitchen remodel · Job #88</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="pill approved"><span class="dot"></span>Approved</span></td>
+              <td style="color: var(--text-2);">Apr 12</td>
+              <td class="r total-strong">$4,120.00</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="num-col">#1040</td>
+              <td>
+                <div class="client-cell">
+                  <div class="avatar a3">LC</div>
+                  <div class="body">
+                    <div class="nm">Linda Chen</div>
+                    <div class="sub">Linked to INV-234</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="pill converted"><span class="dot"></span>Invoiced</span></td>
+              <td style="color: var(--text-2);">Apr 10</td>
+              <td class="r total-strong">$3,450.00</td>
+              <td></td>
+            </tr>
+            <tr class="grp"><td colspan="6"><span>March 2026 · 5 estimates</span><span style="float: right; font-variant-numeric: tabular-nums;">$8,900.00</span></td></tr>
+            <tr>
+              <td class="num-col">#1039</td>
+              <td>
+                <div class="client-cell">
+                  <div class="avatar a4">JW</div>
+                  <div class="body">
+                    <div class="nm">James Walker</div>
+                    <div class="sub">jwalker@example.com</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="pill rejected"><span class="dot"></span>Declined</span></td>
+              <td style="color: var(--text-2);">Mar 28</td>
+              <td class="r total-strong">$1,200.00</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="num-col">#1038</td>
+              <td>
+                <div class="client-cell">
+                  <div class="avatar a5">SM</div>
+                  <div class="body">
+                    <div class="nm">Sofia Martínez</div>
+                    <div class="sub">Bathroom renovation</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="pill approved"><span class="dot"></span>Approved</span></td>
+              <td style="color: var(--text-2);">Mar 22</td>
+              <td class="r total-strong">$5,780.00</td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 02 DETAIL ─── -->
+  <h2 class="section-h"><span class="num">2</span>Detail · /estimates/[id]</h2>
+  <div class="note-fix">
+    <strong>Fix de layout:</strong> la action bar del v1 tenía 6 botones compitiendo al mismo peso visual (Email, Convert, Materials, Print, Edit, Delete).
+    Ahora: <strong>1 acción primaria (Email) + 1 secundaria (Convert) + menú "···"</strong> para el resto. Status pill y total movidos al hero card — no compiten con las acciones.
+    Sidebar contiene total, timeline y portal (sin duplicar info).
+  </div>
+  <div class="mock">
+    <div class="mock-label">Desktop · /estimates/[id]</div>
+    <div class="mock-body">
+      <div class="breadcrumb">
+        <a href="#">Estimates</a>
+        <svg class="ic" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+        <span>#1042</span>
+      </div>
+
+      <div class="detail-grid">
+        <div>
+          <div class="doc-hero">
+            <div class="doc-hero-top">
+              <div>
+                <div class="doc-hero-title">Estimate #1042</div>
+                <div class="doc-hero-sub">Issued Apr 14 · Valid until May 14, 2026</div>
+              </div>
+              <div class="doc-hero-actions">
+                <button class="btn primary">
+                  <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22 6 12 13 2 6"/></svg>
+                  Email client
+                </button>
+                <button class="btn secondary">
+                  <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                  Convert to invoice
+                </button>
+                <span class="divider"></span>
+                <button class="btn ghost" style="padding: 8px;" title="More">
+                  <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="doc-meta-row">
+              <div class="meta-item">
+                <div class="k">Status</div>
+                <div class="v"><span class="pill sent"><span class="dot"></span>Sent · awaiting reply</span></div>
+              </div>
+              <div class="meta-item">
+                <div class="k">Views</div>
+                <div class="v">3 · <span style="font-size: 12px; color: var(--text-3); font-weight: 400;">last 2h ago</span></div>
+              </div>
+              <div class="meta-item" style="margin-left: auto; text-align: right;">
+                <div class="k">Total</div>
+                <div class="v total">$1,512.00</div>
+              </div>
+            </div>
+            <div class="client-block">
+              <div class="avatar">MG</div>
+              <div class="body">
+                <div class="name">María González</div>
+                <div class="sub">maria@example.com · (555) 234-9811</div>
+              </div>
+              <a class="btn ghost sm">Kitchen remodel →</a>
+            </div>
+          </div>
+
+          <div class="doc-section">
+            <div class="head">
+              <h3>Line items</h3>
+              <span class="meta">4 items</span>
+            </div>
+            <div class="body no-pad">
+              <table class="items">
+                <thead>
+                  <tr>
+                    <th>Description</th>
+                    <th class="c" style="width: 60px;">Qty</th>
+                    <th class="r" style="width: 90px;">Rate</th>
+                    <th class="r" style="width: 100px;">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><span class="type-chip labor">Labor</span><div style="margin-top: 4px;">Kitchen sink replacement</div></td>
+                    <td class="c">4</td>
+                    <td class="r">$125.00</td>
+                    <td class="r" style="font-weight: 600;">$500.00</td>
+                  </tr>
+                  <tr>
+                    <td><span class="type-chip material">Material</span><div style="margin-top: 4px;">PEX pipe, fittings, valves</div></td>
+                    <td class="c">1</td>
+                    <td class="r">$185.00</td>
+                    <td class="r" style="font-weight: 600;">$185.00</td>
+                  </tr>
+                  <tr>
+                    <td><span class="type-chip labor">Labor</span><div style="margin-top: 4px;">Dishwasher line installation</div></td>
+                    <td class="c">3</td>
+                    <td class="r">$125.00</td>
+                    <td class="r" style="font-weight: 600;">$375.00</td>
+                  </tr>
+                  <tr>
+                    <td><span class="type-chip material">Material</span><div style="margin-top: 4px;">Faucet (brushed nickel)</div></td>
+                    <td class="c">1</td>
+                    <td class="r">$340.00</td>
+                    <td class="r" style="font-weight: 600;">$340.00</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="doc-section">
+            <div class="head"><h3>Notes</h3></div>
+            <div class="body" style="font-size: 13px; color: var(--text-2); line-height: 1.6;">
+              Work to start within 2 weeks of approval. 50% deposit required to schedule. Includes all materials and labor. One-year warranty on workmanship.
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="side-card dark">
+            <div class="label">Total</div>
+            <div class="total">$1,512.00</div>
+            <div class="side-breakdown">
+              <div class="row"><span>Subtotal</span><span>$1,400.00</span></div>
+              <div class="row"><span>Tax (8%)</span><span>$112.00</span></div>
+              <div class="row" style="opacity: 1; padding-top: 6px; margin-top: 4px; border-top: 1px solid rgb(255 255 255 / 0.15); font-weight: 500;"><span>Deposit (50%)</span><span>$756.00</span></div>
+            </div>
+          </div>
+
+          <div class="side-card">
+            <div class="label">Activity</div>
+            <div class="side-timeline">
+              <div class="item">
+                <div class="dot success"></div>
+                <div>
+                  <div class="event">Viewed by client</div>
+                  <div class="time">3× · last Apr 15, 2:14pm</div>
+                </div>
+              </div>
+              <div class="item">
+                <div class="dot info"></div>
+                <div>
+                  <div class="event">Email delivered</div>
+                  <div class="time">Apr 14, 9:03am</div>
+                </div>
+              </div>
+              <div class="item">
+                <div class="dot"></div>
+                <div>
+                  <div class="event">Created as draft</div>
+                  <div class="time">Apr 14, 8:45am</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="side-card portal-mini">
+            <div class="label">Client portal</div>
+            <div class="link">workpilot.mrlabs.io/portal/tok_8f3n2...</div>
+            <div class="actions">
+              <button class="btn secondary sm" style="flex: 1;">
+                <svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copy
+              </button>
+              <button class="btn secondary sm" style="flex: 1;">
+                <svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                Share
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 03 FORM ─── -->
+  <h2 class="section-h"><span class="num">3</span>Form · /estimates/new · /[id]/edit</h2>
+  <div class="note-fix">
+    <strong>Fix de layout:</strong> el v1 mostraba las 5 secciones del form <em>apiladas verticalmente en desktop</em> (porque el wizard sólo estaba en mobile con <code>hidden md:block</code>).
+    Ahora también desktop usa <strong>stepped navigation</strong> — una sección visible a la vez, progreso claro, menos scroll. El sidebar con total en vivo se queda sticky.
+  </div>
+  <div class="mock">
+    <div class="mock-label">Desktop · /estimates/new (step 2 · Work items)</div>
+    <div class="mock-body">
+      <div class="form-grid">
+        <div>
+          <div class="form-header-card">
+            <div>
+              <div class="bread">Estimates / New</div>
+              <h1>Create estimate</h1>
+              <div class="sub">Step 2 of 5 · Work items</div>
+            </div>
+            <div class="saved">● Auto-saved · 2s ago</div>
+          </div>
+
+          <div class="stepper">
+            <div class="step-item done"><span class="n">✓</span>Client</div>
+            <span class="step-divider">—</span>
+            <div class="step-item active"><span class="n">2</span>Work items</div>
+            <span class="step-divider">—</span>
+            <div class="step-item"><span class="n">3</span>Pricing</div>
+            <span class="step-divider">—</span>
+            <div class="step-item"><span class="n">4</span>Payment</div>
+            <span class="step-divider">—</span>
+            <div class="step-item"><span class="n">5</span>Delivery</div>
+          </div>
+
+          <div class="form-card">
+            <h3>Work items</h3>
+            <p class="desc">Añade las líneas que compondrán este presupuesto. Usa el catálogo para autocompletar.</p>
+
+            <div class="line-item-row">
+              <select class="sel"><option>🔨 Labor</option></select>
+              <input class="desc" value="Kitchen sink replacement" style="color: var(--text); font-weight: 500;">
+              <input class="qty" value="4">
+              <input class="rate" value="$125.00">
+              <div class="total">$500.00</div>
+              <button><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>
+            </div>
+            <div class="line-item-row">
+              <select class="sel"><option>📦 Material</option></select>
+              <input class="desc" value="PEX pipe, fittings, valves" style="color: var(--text); font-weight: 500;">
+              <input class="qty" value="1">
+              <input class="rate" value="$185.00">
+              <div class="total">$185.00</div>
+              <button><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>
+            </div>
+            <div class="line-item-row">
+              <select class="sel"><option>🔨 Labor</option></select>
+              <input class="desc" value="Dishwasher line installation" style="color: var(--text); font-weight: 500;">
+              <input class="qty" value="3">
+              <input class="rate" value="$125.00">
+              <div class="total">$375.00</div>
+              <button><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>
+            </div>
+
+            <button class="add-line" style="margin-top: 4px;">
+              <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add line item
+              <span style="color: var(--text-3); font-weight: 400; font-size: 12px; margin-left: 8px;">or press the <code style="background: var(--surface-2); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border); font-size: 11px;">C</code> key to open catalog</span>
+            </button>
+
+            <div style="margin-top: 18px;">
+              <label class="field-hint" style="font-size: 12px; font-weight: 500; color: var(--text-2); display: block; margin-bottom: 5px;">Notes (optional)</label>
+              <textarea rows="2" placeholder="Scope details, payment terms, disclaimers..." style="width: 100%; border: 1px solid var(--border); border-radius: var(--r-md); padding: 8px 12px; font-size: 13px; font-family: inherit; outline: none; resize: none;"></textarea>
+            </div>
+          </div>
+
+          <div class="form-footer">
+            <button class="btn ghost">Cancel</button>
+            <div style="flex: 1;"></div>
+            <button class="btn secondary">← Back</button>
+            <button class="btn primary">Continue →</button>
+          </div>
+        </div>
+
+        <div class="form-side">
+          <div class="total-card">
+            <div class="lbl">Live total</div>
+            <div class="v">$1,144.80</div>
+            <div class="row"><span>Subtotal</span><span>$1,060.00</span></div>
+            <div class="row"><span>Tax (8%)</span><span>$84.80</span></div>
+          </div>
+          <div class="side-card">
+            <div class="label">Summary</div>
+            <div style="font-size: 12px; color: var(--text-2); display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; justify-content: space-between;"><span>Client</span><strong style="color: var(--text); font-weight: 500;">María González</strong></div>
+              <div style="display: flex; justify-content: space-between;"><span>Line items</span><strong style="color: var(--text); font-weight: 500;">3</strong></div>
+              <div style="display: flex; justify-content: space-between;"><span>Labor</span><strong style="color: var(--text); font-weight: 500;">$875.00</strong></div>
+              <div style="display: flex; justify-content: space-between;"><span>Materials</span><strong style="color: var(--text); font-weight: 500;">$185.00</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 04 PRINT ─── -->
+  <h2 class="section-h"><span class="num">4</span>Print · /estimates/[id]/print</h2>
+  <div class="note-fix">
+    <strong>Fix de layout:</strong> ajustada la jerarquía del header (licencia de contratista visible), parties en dos columnas estilo factura profesional, deposit como row en los totales (no callout amber saturado).
+    CTA "Approve online" ahora es navy sólido sin color de acento encendido.
+  </div>
+  <div class="mock">
+    <div class="mock-label">Print preview · Letter size</div>
+    <div class="paper-viewport">
+      <div class="paper">
+        <div class="pp-header">
+          <div class="pp-company">
+            <div class="pp-logo">WP</div>
+            <div>
+              <div class="pp-company-name">WorkPilot</div>
+              <div class="pp-company-sub">Licensed plumbing contractor · Lic #C-36-982</div>
+            </div>
+          </div>
+          <div class="pp-num-block">
+            <div class="pp-num-label">Estimate</div>
+            <div class="pp-num">#1042</div>
+            <div class="pp-dates">
+              <b>Issued</b> · Apr 14, 2026<br>
+              <b>Valid until</b> · May 14, 2026
+            </div>
+          </div>
+        </div>
+
+        <div class="pp-parties">
+          <div>
+            <div class="pp-party-label">From</div>
+            <div class="pp-party-name">WorkPilot</div>
+            <div class="pp-party-sub">
+              (555) 100-2000 · ops@workpilot.com<br>
+              Tax #: 12-3456789
+            </div>
+          </div>
+          <div>
+            <div class="pp-party-label">Billed to</div>
+            <div class="pp-party-name">María González</div>
+            <div class="pp-party-sub">
+              maria@example.com · (555) 234-9811
+            </div>
+          </div>
+        </div>
+
+        <table class="pp-table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th class="c" style="width: 50px;">Qty</th>
+              <th class="r" style="width: 70px;">Rate</th>
+              <th class="r" style="width: 80px;">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="ti labor">Labor</span><div>Kitchen sink replacement</div></td>
+              <td class="c">4</td>
+              <td class="r">$125.00</td>
+              <td class="r b">$500.00</td>
+            </tr>
+            <tr>
+              <td><span class="ti material">Material</span><div>PEX pipe, fittings, valves</div></td>
+              <td class="c">1</td>
+              <td class="r">$185.00</td>
+              <td class="r b">$185.00</td>
+            </tr>
+            <tr>
+              <td><span class="ti labor">Labor</span><div>Dishwasher line installation</div></td>
+              <td class="c">3</td>
+              <td class="r">$125.00</td>
+              <td class="r b">$375.00</td>
+            </tr>
+            <tr>
+              <td><span class="ti material">Material</span><div>Faucet (brushed nickel)</div></td>
+              <td class="c">1</td>
+              <td class="r">$340.00</td>
+              <td class="r b">$340.00</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="pp-totals-row">
+          <div class="pp-totals">
+            <div class="r"><span>Subtotal</span><span>$1,400.00</span></div>
+            <div class="r"><span>Tax (8%)</span><span>$112.00</span></div>
+            <div class="r gt"><span>Total</span><span>$1,512.00</span></div>
+            <div class="r" style="margin-top: 6px; color: var(--warning); font-weight: 500;"><span>Deposit (50%)</span><span>$756.00</span></div>
+          </div>
+        </div>
+
+        <div style="padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--border);">
+          <div class="pp-party-label">Scope &amp; terms</div>
+          <p style="font-size: 11px; color: var(--text-2); line-height: 1.7;">
+            Work to start within 2 weeks of approval. Includes all materials and labor listed above. One-year warranty on workmanship. Any additional scope will require a change order.
+          </p>
+        </div>
+
+        <div class="pp-cta">
+          <div class="l">
+            <div class="big">Ready to approve?</div>
+            <div class="sm">Scan QR or visit the portal link to sign digitally</div>
+          </div>
+          <button class="b">Approve online →</button>
+        </div>
+
+        <div class="pp-footer">
+          <div class="pp-qr"></div>
+          <div class="pp-footer-info">
+            <div class="t">Secure client portal</div>
+            <div class="s">View line items, ask questions and sign digitally.</div>
+            <span class="url">workpilot.mrlabs.io/portal/tok_8f3n2...</span>
+          </div>
+        </div>
+
+        <div class="pp-legal">
+          By approving, the customer agrees to the services and conditions outlined in this estimate.<br>
+          WorkPilot · Thank you for your business.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── CLOSING ─── -->
+  <h2 class="section-h">Próximo paso</h2>
+  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 20px 24px;">
+    <p style="color: var(--text-2); line-height: 1.6;">
+      Esta v2 resuelve los dos feedback principales: <strong style="color: var(--text);">paleta desaturada</strong> (fuera orange, entra brand navy único) y
+      <strong style="color: var(--text);">layout corregido en las 4 vistas</strong> (action bar jerarquizada en detail, stepped form, single toolbar en lista, parties block limpio en print).
+    </p>
+    <p style="color: var(--text-2); margin-top: 8px;">
+      Si validas esta dirección, el siguiente paso es aplicar al código real: extender <code>globals.css</code> con estos tokens y refactorizar los 4 archivos <code>.tsx</code> de estimates.
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

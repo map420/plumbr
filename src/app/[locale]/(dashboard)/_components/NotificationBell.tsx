@@ -138,18 +138,21 @@ export function NotificationBell({ variant = 'dark' }: { variant?: 'dark' | 'lig
         aria-haspopup="true"
         aria-label={ariaLabel}
         className={`relative p-1.5 rounded-lg transition-colors ${
-          variant === 'light'
-            ? (open || fetching ? 'opacity-70' : 'opacity-60 hover:opacity-100')
-            : (open || fetching ? 'text-white bg-white/15' : 'text-white/60 hover:text-white hover:bg-white/10')
+          open || fetching ? 'opacity-100' : 'opacity-70 hover:opacity-100'
         }`}
-        style={variant === 'light' ? { color: 'var(--wp-primary)' } : undefined}
+        style={{
+          color: variant === 'light' ? 'var(--wp-text)' : 'var(--wp-text-3)',
+          background: open ? 'var(--wp-surface-3)' : 'transparent',
+        }}
+        onMouseEnter={e => { if (!open) e.currentTarget.style.background = 'var(--wp-surface-3)' }}
+        onMouseLeave={e => { if (!open) e.currentTarget.style.background = 'transparent' }}
       >
         {fetching
           ? <Loader2 size={18} className="animate-spin" />
           : <Bell size={18} />
         }
         {unread > 0 && !fetching && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full text-white text-[10px] font-bold flex items-center justify-center leading-none" style={{ background: 'var(--wp-accent)' }}>
+          <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none" style={{ background: 'var(--wp-cta)', color: '#0F172A' }}>
             {unread > 9 ? '9+' : unread}
           </span>
         )}
@@ -167,7 +170,7 @@ export function NotificationBell({ variant = 'dark' }: { variant?: 'dark' | 'lig
             <h3 className="text-sm font-semibold" style={{ color: 'var(--wp-text-primary)' }}>Notifications</h3>
             <div className="flex items-center gap-2">
               {unread > 0 && (
-                <button onClick={handleMarkAllRead} title="Mark all read" className="transition-colors" style={{ color: 'var(--wp-text-muted)' }}>
+                <button onClick={handleMarkAllRead} title="Mark all read" aria-label="Mark all read" className="transition-colors" style={{ color: 'var(--wp-text-muted)' }}>
                   <CheckCheck size={15} />
                 </button>
               )}
@@ -198,8 +201,8 @@ export function NotificationBell({ variant = 'dark' }: { variant?: 'dark' | 'lig
                     <div
                       className="mt-0.5 p-1.5 rounded-lg flex-shrink-0"
                       style={{
-                        background: n.read ? 'var(--wp-bg-muted)' : 'color-mix(in srgb, var(--wp-primary) 10%, transparent)',
-                        color: n.read ? 'var(--wp-text-muted)' : 'var(--wp-primary)',
+                        background: n.read ? 'var(--wp-bg-muted)' : 'color-mix(in srgb, var(--wp-accent) 15%, transparent)',
+                        color: n.read ? 'var(--wp-text-muted)' : 'var(--wp-accent)',
                       }}
                     >
                       <Icon size={13} />

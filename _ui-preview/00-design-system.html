@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>plumbr — Design System Proposal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --wp-primary: #1E3A5F; --wp-primary-dark: #0F2440; --wp-primary-light: #2A4F7A;
+    --wp-accent: #F97316; --wp-accent-hover: #ea6c0a; --wp-accent-subtle: #FFF7ED;
+    --wp-success: #059669; --wp-success-bg: #ECFDF5;
+    --wp-warning: #D97706; --wp-warning-bg: #FFFBEB;
+    --wp-error: #DC2626; --wp-error-bg: #FEF2F2;
+    --wp-info: #2563EB; --wp-info-bg: #EFF6FF;
+    --wp-purple: #7C3AED; --wp-purple-bg: #F5F3FF;
+    --wp-text-primary: #0F172A; --wp-text-secondary: #475569; --wp-text-muted: #94A3B8;
+    --wp-bg-primary: #FFFFFF; --wp-bg-secondary: #F8FAFC; --wp-bg-muted: #F1F5F9;
+    --wp-border: #E2E8F0; --wp-border-light: #F1F5F9;
+    --wp-elevation-1: 0 1px 2px rgb(15 23 42 / 0.04), 0 1px 3px rgb(15 23 42 / 0.06);
+    --wp-elevation-2: 0 4px 12px rgb(15 23 42 / 0.05), 0 2px 4px rgb(15 23 42 / 0.04);
+    --wp-elevation-3: 0 12px 40px rgb(15 23 42 / 0.08), 0 4px 12px rgb(15 23 42 / 0.04);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #EEF2F6; color: var(--wp-text-primary); -webkit-font-smoothing: antialiased; }
+  .shell { max-width: 1480px; margin: 0 auto; padding: 32px 24px 64px; }
+  .page-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--wp-border); }
+  .page-header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .page-header p { font-size: 13px; color: var(--wp-text-muted); }
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .compare-col { background: white; border: 1px solid var(--wp-border); border-radius: 14px; overflow: hidden; box-shadow: 0 1px 2px rgb(0 0 0 / 0.03); }
+  .compare-label { padding: 14px 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 1px solid var(--wp-border-light); background: var(--wp-bg-secondary); }
+  .compare-label.before { color: #64748B; }
+  .compare-label.after { color: var(--wp-accent); background: var(--wp-accent-subtle); }
+  .viewport { padding: 16px; background: var(--wp-bg-secondary); min-height: 680px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+  .card {
+    background: white; border: 1px solid var(--wp-border);
+    border-radius: 14px; padding: 20px; margin-bottom: 16px;
+    box-shadow: var(--wp-elevation-1);
+  }
+  h2 { font-size: 18px; font-weight: 700; margin: 24px 0 12px; letter-spacing: -0.02em; }
+  h3 { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+  p { font-size: 13px; color: var(--wp-text-secondary); line-height: 1.5; }
+
+  .swatch {
+    border-radius: 10px;
+    padding: 14px 16px;
+    color: white;
+    font-size: 11px;
+  }
+  .swatch .name { font-weight: 700; font-size: 12px; margin-bottom: 2px; }
+  .swatch .hex { opacity: 0.85; font-family: ui-monospace, 'SF Mono', monospace; }
+  .swatch.light { color: var(--wp-text-primary); border: 1px solid var(--wp-border); }
+
+  .token-row {
+    display: flex; justify-content: space-between; padding: 8px 0;
+    border-bottom: 1px solid var(--wp-border-light); font-size: 12px;
+  }
+  .token-row .name { font-family: ui-monospace, 'SF Mono', monospace; color: var(--wp-text-secondary); }
+  .token-row .val { color: var(--wp-text-primary); font-weight: 600; }
+
+  .demo-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 999px;
+    font-size: 11px; font-weight: 600;
+  }
+  .demo-pill .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .demo-pill.sent { background: var(--wp-info-bg); color: var(--wp-info); }
+  .demo-pill.sent .dot { background: var(--wp-info); }
+  .demo-pill.approved { background: var(--wp-success-bg); color: var(--wp-success); }
+  .demo-pill.approved .dot { background: var(--wp-success); }
+  .demo-pill.rejected { background: var(--wp-error-bg); color: var(--wp-error); }
+  .demo-pill.rejected .dot { background: var(--wp-error); }
+  .demo-pill.converted { background: var(--wp-purple-bg); color: var(--wp-purple); }
+  .demo-pill.converted .dot { background: var(--wp-purple); }
+  .demo-pill.draft { background: var(--wp-bg-muted); color: var(--wp-text-secondary); }
+  .demo-pill.draft .dot { background: var(--wp-text-muted); }
+
+  .toggle {
+    width: 44px; height: 24px; border-radius: 999px; background: var(--wp-bg-muted);
+    position: relative; cursor: pointer; display: inline-block;
+  }
+  .toggle::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 20px; height: 20px; background: white; border-radius: 50%;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
+    transition: transform 150ms;
+  }
+  .toggle.on { background: var(--wp-primary); }
+  .toggle.on::after { transform: translateX(20px); }
+
+  .btn-primary-demo {
+    background: var(--wp-accent); color: white; border: none;
+    padding: 8px 14px; border-radius: 10px; font-size: 13px; font-weight: 600;
+    box-shadow: 0 1px 2px rgb(249 115 22 / 0.3);
+  }
+  .btn-secondary-demo {
+    background: white; color: var(--wp-text-primary);
+    border: 1px solid var(--wp-border);
+    padding: 8px 14px; border-radius: 10px; font-size: 13px; font-weight: 600;
+    box-shadow: var(--wp-elevation-1);
+  }
+  .btn-purple-demo {
+    background: var(--wp-purple); color: white; border: none;
+    padding: 8px 14px; border-radius: 10px; font-size: 13px; font-weight: 600;
+  }
+  .btn-ghost-demo {
+    background: transparent; color: var(--wp-text-secondary); border: none;
+    padding: 8px 14px; border-radius: 10px; font-size: 13px; font-weight: 600;
+  }
+
+  .kpi-demo {
+    background: white; border: 1px solid var(--wp-border);
+    border-radius: 12px; padding: 14px;
+    box-shadow: var(--wp-elevation-1);
+    position: relative; overflow: hidden;
+  }
+  .kpi-demo::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 3px; background: var(--wp-info); }
+  .kpi-demo.success::before { background: var(--wp-success); }
+  .kpi-demo.warning::before { background: var(--wp-warning); }
+  .kpi-demo.error::before { background: var(--wp-error); }
+  .kpi-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--wp-text-muted); margin-bottom: 6px; }
+  .kpi-value { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
+  .kpi-sub { font-size: 11px; color: var(--wp-text-muted); margin-top: 6px; }
+
+  .avatar-demo {
+    width: 36px; height: 36px; border-radius: 50%;
+    color: white; font-weight: 700; font-size: 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-right: 8px;
+  }
+
+  .nav-links a {
+    display: inline-block;
+    margin-right: 12px;
+    padding: 8px 14px; border-radius: 10px;
+    background: var(--wp-bg-muted); color: var(--wp-text-primary);
+    font-size: 13px; font-weight: 600; text-decoration: none;
+    transition: all 120ms;
+  }
+  .nav-links a:hover { background: var(--wp-accent); color: white; }
+
+  .checklist { list-style: none; padding: 0; }
+  .checklist li {
+    padding: 8px 0; font-size: 13px; color: var(--wp-text-secondary);
+    border-bottom: 1px dashed var(--wp-border-light);
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .checklist li .check {
+    width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+    background: var(--wp-success-bg); color: var(--wp-success);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+  }
+  .checklist li strong { color: var(--wp-text-primary); }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="page-header">
+    <div>
+      <h1>plumbr UI redesign · Design system proposal</h1>
+      <p>Premisas, tokens y componentes para la sección Estimates (extensible a todo el dashboard)</p>
+    </div>
+  </div>
+
+  <div class="nav-links" style="margin-bottom: 24px;">
+    <a href="01-estimates-list.html">① Lista</a>
+    <a href="02-estimates-detail.html">② Detalle</a>
+    <a href="03-estimates-form.html">③ Form New/Edit</a>
+    <a href="04-estimates-print.html">④ Print</a>
+  </div>
+
+  <!-- Filosofía -->
+  <div class="card">
+    <h3 style="font-size: 11px; color: var(--wp-text-muted); text-transform: uppercase; letter-spacing: 0.08em;">Filosofía</h3>
+    <h2 style="margin-top: 0;">SaaS profesional. Navy + Orange. Densa pero respirable.</h2>
+    <p>
+      El sistema actual ya tiene buenos cimientos (tokens <code>--wp-*</code>, paleta navy/orange, componentes <code>.btn-*</code>, <code>.badge-*</code>).
+      La propuesta no tira nada — <strong>extiende, unifica y pule</strong>. Pasamos de un dashboard funcional a uno con jerarquía visual profesional estilo Stripe/Linear/Vercel, manteniendo la personalidad de contractor que ya tienes.
+    </p>
+  </div>
+
+  <!-- Problemas detectados -->
+  <h2>Problemas detectados en el código actual</h2>
+  <div class="card">
+    <ul class="checklist">
+      <li><span class="check" style="background: var(--wp-warning-bg); color: var(--wp-warning);">!</span><div><strong>Inline styles inconsistentes.</strong> Convive <code>style={{ color: 'var(--wp-primary)' }}</code> con <code>className="text-[#1E3A5F]"</code> y <code>text-slate-700</code>. Esto hace imposible cambiar la paleta de golpe.</div></li>
+      <li><span class="check" style="background: var(--wp-warning-bg); color: var(--wp-warning);">!</span><div><strong>Toggle switch duplicado 5+ veces</strong> en EstimateFormClient con lógica copy-paste. Debe ser un componente <code>&lt;Toggle/&gt;</code>.</div></li>
+      <li><span class="check" style="background: var(--wp-warning-bg); color: var(--wp-warning);">!</span><div><strong>Tipografía microgestionada en inline</strong> — valores como <code>0.6875rem, 0.8125rem, 0.9375rem</code> repartidos por todo el código. Falta una escala tipográfica clara.</div></li>
+      <li><span class="check" style="background: var(--wp-warning-bg); color: var(--wp-warning);">!</span><div><strong>Action bar del detalle</strong> es una fila larga de botones que compiten entre sí (6 botones al mismo peso visual).</div></li>
+      <li><span class="check" style="background: var(--wp-warning-bg); color: var(--wp-warning);">!</span><div><strong>No hay affordance</strong> en la tabla del listado — filas clickeables sin hint visual. Tampoco hay <em>quick actions</em> al hover.</div></li>
+      <li><span class="check" style="background: var(--wp-warning-bg); color: var(--wp-warning);">!</span><div><strong>Sin timeline de actividad</strong> visible. La info de "visto 3 veces" es un chip pequeño perdido en el header.</div></li>
+      <li><span class="check" style="background: var(--wp-warning-bg); color: var(--wp-warning);">!</span><div><strong>KPIs faltantes</strong> — la vista listado muestra una barra de progreso oculta hasta aplicar filtro, en lugar de dar un dashboard de 4 métricas al tope.</div></li>
+    </ul>
+  </div>
+
+  <!-- Tokens -->
+  <h2>Tokens — extensiones al sistema actual</h2>
+  <div class="grid-2">
+    <div class="card">
+      <h3>Paleta (sin cambios)</h3>
+      <p style="margin-bottom: 12px;">Se respeta la identidad existente. El navy se mantiene como color de marca, el orange como CTA primario.</p>
+      <div class="grid-4" style="gap: 6px;">
+        <div class="swatch" style="background: var(--wp-primary);"><div class="name">Primary</div><div class="hex">#1E3A5F</div></div>
+        <div class="swatch" style="background: var(--wp-accent);"><div class="name">Accent</div><div class="hex">#F97316</div></div>
+        <div class="swatch" style="background: var(--wp-success);"><div class="name">Success</div><div class="hex">#059669</div></div>
+        <div class="swatch" style="background: var(--wp-error);"><div class="name">Error</div><div class="hex">#DC2626</div></div>
+        <div class="swatch" style="background: var(--wp-info);"><div class="name">Info</div><div class="hex">#2563EB</div></div>
+        <div class="swatch" style="background: var(--wp-warning);"><div class="name">Warning</div><div class="hex">#D97706</div></div>
+        <div class="swatch" style="background: var(--wp-purple);"><div class="name">Purple*</div><div class="hex">#7C3AED</div></div>
+        <div class="swatch light" style="background: white;"><div class="name">Surface</div><div class="hex">#FFFFFF</div></div>
+      </div>
+      <p style="margin-top: 10px; font-size: 12px;">* Nuevo token <code>--wp-purple</code> / <code>--wp-purple-bg</code> — ya lo usas hardcoded para <em>converted</em>. Lo formalizamos como token.</p>
+    </div>
+
+    <div class="card">
+      <h3>Elevation (nuevo)</h3>
+      <p style="margin-bottom: 12px;">Reemplaza a <code>--wp-shadow-*</code> con una escala más sutil y consistente.</p>
+      <div class="token-row"><span class="name">--wp-elevation-1</span><span class="val">cards, toolbars</span></div>
+      <div class="token-row"><span class="name">--wp-elevation-2</span><span class="val">popovers, sticky</span></div>
+      <div class="token-row"><span class="name">--wp-elevation-3</span><span class="val">modals, overlays</span></div>
+      <h3 style="margin-top: 14px;">Surfaces (nuevo)</h3>
+      <div class="token-row"><span class="name">--wp-surface-raised</span><span class="val">#FFFFFF</span></div>
+      <div class="token-row"><span class="name">--wp-surface-sunken</span><span class="val">#F8FAFC</span></div>
+      <h3 style="margin-top: 14px;">Typography scale (nuevo)</h3>
+      <div class="token-row"><span class="name">--wp-text-xs / 11px</span><span class="val">badges, meta</span></div>
+      <div class="token-row"><span class="name">--wp-text-sm / 13px</span><span class="val">body, inputs</span></div>
+      <div class="token-row"><span class="name">--wp-text-md / 15px</span><span class="val">card titles</span></div>
+      <div class="token-row"><span class="name">--wp-text-lg / 20px</span><span class="val">page subtitles</span></div>
+      <div class="token-row"><span class="name">--wp-text-xl / 26px</span><span class="val">page titles</span></div>
+    </div>
+  </div>
+
+  <!-- Componentes -->
+  <h2>Componentes clave</h2>
+
+  <div class="card">
+    <h3>Status pills con dot (refactor)</h3>
+    <p>Reemplaza <code>&lt;EstimateStatusBadge/&gt;</code> para tener un indicador cromático (punto) + label. Mejor jerarquía y accesible.</p>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;">
+      <span class="demo-pill draft"><span class="dot"></span>Draft</span>
+      <span class="demo-pill sent"><span class="dot"></span>Sent</span>
+      <span class="demo-pill approved"><span class="dot"></span>Approved</span>
+      <span class="demo-pill rejected"><span class="dot"></span>Declined</span>
+      <span class="demo-pill converted"><span class="dot"></span>Invoiced</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Buttons (mismo sistema, shadows refinadas)</h3>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px;">
+      <button class="btn-primary-demo">+ New estimate</button>
+      <button class="btn-secondary-demo">Email client</button>
+      <button class="btn-purple-demo">→ Invoice it</button>
+      <button class="btn-ghost-demo">Cancel</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Toggle switch (componente reutilizable)</h3>
+    <p>Elimina las 5+ implementaciones duplicadas en el formulario.</p>
+    <div style="display: flex; gap: 20px; align-items: center; margin-top: 12px;">
+      <span class="toggle"></span>
+      <span class="toggle on"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>KPI cards (nuevo)</h3>
+    <p>Dashboard row al tope de la lista. Color-coded bar a la izquierda identifica el tipo.</p>
+    <div class="grid-4" style="margin-top: 12px;">
+      <div class="kpi-demo">
+        <div class="kpi-label">Pending</div>
+        <div class="kpi-value">4</div>
+        <div class="kpi-sub">$9,240 · 2 opened</div>
+      </div>
+      <div class="kpi-demo success">
+        <div class="kpi-label">Approved</div>
+        <div class="kpi-value">5</div>
+        <div class="kpi-sub">$18,140 · 2 invoiced</div>
+      </div>
+      <div class="kpi-demo error">
+        <div class="kpi-label">Declined</div>
+        <div class="kpi-value">1</div>
+        <div class="kpi-sub">$1,200 · rate 8%</div>
+      </div>
+      <div class="kpi-demo warning">
+        <div class="kpi-label">Stale</div>
+        <div class="kpi-value">2</div>
+        <div class="kpi-sub">Sin respuesta 3+ días</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Avatars con gradient (nuevo)</h3>
+    <p>Añade personalidad a las listas de clientes. Color determinista por inicial, mismo stack de gradients que el brand.</p>
+    <div style="margin-top: 12px;">
+      <span class="avatar-demo" style="background: linear-gradient(135deg, #1E3A5F 0%, #2A4F7A 100%);">MG</span>
+      <span class="avatar-demo" style="background: linear-gradient(135deg, #7C3AED 0%, #A855F7 100%);">LC</span>
+      <span class="avatar-demo" style="background: linear-gradient(135deg, #059669 0%, #10B981 100%);">RS</span>
+      <span class="avatar-demo" style="background: linear-gradient(135deg, #DC2626 0%, #F87171 100%);">JW</span>
+      <span class="avatar-demo" style="background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);">SM</span>
+    </div>
+  </div>
+
+  <!-- Qué cambia por vista -->
+  <h2>Qué cambia por vista (resumen ejecutivo)</h2>
+  <div class="grid-2">
+    <div class="card">
+      <h3 style="color: var(--wp-primary);">① Lista de Estimates</h3>
+      <ul class="checklist">
+        <li><span class="check">+</span><div><strong>Dashboard KPI row</strong> con 4 tarjetas (Pending, Approved, Declined, Revenue).</div></li>
+        <li><span class="check">+</span><div><strong>Toolbar unificada</strong>: search + filter pills en el mismo card, con icono de lupa.</div></li>
+        <li><span class="check">+</span><div><strong>Avatares</strong> con inicial del cliente en cada fila.</div></li>
+        <li><span class="check">+</span><div><strong>Quick actions al hover</strong> (share, delete) — no más botones siempre visibles.</div></li>
+        <li><span class="check">+</span><div><strong>Activity hint</strong> inline ("Opened 2x") en filas sent.</div></li>
+        <li><span class="check">+</span><div><strong>Insight banner</strong> "2 estimates pendientes 3+ días" — más prominente y accionable.</div></li>
+        <li><span class="check">+</span><div><strong>Mobile</strong>: FAB primario + mini KPIs horizontales + search con icono.</div></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3 style="color: var(--wp-primary);">② Detail</h3>
+      <ul class="checklist">
+        <li><span class="check">+</span><div><strong>Layout de 2 columnas</strong> (contenido + sidebar sticky).</div></li>
+        <li><span class="check">+</span><div><strong>Hero card</strong> con total destacado a la derecha + status pill grande.</div></li>
+        <li><span class="check">+</span><div><strong>Action bar consolidada</strong> — primary (Email), purple (Convert), luego ghost buttons.</div></li>
+        <li><span class="check">+</span><div><strong>Sidebar</strong>: Total card (gradient navy), Timeline de actividad, Portal link.</div></li>
+        <li><span class="check">+</span><div><strong>Type chips</strong> por línea (Labor azul / Material verde) en lugar de badge draft gris.</div></li>
+        <li><span class="check">+</span><div><strong>Mobile</strong>: hero gradient con total gigante, acciones primary + purple lado a lado, quick actions en cards sunken.</div></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3 style="color: var(--wp-primary);">③ Form (New/Edit)</h3>
+      <ul class="checklist">
+        <li><span class="check">+</span><div><strong>Step nav horizontal</strong> desktop (antes solo había mobile wizard).</div></li>
+        <li><span class="check">+</span><div><strong>Auto-saved indicator</strong> en el header — reduce ansiedad.</div></li>
+        <li><span class="check">+</span><div><strong>Sidebar sticky</strong> con total en vivo + valid-until + notes.</div></li>
+        <li><span class="check">+</span><div><strong>Line items limpios</strong>: select de tipo estilizado, input de descripción sin border, grid claro qty/rate/markup/total.</div></li>
+        <li><span class="check">+</span><div><strong>Toggles agrupados</strong> en cards por rubro (Pricing, Payment, Delivery).</div></li>
+        <li><span class="check">+</span><div><strong>Footer sticky</strong> con Cancel / Save draft / Save & send — jerarquía clara.</div></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3 style="color: var(--wp-primary);">④ Print</h3>
+      <ul class="checklist">
+        <li><span class="check">+</span><div><strong>Header con logo box</strong> + licencia de contratista visible.</div></li>
+        <li><span class="check">+</span><div><strong>Two-column parties block</strong> (From / Billed to) — formato factura profesional.</div></li>
+        <li><span class="check">+</span><div><strong>Type chips por ítem</strong> (labor/material) — igual que en el detail.</div></li>
+        <li><span class="check">+</span><div><strong>Deposit callout</strong> destacado con icono % y fondo amber.</div></li>
+        <li><span class="check">+</span><div><strong>CTA navy "Approve online"</strong> para empujar la adopción del portal.</div></li>
+        <li><span class="check">+</span><div><strong>QR grande + portal link mono</strong> en un footer card estructurado.</div></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Próximos pasos -->
+  <h2>Próximos pasos sugeridos</h2>
+  <div class="card">
+    <ol style="padding-left: 20px; font-size: 13px; color: var(--wp-text-secondary); line-height: 1.8;">
+      <li><strong>Validar dirección</strong> visual con los mocks de esta página antes de escribir código.</li>
+      <li><strong>Extender globals.css</strong> con los nuevos tokens (elevation, surface, typography scale, <code>--wp-purple</code>, clases <code>.toggle</code>, <code>.kpi-card</code>, <code>.status-pill--dot</code>).</li>
+      <li><strong>Crear componentes compartidos</strong> en <code>src/components/</code>: <code>Toggle.tsx</code>, <code>StatusPill.tsx</code>, <code>KpiCard.tsx</code>, <code>ClientAvatar.tsx</code>.</li>
+      <li><strong>Aplicar por vista</strong> empezando por la lista (más tráfico), luego detail, form, print.</li>
+      <li><strong>Propagar al resto</strong> del dashboard (invoices, jobs, clients, payments) reutilizando los mismos componentes.</li>
+    </ol>
+  </div>
+</div>
+</body>
+</html>

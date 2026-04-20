@@ -2,7 +2,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "estimates": "Estimates",
-    "jobs": "Jobs",
+    "jobs": "Projects",
     "invoices": "Invoices",
     "schedule": "Schedule",
     "field": "Field",
@@ -12,21 +12,21 @@
     "greeting": "Good morning, {name}",
     "subtitle": "Here's what's happening with your business today.",
     "stats": {
-      "activeJobs": "Active Jobs",
+      "activeJobs": "Active Projects",
       "openEstimates": "Unpaid Invoices",
       "revenueThisMonth": "Revenue This Month",
-      "avgJobMargin": "Avg. Job Margin"
+      "avgJobMargin": "Avg. Project Margin"
     },
     "quickActions": {
       "title": "Quick Actions",
       "newEstimate": "+ New Estimate",
-      "newJob": "+ New Job"
+      "newJob": "+ New Project"
     }
   },
   "jobs": {
-    "title": "Jobs",
-    "new": "New Job",
-    "empty": "No jobs yet. Create your first job.",
+    "title": "Projects",
+    "new": "New Project",
+    "empty": "No projects yet. Create your first project.",
     "status": {
       "lead": "Lead",
       "active": "Active",
@@ -35,7 +35,7 @@
       "cancelled": "Cancelled"
     },
     "fields": {
-      "name": "Job Name",
+      "name": "Project Name",
       "clientName": "Client Name",
       "clientEmail": "Client Email",
       "clientPhone": "Client Phone",
@@ -110,15 +110,10 @@
       "total": "Total"
     }
   },
-  "schedule": {
-    "title": "Schedule",
-    "today": "Today",
-    "noJobs": "No jobs scheduled."
-  },
   "field": {
     "title": "Field",
-    "todaysJobs": "Today's Jobs",
-    "noJobs": "No jobs assigned for today.",
+    "todaysJobs": "Today's Projects",
+    "noJobs": "No projects assigned for today.",
     "checklist": "Checklist",
     "photos": "Photos",
     "uploadPhoto": "Upload Photo"
@@ -135,14 +130,14 @@
     "backToLists": "Lists",
     "copied": "Copied",
     "copyList": "Copy list",
-    "sinJob": "No linked job",
-    "noJobHelp": "Purchased items won't be logged as expenses until you link a job.",
+    "sinJob": "No linked project",
+    "noJobHelp": "Purchased items won't be logged as expenses until you link a project.",
     "link": "Link",
-    "linkToJob": "Link to a job",
-    "changeJob": "Change job",
+    "linkToJob": "Link to a project",
+    "changeJob": "Change project",
     "change": "Change",
     "unlink": "Unlink",
-    "selectJobPlaceholder": "Pick a job...",
+    "selectJobPlaceholder": "Pick a project...",
     "spent": "Spent",
     "budget": "Budget",
     "materialBudget": "Materials budget",
@@ -154,9 +149,156 @@
     "costPlaceholder": "Cost",
     "add": "Add",
     "addItem": "Add item",
+    "markAllBought": "Mark all bought",
     "purchasedHeading": "Purchased",
     "pending": "Pending",
     "of": "of"
+  },
+  "portal": {
+    "docLabel": {
+      "estimate": "Estimate",
+      "invoice": "Invoice",
+      "changeOrder": "Change Order"
+    },
+    "for": "For",
+    "status": {
+      "draft": "Draft",
+      "sent": "Sent",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "converted": "Converted",
+      "paid": "Paid",
+      "overdue": "Overdue",
+      "cancelled": "Cancelled"
+    },
+    "validUntil": "Valid until",
+    "due": "Due",
+    "issued": "Issued",
+    "billTo": "Bill To",
+    "totalDue": "Total Due",
+    "paidOn": "Paid on",
+    "thankYou": "Thank you for your business",
+    "table": {
+      "description": "Description",
+      "qty": "Qty",
+      "unitPrice": "Unit price",
+      "total": "Total"
+    },
+    "subtotal": "Subtotal",
+    "tax": "Tax",
+    "total": "Total",
+    "notes": "Notes",
+    "photos": "Photos",
+    "poweredBy": "Powered by WorkPilot",
+    "print": "Print / Save PDF",
+    "pay": {
+      "button": "Pay {amount}",
+      "redirecting": "Redirecting to Stripe…"
+    },
+    "approve": {
+      "approveEstimate": "Approve estimate",
+      "approveChangeOrder": "Approve change order",
+      "decline": "Decline",
+      "signToApprove": "Sign to approve",
+      "yourName": "Your name",
+      "fullName": "Full name",
+      "signAndApprove": "Sign & Approve",
+      "processing": "Processing…",
+      "cancel": "Cancel"
+    },
+    "reject": {
+      "titleEstimate": "Decline this estimate",
+      "titleChangeOrder": "Decline this change order",
+      "reasonLabel": "Reason (optional)",
+      "reasonPlaceholder": "Let the contractor know why you're declining…",
+      "confirm": "Confirm Decline"
+    },
+    "done": {
+      "approvedTitleEstimate": "Estimate approved!",
+      "approvedTitleChangeOrder": "Change order approved!",
+      "approvedBody": "The contractor has been notified and will be in touch soon.",
+      "rejectedTitleEstimate": "Estimate rejected",
+      "rejectedTitleChangeOrder": "Change order rejected",
+      "rejectedBody": "The contractor has been notified."
+    }
+  },
+  "print": {
+    "common": {
+      "item": "Item",
+      "qty": "Qty",
+      "description": "Description",
+      "unitPrice": "Unit Price",
+      "rate": "Rate",
+      "amount": "Amount",
+      "subtotal": "Subtotal",
+      "tax": "Tax",
+      "total": "Total",
+      "thankYou": "Thank you for your business"
+    },
+    "button": {
+      "printPdf": "Print / Save PDF",
+      "close": "Close"
+    },
+    "estimate": {
+      "issued": "Issued",
+      "validUntil": "Valid until",
+      "from": "From",
+      "billedTo": "Billed to",
+      "depositRequired": "Deposit required",
+      "clientSignature": "Client Signature",
+      "scopeTerms": "Scope & terms",
+      "readyToApprove": "Ready to approve?",
+      "approveQrText": "Scan the QR or visit the portal link to sign digitally.",
+      "approveOnline": "Approve online →",
+      "securePortal": "Secure client portal",
+      "securePortalDesc": "View line items, ask questions and sign digitally.",
+      "legal": "By approving, the customer agrees to the services and conditions outlined in this estimate."
+    },
+    "invoice": {
+      "label": "Invoice",
+      "issued": "Issued",
+      "due": "Due",
+      "billTo": "Bill To",
+      "totalDue": "Total Due",
+      "paid": "PAID",
+      "notes": "Notes",
+      "payOnline": "Pay online",
+      "payQrDesc": "Scan this QR code to view and pay this invoice online."
+    },
+    "shoppingList": {
+      "label": "Shopping List",
+      "toBuy": "To buy",
+      "estCost": "Est. cost",
+      "alreadyPurchased": "Already purchased",
+      "purchased": "Purchased",
+      "stillToBuy": "Still to buy",
+      "totalEstimated": "Total estimated",
+      "noItems": "This list has no items."
+    }
+  },
+  "schedule": {
+    "title": "Schedule",
+    "today": "Today",
+    "noJobs": "No projects scheduled.",
+    "nav": {
+      "today": "Today",
+      "week": "Week",
+      "month": "Month",
+      "jumpToday": "Jump to today",
+      "newEvent": "New event",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "filter": {
+      "technicians": "Technicians"
+    },
+    "status": {
+      "inProgress": "in progress"
+    },
+    "events": {
+      "moreEvents": "+{count} more",
+      "scheduledJobs": "scheduled projects"
+    }
   },
   "settings": {
     "title": "Settings",
@@ -197,7 +339,7 @@
       "badge": "Built for contractors under $5M revenue",
       "title": "Your construction business,",
       "titleAccent": "straight.",
-      "subtitle": "Stop juggling WhatsApp, Excel, and QuickBooks. WorkPilot gives you estimates, job costing, crew scheduling, and invoicing — in one place.",
+      "subtitle": "Stop juggling WhatsApp, Excel, and QuickBooks. WorkPilot gives you estimates, project costing, crew scheduling, and invoicing — in one place.",
       "cta": "Start 14-day free trial",
       "noCreditCard": "No credit card required"
     },
@@ -206,7 +348,7 @@
       "items": [
         "Build estimates in minutes with your item catalog",
         "Convert estimate to invoice in 1 click — no double entry",
-        "Real-time job costing: know your margins before the job ends",
+        "Real-time project costing: know your margins before the project ends",
         "Visual crew scheduling with drag-and-drop",
         "Mobile field app for photos and task checklists",
         "Digital signatures and contracts on estimates",

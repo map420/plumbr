@@ -48,6 +48,7 @@ export function EstimateFormClient({ translations: t, estimate, clients = [], ta
   // Same step state is now used on both mobile and desktop (stepper everywhere)
   const [step, setStep] = useState(0)
   const [formError, setFormError] = useState<string | null>(null)
+  const [stepError, setStepError] = useState<string | null>(null)
 
   const [jobs, setJobs] = useState<Job[]>([])
   const [jobId, setJobId] = useState(estimate?.jobId ?? searchParams.get('jobId') ?? '')
@@ -181,6 +182,28 @@ export function EstimateFormClient({ translations: t, estimate, clients = [], ta
 
   const { subtotal, discount, tax, total } = calcTotals(items, discountType, discountValue, globalMarkup, taxDecimal)
 
+  // D1 — Per-step validation. Returns null if valid, else error message.
+  function validateStep(s: number): string | null {
+    if (s === 0) {
+      // Client/job step — require at least clientName
+      if (!clientName.trim()) return locale === 'es' ? 'Selecciona o escribe un cliente.' : 'Select or enter a client.'
+    }
+    if (s === 1) {
+      // Items step
+      if (items.length === 0) return locale === 'es' ? 'Agrega al menos un line item.' : 'Add at least one line item.'
+      const invalid = items.find(li => !li.description.trim() || li.quantity <= 0 || li.unitPrice < 0)
+      if (invalid) return locale === 'es' ? 'Cada line item debe tener descripción, cantidad > 0 y precio ≥ 0.' : 'Each line item needs description, qty > 0 and price ≥ 0.'
+    }
+    return null
+  }
+
+  function tryAdvance() {
+    const err = validateStep(step)
+    if (err) { setStepError(err); return }
+    setStepError(null)
+    setStep(s => s + 1)
+  }
+
   function updateItem(i: number, field: string, value: string | number) {
     const updated = [...items]
     updated[i] = { ...updated[i], [field]: value }
@@ -228,12 +251,12 @@ export function EstimateFormClient({ translations: t, estimate, clients = [], ta
   const isFirstStep = step === 0
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white md:bg-transparent min-h-full">
+    <form onSubmit={handleSubmit} className="bg-card md:bg-transparent min-h-full">
       {/* ══════════════ MOBILE HEADER (wizard) ══════════════ */}
       <div className="md:hidden">
         <div className="flex items-center px-4 py-2.5" style={{ borderBottom: '1px solid var(--wp-border-light)' }}>
           <div className="flex-1 flex items-center justify-start">
-            <button type="button" onClick={() => step === 0 ? router.back() : setStep(s => s - 1)}
+            <button type="button" onClick={() => step === 0 ? router.push(`/${locale}/estimates`) : setStep(s => s - 1)}
               className="flex items-center gap-0.5"
               style={{ fontSize: '0.9375rem', fontWeight: 500, color: 'var(--wp-brand)', lineHeight: '1.25rem' }}>
               <ChevronLeft size={16} /> {step === 0 ? 'Cancel' : 'Back'}
@@ -242,7 +265,7 @@ export function EstimateFormClient({ translations: t, estimate, clients = [], ta
           <span className="flex-shrink-0" style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--wp-text)', lineHeight: '1.25rem' }}>{STEPS[step]}</span>
           <div className="flex-1 flex items-center justify-end">
             {step < STEPS.length - 1 ? (
-              <button type="button" onClick={() => setStep(s => s + 1)}
+              <button type="button" onClick={tryAdvance}
                 style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--wp-brand)', lineHeight: '1.25rem' }}>
                 Next
               </button>
@@ -284,13 +307,9 @@ export function EstimateFormClient({ translations: t, estimate, clients = [], ta
             </h1>
             <div className="text-xs mt-1 flex items-center gap-3" style={{ color: 'var(--wp-text-3)' }}>
               <span>{locale === 'es' ? `Paso ${step + 1} de ${STEPS.length}` : `Step ${step + 1} of ${STEPS.length}`} · {STEPS[step]}</span>
-              <span className="inline-flex items-center gap-1.5" style={{ color: 'var(--wp-success-v2)' }}>
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--wp-success-v2)' }} />
-                {locale === 'es' ? 'Auto-guardado' : 'Auto-saved'}
-              </span>
             </div>
           </div>
-          <button type="button" onClick={() => router.back()} className="btn-ghost btn-sm">
+          <button type="button" onClick={() => router.push(`/${locale}/estimates`)} className="btn-ghost btn-sm">
             <X size={14} /> {locale === 'es' ? 'Cancelar' : 'Cancel'}
           </button>
         </div>
@@ -402,7 +421,7 @@ export function EstimateFormClient({ translations: t, estimate, clients = [], ta
 
                   <div ref={jobDropdownRef} className="relative">
                     <label className="block text-xs font-medium mb-1" style={{ color: 'var(--wp-text-2)' }}>
-                      {locale === 'es' ? 'Trabajo' : 'Job'}
+                      {locale === 'es' ? 'Proyecto' : 'Project'}
                       <span className="ml-2 text-xs font-normal" style={{ color: 'var(--wp-text-3)' }}>
                         {jobId ? (locale === 'es' ? '— vinculado' : '— linked') : (locale === 'es' ? '— opcional' : '— optional')}
                       </span>
@@ -747,11 +766,14 @@ export function EstimateFormClient({ translations: t, estimate, clients = [], ta
                   </button>
                 </div>
               ) : (
-                <button type="button" onClick={() => setStep(s => s + 1)} className="btn-primary btn-sm">
+                <button type="button" onClick={tryAdvance} className="btn-primary btn-sm">
                   {locale === 'es' ? 'Continuar' : 'Continue'} <ArrowRight size={14} />
                 </button>
               )}
             </div>
+            {stepError && (
+              <div className="hidden md:block mt-2 text-sm" style={{ color: 'var(--wp-error-v2)' }}>⚠ {stepError}</div>
+            )}
           </div>
 
           {/* Desktop sidebar — live totals */}
@@ -784,7 +806,7 @@ export function EstimateFormClient({ translations: t, estimate, clients = [], ta
                   <div className="flex justify-between">
                     <span>{locale === 'es' ? 'Válido hasta' : 'Valid until'}</span>
                     <strong style={{ color: 'var(--wp-text)', fontWeight: 500 }}>
-                      {validUntil ? new Date(validUntil).toLocaleDateString() : '—'}
+                      {validUntil ? new Date(validUntil).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US') : '—'}
                     </strong>
                   </div>
                 </div>

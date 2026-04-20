@@ -1,9 +1,21 @@
 // Shared domain types (independent of Drizzle)
+export type TechnicianType = 'employee' | 'subcontractor'
+export type TechnicianAvailability = 'available' | 'busy' | 'off'
+
 export interface Technician {
   id: string; userId: string; name: string; email: string
-  phone: string | null; hourlyRate: string | null; createdAt: Date; updatedAt: Date
+  phone: string | null; hourlyRate: string | null
+  type: TechnicianType
+  role: string | null
+  tier: string | null
+  rating: string | null
+  availabilityStatus: TechnicianAvailability | null
+  availabilityNote: string | null
+  createdAt: Date; updatedAt: Date
 }
-export type TechnicianInput = Omit<Technician, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
+export type TechnicianInput = Omit<Technician, 'id' | 'userId' | 'createdAt' | 'updatedAt' | 'type'> & {
+  type?: TechnicianType
+}
 
 export type ExpenseType = 'labor' | 'material' | 'subcontractor' | 'other'
 
@@ -87,6 +99,10 @@ export interface User {
   socialLinks: Record<string, string> | null; showCredentialsOnDocs: boolean | null
   smsEnabled: boolean | null; smsPhoneNumber: string | null
   businessTaxId: string | null; businessAddress: string | null; businessType: string | null
+  // Stripe Connect Express — contractor's connected account para recibir pagos de clientes.
+  stripeAccountId: string | null
+  stripeAccountChargesEnabled: boolean | null
+  stripeAccountPayoutsEnabled: boolean | null
   createdAt: Date; updatedAt: Date
 }
 

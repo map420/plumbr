@@ -55,10 +55,10 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
         {/* Hero */}
         <section className="py-20 bg-[#F8FAFC]">
           <div className="max-w-3xl mx-auto px-6 text-center">
-            <span className="text-xs font-bold uppercase tracking-widest text-[#F97316] mb-3 block" style={{ letterSpacing: '0.08em' }}>
+            <span className="text-xs font-bold uppercase tracking-widest text-cta mb-3 block" style={{ letterSpacing: '0.08em' }}>
               Pricing
             </span>
-            <h1 className="text-4xl md:text-5xl font-extrabold text-[#1E3A5F] tracking-tight mb-4">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-navy-500 tracking-tight mb-4">
               Simple pricing.<br />No surprises.
             </h1>
             <p className="text-slate-500 text-lg">
@@ -74,20 +74,20 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
               {/* Main card */}
               <div className="relative bg-white rounded-3xl shadow-[0_24px_64px_rgba(0,0,0,0.12)] border border-slate-100 p-10">
                 <div className="absolute -top-4 left-8">
-                  <span className="bg-[#F97316] text-white text-xs font-bold px-5 py-1.5 rounded-full uppercase tracking-wide shadow-lg shadow-orange-500/30">
+                  <span className="bg-cta text-white text-xs font-bold px-5 py-1.5 rounded-full uppercase tracking-wide shadow-lg shadow-amber-500/30">
                     Most Popular
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2 mb-6 mt-2">
-                  <div className="w-8 h-8 bg-[#1E3A5F] rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 bg-navy-500 rounded-lg flex items-center justify-center">
                     <Wrench size={16} className="text-white" />
                   </div>
-                  <span className="font-bold text-[#1E3A5F] text-xl">WorkPilot Pro</span>
+                  <span className="font-bold text-navy-500 text-xl">WorkPilot Pro</span>
                 </div>
 
                 <div className="mb-2">
-                  <span className="text-6xl font-extrabold text-[#1E3A5F]">${PLANS.pro.price}</span>
+                  <span className="text-6xl font-extrabold text-navy-500">${PLANS.pro.price}</span>
                   <span className="text-slate-400 text-lg">/month</span>
                 </div>
                 <p className="text-sm text-slate-400 mb-6">
@@ -100,7 +100,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
                 <ul className="space-y-3 mb-8">
                   {PLANS.pro.features.map(feature => (
                     <li key={feature} className="flex items-center gap-3">
-                      <CheckCircle2 size={16} className="text-[#F97316] shrink-0" />
+                      <CheckCircle2 size={16} className="text-cta shrink-0" />
                       <span className="text-slate-700 text-sm">{feature}</span>
                     </li>
                   ))}
@@ -114,7 +114,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
 
               {/* What's included */}
               <div>
-                <h2 className="text-xl font-bold text-[#1E3A5F] mb-6">Everything you get</h2>
+                <h2 className="text-xl font-bold text-navy-500 mb-6">Everything you get</h2>
                 <div className="space-y-4">
                   {[
                     { title: 'Unlimited estimates & invoices', desc: 'No caps. Quote and bill as many jobs as you want.' },
@@ -142,7 +142,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
 
                 <div className="mt-8 bg-[#F8FAFC] rounded-xl p-5 border border-slate-100">
                   <p className="text-sm text-slate-600">
-                    <span className="font-semibold text-[#1E3A5F]">No per-user fees.</span>{' '}
+                    <span className="font-semibold text-navy-500">No per-user fees.</span>{' '}
                     Add your whole crew at no extra cost. Perfect for teams of 2–25 people.
                   </p>
                 </div>
@@ -154,7 +154,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
         {/* FAQ */}
         <section className="py-16 bg-[#F8FAFC]">
           <div className="max-w-2xl mx-auto px-6">
-            <h2 className="text-2xl font-extrabold text-[#1E3A5F] mb-8 text-center">
+            <h2 className="text-2xl font-extrabold text-navy-500 mb-8 text-center">
               Pricing questions
             </h2>
             <div className="space-y-5">
@@ -171,7 +171,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
         {/* CTA */}
         <section
           className="py-20"
-          style={{ background: 'linear-gradient(135deg, #0F2440 0%, #1E3A5F 100%)' }}
+          style={{ background: 'linear-gradient(135deg, var(--wp-navy) 0%, var(--wp-navy-500) 100%)' }}
         >
           <div className="max-w-2xl mx-auto px-6 text-center">
             <h2 className="text-3xl font-extrabold text-white mb-4">
@@ -180,7 +180,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
             <p className="text-white/50 mb-8">14 days free. No credit card. Setup in 5 minutes.</p>
             <Link
               href={`/${locale}/sign-up`}
-              className="inline-flex items-center gap-2 bg-[#F97316] text-white font-bold px-8 py-4 rounded-xl hover:bg-[#ea6c0a] transition-all hover:scale-[1.02] shadow-lg shadow-orange-500/25"
+              className="inline-flex items-center gap-2 bg-cta text-white font-bold px-8 py-4 rounded-xl hover:bg-cta-hover transition-all hover:scale-[1.02] shadow-lg shadow-amber-500/25"
             >
               Get started free <ArrowRight size={18} />
             </Link>

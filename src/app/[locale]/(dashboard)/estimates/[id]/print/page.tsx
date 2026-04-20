@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { getTranslations } from 'next-intl/server'
 import { getEstimate, getLineItems } from '@/lib/actions/estimates'
 import { requireUser } from '@/lib/actions/auth-helpers'
 import { dbAdapter } from '@/lib/adapters/db'
@@ -14,17 +15,22 @@ const TYPE_CHIP_STYLES: Record<LineItemType, { color: string; background: string
   other: { color: '#52525B', background: '#F1F1F3' },
 }
 
-export default async function PrintEstimatePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+export default async function PrintEstimatePage({ params }: { params: Promise<{ id: string; locale: string }> }) {
+  const { id, locale } = await params
+  const dateLocale = locale === 'es' ? 'es-ES' : 'en-US'
   const userId = await requireUser()
-  const [estimate, lineItems, user] = await Promise.all([
+  const [estimate, lineItems, user, tc, tp] = await Promise.all([
     getEstimate(id),
     getLineItems(id),
     dbAdapter.users.findById(userId),
+    getTranslations('print.common'),
+    getTranslations('print.estimate'),
   ])
   if (!estimate) notFound()
 
-  const portalUrl = estimate.shareToken ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://workpilot.mrlabs.io'}/en/portal/${estimate.shareToken}` : null
+  const portalUrl = estimate.shareToken
+    ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://workpilot.mrlabs.io'}/${locale === 'es' ? 'es' : 'en'}/portal/${estimate.shareToken}`
+    : null
   const qrDataUrl = portalUrl ? await generateQR(portalUrl) : null
 
   const companyName = user?.companyName || 'WorkPilot'
@@ -41,7 +47,7 @@ export default async function PrintEstimatePage({ params }: { params: Promise<{ 
     : null
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-card min-h-screen">
       <style>{`
         @media print {
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -66,14 +72,14 @@ export default async function PrintEstimatePage({ params }: { params: Promise<{ 
             </div>
           </div>
           <div className="text-right">
-            <p className="text-xs font-bold uppercase tracking-[0.12em]" style={{ color: '#A1A1AA' }}>Estimate</p>
+            <p className="text-xs font-bold uppercase tracking-[0.12em]" style={{ color: '#A1A1AA' }}>{locale === 'es' ? 'Presupuesto' : 'Estimate'}</p>
             <h2 className="text-2xl font-bold tracking-tight tabular-nums mt-0.5" style={{ color: '#18181B' }}>{estimate.number}</h2>
             <p className="text-xs mt-1.5 leading-relaxed" style={{ color: '#52525B' }}>
-              <strong style={{ color: '#18181B', fontWeight: 500 }}>Issued</strong> · {new Date(estimate.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              <strong style={{ color: '#18181B', fontWeight: 500 }}>{tp('issued')}</strong> · {new Date(estimate.createdAt).toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' })}
               {estimate.validUntil && (
                 <>
                   <br />
-                  <strong style={{ color: '#18181B', fontWeight: 500 }}>Valid until</strong> · {new Date(estimate.validUntil).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  <strong style={{ color: '#18181B', fontWeight: 500 }}>{tp('validUntil')}</strong> · {new Date(estimate.validUntil).toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' })}
                 </>
               )}
             </p>
@@ -83,7 +89,7 @@ export default async function PrintEstimatePage({ params }: { params: Promise<{ 
         {/* Two-column parties block (From / Billed to) */}
         <div className="grid grid-cols-2 gap-7 mb-7">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.1em] pb-1.5 mb-1.5 border-b" style={{ color: '#A1A1AA', borderColor: '#EAEAEC' }}>From</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.1em] pb-1.5 mb-1.5 border-b" style={{ color: '#A1A1AA', borderColor: '#EAEAEC' }}>{tp('from')}</p>
             <p className="text-sm font-semibold" style={{ color: '#18181B' }}>{companyName}</p>
             <p className="text-xs mt-1 leading-relaxed" style={{ color: '#52525B' }}>
               {companyPhone && <>{companyPhone}<br /></>}
@@ -92,7 +98,7 @@ export default async function PrintEstimatePage({ params }: { params: Promise<{ 
             </p>
           </div>
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.1em] pb-1.5 mb-1.5 border-b" style={{ color: '#A1A1AA', borderColor: '#EAEAEC' }}>Billed to</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.1em] pb-1.5 mb-1.5 border-b" style={{ color: '#A1A1AA', borderColor: '#EAEAEC' }}>{tp('billedTo')}</p>
             <p className="text-sm font-semibold" style={{ color: '#18181B' }}>{estimate.clientName}</p>
             <p className="text-xs mt-1 leading-relaxed" style={{ color: '#52525B' }}>
               {estimate.clientEmail && <>{estimate.clientEmail}<br /></>}
@@ -105,10 +111,10 @@ export default async function PrintEstimatePage({ params }: { params: Promise<{ 
         <table className="w-full text-sm mb-4">
           <thead style={{ background: '#F7F7F8' }}>
             <tr>
-              <th className="text-left py-2.5 px-3 text-[10px] font-bold uppercase tracking-[0.05em]" style={{ color: '#52525B', borderBottom: '1px solid #EAEAEC' }}>Item</th>
-              <th className="text-center py-2.5 px-2 text-[10px] font-bold uppercase tracking-[0.05em] w-14" style={{ color: '#52525B', borderBottom: '1px solid #EAEAEC' }}>Qty</th>
-              <th className="text-right py-2.5 px-2 text-[10px] font-bold uppercase tracking-[0.05em] w-20" style={{ color: '#52525B', borderBottom: '1px solid #EAEAEC' }}>Rate</th>
-              <th className="text-right py-2.5 px-3 text-[10px] font-bold uppercase tracking-[0.05em] w-24" style={{ color: '#52525B', borderBottom: '1px solid #EAEAEC' }}>Amount</th>
+              <th className="text-left py-2.5 px-3 text-[10px] font-bold uppercase tracking-[0.05em]" style={{ color: '#52525B', borderBottom: '1px solid #EAEAEC' }}>{tc('item')}</th>
+              <th className="text-center py-2.5 px-2 text-[10px] font-bold uppercase tracking-[0.05em] w-14" style={{ color: '#52525B', borderBottom: '1px solid #EAEAEC' }}>{tc('qty')}</th>
+              <th className="text-right py-2.5 px-2 text-[10px] font-bold uppercase tracking-[0.05em] w-20" style={{ color: '#52525B', borderBottom: '1px solid #EAEAEC' }}>{tc('rate')}</th>
+              <th className="text-right py-2.5 px-3 text-[10px] font-bold uppercase tracking-[0.05em] w-24" style={{ color: '#52525B', borderBottom: '1px solid #EAEAEC' }}>{tc('amount')}</th>
             </tr>
           </thead>
           <tbody>
@@ -138,12 +144,12 @@ export default async function PrintEstimatePage({ params }: { params: Promise<{ 
         <div className="flex justify-end mb-5">
           <div className="w-64 rounded-lg p-4" style={{ background: '#F7F7F8', border: '1px solid #EAEAEC' }}>
             <div className="flex justify-between text-xs py-0.5 tabular-nums" style={{ color: '#52525B' }}>
-              <span>Subtotal</span>
+              <span>{tc('subtotal')}</span>
               <span>${parseFloat(estimate.subtotal).toFixed(2)}</span>
             </div>
             {parseFloat(estimate.tax) > 0 && (
               <div className="flex justify-between text-xs py-0.5 tabular-nums" style={{ color: '#52525B' }}>
-                <span>Tax</span>
+                <span>{tc('tax')}</span>
                 <span>${parseFloat(estimate.tax).toFixed(2)}</span>
               </div>
             )}
@@ -151,7 +157,7 @@ export default async function PrintEstimatePage({ params }: { params: Promise<{ 
               className="flex justify-between text-lg font-extrabold tracking-tight tabular-nums pt-2 mt-2"
               style={{ borderTop: '1px solid #EAEAEC', color: '#0F172A' }}
             >
-              <span>Total</span>
+              <span>{tc('total')}</span>
               <span>${parseFloat(estimate.total).toFixed(2)}</span>
             </div>
           </div>
@@ -161,10 +167,10 @@ export default async function PrintEstimatePage({ params }: { params: Promise<{ 
         {depositAmount !== null && (
           <div className="flex justify-end mb-5">
             <div className="w-64 rounded-lg px-4 py-3 flex items-center gap-3" style={{ background: '#FFFBEB', border: '1px solid #FDE68A' }}>
-              <div className="w-7 h-7 rounded-md flex items-center justify-center shrink-0 text-xs font-bold" style={{ background: '#B45309', color: 'white' }}>%</div>
+              <div className="w-7 h-7 rounded-md flex items-center justify-center shrink-0 text-xs font-bold" style={{ background: '#B45309', color: 'var(--wp-text-inverse)' }}>%</div>
               <div className="text-xs" style={{ color: '#78350F' }}>
-                <strong style={{ color: '#B45309' }}>Deposit required</strong>
-                {' · '}{estimate.depositType === 'percent' ? `${estimate.depositAmount}%` : ''} = ${depositAmount.toFixed(2)} upon approval
+                <strong style={{ color: '#B45309' }}>{tp('depositRequired')}</strong>
+                {' · '}{estimate.depositType === 'percent' ? `${estimate.depositAmount}%` : ''} = ${depositAmount.toFixed(2)}
               </div>
             </div>
           </div>
@@ -173,36 +179,36 @@ export default async function PrintEstimatePage({ params }: { params: Promise<{ 
         {/* Signature */}
         {estimate.signatureDataUrl && (
           <div className="mt-6 pt-4" style={{ borderTop: '1px solid #EAEAEC' }}>
-            <p className="text-[10px] font-bold uppercase tracking-[0.1em] mb-1.5" style={{ color: '#A1A1AA' }}>Client Signature</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.1em] mb-1.5" style={{ color: '#A1A1AA' }}>{tp('clientSignature')}</p>
             <img src={estimate.signatureDataUrl} alt="Signature" className="h-14 mb-1" />
             <p className="text-xs" style={{ color: '#52525B' }}>{estimate.signedByName}</p>
-            {estimate.signedAt && <p className="text-[10px]" style={{ color: '#A1A1AA' }}>{new Date(estimate.signedAt).toLocaleDateString()}</p>}
+            {estimate.signedAt && <p className="text-[10px]" style={{ color: '#A1A1AA' }}>{new Date(estimate.signedAt).toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' })}</p>}
           </div>
         )}
 
         {/* Notes */}
         {estimate.notes && (
           <div className="mb-4">
-            <p className="text-[10px] font-bold uppercase tracking-[0.1em] pb-1.5 mb-1.5 border-b" style={{ color: '#A1A1AA', borderColor: '#EAEAEC' }}>Scope &amp; terms</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.1em] pb-1.5 mb-1.5 border-b" style={{ color: '#A1A1AA', borderColor: '#EAEAEC' }}>{tp('scopeTerms')}</p>
             <p className="text-xs whitespace-pre-wrap leading-relaxed" style={{ color: '#52525B' }}>{estimate.notes}</p>
           </div>
         )}
 
         {/* Approve-online CTA (navy) */}
         {portalUrl && (
-          <div className="rounded-lg px-4 py-3 mb-5 flex justify-between items-center no-print" style={{ background: '#0F172A', color: 'white' }}>
+          <div className="rounded-lg px-4 py-3 mb-5 flex justify-between items-center no-print" style={{ background: '#0F172A', color: 'var(--wp-text-inverse)' }}>
             <div className="text-xs">
-              <div className="text-sm font-semibold">Ready to approve?</div>
-              <div style={{ opacity: 0.7, marginTop: 1 }}>Scan the QR or visit the portal link to sign digitally.</div>
+              <div className="text-sm font-semibold">{tp('readyToApprove')}</div>
+              <div style={{ opacity: 0.7, marginTop: 1 }}>{tp('approveQrText')}</div>
             </div>
             <a
               href={portalUrl}
               target="_blank"
               rel="noreferrer"
               className="text-xs font-bold px-3.5 py-2 rounded-md"
-              style={{ background: '#F97316', color: 'white' }}
+              style={{ background: 'var(--wp-cta)', color: 'var(--wp-text-inverse)' }}
             >
-              Approve online →
+              {tp('approveOnline')}
             </a>
           </div>
         )}
@@ -212,8 +218,8 @@ export default async function PrintEstimatePage({ params }: { params: Promise<{ 
           <div className="grid grid-cols-[96px_1fr] gap-4 items-center pt-4" style={{ borderTop: '1px solid #EAEAEC' }}>
             <img src={qrDataUrl} alt="View online" className="w-24 h-24 rounded" style={{ border: '1px solid #EAEAEC' }} />
             <div>
-              <p className="text-xs font-semibold" style={{ color: '#18181B' }}>Secure client portal</p>
-              <p className="text-[10px] leading-relaxed mt-0.5" style={{ color: '#A1A1AA' }}>View line items, ask questions and sign digitally.</p>
+              <p className="text-xs font-semibold" style={{ color: '#18181B' }}>{tp('securePortal')}</p>
+              <p className="text-[10px] leading-relaxed mt-0.5" style={{ color: '#A1A1AA' }}>{tp('securePortalDesc')}</p>
               {portalUrl && (
                 <span className="inline-block mt-1.5 font-mono text-[10px] px-2 py-0.5 rounded" style={{ background: '#F7F7F8', color: '#52525B' }}>
                   {portalUrl.replace(/^https?:\/\//, '')}
@@ -226,9 +232,9 @@ export default async function PrintEstimatePage({ params }: { params: Promise<{ 
         {/* Legal + footer */}
         <div className="mt-6 pt-3 text-center" style={{ borderTop: '1px solid #F1F1F3' }}>
           <p className="text-[9px] leading-relaxed" style={{ color: '#A1A1AA' }}>
-            By approving, the customer agrees to the services and conditions outlined in this estimate.
+            {tp('legal')}
             <br />
-            {companyName} · Thank you for your business.
+            {companyName} · {tc('thankYou')}.
           </p>
         </div>
       </div>

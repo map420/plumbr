@@ -7,9 +7,11 @@ import type { LineItemInput } from '@/lib/adapters/db/types'
 import { estimateSentEmail, estimateApprovedEmail, estimateRejectedEmail } from '@/lib/email-templates'
 import { isPro, STARTER_LIMITS } from '@/lib/stripe'
 import { calculateTax } from '@/lib/tax'
+import { recomputeAndPersistTotals } from '@/lib/services/totals'
 import { invalidateUserData } from '@/lib/cache-tags'
 import { getUserPlan } from './billing'
 import { requireUser as requireAuth } from './auth-helpers'
+import { parseDateOnly } from '@/lib/format'
 
 export async function getEstimates() {
   const userId = await requireAuth()
@@ -88,7 +90,7 @@ export async function createEstimate(data: {
     tax: String(serverTax),
     total: String(serverTotal),
     notes: data.notes || null,
-    validUntil: data.validUntil ? new Date(data.validUntil) : null,
+    validUntil: parseDateOnly(data.validUntil),
     convertedToInvoiceId: null,
     shareToken: null,
     markupPercent: data.markupPercent ? String(data.markupPercent) : null,
@@ -106,6 +108,9 @@ export async function createEstimate(data: {
     contractId: null,
     autoGenerateInvoice: data.autoGenerateInvoice || false,
   } as any, lineItems)
+
+  // TRV-001/002 — Recompute canonical totals from inserted line items (source of truth)
+  await recomputeAndPersistTotals('estimate', estimate.id).catch(() => null)
 
   revalidatePath('/[locale]/estimates', 'page')
   invalidateUserData(userId)

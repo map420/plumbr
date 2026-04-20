@@ -30,7 +30,7 @@ export default function DashboardError({
         <button
           onClick={reset}
           className="px-4 py-2 rounded-lg text-sm font-medium"
-          style={{ background: 'var(--wp-accent)', color: 'white' }}
+          style={{ background: 'var(--wp-accent)', color: 'var(--wp-text-inverse)' }}
         >
           Try again
         </button>

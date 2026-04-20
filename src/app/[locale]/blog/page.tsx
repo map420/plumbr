@@ -46,10 +46,10 @@ export default async function BlogPage() {
         {/* Header */}
         <section className="py-16 bg-[#F8FAFC]">
           <div className="max-w-5xl mx-auto px-6">
-            <span className="text-xs font-bold uppercase tracking-widest text-[#F97316] mb-3 block" style={{ letterSpacing: '0.08em' }}>
+            <span className="text-xs font-bold uppercase tracking-widest text-cta mb-3 block" style={{ letterSpacing: '0.08em' }}>
               Blog
             </span>
-            <h1 className="text-4xl md:text-5xl font-extrabold text-[#1E3A5F] tracking-tight mb-3">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-navy-500 tracking-tight mb-3">
               Built for contractors.
             </h1>
             <p className="text-slate-500 text-lg">
@@ -76,11 +76,11 @@ export default async function BlogPage() {
                   <Clock size={12} /> {featured.readMinutes} min read
                 </span>
               </div>
-              <h2 className="text-2xl md:text-3xl font-extrabold text-[#1E3A5F] mb-3 group-hover:text-[#F97316] transition-colors leading-tight">
+              <h2 className="text-2xl md:text-3xl font-extrabold text-navy-500 mb-3 group-hover:text-cta transition-colors leading-tight">
                 {featured.title}
               </h2>
               <p className="text-slate-500 leading-relaxed mb-4">{featured.excerpt}</p>
-              <span className="inline-flex items-center gap-1 text-[#F97316] font-semibold text-sm">
+              <span className="inline-flex items-center gap-1 text-cta font-semibold text-sm">
                 Read article <ArrowRight size={14} />
               </span>
             </Link>
@@ -105,11 +105,11 @@ export default async function BlogPage() {
                       <Clock size={12} /> {post.readMinutes} min
                     </span>
                   </div>
-                  <h2 className="font-bold text-[#1E3A5F] text-base mb-2 leading-snug group-hover:text-[#F97316] transition-colors">
+                  <h2 className="font-bold text-navy-500 text-base mb-2 leading-snug group-hover:text-cta transition-colors">
                     {post.title}
                   </h2>
                   <p className="text-slate-500 text-sm leading-relaxed line-clamp-2">{post.excerpt}</p>
-                  <span className="inline-flex items-center gap-1 text-[#F97316] font-semibold text-xs mt-4">
+                  <span className="inline-flex items-center gap-1 text-cta font-semibold text-xs mt-4">
                     Read <ArrowRight size={12} />
                   </span>
                 </Link>
@@ -121,7 +121,7 @@ export default async function BlogPage() {
         {/* Newsletter CTA */}
         <section className="py-16 bg-[#F8FAFC] border-t border-slate-100">
           <div className="max-w-2xl mx-auto px-6 text-center">
-            <h2 className="text-2xl font-extrabold text-[#1E3A5F] mb-3">
+            <h2 className="text-2xl font-extrabold text-navy-500 mb-3">
               Tips for contractors, every week
             </h2>
             <p className="text-slate-500 mb-6">Estimating, invoicing, crew management and growth. No fluff.</p>

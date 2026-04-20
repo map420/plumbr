@@ -62,10 +62,10 @@ export default async function TradePage({ params }: Props) {
         {/* Hero */}
         <section
           className="relative min-h-[70vh] flex items-center overflow-hidden pt-16"
-          style={{ background: 'linear-gradient(135deg, #0F2440 0%, #1E3A5F 100%)' }}
+          style={{ background: 'linear-gradient(135deg, var(--wp-navy) 0%, var(--wp-navy-500) 100%)' }}
         >
           <div className="max-w-4xl mx-auto px-6 py-20 w-full text-center">
-            <div className="inline-flex items-center gap-2 bg-[#F97316]/15 border border-[#F97316]/30 text-[#F97316] text-sm font-semibold px-4 py-1.5 rounded-full mb-8">
+            <div className="inline-flex items-center gap-2 bg-cta/15 border border-cta/30 text-cta text-sm font-semibold px-4 py-1.5 rounded-full mb-8">
               <span className="text-lg">{trade.icon}</span>
               Built for {trade.namePlural}
             </div>
@@ -80,7 +80,7 @@ export default async function TradePage({ params }: Props) {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href={ctaHref}
-                className="inline-flex items-center gap-2 bg-[#F97316] text-white font-bold px-8 py-4 rounded-xl text-base hover:bg-[#ea6c0a] transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-orange-500/25"
+                className="inline-flex items-center gap-2 bg-cta text-white font-bold px-8 py-4 rounded-xl text-base hover:bg-cta-hover transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-amber-500/25"
               >
                 Start free trial <ArrowRight size={18} />
               </Link>
@@ -130,7 +130,7 @@ export default async function TradePage({ params }: Props) {
         <section className="py-20 bg-[#F8FAFC]">
           <div className="max-w-5xl mx-auto px-6">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-extrabold text-[#1E3A5F] tracking-tight mb-3">
+              <h2 className="text-3xl md:text-4xl font-extrabold text-navy-500 tracking-tight mb-3">
                 Everything {trade.namePlural} need. Nothing they don&apos;t.
               </h2>
               <p className="text-slate-500">One flat price. No per-user fees. Cancel anytime.</p>
@@ -148,9 +148,9 @@ export default async function TradePage({ params }: Props) {
                 <div
                   key={f.title}
                   className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow"
-                  style={{ borderTop: '3px solid #F97316' }}
+                  style={{ borderTop: '3px solid var(--wp-cta)' }}
                 >
-                  <h3 className="font-bold text-[#1E3A5F] mb-2">{f.title}</h3>
+                  <h3 className="font-bold text-navy-500 mb-2">{f.title}</h3>
                   <p className="text-slate-500 text-sm leading-relaxed">{f.desc}</p>
                 </div>
               ))}
@@ -163,14 +163,14 @@ export default async function TradePage({ params }: Props) {
           <div className="max-w-2xl mx-auto px-6 text-center">
             <div className="flex justify-center gap-1 mb-6">
               {Array(5).fill(0).map((_, i) => (
-                <Star key={i} size={20} className="text-[#F97316] fill-[#F97316]" />
+                <Star key={i} size={20} className="text-cta fill-cta" />
               ))}
             </div>
             <blockquote className="text-xl md:text-2xl font-medium text-slate-800 leading-relaxed mb-8">
               &ldquo;{trade.testimonial.quote}&rdquo;
             </blockquote>
             <div className="flex items-center justify-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-[#F97316] flex items-center justify-center text-white font-bold">
+              <div className="w-12 h-12 rounded-full bg-cta flex items-center justify-center text-white font-bold">
                 {trade.testimonial.initials}
               </div>
               <div className="text-left">
@@ -184,7 +184,7 @@ export default async function TradePage({ params }: Props) {
         {/* CTA */}
         <section
           className="py-24"
-          style={{ background: 'linear-gradient(135deg, #0F2440 0%, #1E3A5F 100%)' }}
+          style={{ background: 'linear-gradient(135deg, var(--wp-navy) 0%, var(--wp-navy-500) 100%)' }}
         >
           <div className="max-w-3xl mx-auto px-6 text-center">
             <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">
@@ -195,7 +195,7 @@ export default async function TradePage({ params }: Props) {
             </p>
             <Link
               href={ctaHref}
-              className="inline-flex items-center gap-2 bg-[#F97316] text-white font-bold px-10 py-5 rounded-xl text-lg hover:bg-[#ea6c0a] transition-all hover:scale-[1.02] shadow-xl shadow-orange-500/25"
+              className="inline-flex items-center gap-2 bg-cta text-white font-bold px-10 py-5 rounded-xl text-lg hover:bg-cta-hover transition-all hover:scale-[1.02] shadow-xl shadow-amber-500/25"
             >
               Start free trial <ArrowRight size={20} />
             </Link>

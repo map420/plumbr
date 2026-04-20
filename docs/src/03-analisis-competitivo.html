@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Análisis Competitivo — WorkPilot</title>
+  <link rel="stylesheet" href="_styles.css">
+</head>
+<body>
+
+  <div class="cover">
+    <div class="cover-header">
+      <div class="cover-logo"><span class="cover-logo-mark">W</span>WorkPilot</div>
+      <span class="cover-badge">Confidencial · Uso interno</span>
+    </div>
+    <div class="cover-body">
+      <div class="cover-kicker">DOCUMENTO ESTRATÉGICO · 03</div>
+      <h1 class="cover-title">Análisis Competitivo</h1>
+      <p class="cover-subtitle">WorkPilot vs Jobber, Housecall Pro, ServiceTitan, FieldEdge: dónde ganamos, dónde perdemos y cómo convertir esto en estrategia.</p>
+    </div>
+    <div class="cover-footer">
+      <div class="cover-meta">
+        <span><strong>Versión</strong> 1.0</span>
+        <span><strong>Fecha</strong> Abril 2026</span>
+      </div>
+      <div class="cover-meta" style="text-align: right;">
+        <span><strong>Audiencia</strong> Founders · Producto · Marketing · Ventas</span>
+        <span>workpilot.io</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <nav class="toc">
+      <h2>Tabla de contenidos</h2>
+      <ul class="toc-list">
+        <li><span class="toc-title">1. Resumen ejecutivo</span><span class="toc-page">3</span></li>
+        <li><span class="toc-title">2. El mapa competitivo</span><span class="toc-page">4</span></li>
+        <li><span class="toc-title">3. Matriz comparativa feature-by-feature</span><span class="toc-page">5</span></li>
+        <li><span class="toc-title">4. Perfil: Jobber</span><span class="toc-page">8</span></li>
+        <li><span class="toc-title">5. Perfil: Housecall Pro</span><span class="toc-page">9</span></li>
+        <li><span class="toc-title">6. Perfil: ServiceTitan</span><span class="toc-page">10</span></li>
+        <li><span class="toc-title">7. Perfil: FieldEdge</span><span class="toc-page">11</span></li>
+        <li><span class="toc-title">8. Nuestras ventajas específicas</span><span class="toc-page">12</span></li>
+        <li><span class="toc-title">9. Amenazas inmediatas</span><span class="toc-page">14</span></li>
+        <li><span class="toc-title">10. Recomendaciones estratégicas</span><span class="toc-page">15</span></li>
+      </ul>
+    </nav>
+
+    <!-- 1. RESUMEN EJECUTIVO -->
+    <section>
+      <h2>1. Resumen ejecutivo</h2>
+
+      <p>El mercado de software para contratistas residenciales está estratificado en tres tiers bien definidos: <strong>enterprise</strong> (ServiceTitan, FieldEdge), <strong>mid-market</strong> (Jobber, Housecall Pro) y <strong>SMB underserved</strong> (donde competimos).</p>
+
+      <div class="callout insight">
+        <span class="callout-label">Tesis competitiva en una frase</span>
+        <div class="callout-body">
+          <strong>WorkPilot gana el SMB bilingüe con AI-first a precio agresivo.</strong> No competimos con ServiceTitan (operan en ligas distintas); sí competimos con Jobber/HCP por el mismo cliente pero con producto estructuralmente distinto.
+        </div>
+      </div>
+
+      <h3>Dónde competimos, dónde no</h3>
+      <div class="two-col">
+        <div class="col-box">
+          <h4>✓ Jugamos y podemos ganar</h4>
+          <ul>
+            <li>Solo practitioner y Small Crew (1–5 técnicos)</li>
+            <li>Contratistas hispanohablantes en US y LATAM</li>
+            <li>Users mobile-first (no desktop power users)</li>
+            <li>Contratistas que quieren AI integrado</li>
+            <li>Users price-sensitive ($29/mes)</li>
+          </ul>
+        </div>
+        <div class="col-box">
+          <h4>✗ No jugamos (aún)</h4>
+          <ul>
+            <li>Enterprise con 50+ técnicos y call center</li>
+            <li>Scheduling complejo con optimización de rutas</li>
+            <li>Franquicias multi-location con jerarquías</li>
+            <li>Integraciones profundas con ERP corporativo</li>
+            <li>Mercado UK/AU (foco US + LATAM primero)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. MAPA COMPETITIVO -->
+    <section class="page-break">
+      <h2>2. El mapa competitivo</h2>
+
+      <p>Posicionamiento en dos dimensiones: <strong>precio</strong> (eje X) y <strong>tecnología / AI</strong> (eje Y).</p>
+
+      <div class="quadrant-chart">
+        <div class="quadrant-labels">
+          <span class="q-label-top">AI nativo ↑</span>
+          <span class="q-label-right">Alto precio →</span>
+          <span class="q-label-bottom">AI legacy ↓</span>
+          <span class="q-label-left">← Bajo precio</span>
+        </div>
+        <div class="quadrant-grid">
+          <div class="q-cell q-tl">Bajo precio · AI nativo<br/><small>(Cuadrante objetivo)</small></div>
+          <div class="q-cell q-tr">Alto precio · AI nativo</div>
+          <div class="q-cell q-bl">Bajo precio · AI legacy</div>
+          <div class="q-cell q-br">Alto precio · AI legacy</div>
+
+          <div class="q-point wp" style="left: 15%; bottom: 85%;">
+            <span class="q-dot"></span><span class="q-name">WorkPilot</span>
+          </div>
+          <div class="q-point" style="left: 35%; bottom: 30%;">
+            <span class="q-dot"></span><span class="q-name">Jobber</span>
+          </div>
+          <div class="q-point" style="left: 45%; bottom: 35%;">
+            <span class="q-dot"></span><span class="q-name">Housecall Pro</span>
+          </div>
+          <div class="q-point" style="left: 90%; bottom: 45%;">
+            <span class="q-dot"></span><span class="q-name">ServiceTitan</span>
+          </div>
+          <div class="q-point" style="left: 75%; bottom: 25%;">
+            <span class="q-dot"></span><span class="q-name">FieldEdge</span>
+          </div>
+        </div>
+      </div>
+
+      <style>
+        .quadrant-chart {
+          position: relative;
+          width: 100%;
+          max-width: 460pt;
+          height: 280pt;
+          margin: 18pt auto;
+          padding: 16pt 20pt 20pt 30pt;
+          page-break-inside: avoid;
+        }
+        .quadrant-labels { position: absolute; inset: 0; font-size: 8pt; color: var(--text-muted); font-weight: 600; }
+        .q-label-top { position: absolute; top: 0; left: 50%; transform: translateX(-50%); }
+        .q-label-bottom { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); }
+        .q-label-left { position: absolute; left: 2pt; top: 50%; transform: translateY(-50%) rotate(-90deg); transform-origin: left; }
+        .q-label-right { position: absolute; right: 2pt; top: 50%; transform: translateY(-50%) rotate(90deg); transform-origin: right; }
+
+        .quadrant-grid {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          grid-template-rows: 1fr 1fr;
+          border: 1pt solid var(--border);
+          background: white;
+        }
+        .q-cell {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          font-size: 8pt;
+          color: var(--text-light);
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+          font-weight: 500;
+        }
+        .q-cell small { font-weight: 400; text-transform: none; letter-spacing: 0; opacity: 0.8; }
+        .q-tl { border-right: 1pt dashed var(--border); border-bottom: 1pt dashed var(--border); background: rgba(59,130,246,0.04); }
+        .q-tr { border-bottom: 1pt dashed var(--border); }
+        .q-bl { border-right: 1pt dashed var(--border); }
+        .q-br {}
+
+        .q-point {
+          position: absolute;
+          transform: translate(-50%, 50%);
+          display: flex;
+          align-items: center;
+          gap: 4pt;
+          z-index: 2;
+        }
+        .q-dot {
+          width: 10pt;
+          height: 10pt;
+          background: var(--text-muted);
+          border-radius: 50%;
+          border: 2pt solid white;
+          box-shadow: 0 0 0 1pt var(--text-muted);
+        }
+        .q-point.wp .q-dot {
+          background: var(--primary);
+          box-shadow: 0 0 0 1pt var(--primary), 0 0 0 4pt rgba(30,58,95,0.15);
+          width: 12pt;
+          height: 12pt;
+        }
+        .q-name {
+          font-size: 8.5pt;
+          font-weight: 600;
+          color: var(--text-primary);
+          background: white;
+          padding: 1pt 4pt;
+          border-radius: 3pt;
+          white-space: nowrap;
+        }
+        .q-point.wp .q-name { color: var(--primary); font-weight: 700; }
+      </style>
+
+      <h3>Lectura del mapa</h3>
+      <ul>
+        <li><strong>WorkPilot en Q2:</strong> barato + AI nativo. Cuadrante semi-vacío — nuestra ventaja estructural.</li>
+        <li><strong>Jobber y HCP en Q3:</strong> bajo-mid precio, AI básico o inexistente. Competencia directa en precio; ganamos en AI.</li>
+        <li><strong>ServiceTitan en Q1:</strong> alto precio, AI decente pero como add-on, no core. No son nuestro rival hoy.</li>
+        <li><strong>FieldEdge en Q4:</strong> alto precio con AI legacy. Vulnerable a disrupción.</li>
+      </ul>
+    </section>
+
+    <!-- 3. MATRIZ COMPARATIVA -->
+    <section class="page-break">
+      <h2>3. Matriz comparativa feature-by-feature</h2>
+
+      <table class="compact">
+        <thead>
+          <tr>
+            <th style="width: 22%;">Feature</th>
+            <th>WorkPilot</th>
+            <th>Jobber</th>
+            <th>HCP</th>
+            <th>ServiceTitan</th>
+            <th>FieldEdge</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Precio mensual</strong></td><td class="amount">$29</td><td class="amount">$25–249</td><td class="amount">$49–249</td><td class="amount">$99+</td><td class="amount">$100+</td></tr>
+          <tr><td>Plan gratis</td><td>✅ Starter</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td></tr>
+          <tr><td>Jobs / Estimates / Invoices</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+          <tr><td><strong>AI conversacional</strong></td><td>✅ 37 tools</td><td>❌</td><td>Limitado</td><td>Add-on</td><td>❌</td></tr>
+          <tr><td><strong>Voice mode</strong></td><td>✅ ElevenLabs</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td></tr>
+          <tr><td>Portal cliente sin login</td><td>✅ Token</td><td>✅</td><td>✅</td><td>✅</td><td>Limitado</td></tr>
+          <tr><td>Firma digital</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+          <tr><td>Pago online (Stripe)</td><td>✅</td><td>✅</td><td>✅ Propio</td><td>✅</td><td>✅</td></tr>
+          <tr><td>Change Orders</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+          <tr><td>Work Orders / Dispatch</td><td>Básico</td><td>✅</td><td>✅</td><td>✅ Avanzado</td><td>✅ Avanzado</td></tr>
+          <tr><td><strong>Scheduling drag &amp; drop</strong></td><td>❌ (gap)</td><td>✅ Fuerte</td><td>✅</td><td>✅ Best-in-class</td><td>✅</td></tr>
+          <tr><td>GPS tracking técnicos</td><td>❌ (gap)</td><td>Limitado</td><td>✅</td><td>✅</td><td>✅</td></tr>
+          <tr><td>Inventory management</td><td>❌ (gap)</td><td>Limitado</td><td>Básico</td><td>✅ Completo</td><td>✅</td></tr>
+          <tr><td>QuickBooks sync</td><td>Parcial</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+          <tr><td>Mobile app</td><td>PWA</td><td>Native iOS/Android</td><td>Native iOS/Android</td><td>Native iOS/Android</td><td>Native iOS/Android</td></tr>
+          <tr><td>Offline mode</td><td>✅ PWA</td><td>Limitado</td><td>✅</td><td>✅</td><td>✅</td></tr>
+          <tr><td><strong>Multi-idioma (ES)</strong></td><td>✅ Nativo</td><td>❌ Solo EN</td><td>Parcial</td><td>❌</td><td>❌</td></tr>
+          <tr><td>Automatizaciones email</td><td>✅ 8</td><td>✅ Robusto</td><td>✅ Robusto</td><td>✅</td><td>✅</td></tr>
+          <tr><td>SMS marketing</td><td>Pro add-on</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+          <tr><td>Marketing campaigns</td><td>❌</td><td>✅</td><td>✅ Fuerte</td><td>✅</td><td>✅</td></tr>
+          <tr><td>Reporting avanzado</td><td>Básico</td><td>✅</td><td>✅</td><td>✅ Best-in-class</td><td>✅</td></tr>
+          <tr><td>API pública</td><td>❌</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+          <tr><td>Financiamiento cliente</td><td>❌</td><td>❌</td><td>✅</td><td>✅</td><td>✅</td></tr>
+          <tr><td>Call center integration</td><td>❌</td><td>❌</td><td>❌</td><td>✅</td><td>✅</td></tr>
+          <tr><td>Multi-location</td><td>❌</td><td>Limitado</td><td>✅</td><td>✅ Fuerte</td><td>✅</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout warning">
+        <span class="callout-label">Lectura honesta</span>
+        <div class="callout-body">
+          De 25 features comparadas, <strong>ganamos fuerte en 5</strong> (AI, voice, bilingüe, precio, plan free), <strong>empatamos en 10</strong>, y <strong>perdemos en 10</strong> — principalmente features de scaling (scheduling avanzado, GPS, inventory, marketing, API). Esta asimetría es normal: somos el player más joven. La pregunta es cuáles gaps cerrar primero.
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. PERFIL JOBBER -->
+    <section class="page-break">
+      <h2>4. Perfil: Jobber</h2>
+
+      <div class="kpi-grid cols-3">
+        <div class="kpi-card"><div class="kpi-value">$25–249</div><div class="kpi-label">Precio mensual</div></div>
+        <div class="kpi-card"><div class="kpi-value">~200K</div><div class="kpi-label">Clientes globales</div></div>
+        <div class="kpi-card"><div class="kpi-value">2011</div><div class="kpi-label">Año fundación</div></div>
+      </div>
+
+      <h3>Quiénes son</h3>
+      <p>Jobber es el líder mid-market en home services. Fundado en Canadá, con fuerte presencia en EE.UU., Canadá, UK y Australia. Enfoque en pymes de 1–15 técnicos. Muy pulido en UX y scheduling.</p>
+
+      <h3>Fortalezas</h3>
+      <ul>
+        <li><strong>Scheduling best-in-class</strong> — drag &amp; drop, ruta optimizada, reassign fluido.</li>
+        <li><strong>Community &amp; educación</strong> — Jobber Academy, podcast, content marketing fuerte.</li>
+        <li><strong>Ecosistema maduro</strong> — integraciones con Stripe, QBO, Xero, Mailchimp, Zapier.</li>
+        <li><strong>Brand awareness</strong> — el nombre default al googlear "contractor software".</li>
+      </ul>
+
+      <h3>Debilidades (dónde los atacamos)</h3>
+      <ul>
+        <li><strong>Sin AI nativo</strong> — solo reportes pasivos. No hay conversación, no hay tools ejecutables.</li>
+        <li><strong>Solo inglés</strong> — cero oferta para LATAM.</li>
+        <li><strong>Precio escalonado opaco</strong> — features core esconidos en tiers más caros (ej. automatizaciones requieren plan <span class="amount">$149</span>).</li>
+        <li><strong>Setup pesado</strong> — tarda días configurar bien.</li>
+      </ul>
+
+      <div class="callout insight">
+        <span class="callout-label">Cómo les ganamos</span>
+        <div class="callout-body">
+          <strong>Al contratista hispanohablante:</strong> Jobber no tiene producto en español. <strong>Al AI-curious:</strong> demo de WorkPilot AI generando un estimate en 30 segundos. <strong>Al price-sensitive:</strong> Starter gratis + Pro <span class="amount">$29</span> vs Jobber desde <span class="amount">$39</span> en plan Core.
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. PERFIL HCP -->
+    <section class="page-break">
+      <h2>5. Perfil: Housecall Pro</h2>
+
+      <div class="kpi-grid cols-3">
+        <div class="kpi-card"><div class="kpi-value">$49–249</div><div class="kpi-label">Precio mensual</div></div>
+        <div class="kpi-card"><div class="kpi-value">~30K</div><div class="kpi-label">Clientes estimados</div></div>
+        <div class="kpi-card"><div class="kpi-value">2013</div><div class="kpi-label">Año fundación</div></div>
+      </div>
+
+      <h3>Quiénes son</h3>
+      <p>Housecall Pro (HCP) es el competidor directo de Jobber en mid-market US. Fuerte en marketing automation y lead generation. Enfocado en HVAC y plumbing.</p>
+
+      <h3>Fortalezas</h3>
+      <ul>
+        <li><strong>Marketing suite completa</strong> — campaigns, reviews management, Google Business sync.</li>
+        <li><strong>Consumer financing integrado</strong> — ofrece pagos a plazo al cliente final.</li>
+        <li><strong>Comunidad "PROs"</strong> — eventos, certificaciones, mastermind groups.</li>
+        <li><strong>Mobile first</strong> — app iOS/Android muy pulida.</li>
+      </ul>
+
+      <h3>Debilidades</h3>
+      <ul>
+        <li><strong>Precio alto</strong> para features básicas — Starter real cuesta <span class="amount">$49</span>.</li>
+        <li><strong>UX sobrecargada</strong> — decenas de pantallas y configuraciones.</li>
+        <li><strong>AI superficial</strong> — hay "HCP Assistant" pero es search + FAQ, no operativo.</li>
+        <li><strong>Solo EN</strong> (soporte español limitado, producto no localizado).</li>
+      </ul>
+
+      <div class="callout insight">
+        <span class="callout-label">Cómo les ganamos</span>
+        <div class="callout-body">
+          HCP compite por volumen y features. Nosotros competimos por <strong>simplicidad + AI</strong>. El contratista de 2 técnicos no necesita el arsenal de HCP; necesita cotizar rápido y cobrar. Ahí ganamos.
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. PERFIL SERVICETITAN -->
+    <section class="page-break">
+      <h2>6. Perfil: ServiceTitan</h2>
+
+      <div class="kpi-grid cols-3">
+        <div class="kpi-card"><div class="kpi-value">$99+</div><div class="kpi-label">Precio desde (real $300+)</div></div>
+        <div class="kpi-card"><div class="kpi-value">~10K</div><div class="kpi-label">Clientes (enterprise)</div></div>
+        <div class="kpi-card"><div class="kpi-value">2012</div><div class="kpi-label">Año fundación</div></div>
+      </div>
+
+      <h3>Quiénes son</h3>
+      <p>ServiceTitan es el estándar enterprise. IPO en 2024 con valuación de ~<span class="amount">$9B USD</span>. Targeta contratistas de 20+ técnicos con múltiples ubicaciones. Top choice para HVAC corporativos.</p>
+
+      <h3>Fortalezas</h3>
+      <ul>
+        <li><strong>Todo integrado</strong> — call center, marketing, finance, HR, reportería.</li>
+        <li><strong>Reporting avanzado</strong> — dashboards ejecutivos por location, technician, service line.</li>
+        <li><strong>Marketplace de apps</strong> — ecosistema con partners certificados.</li>
+        <li><strong>Capacitación profesional</strong> — Titan Academy, certificaciones.</li>
+      </ul>
+
+      <h3>Debilidades</h3>
+      <ul>
+        <li><strong>Precio prohibitivo</strong> para SMB — el ticket real arranca en <span class="amount">$300+/mes/user</span>.</li>
+        <li><strong>Setup de 6–12 semanas</strong> con consultores dedicados.</li>
+        <li><strong>UX compleja</strong> — cientos de pantallas, miles de settings.</li>
+        <li><strong>No mobile-first</strong> — diseñado para call center desktop.</li>
+      </ul>
+
+      <div class="callout success">
+        <span class="callout-label">No son nuestro rival hoy</span>
+        <div class="callout-body">
+          ServiceTitan y WorkPilot no compiten por el mismo cliente. Cuando un WorkPilot user crece a 30+ técnicos y multi-location, probablemente migre a ServiceTitan. <strong>Nuestra estrategia: crecer con el cliente hasta ese momento y luego hacer una transición ordenada</strong> (posible oferta: "workpilot-to-servicetitan migration partner").
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. PERFIL FIELDEDGE -->
+    <section class="page-break">
+      <h2>7. Perfil: FieldEdge</h2>
+
+      <div class="kpi-grid cols-3">
+        <div class="kpi-card"><div class="kpi-value">$100+</div><div class="kpi-label">Precio mensual</div></div>
+        <div class="kpi-card"><div class="kpi-value">~5K</div><div class="kpi-label">Clientes estimados</div></div>
+        <div class="kpi-card"><div class="kpi-value">2005</div><div class="kpi-label">Año fundación</div></div>
+      </div>
+
+      <h3>Quiénes son</h3>
+      <p>FieldEdge (antes Desco) es el veterano del mercado, enfocado en HVAC y electricidad. Fuerte en dispatch y service agreements. Base de usuarios establecida pero demográfica envejecida.</p>
+
+      <h3>Fortalezas</h3>
+      <ul>
+        <li><strong>QuickBooks desktop sync</strong> — único que lo hace bien con QB desktop (no online).</li>
+        <li><strong>Service agreements</strong> — manejo de contratos recurrentes de mantenimiento.</li>
+        <li><strong>Dispatch sofisticado</strong> — route optimization.</li>
+      </ul>
+
+      <h3>Debilidades</h3>
+      <ul>
+        <li><strong>Producto envejecido</strong> — UI de hace 10 años, no mobile-native.</li>
+        <li><strong>Sin AI</strong> — cero movimiento en esa dirección.</li>
+        <li><strong>Roadmap lento</strong> — no siguen ritmo de releases de HCP/Jobber.</li>
+        <li><strong>Marca poco conocida</strong> — baja conciencia en nuevos contratistas.</li>
+      </ul>
+
+      <div class="callout warning">
+        <span class="callout-label">Oportunidad de disrupción</span>
+        <div class="callout-body">
+          FieldEdge tiene una base de clientes grande pero insatisfecha. <strong>Campaña específica de migración</strong> (import de datos + 3 meses gratis) podría capturar miles de contratistas HVAC que buscan modernizarse.
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. VENTAJAS -->
+    <section class="page-break">
+      <h2>8. Nuestras ventajas específicas</h2>
+
+      <p>Cinco ventajas defendibles que debemos amplificar en marketing, producto y ventas:</p>
+
+      <h3>① AI-first, no bolt-on</h3>
+      <p>Los competidores integraron AI como feature secundaria (chatbot de soporte, FAQ, email drafts). En WorkPilot el AI <strong>es el producto</strong>: 37 tools que ejecutan acciones reales. Ningún competidor tiene esto.</p>
+
+      <h3>② Multi-idioma nativo</h3>
+      <p>Español + inglés desde el código fuente (next-intl). Los 4 competidores grandes son solo inglés o español-parcheado. En un mercado US con <strong>30%+ de contratistas hispanohablantes</strong> + todo LATAM, esto es asimétrico.</p>
+
+      <h3>③ Precio + plan gratis</h3>
+      <p>Pro a <span class="amount">$29/mes</span>, Starter gratis. Competencia arranca en <span class="amount">$25–49/mes</span> sin free tier. Acceso viral es imposible sin plan gratis.</p>
+
+      <h3>④ PWA offline-first</h3>
+      <p>Un técnico en un sótano sin señal puede seguir trabajando. Los competidores requieren conexión o apps nativas pesadas. Para campo real, la diferencia se nota.</p>
+
+      <h3>⑤ Shopping List integrada</h3>
+      <p>Feature única: el AI lista materiales, el técnico los marca en el depósito, se crean expenses automáticos. Captura los <strong>60% de gastos de materiales que hoy se pierden</strong> en competidores.</p>
+
+      <div class="callout insight">
+        <span class="callout-label">Ventaja compuesta</span>
+        <div class="callout-body">
+          Ninguna ventaja por sí sola justifica migrar. Pero el <strong>combo "AI + bilingüe + precio bajo + mobile + shopping list"</strong> es único. Nuestro pitch debe vender el bundle, no las features sueltas.
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. AMENAZAS -->
+    <section class="page-break">
+      <h2>9. Amenazas inmediatas</h2>
+
+      <div class="callout critical">
+        <span class="callout-label">Amenaza #1: Jobber agrega AI</span>
+        <div class="callout-body">
+          Jobber ya lanzó "Jobber AI Assistant" en beta (2025). Si maduran el producto, nuestra ventaja #1 se erosiona. <strong>Mitigación:</strong> acelerar roadmap AI — más tools, voice completo, vision (foto → estimate). Adelantarnos 12 meses los hace irrelevantes en AI.
+        </div>
+      </div>
+
+      <div class="callout warning">
+        <span class="callout-label">Amenaza #2: ServiceTitan SMB-down</span>
+        <div class="callout-body">
+          ServiceTitan lanzó "Titan SMB" para targetear pequeños. Si bajan precio a <span class="amount">$99</span> con sus features enterprise-lite, presionan nuestro ticket. <strong>Mitigación:</strong> defender con freemium + AI que ellos no tienen a ese precio.
+        </div>
+      </div>
+
+      <div class="callout warning">
+        <span class="callout-label">Amenaza #3: Nuevos entrants AI-native</span>
+        <div class="callout-body">
+          Algún competidor nuevo puede replicar nuestra tesis "AI-first contractor OS" con más capital. <strong>Mitigación:</strong> moats (datos históricos, AI preferences learned, catalog), velocidad de iteración, marca en LATAM.
+        </div>
+      </div>
+
+      <div class="callout info">
+        <span class="callout-label">Amenaza #4: Anthropic rate limits / precios</span>
+        <div class="callout-body">
+          Dependemos de la API de Anthropic. Aumentos de precio o rate limits nos golpean. <strong>Mitigación:</strong> multi-modelo (Haiku fallback ya activo), arquitectura agnóstica permite swap a OpenAI/Google si hace falta.
+        </div>
+      </div>
+    </section>
+
+    <!-- 10. RECOMENDACIONES -->
+    <section class="page-break">
+      <h2>10. Recomendaciones estratégicas</h2>
+
+      <h3>Qué cerrar (gap-closing)</h3>
+      <table class="compact">
+        <thead><tr><th>Gap</th><th>Prioridad</th><th>Impacto vs competencia</th></tr></thead>
+        <tbody>
+          <tr><td>Scheduling drag &amp; drop</td><td><span class="pill error">P0</span></td><td>Cierra vulnerability principal vs Jobber</td></tr>
+          <tr><td>QuickBooks sync bidireccional</td><td><span class="pill error">P0</span></td><td>Paridad con Jobber/HCP</td></tr>
+          <tr><td>Mobile native (o al menos App Store PWA)</td><td><span class="pill warning">P1</span></td><td>Credibilidad en deals vs HCP</td></tr>
+          <tr><td>Reporting avanzado</td><td><span class="pill warning">P1</span></td><td>Unlock conversation con Growing Business</td></tr>
+          <tr><td>GPS técnicos opcional</td><td><span class="pill neutral">P2</span></td><td>Paridad feature-level</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Qué amplificar (advantage-doubling)</h3>
+      <table class="compact">
+        <thead><tr><th>Ventaja</th><th>Amplificación</th></tr></thead>
+        <tbody>
+          <tr><td>AI-first</td><td>Foto → estimate, voice 100%, agente autónomo que opera de noche</td></tr>
+          <tr><td>Bilingüe</td><td>Localización completa LATAM (regional pricing, métodos de pago, regulaciones fiscales)</td></tr>
+          <tr><td>Precio</td><td>Freemium viral — feature "invita técnico" desbloquea algo</td></tr>
+          <tr><td>Shopping List</td><td>Integración con Home Depot/Lowe's API: precio real en vivo</td></tr>
+          <tr><td>PWA offline</td><td>Marketing específico: "la única app que funciona donde no hay señal"</td></tr>
+        </tbody>
+      </table>
+
+      <div class="recommendations">
+        <h3>Tres decisiones ejecutivas</h3>
+        <ol>
+          <li><strong>No intentemos ser ServiceTitan.</strong> Enterprise requiere sales team, professional services, compliance pesado. Nuestro ICP es SMB — no desviemos recursos.</li>
+          <li><strong>Matemos el idioma como arma competitiva.</strong> Lanzar en 2026 mercado mexicano, argentino, colombiano con pricing local y contenido en español. Jobber no puede reaccionar rápido.</li>
+          <li><strong>Doble apuesta en AI.</strong> Contratar 1 AI engineer dedicado. Objetivo: foto → estimate en Q3 2026 y agente autónomo (factura pendientes solo, envía follow-ups) en Q4.</li>
+        </ol>
+      </div>
+    </section>
+  </div>
+
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#1E3A5F',
+        primaryTextColor: '#ffffff',
+        primaryBorderColor: '#0F2440',
+        lineColor: '#64748B',
+        secondaryColor: '#3B82F6',
+        tertiaryColor: '#F1F5F9',
+        fontFamily: 'Inter, sans-serif',
+      },
+    });
+    await mermaid.run();
+    window.mermaid_ready = true;
+  </script>
+</body>
+</html>

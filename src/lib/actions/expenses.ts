@@ -6,6 +6,7 @@ import { dbAdapter } from '@/lib/adapters/db'
 import { revalidatePath } from 'next/cache'
 import { invalidateUserData } from '@/lib/cache-tags'
 import type { ExpenseType } from '@/lib/adapters/db/types'
+import { parseDateOnly } from '@/lib/format'
 
 
 export async function getAllExpenses() {
@@ -31,9 +32,9 @@ export async function createExpense(jobId: string, data: {
     technicianId: data.technicianId || null,
     hours: data.hours || null,
     ratePerHour: data.ratePerHour || null,
-    date: data.date ? new Date(data.date) : new Date(),
+    date: parseDateOnly(data.date) ?? new Date(),
   })
-  revalidatePath('/[locale]/jobs/[id]', 'page')
+  revalidatePath('/[locale]/projects/[id]', 'page')
   invalidateUserData(userId)
   return expense
 }
@@ -46,7 +47,7 @@ export async function getExpensesByTechnician(technicianId: string) {
 export async function deleteExpense(id: string) {
   const userId = await requireAuth()
   await dbAdapter.expenses.delete(id, userId)
-  revalidatePath('/[locale]/jobs/[id]', 'page')
+  revalidatePath('/[locale]/projects/[id]', 'page')
   invalidateUserData(userId)
 }
 

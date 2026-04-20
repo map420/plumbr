@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>plumbr — v2 · Plan de implementación</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAFAFA;
+    --surface: #FFFFFF;
+    --surface-2: #F7F7F8;
+    --surface-3: #F1F1F3;
+    --border: #EAEAEC;
+    --text: #18181B;
+    --text-2: #52525B;
+    --text-3: #A1A1AA;
+    --brand: #0F172A;
+    --brand-hover: #1E293B;
+    --success: #15803D;
+    --success-bg: #F0FDF4;
+    --success-border: #BBF7D0;
+    --warning: #B45309;
+    --warning-bg: #FFFBEB;
+    --warning-border: #FDE68A;
+    --danger: #B91C1C;
+    --danger-bg: #FEF2F2;
+    --info: #1D4ED8;
+    --info-bg: #EFF6FF;
+    --info-border: #BFDBFE;
+    --ai-accent: #A5B4FC;
+    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.04);
+    --shadow-2: 0 8px 24px rgb(0 0 0 / 0.06), 0 2px 6px rgb(0 0 0 / 0.04);
+    --r-sm: 6px; --r-md: 8px; --r-lg: 10px; --r-xl: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+  a { color: var(--brand); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code, .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.9em; background: var(--surface-2); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border); color: var(--text); }
+
+  .shell { max-width: 920px; margin: 0 auto; padding: 60px 24px 100px; }
+  .page-header { margin-bottom: 44px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+  .tag-ver { display: inline-block; padding: 4px 12px; background: var(--brand); color: white; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+  .page-header h1 { font-size: 36px; font-weight: 800; letter-spacing: -0.025em; line-height: 1.1; }
+  .page-header h1 span { color: var(--brand); }
+  .page-header p { font-size: 15px; color: var(--text-2); margin-top: 10px; max-width: 720px; line-height: 1.6; }
+
+  .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-2); font-weight: 500; padding: 6px 12px; border-radius: var(--r-md); background: var(--surface); border: 1px solid var(--border); margin-bottom: 20px; }
+  .back-link:hover { border-color: var(--brand); color: var(--brand); text-decoration: none; }
+
+  h2 {
+    font-size: 22px; font-weight: 700; letter-spacing: -0.02em;
+    margin: 48px 0 14px;
+    padding-bottom: 10px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  h2 .n {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 8px;
+    background: var(--brand); color: white;
+    font-size: 13px; font-weight: 700;
+  }
+  h3 { font-size: 16px; font-weight: 700; margin: 24px 0 8px; letter-spacing: -0.01em; }
+  h4 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-3); margin: 20px 0 8px; }
+  p, li { font-size: 14px; color: var(--text-2); line-height: 1.65; }
+  p { margin-bottom: 10px; }
+  ul, ol { margin-left: 22px; margin-bottom: 14px; }
+  ul li, ol li { margin-bottom: 6px; color: var(--text-2); }
+  ul li strong, ol li strong { color: var(--text); font-weight: 600; }
+  strong { color: var(--text); font-weight: 600; }
+
+  .callout {
+    padding: 14px 18px; border-radius: var(--r-md);
+    display: flex; gap: 12px; align-items: flex-start;
+    margin: 16px 0;
+  }
+  .callout.info { background: var(--info-bg); border: 1px solid var(--info-border); }
+  .callout.info .ic { color: var(--info); }
+  .callout.info strong { color: var(--info); }
+  .callout.warn { background: var(--warning-bg); border: 1px solid var(--warning-border); }
+  .callout.warn .ic { color: var(--warning); }
+  .callout.warn strong { color: var(--warning); }
+  .callout.success { background: var(--success-bg); border: 1px solid var(--success-border); }
+  .callout.success .ic { color: var(--success); }
+  .callout.success strong { color: var(--success); }
+  .callout .body { flex: 1; font-size: 13px; color: var(--text-2); }
+  .callout .ic { font-size: 16px; flex-shrink: 0; margin-top: 1px; font-weight: 700; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 22px 26px; margin: 14px 0; }
+  .card h3 { margin-top: 0; }
+
+  table { width: 100%; border-collapse: collapse; margin: 14px 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); overflow: hidden; font-size: 13px; }
+  th { text-align: left; padding: 10px 14px; background: var(--surface-2); font-size: 11px; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text-2); }
+  tr:last-child td { border-bottom: none; }
+  td.phase { font-weight: 600; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  td.eff { font-variant-numeric: tabular-nums; }
+
+  .phase-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-lg); padding: 24px 28px;
+    margin: 12px 0; position: relative;
+  }
+  .phase-card.highlight { border-color: var(--brand); box-shadow: var(--shadow-2); }
+  .phase-num {
+    position: absolute; top: -12px; left: 24px;
+    background: var(--brand); color: white;
+    padding: 4px 12px; border-radius: 999px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .phase-card h3 { margin-top: 4px; }
+  .phase-meta {
+    display: flex; gap: 18px; margin: 10px 0 16px;
+    padding: 10px 14px; background: var(--surface-2);
+    border-radius: var(--r-sm); font-size: 12px;
+  }
+  .phase-meta .item { color: var(--text-2); }
+  .phase-meta .item b { color: var(--text); font-weight: 600; }
+
+  .check-list li {
+    list-style: none; position: relative; padding-left: 24px; margin-bottom: 8px;
+  }
+  .check-list li::before {
+    content: ''; position: absolute; left: 0; top: 7px;
+    width: 14px; height: 14px; border-radius: 4px;
+    background: var(--success-bg); border: 1px solid var(--success);
+  }
+  .check-list li::after {
+    content: '✓'; position: absolute; left: 2px; top: 3px;
+    color: var(--success); font-size: 11px; font-weight: 900;
+  }
+
+  .risk-list li {
+    list-style: none; position: relative; padding-left: 28px; margin-bottom: 10px;
+  }
+  .risk-list li::before {
+    content: '⚠'; position: absolute; left: 0; top: 2px;
+    color: var(--warning); font-size: 14px; font-weight: 700;
+  }
+
+  pre {
+    background: #0F172A; color: #E2E8F0;
+    padding: 14px 18px; border-radius: var(--r-md);
+    overflow-x: auto; font-size: 12.5px;
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1.6;
+    margin: 12px 0;
+  }
+  pre .comment { color: #64748B; }
+  pre .key { color: #A5B4FC; }
+  pre .str { color: #BEF264; }
+  pre .fn { color: #FDBA74; }
+
+  .files-tree {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: var(--r-md); padding: 14px 18px;
+    line-height: 1.8; color: var(--text-2);
+    margin: 10px 0;
+  }
+  .files-tree .new { color: var(--success); font-weight: 600; }
+  .files-tree .edit { color: var(--warning); font-weight: 600; }
+  .files-tree .untouched { color: var(--text-3); }
+  .files-tree .folder { color: var(--brand); font-weight: 600; }
+
+  .toc-plan {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-lg); padding: 20px 24px;
+    margin-bottom: 32px;
+  }
+  .toc-plan h4 { margin-top: 0; margin-bottom: 10px; }
+  .toc-plan ol { margin: 0; padding-left: 22px; }
+  .toc-plan li { margin-bottom: 4px; font-size: 13px; }
+  .toc-plan li a { color: var(--text-2); font-weight: 500; }
+
+  .final-cta {
+    background: linear-gradient(135deg, var(--brand) 0%, #1E293B 100%);
+    color: white; border-radius: var(--r-xl);
+    padding: 32px; margin-top: 48px;
+    text-align: center;
+  }
+  .final-cta h3 { color: white; font-size: 20px; }
+  .final-cta p { color: rgb(255 255 255 / 0.8); max-width: 500px; margin: 8px auto 20px; }
+  .final-cta .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: white; color: var(--brand); border: none;
+    padding: 12px 22px; border-radius: var(--r-md);
+    font-weight: 700; font-size: 14px; cursor: pointer;
+    text-decoration: none; font-family: inherit;
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <a class="back-link" href="v2-all-views-index.html">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    Índice
+  </a>
+
+  <div class="page-header">
+    <span class="tag-ver">◆ Implementation plan</span>
+    <h1>Plan seguro para aplicar el <span>rediseño v2</span></h1>
+    <p>Cómo llevar los 15 mockups al código real sin romper funcionalidad. Estrategia por fases, con puntos de pausa para validación y rollback garantizado en cada paso.</p>
+  </div>
+
+  <div class="toc-plan">
+    <h4>Contenido del plan</h4>
+    <ol>
+      <li><a href="#principles">Principios y garantías de "no romper"</a></li>
+      <li><a href="#arch">Arquitectura del rediseño · tokens + componentes + páginas</a></li>
+      <li><a href="#phases">5 fases de implementación</a></li>
+      <li><a href="#fase1">Fase 1 · Design system (tokens + componentes)</a></li>
+      <li><a href="#fase2">Fase 2 · Estimates (piloto)</a></li>
+      <li><a href="#fase3">Fase 3 · Core views (Dashboard, Invoices, Clients, Jobs)</a></li>
+      <li><a href="#fase4">Fase 4 · Operations (Schedule, Field, Shopping, Team, Expenses, Payments, Referrals)</a></li>
+      <li><a href="#fase5">Fase 5 · AI surfaces (Assistant, AI preferences, insights dashboard)</a></li>
+      <li><a href="#risks">Riesgos y mitigaciones</a></li>
+      <li><a href="#timeline">Timeline estimado</a></li>
+    </ol>
+  </div>
+
+  <!-- ═══════ 1. PRINCIPIOS ═══════ -->
+  <h2 id="principles"><span class="n">1</span>Principios de "no romper la app"</h2>
+
+  <p>El objetivo es <strong>cambiar solo el aspecto visual</strong> — nada de lógica de negocio, nada de cambios en contratos de datos. Para garantizarlo seguimos estos principios:</p>
+
+  <div class="card">
+    <h3>Regla #1 · La lógica es intocable</h3>
+    <p>No se modifica: server actions (<code>/lib/actions/*</code>), queries (<code>/lib/store/*</code>), adapters (<code>/lib/adapters/*</code>), schema de DB (<code>/drizzle</code>, <code>/src/db</code>), rutas API, middleware de auth (<code>Clerk</code>), Stripe integration, webhooks ni proxies.</p>
+    <p style="margin-top: 8px; font-size: 12.5px;">Se modifican únicamente: archivos dentro de <code>src/app/[locale]/(dashboard)/**/_components/*.tsx</code> (los Client Components), <code>src/app/globals.css</code>, y se añaden componentes nuevos en <code>src/components/ui/*</code>.</p>
+  </div>
+
+  <div class="card">
+    <h3>Regla #2 · Backward-compatible CSS</h3>
+    <p>Las clases existentes (<code>.btn-primary</code>, <code>.card</code>, <code>.badge-*</code>, <code>.tab-pill</code>, etc.) siguen funcionando. Solo se cambian sus valores de tokens. Esto permite que archivos que aún no hemos tocado sigan renderizando sin errores.</p>
+    <p style="margin-top: 8px; font-size: 12.5px;">Ejemplo: <code>--wp-accent</code> cambia de <code>#F97316</code> a <code>#0F172A</code>. La clase <code>.btn-primary</code> automáticamente se pinta con el nuevo color sin tocar JSX.</p>
+  </div>
+
+  <div class="card">
+    <h3>Regla #3 · Una vista a la vez, detrás de branch</h3>
+    <p>Cada fase vive en su propia branch (<code>ui/v2-estimates</code>, <code>ui/v2-dashboard</code>, etc.) y se valida en dev antes de merge. Usamos <code>pnpm dev</code> para verificar cada vista funciona — clicks, submits, server actions — antes de pasar a la siguiente.</p>
+  </div>
+
+  <div class="card">
+    <h3>Regla #4 · Tests visuales + funcionales por vista</h3>
+    <p>Checklist por cada refactor:</p>
+    <ul class="check-list">
+      <li><strong>Render sin errores</strong> en build (<code>pnpm build</code>).</li>
+      <li><strong>Interacciones clave</strong> siguen funcionando (crear, editar, eliminar, enviar email).</li>
+      <li><strong>i18n</strong> español/inglés renderiza correctamente.</li>
+      <li><strong>Mobile viewport</strong> (375px) se ve bien.</li>
+      <li><strong>Loading + empty states</strong> intactos.</li>
+    </ul>
+  </div>
+
+  <div class="callout warn">
+    <div class="ic">⚠</div>
+    <div class="body"><strong>Lo que NUNCA tocamos sin hablarlo antes:</strong> schema de DB, migraciones, Stripe products/prices, Clerk configuration, webhooks, cron jobs, variables de entorno, archivos de proxy o deploy (<code>vercel.json</code>, <code>next.config.ts</code>).</div>
+  </div>
+
+  <!-- ═══════ 2. ARQUITECTURA ═══════ -->
+  <h2 id="arch"><span class="n">2</span>Arquitectura del rediseño · 3 capas</h2>
+
+  <p>El rediseño se organiza en 3 capas con dependencia unidireccional (capa N usa capa N-1, no al revés):</p>
+
+  <h4>Capa 1 · Design tokens (globals.css)</h4>
+  <p>La fuente de verdad. CSS custom properties que definen paleta, spacing, radius, elevation, typography. Si se cambia un token, toda la app se actualiza.</p>
+
+<pre><span class="comment">/* Se extiende globals.css con nuevos tokens v2 */</span>
+<span class="key">--wp-brand</span>: <span class="str">#0F172A</span>;       <span class="comment">/* antes --wp-primary + --wp-accent */</span>
+<span class="key">--wp-surface</span>: <span class="str">#FFFFFF</span>;
+<span class="key">--wp-surface-2</span>: <span class="str">#F7F7F8</span>;
+<span class="key">--wp-text</span>: <span class="str">#18181B</span>;
+<span class="key">--wp-text-2</span>: <span class="str">#52525B</span>;
+<span class="key">--wp-text-3</span>: <span class="str">#A1A1AA</span>;
+<span class="key">--wp-success</span>: <span class="str">#15803D</span>;   <span class="comment">/* 700-level, menos saturado */</span>
+<span class="key">--wp-elevation-1</span>: <span class="str">0 1px 2px rgb(0 0 0 / 0.04)</span>;
+<span class="comment">/* Tokens viejos se mantienen como aliases para no romper */</span>
+<span class="key">--wp-primary</span>: <span class="fn">var</span>(<span class="key">--wp-brand</span>);
+<span class="key">--wp-accent</span>: <span class="fn">var</span>(<span class="key">--wp-brand</span>);</pre>
+
+  <h4>Capa 2 · Componentes reutilizables (src/components/ui/)</h4>
+  <p>Piezas visuales que aparecen en múltiples vistas. Cada uno toma props tipados y se usa como bloque de construcción.</p>
+
+  <div class="files-tree">
+<span class="folder">src/components/ui/</span>   <span class="comment">← carpeta nueva</span><br>
+├── <span class="new">StatusPill.tsx</span>        <span class="comment">pill con dot + color (sent/approved/paid/…)</span><br>
+├── <span class="new">KpiCard.tsx</span>           <span class="comment">métrica con label + valor + sub</span><br>
+├── <span class="new">Toggle.tsx</span>            <span class="comment">switch reutilizable (reemplaza los 5+ inline)</span><br>
+├── <span class="new">ClientAvatar.tsx</span>      <span class="comment">avatar con inicial · color determinista</span><br>
+├── <span class="new">Segmented.tsx</span>         <span class="comment">segmented control (tabs tipo iOS)</span><br>
+├── <span class="new">DocHero.tsx</span>           <span class="comment">hero para estimate/invoice/job detail</span><br>
+├── <span class="new">DetailSidebar.tsx</span>     <span class="comment">wrapper de cards laterales sticky</span><br>
+├── <span class="new">TimelineList.tsx</span>      <span class="comment">lista de eventos con dots</span><br>
+├── <span class="new">TotalsCard.tsx</span>        <span class="comment">card oscura con total + breakdown</span><br>
+├── <span class="new">EmptyState.tsx</span>        <span class="comment">estado vacío con icon + CTA</span><br>
+└── <span class="new">Toolbar.tsx</span>           <span class="comment">search + segmented + actions</span><br></div>
+
+  <h4>Capa 3 · Páginas (refactor de los .tsx existentes)</h4>
+  <p>Los <code>*Client.tsx</code> actuales se re-escriben para usar los componentes de capa 2 en lugar de HTML inline. Importante: mantienen sus props y su estado — solo cambia el render.</p>
+
+  <div class="callout info">
+    <div class="ic">ⓘ</div>
+    <div class="body"><strong>Beneficio clave:</strong> la primera fase (design system) ya hace que el 60% de la app se vea v2 sin tocar ninguna página. Las fases siguientes pulen lo que queda y añaden los componentes nuevos donde tengan más impacto.</div>
+  </div>
+
+  <!-- ═══════ 3. FASES ═══════ -->
+  <h2 id="phases"><span class="n">3</span>Las 5 fases</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Fase</th>
+        <th>Qué entrega</th>
+        <th>Archivos tocados</th>
+        <th>Esfuerzo</th>
+        <th>Riesgo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="phase">Fase 1</td>
+        <td>Design system · Paleta v2 aplicada globalmente</td>
+        <td>2 archivos</td>
+        <td class="eff">0.5d</td>
+        <td style="color: var(--success); font-weight: 600;">Bajo</td>
+      </tr>
+      <tr>
+        <td class="phase">Fase 2</td>
+        <td>Estimates completo (piloto)</td>
+        <td>4 + 4 nuevos</td>
+        <td class="eff">1.5d</td>
+        <td style="color: var(--success); font-weight: 600;">Bajo</td>
+      </tr>
+      <tr>
+        <td class="phase">Fase 3</td>
+        <td>Dashboard + Invoices + Clients + Jobs</td>
+        <td>8 archivos</td>
+        <td class="eff">3d</td>
+        <td style="color: var(--warning); font-weight: 600;">Medio</td>
+      </tr>
+      <tr>
+        <td class="phase">Fase 4</td>
+        <td>Schedule + Field + Shopping + Team + Expenses + Payments + Referrals</td>
+        <td>7 archivos</td>
+        <td class="eff">2.5d</td>
+        <td style="color: var(--warning); font-weight: 600;">Medio</td>
+      </tr>
+      <tr>
+        <td class="phase">Fase 5</td>
+        <td>AI Assistant + AI preferences + insights del dashboard</td>
+        <td>3 archivos</td>
+        <td class="eff">1.5d</td>
+        <td style="color: var(--warning); font-weight: 600;">Medio</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="margin-top: 10px; font-size: 13px; color: var(--text-2);"><strong>Total estimado:</strong> ~9 días de trabajo para desarrollo solo (UI). Puede comprimirse si se paraleliza o extenderse si queremos QA más exhaustiva en cada fase. Cada fase es mergeable de forma independiente.</p>
+
+  <!-- ═══════ FASE 1 ═══════ -->
+  <h2 id="fase1"><span class="n">1</span>Fase 1 · Design system base</h2>
+
+  <div class="phase-card highlight">
+    <span class="phase-num">Fase 1 · 0.5 día</span>
+    <h3>Extender globals.css con tokens v2 + crear componentes base</h3>
+
+    <div class="phase-meta">
+      <span class="item"><b>Branch:</b> <code>ui/v2-tokens</code></span>
+      <span class="item"><b>Risk:</b> Bajo</span>
+      <span class="item"><b>Impacto:</b> 100% de la app cambia de paleta</span>
+    </div>
+
+    <h4>Paso a paso</h4>
+    <ol>
+      <li><strong>Duplicar</strong> <code>globals.css</code> en una sección "Legacy tokens" al final del archivo para que las clases antiguas (<code>.btn-primary</code>, <code>.card</code>, <code>.badge-*</code>) sigan teniendo los valores originales como fallback.</li>
+      <li><strong>Añadir bloque</strong> <code>@layer base</code> con los nuevos tokens v2 (<code>--wp-brand</code>, <code>--wp-surface</code>, etc.) y hacer que los tokens viejos sean aliases de los nuevos (ej: <code>--wp-accent: var(--wp-brand)</code>).</li>
+      <li><strong>Crear</strong> <code>src/components/ui/</code> con los 10 componentes de la capa 2. Cada uno es un <code>.tsx</code> pequeño (50–80 líneas) con TypeScript tipos.</li>
+      <li><strong>Probar</strong>: <code>pnpm dev</code> y navegar Dashboard → Estimates → Invoices. Todo debe verse nuevo sin haber tocado ninguna página. Si un color se ve feo, es porque el token viejo no apuntaba al nuevo — se arregla ajustando el alias.</li>
+      <li><strong>Merge</strong> tras validar que no hay regresiones visuales graves.</li>
+    </ol>
+
+    <h4>Archivos tocados</h4>
+    <div class="files-tree">
+<span class="folder">src/</span><br>
+├── <span class="folder">app/</span><br>
+│   └── <span class="edit">globals.css</span>        <span class="comment">→ extender con tokens v2 + legacy aliases</span><br>
+├── <span class="folder">components/</span><br>
+│   └── <span class="new">ui/</span>                 <span class="comment">← carpeta nueva con 10 componentes</span><br></div>
+
+    <h4>Resultado esperado al final de Fase 1</h4>
+    <ul class="check-list">
+      <li>Toda la app se ve en paleta navy/neutra (sin orange encendido).</li>
+      <li>Los <code>.btn-primary</code> existentes ahora son navy.</li>
+      <li>Los badges bajan a saturación 700.</li>
+      <li>Existen componentes <code>StatusPill</code>, <code>KpiCard</code>, <code>Toggle</code>, etc. listos para usar.</li>
+      <li>Cero cambios en comportamiento. Tests pasan (si los hay).</li>
+    </ul>
+  </div>
+
+  <!-- ═══════ FASE 2 ═══════ -->
+  <h2 id="fase2"><span class="n">2</span>Fase 2 · Estimates (piloto)</h2>
+
+  <div class="phase-card">
+    <span class="phase-num">Fase 2 · 1.5 días</span>
+    <h3>Refactor de las 4 vistas de Estimates</h3>
+
+    <div class="phase-meta">
+      <span class="item"><b>Branch:</b> <code>ui/v2-estimates</code></span>
+      <span class="item"><b>Dep:</b> Fase 1</span>
+      <span class="item"><b>Por qué piloto:</b> vistas completas (list + detail + form + print) → valida todo el sistema</span>
+    </div>
+
+    <h4>Archivos refactorizados</h4>
+    <div class="files-tree">
+<span class="folder">src/app/[locale]/(dashboard)/estimates/</span><br>
+├── <span class="folder">_components/</span><br>
+│   ├── <span class="edit">EstimatesClient.tsx</span>       <span class="comment">→ aplicar KPI row, Toolbar, StatusPill, ClientAvatar</span><br>
+│   ├── <span class="edit">EstimateDetailClient.tsx</span>  <span class="comment">→ DocHero + DetailSidebar + TotalsCard + TimelineList</span><br>
+│   └── <span class="edit">EstimateFormClient.tsx</span>    <span class="comment">→ activar stepper desktop, Toggle reutilizable</span><br>
+└── <span class="folder">[id]/print/</span><br>
+    └── <span class="edit">page.tsx</span>                  <span class="comment">→ parties block, CTA navy, logo box</span><br></div>
+
+    <h4>Puntos críticos</h4>
+    <ul>
+      <li><strong>EstimateFormClient</strong> usa <code>useState</code> para mobileStep — conservamos el estado pero lo mostramos también en desktop. La lógica de <code>handleSubmit</code> no cambia.</li>
+      <li><strong>EstimateDetailClient</strong> conserva los handlers (<code>handleConvert</code>, <code>handleDelete</code>, <code>handleSendEmail</code>, <code>handleSendSms</code>, <code>handleCopyLink</code>) tal cual. Solo cambia el JSX.</li>
+      <li><strong>EstimatesClient</strong> conserva la función <code>deleteEstimate</code>, <code>generateEstimateShareToken</code>, el <code>grouped by month</code> y el filtrado. Lo que cambia es la presentación.</li>
+      <li><strong>Print page</strong> es server component — se pasa data a componentes nuevos pero el SSR sigue igual.</li>
+    </ul>
+
+    <h4>Pause &amp; checkpoint antes de seguir</h4>
+    <ul class="check-list">
+      <li>Crear un estimate nuevo → se guarda en DB.</li>
+      <li>Editar un estimate → los cambios persisten.</li>
+      <li>Enviar email al cliente → llega.</li>
+      <li>Convert to invoice → genera la invoice correctamente.</li>
+      <li>Portal link abre en <code>/portal/[token]</code>.</li>
+      <li>Print preview se ve bien e imprime.</li>
+      <li>Mobile 375px no se rompe.</li>
+      <li>Español/English ambos OK.</li>
+    </ul>
+  </div>
+
+  <!-- ═══════ FASE 3 ═══════ -->
+  <h2 id="fase3"><span class="n">3</span>Fase 3 · Core views</h2>
+
+  <div class="phase-card">
+    <span class="phase-num">Fase 3 · 3 días</span>
+    <h3>Dashboard + Invoices + Clients + Jobs</h3>
+
+    <div class="phase-meta">
+      <span class="item"><b>Branch:</b> <code>ui/v2-core-views</code></span>
+      <span class="item"><b>Orden sugerido:</b> Invoices → Clients → Jobs → Dashboard</span>
+      <span class="item"><b>Por qué ese orden:</b> Invoices y Clients son muy similares a Estimates (reuso)</span>
+    </div>
+
+    <h4>Invoices · /invoices · /[id] · /[id]/print · /new</h4>
+    <p style="margin-bottom: 12px;">Casi idéntico a Estimates en estructura. Se copia el patrón y se adapta para el concepto de "status de pago" (Draft, Sent, Partial, Paid, Overdue). <strong>Agregado nuevo:</strong> <em>payment progress bar</em> y timeline de pagos recibidos en el sidebar.</p>
+
+    <h4>Clients · /clients · /clients/[id] · /new</h4>
+    <p style="margin-bottom: 12px;">Lista con agrupamiento alfabético (ya existe en el CSS como <code>.alpha-section</code> — se refactoriza visualmente). Detail incluye hero con LTV, historial de documentos y notas. <strong>Riesgo:</strong> verificar que el importador CSV sigue funcionando (no se toca su lógica).</p>
+
+    <h4>Jobs · /jobs · /[id] · /[id]/edit · /new</h4>
+    <p style="margin-bottom: 12px;">Aquí hay la <strong>mayor decisión de UX</strong>: agregamos la vista Kanban como default, con fallback a List. Requiere:</p>
+    <ul>
+      <li><strong>Añadir un state</strong> <code>viewMode: 'kanban' | 'list' | 'calendar'</code> en <code>JobsClient</code>.</li>
+      <li>La vista Kanban <strong>no requiere drag-and-drop</strong> en esta iteración (solo visualización). Se usa <code>@dnd-kit</code> que ya está instalado si lo queremos después.</li>
+      <li>El detail mantiene todo lo existente (checklist, fotos, timer) pero con layout 2 columnas + sidebar.</li>
+    </ul>
+
+    <h4>Dashboard · /dashboard</h4>
+    <p style="margin-bottom: 12px;">El refactor <strong>más grande</strong> de la fase. El actual <code>DashboardStats.tsx</code> (252 líneas) se reescribe pero conserva el contrato de Props. <strong>El recharts</strong> ya está integrado — solo se re-estiliza. <strong>Agregado nuevo:</strong> card de AI Insights (dummy hasta Fase 5). De momento: se lee de un array hardcodeado.</p>
+
+    <div class="callout info">
+      <div class="ic">ⓘ</div>
+      <div class="body"><strong>Flag de feature:</strong> para mitigar riesgo, se puede añadir un env var <code>NEXT_PUBLIC_UI_V2=1</code> que alterne entre la vista vieja y la nueva. Si algo falla en producción, se rollbackea cambiando el flag sin re-deploy. <em>Opcional</em>, pero recomendable.</div>
+    </div>
+  </div>
+
+  <!-- ═══════ FASE 4 ═══════ -->
+  <h2 id="fase4"><span class="n">4</span>Fase 4 · Operations</h2>
+
+  <div class="phase-card">
+    <span class="phase-num">Fase 4 · 2.5 días</span>
+    <h3>Schedule + Field + Shopping + Team + Expenses + Payments + Referrals</h3>
+
+    <div class="phase-meta">
+      <span class="item"><b>Branch:</b> <code>ui/v2-operations</code></span>
+      <span class="item"><b>Archivos:</b> 7 (<code>*Client.tsx</code> por vista)</span>
+      <span class="item"><b>Nota:</b> más cosmético que estructural</span>
+    </div>
+
+    <h4>Vistas sencillas (solo paleta + layout)</h4>
+    <p><strong>Payments</strong>, <strong>Expenses</strong>, <strong>Team</strong>, <strong>Referrals</strong> — son listas o grids existentes. Se aplica la paleta v2, toolbar unificada y quick actions. Estimated: 30–60 min cada una.</p>
+
+    <h4>Vistas con cambio estructural</h4>
+    <ul>
+      <li><strong>Schedule</strong> — actualmente es una lista simple. Se convierte en <em>calendar view</em> de verdad. Opciones:
+        <ul>
+          <li><strong>Opción A</strong> (rápida): usar un componente de calendario open-source ligero (ej: <code>react-big-calendar</code> o <code>@fullcalendar/react</code>). <em>Pro:</em> rápido de integrar. <em>Con:</em> 1 dependencia extra.</li>
+          <li><strong>Opción B</strong> (controlada): construir el grid con flexbox/grid como en el mockup. <em>Pro:</em> control total, sin deps. <em>Con:</em> +1 día de trabajo.</li>
+        </ul>
+        <strong>Recomendación:</strong> Opción A si la funcionalidad base es suficiente; Opción B si queremos algo muy custom.
+      </li>
+      <li><strong>Field mode</strong> — vista mobile dedicada. Se crea un <code>layout.tsx</code> específico que oculta la nav del dashboard y muestra UI full-screen. La lógica de clock in/out, checklist y fotos ya existe.</li>
+      <li><strong>Shopping list</strong> — ya tiene estructura. Se añade agrupamiento por proveedor (requiere un campo nuevo opcional <code>vendor</code> — <strong>atención: esto toca DB, se valida antes</strong>).</li>
+    </ul>
+
+    <div class="callout warn">
+      <div class="ic">⚠</div>
+      <div class="body"><strong>Decisión pendiente:</strong> Shopping list por proveedor requiere añadir columna <code>vendor</code> a la tabla <code>shopping_list_items</code>. <em>Alternativa sin tocar DB:</em> agrupar por el <code>type</code> existente (material / tool / part), o dejar plano por ahora y añadir el feature después.</div>
+    </div>
+  </div>
+
+  <!-- ═══════ FASE 5 ═══════ -->
+  <h2 id="fase5"><span class="n">5</span>Fase 5 · AI surfaces</h2>
+
+  <div class="phase-card">
+    <span class="phase-num">Fase 5 · 1.5 días</span>
+    <h3>Assistant + AI preferences + Dashboard insights (real)</h3>
+
+    <div class="phase-meta">
+      <span class="item"><b>Branch:</b> <code>ui/v2-ai</code></span>
+      <span class="item"><b>Archivos:</b> <code>AssistantPageClient.tsx</code> + nuevo <code>AiInsightsCard.tsx</code> + tweaks a AI preferences</span>
+    </div>
+
+    <h4>Assistant</h4>
+    <ul>
+      <li><strong>Rediseño del empty state</strong> con los 6 casos de uso + atajos <code>/est</code>, <code>/pulse</code>, etc. Los atajos se implementan como <code>onChange</code> del input — si el usuario teclea <code>/</code>, muestra un popover con las opciones (tipo Linear/Raycast).</li>
+      <li><strong>RichBlocks existentes</strong> (<code>ChatRenderers.tsx</code>, <code>RichBlocks.tsx</code>) se re-estilizan con la paleta v2.</li>
+      <li><strong>Voice mode</strong> — UI existente de <code>VoiceAssistant</code> se re-estiliza para el look hero navy con avatar animado.</li>
+      <li><strong>Model selector</strong> se mueve al header como pill compacto (ya casi está así).</li>
+    </ul>
+
+    <h4>Dashboard insights (real, no dummy)</h4>
+    <p>En Fase 3 dejamos los insights como array hardcoded. Aquí los conectamos a AI real. Crear un endpoint <code>/api/ai/insights</code> que llame a Anthropic con context del usuario (últimas facturas, estimates, jobs) y devuelva 3 insights estructurados. <strong>Es trabajo nuevo de backend</strong> — separarlo en PR propio.</p>
+
+    <div class="callout success">
+      <div class="ic">✓</div>
+      <div class="body"><strong>Ya existe la infraestructura:</strong> <code>useAssistantChat</code>, <code>parseActions</code>, <code>extractChecklist</code>, <code>ActionButtons</code>, <code>RichChecklist</code>. Solo hay que empaquetar los nuevos prompts para insights y reutilizar los componentes. No reinventamos nada.</div>
+    </div>
+  </div>
+
+  <!-- ═══════ RIESGOS ═══════ -->
+  <h2 id="risks"><span class="n">!</span>Riesgos y mitigaciones</h2>
+
+  <ul class="risk-list">
+    <li><strong>Regresión visual no detectada</strong> — Mitigación: screenshot testing manual por vista al final de cada fase. Opcional: añadir Playwright + <code>toHaveScreenshot()</code>.</li>
+    <li><strong>Componente nuevo rompe cache de Next</strong> — Mitigación: <code>rm -rf .next</code> entre fases si hay comportamiento raro. Añadir <code>force-dynamic</code> si un componente cacheable deja de actualizar.</li>
+    <li><strong>CSS in Tailwind v4 no acepta las nuevas clases</strong> — Mitigación: los tokens se definen en <code>@layer base</code> y las clases helper en <code>@layer components</code>. Tailwind v4 soporta esto out of the box.</li>
+    <li><strong>El stepper en desktop confunde a usuarios acostumbrados al form largo</strong> — Mitigación: añadir un botón "Ver todo en una página" (fallback) para esta primera iteración.</li>
+    <li><strong>Kanban de Jobs es muy diferente</strong> del lista actual — Mitigación: el toggle <code>Kanban | List | Calendar</code> permite a usuarios elegir. Default Kanban pero se recuerda la preferencia en <code>localStorage</code>.</li>
+    <li><strong>Schedule calendar view</strong> necesita un range picker, navegación de semanas, sync con time zones — si usamos un lib externo, validar con jobs reales.</li>
+    <li><strong>AI insights dashboard</strong> puede ser lento — Mitigación: hacerlo con <code>Suspense</code> y un skeleton. Se carga en streaming, no bloquea el resto del dashboard.</li>
+    <li><strong>Touch targets mobile</strong> deben seguir ≥44px para accesibilidad — ya está en los tokens (<code>--wp-touch-min</code>), solo hay que respetarlo.</li>
+  </ul>
+
+  <!-- ═══════ TIMELINE ═══════ -->
+  <h2 id="timeline"><span class="n">∑</span>Timeline estimado</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Semana</th>
+        <th>Fase</th>
+        <th>Entregable</th>
+        <th>Review check</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Semana 1 · día 1–2</strong></td>
+        <td class="phase">Fase 1</td>
+        <td>Design system + componentes base</td>
+        <td>Revisar Dashboard existente con paleta v2</td>
+      </tr>
+      <tr>
+        <td><strong>Semana 1 · día 3–4</strong></td>
+        <td class="phase">Fase 2</td>
+        <td>Estimates completo (piloto)</td>
+        <td>Probar flujo full: crear → enviar → aprobar → convert → imprimir</td>
+      </tr>
+      <tr>
+        <td><strong>Semana 2 · día 1–3</strong></td>
+        <td class="phase">Fase 3</td>
+        <td>Dashboard + Invoices + Clients + Jobs</td>
+        <td>Probar dashboard con datos reales · kanban de jobs</td>
+      </tr>
+      <tr>
+        <td><strong>Semana 2 · día 4–5</strong></td>
+        <td class="phase">Fase 4</td>
+        <td>Operations + Field mode</td>
+        <td>Field mode en celular real · schedule con jobs actuales</td>
+      </tr>
+      <tr>
+        <td><strong>Semana 3 · día 1–2</strong></td>
+        <td class="phase">Fase 5</td>
+        <td>AI surfaces · Assistant + Dashboard insights</td>
+        <td>Atajos /est /pulse funcionando · insights del día con data real</td>
+      </tr>
+      <tr>
+        <td><strong>Semana 3 · día 3</strong></td>
+        <td>QA final</td>
+        <td>Polish, bug fixing, screenshots para marketing</td>
+        <td>Deploy a producción con flag activado</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="margin-top: 16px; font-size: 13px;"><strong>~3 semanas</strong> para el rediseño completo aplicado a la app. Puede compactarse a <strong>~10 días</strong> si se pausan otros frentes, o extenderse si queremos QA más riguroso.</p>
+
+  <!-- ═══════ FINAL CTA ═══════ -->
+  <div class="final-cta">
+    <h3>¿Arrancamos con Fase 1?</h3>
+    <p>Fase 1 es la menos arriesgada (solo globals.css + componentes nuevos) y ya cambia la paleta de toda la app. Es un excelente punto de entrada para validar la dirección con datos reales.</p>
+    <a class="btn" href="v2-all-views-index.html">← Volver al índice</a>
+  </div>
+
+</div>
+</body>
+</html>

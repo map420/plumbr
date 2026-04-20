@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Estrategia de Producto — WorkPilot</title>
+  <link rel="stylesheet" href="_styles.css">
+</head>
+<body>
+
+  <div class="cover">
+    <div class="cover-header">
+      <div class="cover-logo"><span class="cover-logo-mark">W</span>WorkPilot</div>
+      <span class="cover-badge">Confidencial · Uso interno</span>
+    </div>
+    <div class="cover-body">
+      <div class="cover-kicker">DOCUMENTO ESTRATÉGICO · 04</div>
+      <h1 class="cover-title">Estrategia de Producto</h1>
+      <p class="cover-subtitle">Filosofía, diferenciadores, gaps, roadmap y criterios de priorización. Cómo decidimos qué construir y qué ignorar.</p>
+    </div>
+    <div class="cover-footer">
+      <div class="cover-meta">
+        <span><strong>Versión</strong> 1.0</span>
+        <span><strong>Fecha</strong> Abril 2026</span>
+      </div>
+      <div class="cover-meta" style="text-align: right;">
+        <span><strong>Audiencia</strong> Founders · Producto · Ingeniería</span>
+        <span>workpilot.io</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <nav class="toc">
+      <h2>Tabla de contenidos</h2>
+      <ul class="toc-list">
+        <li><span class="toc-title">1. Filosofía del producto</span><span class="toc-page">3</span></li>
+        <li><span class="toc-title">2. Principios de diseño</span><span class="toc-page">5</span></li>
+        <li><span class="toc-title">3. Diferenciadores actuales</span><span class="toc-page">6</span></li>
+        <li><span class="toc-title">4. Gaps críticos</span><span class="toc-page">9</span></li>
+        <li><span class="toc-title">5. Roadmap Now / Next / Later</span><span class="toc-page">11</span></li>
+        <li><span class="toc-title">6. Apuestas estratégicas</span><span class="toc-page">13</span></li>
+        <li><span class="toc-title">7. Criterios de priorización</span><span class="toc-page">15</span></li>
+        <li><span class="toc-title">8. Dependencias y riesgos de producto</span><span class="toc-page">16</span></li>
+        <li><span class="toc-title">9. Recomendaciones</span><span class="toc-page">17</span></li>
+      </ul>
+    </nav>
+
+    <section>
+      <h2>1. Filosofía del producto</h2>
+
+      <p>WorkPilot no es otro CRM para contratistas. Es una apuesta estructural por tres principios que consideramos asimétricos respecto a la competencia:</p>
+
+      <div class="kpi-grid cols-3">
+        <div class="kpi-card">
+          <div class="kpi-value" style="font-size: 16pt;">AI-first</div>
+          <div class="kpi-label">El AI es el producto, no una feature</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value" style="font-size: 16pt;">Mobile-first</div>
+          <div class="kpi-label">Diseñado para la obra, no para oficina</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value" style="font-size: 16pt;">Simplicidad</div>
+          <div class="kpi-label">Menos pantallas, no más</div>
+        </div>
+      </div>
+
+      <h3>AI-first: qué significa en la práctica</h3>
+      <p>En WorkPilot el AI no es un chatbot pegado arriba de un CRM. Es <strong>el primer acceso al producto</strong>. Un usuario puede pasar su semana entera usando solo la conversación: cotizar, facturar, rastrear gastos, enviar emails, analizar rentabilidad. Las pantallas tradicionales existen como respaldo, no como flujo principal.</p>
+
+      <div class="callout insight">
+        <span class="callout-label">Métrica filosófica</span>
+        <div class="callout-body">
+          <strong>Si un contratista con buen WiFi puede hacer el 80% de su semana sin salir del chat, estamos en el camino correcto.</strong> Si necesita 15 clics para cotizar, fracasamos aunque los clics sean bonitos.
+        </div>
+      </div>
+
+      <h3>Mobile-first: qué significa en la práctica</h3>
+      <p>Nuestro usuario no trabaja en oficina. Trabaja en un sótano con sonda, en un tejado con sol, en una camioneta entre jobs. La app debe cargar en 2G, funcionar offline, responder a gestos táctiles, y nunca pedirle que saque las manos del trabajo para buscar información.</p>
+
+      <h3>Simplicidad: qué significa en la práctica</h3>
+      <p>ServiceTitan tiene 800+ pantallas configurables. Jobber ~200. Housecall Pro ~150. WorkPilot debería vivir felizmente con <strong>&lt;60 pantallas</strong>. Cuando una feature requiere nueva pantalla, la pregunta default es "¿cómo lo hace el AI sin pantalla?". Solo si no hay respuesta, se diseña.</p>
+    </section>
+
+    <section class="page-break">
+      <h2>2. Principios de diseño</h2>
+
+      <p>Ocho principios operativos que rigen decisiones de producto día a día:</p>
+
+      <table>
+        <thead><tr><th style="width: 25%;">Principio</th><th>Qué significa</th></tr></thead>
+        <tbody>
+          <tr><td><strong>1. AI > Pantalla</strong></td><td>Si una acción se puede resolver en conversación, no construimos UI para ella.</td></tr>
+          <tr><td><strong>2. Defaults agresivos</strong></td><td>Tax rate 10%, términos 30 días, line items pre-cargados. El user sólo cambia lo que es distinto.</td></tr>
+          <tr><td><strong>3. Mobile antes que desktop</strong></td><td>Cada feature se diseña primero para iPhone. Si no funciona ahí, vuelve al board.</td></tr>
+          <tr><td><strong>4. Español = Inglés</strong></td><td>Toda feature se lanza en ambos idiomas simultáneamente. No hay "primero EN, después ES".</td></tr>
+          <tr><td><strong>5. Portal sin login</strong></td><td>El cliente no se registra para ver/firmar/pagar. Token en URL y listo.</td></tr>
+          <tr><td><strong>6. Offline-ready</strong></td><td>Toda acción crítica de campo funciona sin conexión. Sync al volver online.</td></tr>
+          <tr><td><strong>7. Automatiza antes de notificar</strong></td><td>Si podemos ejecutar (send email, update status) mejor que mandar notificación al user.</td></tr>
+          <tr><td><strong>8. Data captive, exports abiertos</strong></td><td>Es fácil traer datos in, es fácil exportarlos. La retención viene del valor, no del bloqueo.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="page-break">
+      <h2>3. Diferenciadores actuales</h2>
+
+      <p>Siete cosas que WorkPilot hace hoy mejor que la competencia. Son activos que debemos amplificar, no descubrir.</p>
+
+      <h3>① WorkPilot AI con 37 tools ejecutables</h3>
+      <p>El AI crea estimates, genera invoices, registra expenses, envía emails, analiza rentabilidad. Los competidores tienen chatbots de soporte; nosotros tenemos un copiloto operativo.</p>
+
+      <div class="callout insight">
+        <span class="callout-label">Por qué es defendible</span>
+        <div class="callout-body">
+          Las 37 tools son la infraestructura. Pero lo <em>único</em> es la tabla <code>ai_preferences</code> que aprende patrones del contratista. Cuánto más lo usa, más acertado es. Ese aprendizaje no es transferible a otra plataforma.
+        </div>
+      </div>
+
+      <h3>② Shopping List integrada con expenses</h3>
+      <p>El AI lista materiales necesarios → el contratista los marca en el depósito → se crean expenses automáticos vinculados al job. Nadie más tiene este loop cerrado.</p>
+
+      <h3>③ Portal cliente token-based</h3>
+      <p>Sin login, sin fricción. Más cortos los pasos a la firma, mayor el conversion rate. El cliente ve documento, firma, paga — todo en la misma URL.</p>
+
+      <h3>④ Voice mode</h3>
+      <p>Conversación con el AI por voz vía ElevenLabs. Único en la categoría. Usable mientras maneja entre jobs.</p>
+
+      <h3>⑤ Bilingüe nativo</h3>
+      <p>Español + inglés desde el primer commit. El 30% de contratistas de servicio en US son hispanohablantes y no tienen producto en su idioma.</p>
+
+      <h3>⑥ PWA offline-first</h3>
+      <p>Instalable sin App Store, cacheo agresivo, service workers. Un técnico en el sótano puede seguir trabajando. La competencia requiere conexión constante.</p>
+
+      <h3>⑦ Rich Blocks en chat</h3>
+      <p>Las respuestas del AI no son solo texto: son tablas, gráficos, checklists interactivos, KPI cards. Mezcla UX de chat + dashboard sin cambiar de contexto.</p>
+
+      <h3>Resumen visual</h3>
+      <table class="compact">
+        <thead><tr><th>Diferenciador</th><th>¿Alguien más lo tiene?</th><th>Defensibilidad</th></tr></thead>
+        <tbody>
+          <tr><td>AI ejecutivo con 37 tools</td><td>No</td><td><span class="pill success">Alta</span></td></tr>
+          <tr><td>Shopping List → Expense</td><td>No</td><td><span class="pill success">Alta</span></td></tr>
+          <tr><td>Portal sin login</td><td>Jobber, HCP tienen similar</td><td><span class="pill warning">Media</span></td></tr>
+          <tr><td>Voice mode</td><td>No</td><td><span class="pill warning">Media (fácil de replicar)</span></td></tr>
+          <tr><td>Bilingüe nativo</td><td>No (los grandes son EN only)</td><td><span class="pill success">Alta (localización es pesada)</span></td></tr>
+          <tr><td>PWA offline-first</td><td>Parcialmente (HCP)</td><td><span class="pill warning">Media</span></td></tr>
+          <tr><td>Rich Blocks</td><td>No</td><td><span class="pill warning">Media</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="page-break">
+      <h2>4. Gaps críticos</h2>
+
+      <p>Diez gaps donde perdemos deals hoy o vamos a perderlos pronto. Ordenados por impacto de negocio.</p>
+
+      <table>
+        <thead><tr><th>Gap</th><th>Impacto</th><th>Prioridad</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Scheduling drag &amp; drop visual</strong></td><td>Users con 2+ técnicos lo demandan en demo. Perdemos deals vs Jobber.</td><td><span class="pill error">P0</span></td></tr>
+          <tr><td><strong>QuickBooks sync bidireccional</strong></td><td>Contador del cliente es gatekeeper. Sin sync, deal muere en discovery.</td><td><span class="pill error">P0</span></td></tr>
+          <tr><td><strong>Onboarding guiado + sample data</strong></td><td>Activation rate estimado &lt; 40% (target &gt; 60%).</td><td><span class="pill error">P0</span></td></tr>
+          <tr><td><strong>Reporting avanzado</strong></td><td>Growing Business (6–20 técnicos) necesita P&amp;L por cliente, utilization.</td><td><span class="pill warning">P1</span></td></tr>
+          <tr><td><strong>GPS / location tracking</strong></td><td>Visibilidad técnicos en campo. Paridad con Jobber/HCP.</td><td><span class="pill warning">P1</span></td></tr>
+          <tr><td><strong>Inventory management básico</strong></td><td>Catalog + stock por bodega. Sin esto, HVAC/Electrical migra a otros.</td><td><span class="pill warning">P1</span></td></tr>
+          <tr><td><strong>Mobile nativo (o al menos App Store PWA)</strong></td><td>Percepción de "app real". Marketing es más fácil.</td><td><span class="pill warning">P1</span></td></tr>
+          <tr><td><strong>Marketing automation / campaigns</strong></td><td>HCP lo tiene. Contratistas quieren reengagement automático.</td><td><span class="pill neutral">P2</span></td></tr>
+          <tr><td><strong>Consumer financing (buy now pay later)</strong></td><td>HCP y ServiceTitan venden esto. Ticket grande lo pide.</td><td><span class="pill neutral">P2</span></td></tr>
+          <tr><td><strong>API pública + marketplace</strong></td><td>Integradores terceros. Largo plazo, baja prioridad hoy.</td><td><span class="pill neutral">P3</span></td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout warning">
+        <span class="callout-label">Orden honesto</span>
+        <div class="callout-body">
+          Si atamos los P0 en los próximos 90 días (scheduling, QBO sync, onboarding), <strong>cerramos las 3 objeciones más comunes</strong> que escuchamos en demos y perdemos ~60% menos deals. Es el trabajo de mayor ROI en el roadmap.
+        </div>
+      </div>
+    </section>
+
+    <section class="page-break">
+      <h2>5. Roadmap Now / Next / Later</h2>
+
+      <p>Tres horizontes temporales. "Now" es lo que estamos construyendo. "Next" es lo siguiente comprometido. "Later" es exploratorio / dependiente de data.</p>
+
+      <h3>Horizonte 1 — NOW (0–3 meses)</h3>
+      <div class="two-col">
+        <div class="col-box">
+          <h4>Producto</h4>
+          <ul>
+            <li>Scheduling drag &amp; drop</li>
+            <li>QBO sync bidireccional (MVP)</li>
+            <li>Onboarding guiado + sample company</li>
+            <li>Reporte profitability por cliente</li>
+            <li>Métricas instrumentadas (eventos Vercel)</li>
+          </ul>
+        </div>
+        <div class="col-box">
+          <h4>Negocio</h4>
+          <ul>
+            <li>Plan Growth activado ($19/mes intermedio)</li>
+            <li>Referral program (20% off)</li>
+            <li>SEO content ES + EN (10 posts)</li>
+            <li>Demo videos YouTube</li>
+            <li>Instalación Puppeteer metrics</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Horizonte 2 — NEXT (3–6 meses)</h3>
+      <div class="two-col">
+        <div class="col-box">
+          <h4>Producto</h4>
+          <ul>
+            <li>AI: foto → estimate (vision model)</li>
+            <li>GPS técnicos opcional</li>
+            <li>Inventory básico (stock + alertas)</li>
+            <li>Mobile nativo (wrapper Capacitor o native)</li>
+            <li>Marketing campaigns básicas</li>
+          </ul>
+        </div>
+        <div class="col-box">
+          <h4>Negocio</h4>
+          <ul>
+            <li>Launch LATAM México</li>
+            <li>Partnership Home Depot API</li>
+            <li>Webinar monthly para contratistas</li>
+            <li>Case studies reales (3)</li>
+            <li>Expansion loops por técnico invitado</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Horizonte 3 — LATER (6–12 meses)</h3>
+      <div class="two-col">
+        <div class="col-box">
+          <h4>Producto</h4>
+          <ul>
+            <li>Agente AI autónomo (acciones sin supervisión)</li>
+            <li>Consumer financing integrado</li>
+            <li>API pública + marketplace</li>
+            <li>Multi-location / franquicias</li>
+            <li>Service agreements recurrentes</li>
+          </ul>
+        </div>
+        <div class="col-box">
+          <h4>Negocio</h4>
+          <ul>
+            <li>Expansión LATAM (CO, AR)</li>
+            <li>Integración Stripe Connect full</li>
+            <li>Partnerships proveedores locales</li>
+            <li>Marketplace técnicos independientes</li>
+            <li>Certificación "Powered by WorkPilot"</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="page-break">
+      <h2>6. Apuestas estratégicas</h2>
+
+      <p>Las 5 apuestas grandes que definen si WorkPilot se convierte en categoría o en feature:</p>
+
+      <h3>Apuesta 1: El AI que opera el negocio de noche</h3>
+      <p>Hoy el AI responde cuando el user pregunta. La apuesta: un <strong>agente autónomo</strong> que de noche revisa pendientes, envía follow-ups de estimates sin respuesta, marca invoices overdue, sugiere upsells. El contratista despierta con trabajo hecho. Nadie más lo hace.</p>
+
+      <div class="callout insight">
+        <span class="callout-label">Por qué es apuesta</span>
+        <div class="callout-body">
+          Si funciona, redefinimos la categoría: "software que trabaja por vos". Si no funciona (hallucinations caras, acciones equivocadas), perdimos credibilidad. Requiere confianza ganada en L1/L2 + sistema de aprobaciones sólido.
+        </div>
+      </div>
+
+      <h3>Apuesta 2: Foto → estimate en 10 segundos</h3>
+      <p>Contratista toma foto del problema → AI visual identifica trabajo → genera estimate. Con Claude Vision o equivalente. Si funciona, 10x velocidad de cotización.</p>
+
+      <h3>Apuesta 3: LATAM-first</h3>
+      <p>Lanzar producto completo en México, Colombia, Argentina. Regional pricing, métodos de pago locales (OXXO, PIX, Mercado Pago), regulaciones fiscales. Mercado ignorado por todos los competidores. Apuesta: ganar monopolio regional antes que Jobber reaccione.</p>
+
+      <h3>Apuesta 4: Freemium viral con expansion loops</h3>
+      <p>Starter gratis sin límite de tiempo. Cada técnico invitado desbloquea un feature. Cada cliente que paga desbloquea otro. CAC tiende a cero si el loop funciona.</p>
+
+      <h3>Apuesta 5: Marketplace de técnicos/proveedores locales</h3>
+      <p>Dentro de la app, contratista puede contratar técnicos freelance certificados o comprar materiales de proveedores socios. Network effect real.</p>
+    </section>
+
+    <section class="page-break">
+      <h2>7. Criterios de priorización</h2>
+
+      <p>Cómo decidimos qué construir cuando hay 50 ideas y 3 personas.</p>
+
+      <h3>Matriz ICE ajustada</h3>
+      <p>Cada iniciativa se puntúa 1–10 en tres dimensiones:</p>
+      <ul>
+        <li><strong>I - Impacto:</strong> ¿cuánto mueve la aguja en activation, retention o revenue?</li>
+        <li><strong>C - Confianza:</strong> ¿qué tan seguros estamos de que funcionará?</li>
+        <li><strong>E - Esfuerzo:</strong> ¿cuánto cuesta construir? (invertido — menor es mejor)</li>
+      </ul>
+
+      <h3>Score final = Impacto × Confianza ÷ Esfuerzo</h3>
+
+      <table class="compact">
+        <thead><tr><th>Iniciativa</th><th>I</th><th>C</th><th>E</th><th>Score</th></tr></thead>
+        <tbody>
+          <tr><td>Scheduling drag &amp; drop</td><td>9</td><td>9</td><td>6</td><td><strong>13.5</strong></td></tr>
+          <tr><td>Onboarding guiado</td><td>8</td><td>9</td><td>3</td><td><strong>24.0</strong></td></tr>
+          <tr><td>QBO sync bidireccional</td><td>8</td><td>7</td><td>7</td><td>8.0</td></tr>
+          <tr><td>Foto → estimate (AI vision)</td><td>10</td><td>5</td><td>8</td><td>6.3</td></tr>
+          <tr><td>LATAM México launch</td><td>10</td><td>6</td><td>5</td><td>12.0</td></tr>
+          <tr><td>Mobile nativo</td><td>6</td><td>8</td><td>9</td><td>5.3</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout insight">
+        <span class="callout-label">Onboarding gana</span>
+        <div class="callout-body">
+          La matriz ICE dice: <strong>onboarding guiado es la iniciativa #1</strong> (score 24). Impacto alto, confianza alta, esfuerzo bajo. Pero emocionalmente queremos construir foto→estimate (más sexy). Disciplina: seguir el score.
+        </div>
+      </div>
+
+      <h3>Filtros adicionales (kill criteria)</h3>
+      <ul>
+        <li>Si es feature para user que no es ICP (enterprise), no se construye</li>
+        <li>Si compromete el principio "AI > Pantalla", se cuestiona</li>
+        <li>Si no se puede lanzar en ES + EN simultáneo, se pospone</li>
+        <li>Si no tiene forma de medir éxito, se instrumenta primero o no se lanza</li>
+      </ul>
+    </section>
+
+    <section class="page-break">
+      <h2>8. Dependencias y riesgos de producto</h2>
+
+      <h3>Dependencias técnicas críticas</h3>
+      <table>
+        <thead><tr><th>Dependencia</th><th>Riesgo</th><th>Mitigación</th></tr></thead>
+        <tbody>
+          <tr><td>Anthropic API (Claude)</td><td>Rate limits, precio, outage</td><td>Haiku fallback activo; arquitectura agnóstica permite OpenAI/Google</td></tr>
+          <tr><td>Supabase (Postgres + Storage)</td><td>Pricing changes, migraciones</td><td>Adapter pattern; migrable a RDS + S3 sin reescribir app</td></tr>
+          <tr><td>Clerk (Auth)</td><td>Vendor lock-in</td><td>Clerk webhook sync a nuestra tabla <code>users</code>; swappable</td></tr>
+          <tr><td>Stripe (Pagos)</td><td>Cuenta congelada, reglas cambiantes</td><td>Stripe Connect multi-account; adapter para otros PSPs (dLocal para LATAM)</td></tr>
+          <tr><td>Resend (Email)</td><td>Deliverability issues</td><td>Adapter abierto; Postmark/SES como alternativas</td></tr>
+          <tr><td>ElevenLabs (Voice)</td><td>Feature secundaria, precio alto por uso</td><td>Degradable a speechSynthesis nativo del browser</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Riesgos de producto</h3>
+      <ul>
+        <li><strong>AI hallucinations en acciones:</strong> mitigación L2 confirmation + logs de auditoría</li>
+        <li><strong>Portal clientes hackeado:</strong> token revocable, rate limiting, monitoring</li>
+        <li><strong>Pérdida de datos Supabase:</strong> backups diarios automáticos + export tool</li>
+        <li><strong>Costos de AI en crecimiento:</strong> budget caps por usuario, Haiku por default, Sonnet bajo demanda</li>
+      </ul>
+    </section>
+
+    <section class="page-break">
+      <h2>9. Recomendaciones</h2>
+
+      <div class="recommendations">
+        <h3>Cinco decisiones de producto para los próximos 90 días</h3>
+        <ol>
+          <li><strong>Priorizar onboarding sobre features nuevas.</strong> Score ICE lo dice claro. Un user activado vale más que un feature sexy.</li>
+          <li><strong>Scheduling en Q2.</strong> Es el gap que más deals nos cuesta hoy. Diseñar mobile-first desde el día cero.</li>
+          <li><strong>Instrumentar TODO.</strong> Cada feature nueva sale con eventos Vercel. Sin métricas no hay iteración.</li>
+          <li><strong>Apostar a AI vision en paralelo.</strong> No es P0 inmediato pero sí R&amp;D continuo. Cuando esté listo, es categoría-redefinición.</li>
+          <li><strong>Rechazar enterprise.</strong> Si llega un deal de 30+ técnicos con features custom, <em>no</em> es nuestro ICP. Referir a ServiceTitan y partnership con ellos en el futuro.</li>
+        </ol>
+      </div>
+    </section>
+  </div>
+
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#1E3A5F',
+        primaryTextColor: '#ffffff',
+        primaryBorderColor: '#0F2440',
+        lineColor: '#64748B',
+        secondaryColor: '#3B82F6',
+        tertiaryColor: '#F1F5F9',
+        fontFamily: 'Inter, sans-serif',
+      },
+    });
+    await mermaid.run();
+    window.mermaid_ready = true;
+  </script>
+</body>
+</html>

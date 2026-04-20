@@ -2,7 +2,7 @@
   "nav": {
     "dashboard": "Inicio",
     "estimates": "Presupuestos",
-    "jobs": "Trabajos",
+    "jobs": "Proyectos",
     "invoices": "Facturas",
     "schedule": "Calendario",
     "field": "Campo",
@@ -12,7 +12,7 @@
     "greeting": "Buenos días, {name}",
     "subtitle": "Esto es lo que está pasando con tu negocio hoy.",
     "stats": {
-      "activeJobs": "Trabajos Activos",
+      "activeJobs": "Proyectos Activos",
       "openEstimates": "Facturas Sin Pagar",
       "revenueThisMonth": "Ingresos Este Mes",
       "avgJobMargin": "Margen Promedio"
@@ -20,13 +20,13 @@
     "quickActions": {
       "title": "Acciones Rápidas",
       "newEstimate": "+ Nuevo Presupuesto",
-      "newJob": "+ Nuevo Trabajo"
+      "newJob": "+ Nuevo Proyecto"
     }
   },
   "jobs": {
-    "title": "Trabajos",
-    "new": "Nuevo Trabajo",
-    "empty": "Aún no hay trabajos. Crea tu primer trabajo.",
+    "title": "Proyectos",
+    "new": "Nuevo Proyecto",
+    "empty": "Aún no hay proyectos. Crea tu primer proyecto.",
     "status": {
       "lead": "Prospecto",
       "active": "Activo",
@@ -35,7 +35,7 @@
       "cancelled": "Cancelado"
     },
     "fields": {
-      "name": "Nombre del Trabajo",
+      "name": "Nombre del Proyecto",
       "clientName": "Nombre del Cliente",
       "clientEmail": "Email del Cliente",
       "clientPhone": "Teléfono del Cliente",
@@ -110,15 +110,10 @@
       "total": "Total"
     }
   },
-  "schedule": {
-    "title": "Calendario",
-    "today": "Hoy",
-    "noJobs": "No hay trabajos programados."
-  },
   "field": {
     "title": "Campo",
-    "todaysJobs": "Trabajos de Hoy",
-    "noJobs": "No hay trabajos asignados para hoy.",
+    "todaysJobs": "Proyectos de Hoy",
+    "noJobs": "No hay proyectos asignados para hoy.",
     "checklist": "Lista de Tareas",
     "photos": "Fotos",
     "uploadPhoto": "Subir Foto"
@@ -135,14 +130,14 @@
     "backToLists": "Listas",
     "copied": "Copiado",
     "copyList": "Copiar lista",
-    "sinJob": "Sin job vinculado",
-    "noJobHelp": "Los items comprados no se registrarán como gastos hasta que vincules un job.",
+    "sinJob": "Sin proyecto vinculado",
+    "noJobHelp": "Los items comprados no se registrarán como gastos hasta que vincules un proyecto.",
     "link": "Vincular",
-    "linkToJob": "Vincular a un job",
-    "changeJob": "Cambiar job",
+    "linkToJob": "Vincular a un proyecto",
+    "changeJob": "Cambiar proyecto",
     "change": "Cambiar",
     "unlink": "Desvincular",
-    "selectJobPlaceholder": "Elegir job...",
+    "selectJobPlaceholder": "Elegir proyecto...",
     "spent": "Gastado",
     "budget": "Budget",
     "materialBudget": "Budget materiales",
@@ -154,9 +149,156 @@
     "costPlaceholder": "Costo",
     "add": "Agregar",
     "addItem": "Agregar item",
+    "markAllBought": "Marcar todo comprado",
     "purchasedHeading": "Comprados",
     "pending": "Pendiente",
     "of": "de"
+  },
+  "portal": {
+    "docLabel": {
+      "estimate": "Presupuesto",
+      "invoice": "Factura",
+      "changeOrder": "Orden de cambio"
+    },
+    "for": "Para",
+    "status": {
+      "draft": "Borrador",
+      "sent": "Enviado",
+      "approved": "Aprobado",
+      "rejected": "Rechazado",
+      "converted": "Convertido",
+      "paid": "Pagado",
+      "overdue": "Vencido",
+      "cancelled": "Cancelado"
+    },
+    "validUntil": "Válido hasta",
+    "due": "Vence",
+    "issued": "Emitida",
+    "billTo": "Facturar a",
+    "totalDue": "Total a pagar",
+    "paidOn": "Pagada el",
+    "thankYou": "Gracias por su preferencia",
+    "table": {
+      "description": "Descripción",
+      "qty": "Cant.",
+      "unitPrice": "Precio unit.",
+      "total": "Total"
+    },
+    "subtotal": "Subtotal",
+    "tax": "Impuesto",
+    "total": "Total",
+    "notes": "Notas",
+    "photos": "Fotos",
+    "poweredBy": "Hecho con WorkPilot",
+    "print": "Imprimir / Guardar PDF",
+    "pay": {
+      "button": "Pagar {amount}",
+      "redirecting": "Redirigiendo a Stripe…"
+    },
+    "approve": {
+      "approveEstimate": "Aprobar presupuesto",
+      "approveChangeOrder": "Aprobar orden de cambio",
+      "decline": "Rechazar",
+      "signToApprove": "Firma para aprobar",
+      "yourName": "Tu nombre",
+      "fullName": "Nombre completo",
+      "signAndApprove": "Firmar y aprobar",
+      "processing": "Procesando…",
+      "cancel": "Cancelar"
+    },
+    "reject": {
+      "titleEstimate": "Rechazar este presupuesto",
+      "titleChangeOrder": "Rechazar esta orden de cambio",
+      "reasonLabel": "Razón (opcional)",
+      "reasonPlaceholder": "Cuéntale al contratista por qué lo rechazas…",
+      "confirm": "Confirmar rechazo"
+    },
+    "done": {
+      "approvedTitleEstimate": "¡Presupuesto aprobado!",
+      "approvedTitleChangeOrder": "¡Orden de cambio aprobada!",
+      "approvedBody": "El contratista ha sido notificado y se pondrá en contacto pronto.",
+      "rejectedTitleEstimate": "Presupuesto rechazado",
+      "rejectedTitleChangeOrder": "Orden de cambio rechazada",
+      "rejectedBody": "El contratista ha sido notificado."
+    }
+  },
+  "print": {
+    "common": {
+      "item": "Ítem",
+      "qty": "Cant.",
+      "description": "Descripción",
+      "unitPrice": "Precio unitario",
+      "rate": "Precio",
+      "amount": "Importe",
+      "subtotal": "Subtotal",
+      "tax": "Impuesto",
+      "total": "Total",
+      "thankYou": "Gracias por su preferencia"
+    },
+    "button": {
+      "printPdf": "Imprimir / Guardar PDF",
+      "close": "Cerrar"
+    },
+    "estimate": {
+      "issued": "Emitido",
+      "validUntil": "Válido hasta",
+      "from": "De",
+      "billedTo": "Facturar a",
+      "depositRequired": "Depósito requerido",
+      "clientSignature": "Firma del cliente",
+      "scopeTerms": "Alcance y términos",
+      "readyToApprove": "¿Listo para aprobar?",
+      "approveQrText": "Escanea el QR o visita el enlace del portal para firmar digitalmente.",
+      "approveOnline": "Aprobar en línea →",
+      "securePortal": "Portal seguro del cliente",
+      "securePortalDesc": "Revisa los ítems, haz preguntas y firma digitalmente.",
+      "legal": "Al aprobar, el cliente acepta los servicios y condiciones descritos en este presupuesto."
+    },
+    "invoice": {
+      "label": "Factura",
+      "issued": "Emitida",
+      "due": "Vence",
+      "billTo": "Facturar a",
+      "totalDue": "Total a pagar",
+      "paid": "PAGADA",
+      "notes": "Notas",
+      "payOnline": "Pagar en línea",
+      "payQrDesc": "Escanea este código QR para ver y pagar esta factura en línea."
+    },
+    "shoppingList": {
+      "label": "Lista de compras",
+      "toBuy": "Por comprar",
+      "estCost": "Costo est.",
+      "alreadyPurchased": "Ya comprado",
+      "purchased": "Comprado",
+      "stillToBuy": "Por comprar",
+      "totalEstimated": "Total estimado",
+      "noItems": "Esta lista no tiene ítems."
+    }
+  },
+  "schedule": {
+    "title": "Calendario",
+    "today": "Hoy",
+    "noJobs": "No hay proyectos programados.",
+    "nav": {
+      "today": "Hoy",
+      "week": "Semana",
+      "month": "Mes",
+      "jumpToday": "Ir a hoy",
+      "newEvent": "Nuevo evento",
+      "previous": "Anterior",
+      "next": "Siguiente"
+    },
+    "filter": {
+      "technicians": "Técnicos"
+    },
+    "status": {
+      "inProgress": "en curso"
+    },
+    "events": {
+      "moreEvents": "+{count} más",
+      "scheduledJobs": "proyectos programados"
+    }
   },
   "settings": {
     "title": "Configuración",
@@ -197,7 +339,7 @@
       "badge": "Para contratistas con ingresos menores a $5M",
       "title": "Tu negocio de construcción,",
       "titleAccent": "en orden.",
-      "subtitle": "Deja de hacer malabares con WhatsApp, Excel y QuickBooks. WorkPilot te da presupuestos, costos de trabajo, horarios de equipo y facturación — en un solo lugar.",
+      "subtitle": "Deja de hacer malabares con WhatsApp, Excel y QuickBooks. WorkPilot te da presupuestos, costos de proyecto, horarios de equipo y facturación — en un solo lugar.",
       "cta": "Prueba gratis 14 días",
       "noCreditCard": "Sin tarjeta de crédito"
     },
@@ -206,7 +348,7 @@
       "items": [
         "Crea presupuestos en minutos con tu catálogo de ítems",
         "Convierte presupuesto a factura en 1 clic — sin doble entrada",
-        "Costos de trabajo en tiempo real: conoce tus márgenes antes de terminar",
+        "Costos de proyecto en tiempo real: conoce tus márgenes antes de terminar",
         "Calendario visual del equipo con arrastrar y soltar",
         "App móvil para fotos y listas de tareas en campo",
         "Firmas digitales y contratos en presupuestos",

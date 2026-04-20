@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useLocale } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { Copy, Check, Mail, Gift } from 'lucide-react'
 import { createReferral } from '@/lib/actions/referrals'
@@ -21,6 +22,7 @@ const STATUS_META: Record<string, { label: string; tone: StatusTone }> = {
 }
 
 export function ReferralsClient({ referrals: initial, referralLink }: { referrals: Referral[]; referralLink: string }) {
+  const locale = useLocale()
   const router = useRouter()
   const [referrals, setReferrals] = useState(initial)
   const [email, setEmail] = useState('')
@@ -81,7 +83,7 @@ export function ReferralsClient({ referrals: initial, referralLink }: { referral
             <div className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--wp-ai-accent)' }}>
               Refer & earn
             </div>
-            <div className="text-lg font-bold tracking-tight" style={{ color: 'white' }}>Share plumbr, get rewarded</div>
+            <div className="text-lg font-bold tracking-tight" style={{ color: 'var(--wp-text-inverse)' }}>Share plumbr, get rewarded</div>
             <p className="text-sm mt-1" style={{ color: 'rgb(255 255 255 / 0.75)', lineHeight: 1.5 }}>
               Each contractor who signs up via your link and subscribes earns you a reward.
             </p>
@@ -94,7 +96,7 @@ export function ReferralsClient({ referrals: initial, referralLink }: { referral
                 className="flex-1 rounded-md px-3 py-2 text-xs font-mono select-all outline-none"
                 style={{
                   background: 'rgb(255 255 255 / 0.08)',
-                  color: 'white',
+                  color: 'var(--wp-text-inverse)',
                   border: '1px dashed rgb(255 255 255 / 0.2)',
                 }}
               />
@@ -110,10 +112,10 @@ export function ReferralsClient({ referrals: initial, referralLink }: { referral
 
           <div className="hidden sm:block text-right">
             <div className="text-[10px] uppercase tracking-wider font-semibold mb-1" style={{ color: 'rgb(255 255 255 / 0.5)' }}>Paying</div>
-            <div className="text-3xl font-bold tabular-nums" style={{ color: 'white' }}>{paying}</div>
+            <div className="text-3xl font-bold tabular-nums" style={{ color: 'var(--wp-text-inverse)' }}>{paying}</div>
             {totalReward > 0 && (
               <div className="text-xs mt-1 font-mono" style={{ color: 'var(--wp-ai-accent)' }}>
-                +${totalReward.toLocaleString()}
+                +${totalReward.toLocaleString('en-US')}
               </div>
             )}
           </div>
@@ -169,13 +171,13 @@ export function ReferralsClient({ referrals: initial, referralLink }: { referral
                       {r.referredEmail}
                     </p>
                     <p className="text-[11px]" style={{ color: 'var(--wp-text-3)' }}>
-                      {new Date(r.createdAt).toLocaleDateString()}
+                      {new Date(r.createdAt).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US')}
                     </p>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     {parseFloat(r.reward) > 0 && (
                       <p className="text-xs font-mono font-semibold" style={{ color: 'var(--wp-success-v2)' }}>
-                        +${parseFloat(r.reward).toLocaleString()}
+                        +${parseFloat(r.reward).toLocaleString('en-US')}
                       </p>
                     )}
                     <StatusPill tone={meta.tone}>{meta.label}</StatusPill>

@@ -13,7 +13,7 @@ const TABS = [
   },
   {
     id: 'costing',
-    label: 'Job Costing',
+    label: 'Project Costing',
     icon: BarChart2,
     mockup: <CostingMockup />,
   },
@@ -38,15 +38,15 @@ function EstimatesMockup() {
         <div className="text-slate-400 text-[11px] uppercase tracking-wider mb-2">New Estimate — EST-042</div>
         <div className="flex justify-between items-center py-1.5 border-b border-white/5">
           <span className="text-white/70">Electrician labor (8h)</span>
-          <span className="text-[#F97316] font-semibold">$600.00</span>
+          <span className="text-cta font-semibold">$600.00</span>
         </div>
         <div className="flex justify-between items-center py-1.5 border-b border-white/5">
           <span className="text-white/70">Wiring & conduit</span>
-          <span className="text-[#F97316] font-semibold">$220.00</span>
+          <span className="text-cta font-semibold">$220.00</span>
         </div>
         <div className="flex justify-between items-center py-1.5 border-b border-white/5">
           <span className="text-white/70">Panel upgrade</span>
-          <span className="text-[#F97316] font-semibold">$850.00</span>
+          <span className="text-cta font-semibold">$850.00</span>
         </div>
         <div className="flex justify-between items-center pt-2">
           <span className="text-white font-bold">Total</span>
@@ -54,7 +54,7 @@ function EstimatesMockup() {
         </div>
       </div>
       <div className="flex gap-2 mt-2">
-        <div className="flex-1 bg-[#F97316] text-white text-center py-2 rounded-lg text-[11px] font-bold">Send to Client →</div>
+        <div className="flex-1 bg-cta text-white text-center py-2 rounded-lg text-[11px] font-bold">Send to Client →</div>
         <div className="flex-1 bg-white/5 text-white/60 text-center py-2 rounded-lg text-[11px]">Convert to Invoice</div>
       </div>
     </div>
@@ -79,7 +79,7 @@ function CostingMockup() {
         {[
           { label: 'Margin', value: '34%', color: 'text-green-400' },
           { label: 'Budget', value: '$12,400', color: 'text-white' },
-          { label: 'Actual', value: '$8,180', color: 'text-[#F97316]' },
+          { label: 'Actual', value: '$8,180', color: 'text-cta' },
         ].map(s => (
           <div key={s.label} className="bg-white/5 rounded-lg p-2 text-center">
             <div className={`text-lg font-bold ${s.color}`}>{s.value}</div>
@@ -112,7 +112,7 @@ function SchedulingMockup() {
   const jobs = [
     { day: 0, span: 2, name: 'Rivera — Plumbing', color: 'bg-blue-500' },
     { day: 1, span: 1, name: 'Apex — Roofing', color: 'bg-purple-500' },
-    { day: 2, span: 2, name: 'BuildRight — Elec.', color: 'bg-[#F97316]' },
+    { day: 2, span: 2, name: 'BuildRight — Elec.', color: 'bg-cta' },
     { day: 3, span: 1, name: 'Torres — HVAC', color: 'bg-green-500' },
   ]
   return (
@@ -169,7 +169,7 @@ export function DemoTabs({ locale }: { locale: string }) {
               onClick={() => setActive(tab.id)}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                 isActive
-                  ? 'bg-[#F97316] text-white shadow-lg shadow-orange-500/20'
+                  ? 'bg-cta text-white shadow-lg shadow-amber-500/20'
                   : 'bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/80'
               }`}
             >
@@ -188,7 +188,7 @@ export function DemoTabs({ locale }: { locale: string }) {
       <div className="text-center mt-10">
         <Link
           href={`/${locale}/sign-up`}
-          className="inline-flex items-center gap-2 bg-[#F97316] text-white font-semibold px-8 py-3.5 rounded-xl hover:bg-[#ea6c0a] transition-all hover:scale-[1.02] active:scale-[0.98]"
+          className="inline-flex items-center gap-2 bg-cta text-white font-semibold px-8 py-3.5 rounded-xl hover:bg-cta-hover transition-all hover:scale-[1.02] active:scale-[0.98]"
         >
           Start your free trial <ArrowRight size={16} />
         </Link>

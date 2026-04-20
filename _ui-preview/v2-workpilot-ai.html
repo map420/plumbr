@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>plumbr — WorkPilot AI · Casos de uso</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAFAFA;
+    --surface: #FFFFFF;
+    --surface-2: #F7F7F8;
+    --surface-3: #F1F1F3;
+    --border: #EAEAEC;
+    --border-hover: #D4D4D8;
+    --text: #18181B;
+    --text-2: #52525B;
+    --text-3: #A1A1AA;
+    --brand: #0F172A;
+    --brand-hover: #1E293B;
+    --brand-subtle: #F1F5F9;
+    --ai-accent: #A5B4FC;
+    --ai-accent-2: #818CF8;
+    --success: #15803D;
+    --success-bg: #F0FDF4;
+    --success-border: #BBF7D0;
+    --warning: #B45309;
+    --warning-bg: #FFFBEB;
+    --warning-border: #FDE68A;
+    --danger: #B91C1C;
+    --danger-bg: #FEF2F2;
+    --danger-border: #FECACA;
+    --info: #1D4ED8;
+    --info-bg: #EFF6FF;
+    --info-border: #BFDBFE;
+    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.04);
+    --shadow-2: 0 2px 4px rgb(0 0 0 / 0.04), 0 1px 2px rgb(0 0 0 / 0.06);
+    --shadow-3: 0 8px 24px rgb(0 0 0 / 0.06), 0 2px 6px rgb(0 0 0 / 0.04);
+    --r-sm: 6px;
+    --r-md: 8px;
+    --r-lg: 10px;
+    --r-xl: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--bg); color: var(--text);
+    -webkit-font-smoothing: antialiased; line-height: 1.5;
+  }
+  a { color: inherit; text-decoration: none; }
+  code, .mono { font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace; }
+
+  .shell { max-width: 1320px; margin: 0 auto; padding: 40px 24px 80px; }
+  .page-header { margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+  .page-header h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+  .page-header p { font-size: 14px; color: var(--text-2); margin-top: 4px; }
+  .tag-ver { display: inline-block; padding: 3px 10px; margin-top: 10px; background: var(--brand); color: white; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+
+  h2.section-h { font-size: 13px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-3); margin: 48px 0 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  h2.section-h .num { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 6px; background: var(--brand); color: white; font-size: 11px; margin-right: 8px; vertical-align: middle; }
+
+  .mock { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl); overflow: hidden; box-shadow: var(--shadow-1); margin-bottom: 24px; }
+  .mock-label { padding: 10px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); background: var(--surface-2); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .mock-label .title { color: var(--text); }
+  .mock-body { padding: 0; background: var(--bg); }
+
+  .ic { display: inline-block; vertical-align: middle; }
+
+  /* ═════════ ASSISTANT APP ═════════ */
+  .ai-app {
+    background: var(--bg);
+    min-height: 680px;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+  }
+
+  /* Top bar */
+  .ai-top {
+    padding: 12px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 16px;
+  }
+  .ai-brand {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .ai-badge {
+    width: 28px; height: 28px;
+    background: var(--brand); color: var(--ai-accent);
+    border-radius: var(--r-sm);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ai-brand-name {
+    font-size: 14px; font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .ai-brand-name .status {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 0 3px var(--success-bg);
+  }
+  .ai-brand-sub { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+
+  .ai-model-selector {
+    display: inline-flex; align-items: center;
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 999px; padding: 2px;
+  }
+  .ai-model-selector button {
+    background: transparent; border: none;
+    font-size: 11px; font-weight: 500; color: var(--text-2);
+    padding: 4px 10px; border-radius: 999px;
+    cursor: pointer; font-family: inherit;
+  }
+  .ai-model-selector button.active {
+    background: var(--brand); color: white;
+  }
+
+  .ai-top .right {
+    margin-left: auto; display: flex; align-items: center; gap: 8px;
+  }
+  .icon-btn {
+    width: 30px; height: 30px; border-radius: var(--r-sm);
+    background: transparent; border: none; cursor: pointer;
+    color: var(--text-3);
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .icon-btn:hover { background: var(--surface-2); color: var(--text); }
+
+  /* Chat area */
+  .ai-main {
+    overflow-y: auto;
+    padding: 24px 20px;
+    background: var(--bg);
+  }
+  .ai-convo {
+    max-width: 720px; margin: 0 auto;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+
+  /* Messages */
+  .msg {
+    display: flex; gap: 12px;
+    align-items: flex-start;
+  }
+  .msg-avatar {
+    width: 28px; height: 28px; border-radius: var(--r-sm);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 600;
+  }
+  .msg.user { justify-content: flex-end; }
+  .msg.user .msg-avatar {
+    background: var(--brand); color: white;
+    order: 2;
+  }
+  .msg.assistant .msg-avatar {
+    background: var(--brand); color: var(--ai-accent);
+  }
+  .msg-body {
+    max-width: 78%;
+    padding: 10px 14px;
+    border-radius: var(--r-lg);
+    font-size: 13.5px;
+    line-height: 1.55;
+  }
+  .msg.user .msg-body {
+    background: var(--brand); color: white;
+    border-bottom-right-radius: var(--r-sm);
+  }
+  .msg.assistant .msg-body {
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text);
+    border-bottom-left-radius: var(--r-sm);
+  }
+  .msg-body p { margin: 0 0 8px 0; }
+  .msg-body p:last-child { margin-bottom: 0; }
+  .msg-body strong { font-weight: 600; color: var(--text); }
+  .msg-body ul { margin: 8px 0; padding-left: 18px; }
+  .msg-body li { margin-bottom: 4px; }
+
+  /* Embedded rich blocks inside assistant messages */
+  .rich-block {
+    margin: 10px 0 4px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    overflow: hidden;
+  }
+  .rich-block .head {
+    padding: 9px 12px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 11px; font-weight: 600;
+    color: var(--text-2);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .rich-block .head .t { display: flex; align-items: center; gap: 6px; color: var(--text); }
+  .rich-block .head .meta { color: var(--text-3); font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+
+  /* Estimate draft block */
+  .rich-estimate-lines {
+    padding: 10px 12px;
+  }
+  .rich-line {
+    display: grid; grid-template-columns: auto 1fr auto auto;
+    gap: 10px; align-items: baseline;
+    padding: 6px 0;
+    font-size: 12px;
+    border-bottom: 1px dashed var(--border);
+  }
+  .rich-line:last-child { border-bottom: none; }
+  .rich-line .ti {
+    font-size: 9px; font-weight: 700; padding: 1px 6px;
+    border-radius: 3px; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .rich-line .ti.labor { background: var(--info-bg); color: var(--info); }
+  .rich-line .ti.material { background: var(--success-bg); color: var(--success); }
+  .rich-line .desc { color: var(--text); }
+  .rich-line .qty { color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .rich-line .amt { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .rich-totals {
+    padding: 10px 12px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+  }
+  .rich-total-row {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--text-2);
+    padding: 2px 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .rich-total-row.gt {
+    border-top: 1px solid var(--border);
+    margin-top: 6px; padding-top: 6px;
+    font-size: 14px; font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .rich-actions {
+    display: flex; gap: 6px;
+    padding: 8px 12px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+  }
+  .rich-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 10px; border-radius: var(--r-sm);
+    font-size: 11px; font-weight: 500;
+    border: 1px solid var(--border); background: white; cursor: pointer;
+    color: var(--text-2);
+    font-family: inherit;
+  }
+  .rich-btn.primary { background: var(--brand); color: white; border-color: var(--brand); }
+  .rich-btn:hover { border-color: var(--border-hover); color: var(--text); }
+  .rich-btn.primary:hover { background: var(--brand-hover); color: white; }
+
+  /* KPI block */
+  .rich-kpis {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 1px; background: var(--border);
+  }
+  .rich-kpi {
+    background: var(--surface); padding: 10px 12px;
+  }
+  .rich-kpi .k { font-size: 10px; font-weight: 500; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.04em; }
+  .rich-kpi .v { font-size: 17px; font-weight: 700; margin-top: 2px; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+  .rich-kpi .trend { font-size: 10px; margin-top: 2px; }
+  .rich-kpi .trend.up { color: var(--success); }
+  .rich-kpi .trend.down { color: var(--danger); }
+
+  /* Follow-up list */
+  .rich-followup {
+    padding: 6px 0;
+  }
+  .rich-follow-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .rich-follow-item:last-child { border-bottom: none; }
+  .rich-follow-item .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .rich-follow-item.overdue .dot { background: var(--danger); }
+  .rich-follow-item.stale .dot { background: var(--warning); }
+  .rich-follow-item .body { flex: 1; }
+  .rich-follow-item .t { font-weight: 500; }
+  .rich-follow-item .s { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+  .rich-follow-item .send {
+    font-size: 10px; padding: 3px 8px;
+    background: var(--brand); color: white;
+    border-radius: var(--r-sm); border: none;
+    font-weight: 500; cursor: pointer;
+    font-family: inherit;
+  }
+
+  /* Checklist block */
+  .rich-check {
+    padding: 8px 12px;
+  }
+  .rich-check-item {
+    display: flex; gap: 8px; align-items: flex-start;
+    padding: 6px 0;
+    font-size: 12px;
+  }
+  .rich-check-item input[type=checkbox] {
+    margin-top: 3px;
+    accent-color: var(--brand);
+  }
+  .rich-check-item .l { flex: 1; }
+  .rich-check-item .l b { font-weight: 600; }
+  .rich-check-item .l .s { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+
+  /* Action chips at end of assistant message */
+  .msg-cta-row {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  .msg-cta {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 10px; border-radius: 999px;
+    font-size: 11px; font-weight: 500;
+    background: white; border: 1px solid var(--border);
+    color: var(--text-2);
+    cursor: pointer; font-family: inherit;
+  }
+  .msg-cta:hover { border-color: var(--brand); color: var(--brand); }
+  .msg-cta.primary {
+    background: var(--brand); color: white; border-color: var(--brand);
+  }
+  .msg-cta.primary:hover { background: var(--brand-hover); }
+
+  /* Input bar */
+  .ai-bottom {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 12px 20px;
+  }
+  .ai-input-wrap {
+    max-width: 720px; margin: 0 auto;
+  }
+  .ai-suggestions {
+    display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap;
+  }
+  .ai-sug {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: 999px;
+    font-size: 11px; color: var(--text-2);
+    background: var(--surface-2); border: 1px solid var(--border);
+    cursor: pointer; font-family: inherit;
+  }
+  .ai-sug:hover { background: var(--surface); border-color: var(--border-hover); }
+
+  .ai-input {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 4px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .ai-input input {
+    flex: 1; border: none; background: transparent;
+    padding: 8px 10px; font-size: 14px;
+    outline: none; font-family: inherit; color: var(--text);
+  }
+  .ai-input input::placeholder { color: var(--text-3); }
+  .ai-input .voice, .ai-input .send {
+    width: 34px; height: 34px; border-radius: var(--r-sm);
+    border: none; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .ai-input .voice { background: transparent; color: var(--text-2); }
+  .ai-input .voice:hover { background: var(--surface); }
+  .ai-input .send { background: var(--brand); color: white; }
+
+  /* Empty state */
+  .ai-empty {
+    padding: 40px 20px;
+    max-width: 720px; margin: 0 auto;
+    text-align: center;
+  }
+  .ai-empty .logo {
+    width: 56px; height: 56px;
+    background: var(--brand);
+    border-radius: var(--r-lg);
+    margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ai-accent);
+  }
+  .ai-empty h2 {
+    font-size: 22px; font-weight: 700; letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+  .ai-empty h2 .name { color: var(--brand); }
+  .ai-empty p {
+    font-size: 13px; color: var(--text-2); margin-bottom: 24px;
+  }
+  .ai-alerts {
+    max-width: 420px; margin: 0 auto 24px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .ai-alert {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    border-radius: var(--r-md);
+    font-size: 12.5px;
+    text-align: left;
+    cursor: pointer;
+  }
+  .ai-alert.overdue {
+    background: var(--danger-bg); color: var(--danger);
+    border: 1px solid var(--danger-border);
+  }
+  .ai-alert.stale {
+    background: var(--warning-bg); color: var(--warning);
+    border: 1px solid var(--warning-border);
+  }
+  .ai-alert .body { flex: 1; }
+  .ai-alert .body b { font-weight: 600; }
+  .ai-alert .arrow { font-size: 11px; opacity: 0.6; }
+
+  .ai-use-cases {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    max-width: 640px; margin: 0 auto;
+  }
+  .ai-case {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-md); padding: 14px 16px;
+    cursor: pointer; transition: all 120ms;
+    text-align: left; position: relative; overflow: hidden;
+  }
+  .ai-case:hover { border-color: var(--brand); transform: translateY(-1px); box-shadow: var(--shadow-2); }
+  .ai-case .icon {
+    width: 28px; height: 28px; border-radius: var(--r-sm);
+    background: var(--brand-subtle); color: var(--brand);
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-bottom: 10px;
+  }
+  .ai-case .t {
+    font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .ai-case .t .kbd {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    padding: 1px 5px; border-radius: 3px; color: var(--text-3);
+    font-weight: 500;
+  }
+  .ai-case .s {
+    font-size: 11.5px; color: var(--text-2);
+    margin-top: 4px; line-height: 1.45;
+  }
+  .ai-case .example {
+    margin-top: 8px; font-size: 11px; color: var(--text-3);
+    font-style: italic;
+    padding-top: 8px; border-top: 1px dashed var(--border);
+  }
+
+  /* Voice mode mockup */
+  .voice-mode {
+    background: linear-gradient(180deg, var(--brand) 0%, #020617 100%);
+    color: white;
+    padding: 60px 20px 30px;
+    min-height: 500px;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .voice-avatar {
+    width: 140px; height: 140px; border-radius: 50%;
+    background: radial-gradient(circle, var(--ai-accent-2) 0%, transparent 70%);
+    position: relative;
+    margin-bottom: 32px;
+    animation: breathe 3s infinite;
+  }
+  .voice-avatar::before, .voice-avatar::after {
+    content: ''; position: absolute; inset: 0; border-radius: 50%;
+    border: 1px solid var(--ai-accent-2); opacity: 0.4;
+    animation: pulse 3s infinite;
+  }
+  .voice-avatar::after { animation-delay: 1.5s; }
+  @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+  @keyframes pulse { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(1.6); opacity: 0; } }
+  .voice-status { font-size: 13px; opacity: 0.7; margin-bottom: 8px; }
+  .voice-transcript {
+    font-size: 18px; font-weight: 500;
+    max-width: 400px; text-align: center;
+    margin-bottom: 40px;
+    line-height: 1.4;
+  }
+  .voice-controls {
+    display: flex; gap: 14px; align-items: center;
+  }
+  .voice-btn {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: rgb(255 255 255 / 0.08);
+    border: 1px solid rgb(255 255 255 / 0.15);
+    color: white; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .voice-btn.mic {
+    width: 64px; height: 64px;
+    background: var(--ai-accent); color: var(--brand);
+    border-color: var(--ai-accent);
+  }
+  .voice-btn.end {
+    background: var(--danger);
+    border-color: var(--danger);
+  }
+
+  /* Mobile */
+  .mobile-viewport { background: #E5E5E7; padding: 32px; display: flex; justify-content: center; }
+  .phone { width: 395px; background: #1a1a1a; border-radius: 32px; padding: 10px; box-shadow: var(--shadow-3); }
+  .phone-screen { background: var(--bg); border-radius: 24px; overflow: hidden; min-height: 740px; }
+
+  .note-fix { padding: 10px 14px; background: var(--info-bg); border-left: 3px solid var(--info); color: var(--text-2); font-size: 12px; margin-bottom: 12px; border-radius: 0 var(--r-sm) var(--r-sm) 0; }
+  .note-fix strong { color: var(--info); font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="page-header">
+    <h1>WorkPilot AI — v2 con casos de uso</h1>
+    <p>Asistente para contratistas · 4 casos reales + empty state + voice mode</p>
+    <span class="tag-ver">Mock AI assistant · v2 palette</span>
+  </div>
+
+  <!-- ═══════ EMPTY STATE ═══════ -->
+  <h2 class="section-h"><span class="num">0</span>Empty state · ¿Qué puedo hacer por ti?</h2>
+  <div class="note-fix">
+    <strong>Cambios clave:</strong> fuera el chat "genérico con 4 chips arriba del input". Ahora 6 casos de uso con ejemplos reales + atajos de teclado (<code>/est</code>, <code>/pulse</code>) como Linear o Raycast, alerts arriba accionables, modelo Auto/Sonnet/Haiku más legible.
+  </div>
+  <div class="mock">
+    <div class="mock-label"><span class="title">/assistant · empty</span><span class="mono">Desktop · 1200px</span></div>
+    <div class="mock-body">
+      <div class="ai-app">
+        <div class="ai-top">
+          <div class="ai-brand">
+            <div class="ai-badge">
+              <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="10" rx="2" ry="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>
+            </div>
+            <div>
+              <div class="ai-brand-name"><span class="status"></span>WorkPilot AI</div>
+              <div class="ai-brand-sub">Conectado a tu workspace · 142 docs</div>
+            </div>
+          </div>
+          <div class="ai-model-selector" style="margin-left: 16px;">
+            <button class="active">Auto</button>
+            <button>Sonnet</button>
+            <button>Haiku</button>
+          </div>
+          <div class="right">
+            <button class="icon-btn" title="Voice mode">
+              <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            </button>
+            <button class="icon-btn" title="History">
+              <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
+            </button>
+            <button class="icon-btn" title="New chat">
+              <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="ai-main">
+          <div class="ai-empty">
+            <div class="logo">
+              <svg class="ic" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="11" width="18" height="10" rx="2" ry="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>
+            </div>
+            <h2>Hola Moises, soy <span class="name">WorkPilot AI</span></h2>
+            <p>Tu copiloto para gestionar el negocio. Pregúntame lo que sea sobre jobs, estimates, clientes o finanzas.</p>
+
+            <div class="ai-alerts">
+              <div class="ai-alert overdue">
+                <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <div class="body"><b>2 facturas vencidas</b> hace 8+ días — total $3,600</div>
+                <span class="arrow">→</span>
+              </div>
+              <div class="ai-alert stale">
+                <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <div class="body"><b>3 estimates pendientes</b> de respuesta 3+ días</div>
+                <span class="arrow">→</span>
+              </div>
+            </div>
+
+            <div class="ai-use-cases">
+              <button class="ai-case">
+                <div class="icon">
+                  <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                </div>
+                <div class="t">Crear un estimate <span class="kbd">/est</span></div>
+                <div class="s">Guío el pricing por zona y tipo de trabajo. Relleno el formulario por ti.</div>
+                <div class="example">"Estimate para Linda Chen — reemplazo de water heater en Queens"</div>
+              </button>
+              <button class="ai-case">
+                <div class="icon">
+                  <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                </div>
+                <div class="t">Pulso del negocio <span class="kbd">/pulse</span></div>
+                <div class="s">Resumen de revenue, unpaid, estimates pendientes, red flags del mes.</div>
+                <div class="example">"¿Cómo voy este mes?"</div>
+              </button>
+              <button class="ai-case">
+                <div class="icon">
+                  <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                </div>
+                <div class="t">Follow up <span class="kbd">/follow</span></div>
+                <div class="s">Listo invoices vencidas y estimates fríos. Te redacto los mensajes.</div>
+                <div class="example">"¿Quién me debe dinero esta semana?"</div>
+              </button>
+              <button class="ai-case">
+                <div class="icon">
+                  <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                </div>
+                <div class="t">Análisis de márgenes <span class="kbd">/margin</span></div>
+                <div class="s">Qué jobs están perdiendo dinero, qué mix de labor/material optimiza margen.</div>
+                <div class="example">"Analiza los jobs del último trimestre"</div>
+              </button>
+              <button class="ai-case">
+                <div class="icon">
+                  <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                </div>
+                <div class="t">Shopping list <span class="kbd">/shop</span></div>
+                <div class="s">Saco una lista de materiales por job o para toda la semana.</div>
+                <div class="example">"Materiales de los jobs de esta semana"</div>
+              </button>
+              <button class="ai-case">
+                <div class="icon">
+                  <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <div class="t">Redactar para cliente <span class="kbd">/draft</span></div>
+                <div class="s">SMS, email o carta de recordatorio personalizado al cliente.</div>
+                <div class="example">"Recordatorio suave a Linda Chen sobre INV-232"</div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="ai-bottom">
+          <div class="ai-input-wrap">
+            <div class="ai-suggestions">
+              <button class="ai-sug">📊 ¿Cómo voy este mes?</button>
+              <button class="ai-sug">📝 Crear estimate para un cliente nuevo</button>
+              <button class="ai-sug">💰 Enviar recordatorios a facturas vencidas</button>
+              <button class="ai-sug">⚙️ Mi job menos rentable esta semana</button>
+            </div>
+            <div class="ai-input">
+              <input placeholder="Pregunta algo o escribe / para ver comandos...">
+              <button class="voice" title="Voz">
+                <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+              </button>
+              <button class="send" title="Send">
+                <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ CASO 1: BUSINESS PULSE ═══════ -->
+  <h2 class="section-h"><span class="num">1</span>Caso · Pulso del negocio</h2>
+  <div class="mock">
+    <div class="mock-label"><span class="title">/pulse · Resumen ejecutivo con KPIs embebidos</span><span class="mono">Conversación ejemplo</span></div>
+    <div class="mock-body">
+      <div class="ai-app" style="min-height: 680px;">
+        <div class="ai-top">
+          <div class="ai-brand">
+            <div class="ai-badge">
+              <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="10" rx="2" ry="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg>
+            </div>
+            <div>
+              <div class="ai-brand-name"><span class="status"></span>WorkPilot AI</div>
+              <div class="ai-brand-sub">Business Pulse · Abril 2026</div>
+            </div>
+          </div>
+          <div class="ai-model-selector" style="margin-left: 16px;">
+            <button class="active">Auto</button>
+            <button>Sonnet</button>
+            <button>Haiku</button>
+          </div>
+        </div>
+
+        <div class="ai-main">
+          <div class="ai-convo">
+            <div class="msg user">
+              <div class="msg-body">¿Cómo voy este mes?</div>
+              <div class="msg-avatar">M</div>
+            </div>
+            <div class="msg assistant">
+              <div class="msg-avatar"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="10" rx="2" ry="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg></div>
+              <div class="msg-body">
+                <p>Aquí tienes tu pulso de abril al día de hoy (16 abril):</p>
+                <div class="rich-block">
+                  <div class="head">
+                    <div class="t">
+                      <svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                      Abril 2026 · KPIs
+                    </div>
+                    <span class="meta">16 días transcurridos</span>
+                  </div>
+                  <div class="rich-kpis">
+                    <div class="rich-kpi">
+                      <div class="k">Revenue</div>
+                      <div class="v">$28,450</div>
+                      <div class="trend up">↑ 12% vs marzo</div>
+                    </div>
+                    <div class="rich-kpi">
+                      <div class="k">Unpaid</div>
+                      <div class="v" style="color: var(--warning);">$6,420</div>
+                      <div class="trend down">7 facturas abiertas</div>
+                    </div>
+                    <div class="rich-kpi">
+                      <div class="k">Win rate</div>
+                      <div class="v">68%</div>
+                      <div class="trend up">↑ 5 pts</div>
+                    </div>
+                  </div>
+                </div>
+                <p><strong>Lo bueno 🟢</strong></p>
+                <ul>
+                  <li>Vas camino a <strong>~$32,800 al cierre</strong> — tu mejor mes del año.</li>
+                  <li>Kitchen remodel de Chen aprobado (+$3,450).</li>
+                  <li>Win rate subió 5 pts por mejor follow-up en estimates.</li>
+                </ul>
+                <p><strong>Red flags 🔴</strong></p>
+                <ul>
+                  <li><strong>Cuenta por cobrar crítica:</strong> $2,400 vencidos 15+ días — afecta tu runway de caja.</li>
+                  <li><strong>3 estimates fríos</strong> pendientes de respuesta — probabilidad baja si no reenvías hoy.</li>
+                </ul>
+                <div class="msg-cta-row">
+                  <button class="msg-cta primary">
+                    <svg class="ic" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                    Enviar recordatorios ahora
+                  </button>
+                  <button class="msg-cta">Ver facturas vencidas</button>
+                  <button class="msg-cta">Reenviar estimates fríos</button>
+                  <button class="msg-cta">Exportar a PDF</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ai-bottom">
+          <div class="ai-input-wrap">
+            <div class="ai-input">
+              <input placeholder="Responder...">
+              <button class="voice"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
+              <button class="send"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ CASO 2: CREAR ESTIMATE ═══════ -->
+  <h2 class="section-h"><span class="num">2</span>Caso · Crear estimate guiado</h2>
+  <div class="mock">
+    <div class="mock-label"><span class="title">/est · AI genera borrador completo y lo abre en el form</span><span class="mono">Conversación ejemplo</span></div>
+    <div class="mock-body">
+      <div class="ai-app" style="min-height: 720px;">
+        <div class="ai-top">
+          <div class="ai-brand">
+            <div class="ai-badge">
+              <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="10" rx="2" ry="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg>
+            </div>
+            <div>
+              <div class="ai-brand-name"><span class="status"></span>WorkPilot AI</div>
+              <div class="ai-brand-sub">Create estimate · flujo guiado</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ai-main">
+          <div class="ai-convo">
+            <div class="msg user">
+              <div class="msg-body">Necesito estimate para reemplazar water heater de 50 gal en casa de Linda Chen. Tanque viejo, válvula corroída.</div>
+              <div class="msg-avatar">M</div>
+            </div>
+            <div class="msg assistant">
+              <div class="msg-avatar"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2" ry="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg></div>
+              <div class="msg-body">
+                <p>Perfecto. Encontré a <strong>Linda Chen</strong> en tus clientes (Queens, NY — 5 jobs previos). Basado en tus precios históricos y la zona, armé este borrador:</p>
+                <div class="rich-block">
+                  <div class="head">
+                    <div class="t">
+                      <svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                      Estimate borrador
+                    </div>
+                    <span class="meta">EST-1043 · borrador</span>
+                  </div>
+                  <div class="rich-estimate-lines">
+                    <div class="rich-line"><span class="ti labor">Labor</span><span class="desc">Remove &amp; dispose old 50gal water heater</span><span class="qty">2h × $125</span><span class="amt">$250.00</span></div>
+                    <div class="rich-line"><span class="ti material">Mat.</span><span class="desc">Rheem 50-gal gas water heater</span><span class="qty">1 × $780</span><span class="amt">$780.00</span></div>
+                    <div class="rich-line"><span class="ti labor">Labor</span><span class="desc">Install new unit + pressure test</span><span class="qty">4h × $125</span><span class="amt">$500.00</span></div>
+                    <div class="rich-line"><span class="ti material">Mat.</span><span class="desc">T&amp;P valve, flex connectors, expansion tank</span><span class="qty">1 × $185</span><span class="amt">$185.00</span></div>
+                    <div class="rich-line"><span class="ti labor">Labor</span><span class="desc">Permit + inspection coordination</span><span class="qty">1h × $125</span><span class="amt">$125.00</span></div>
+                  </div>
+                  <div class="rich-totals">
+                    <div class="rich-total-row"><span>Subtotal</span><span>$1,840.00</span></div>
+                    <div class="rich-total-row"><span>Tax (8%)</span><span>$147.20</span></div>
+                    <div class="rich-total-row gt"><span>Total</span><span>$1,987.20</span></div>
+                  </div>
+                  <div class="rich-actions">
+                    <button class="rich-btn primary">
+                      <svg class="ic" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                      Crear y abrir
+                    </button>
+                    <button class="rich-btn">Editar líneas</button>
+                    <button class="rich-btn">Añadir foto del tanque viejo</button>
+                  </div>
+                </div>
+                <p style="font-size: 12px; color: var(--text-2);">💡 <strong>Nota:</strong> precio típico en Queens para este trabajo $1,800–$2,400. Margen estimado: <strong>38%</strong> (arriba de tu promedio de 34%). Incluí coordinación de permit porque es requerido por DOB para WH &gt;40 gal.</p>
+                <div class="msg-cta-row">
+                  <button class="msg-cta primary">Crear y enviar por email</button>
+                  <button class="msg-cta">Ajustar margen al 40%</button>
+                  <button class="msg-cta">Usar otro modelo de tanque</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ai-bottom">
+          <div class="ai-input-wrap">
+            <div class="ai-input">
+              <input placeholder="Hacer otra pregunta...">
+              <button class="voice"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
+              <button class="send"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ CASO 3: FOLLOW UP ═══════ -->
+  <h2 class="section-h"><span class="num">3</span>Caso · Follow up de cobranzas</h2>
+  <div class="mock">
+    <div class="mock-label"><span class="title">/follow · Identifica vencidos, redacta mensaje, envía</span><span class="mono">Conversación ejemplo</span></div>
+    <div class="mock-body">
+      <div class="ai-app" style="min-height: 720px;">
+        <div class="ai-top">
+          <div class="ai-brand">
+            <div class="ai-badge">
+              <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="10" rx="2" ry="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg>
+            </div>
+            <div>
+              <div class="ai-brand-name"><span class="status"></span>WorkPilot AI</div>
+              <div class="ai-brand-sub">Follow up · Collections assistant</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ai-main">
+          <div class="ai-convo">
+            <div class="msg user">
+              <div class="msg-body">¿Quién me debe dinero y cómo los contacto?</div>
+              <div class="msg-avatar">M</div>
+            </div>
+            <div class="msg assistant">
+              <div class="msg-avatar"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2" ry="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg></div>
+              <div class="msg-body">
+                <p>Revisé tus invoices. Tienes <strong>3 clientes con facturas abiertas</strong> que necesitan follow-up. Priorizadas por urgencia:</p>
+                <div class="rich-block">
+                  <div class="head">
+                    <div class="t">
+                      <svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      Prioridades de cobranza
+                    </div>
+                    <span class="meta">$3,780 total</span>
+                  </div>
+                  <div class="rich-followup">
+                    <div class="rich-follow-item overdue">
+                      <div class="dot"></div>
+                      <div class="body">
+                        <div class="t">Linda Chen · $1,200 · <strong style="color: var(--danger);">vencida 15 días</strong></div>
+                        <div class="s">INV-232 · Kitchen remodel · ya 2 recordatorios sin respuesta</div>
+                      </div>
+                      <button class="send">Llamar</button>
+                    </div>
+                    <div class="rich-follow-item overdue">
+                      <div class="dot"></div>
+                      <div class="body">
+                        <div class="t">James Walker · $1,200 · <strong style="color: var(--danger);">vencida 8 días</strong></div>
+                        <div class="s">INV-228 · Leak repair · primer recordatorio</div>
+                      </div>
+                      <button class="send">SMS</button>
+                    </div>
+                    <div class="rich-follow-item stale">
+                      <div class="dot"></div>
+                      <div class="body">
+                        <div class="t">Roberto Sánchez · $1,380 · <strong style="color: var(--warning);">vence en 2 días</strong></div>
+                        <div class="s">INV-235 · Water heater · cliente histórico confiable</div>
+                      </div>
+                      <button class="send">Email</button>
+                    </div>
+                  </div>
+                </div>
+                <p>Para <strong>Linda Chen</strong> — 15 días vencida, 2 recordatorios sin respuesta — recomiendo escalar de email a SMS corto y amigable. Te redacté uno:</p>
+                <div class="rich-block">
+                  <div class="head">
+                    <div class="t">
+                      <svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                      SMS · para Linda Chen
+                    </div>
+                    <span class="meta">147/160 chars</span>
+                  </div>
+                  <div style="padding: 14px; font-size: 13px; color: var(--text); background: var(--surface); line-height: 1.55;">
+                    Hola Linda, soy Moises de WorkPilot. Tu factura del remodel de cocina (INV-232, $1,200) sigue abierta. ¿Te puedo ayudar a procesar el pago? Link: wp.io/p/232
+                  </div>
+                  <div class="rich-actions">
+                    <button class="rich-btn primary">
+                      <svg class="ic" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                      Enviar SMS
+                    </button>
+                    <button class="rich-btn">Ajustar tono</button>
+                    <button class="rich-btn">Generar email largo en su lugar</button>
+                  </div>
+                </div>
+                <div class="msg-cta-row">
+                  <button class="msg-cta primary">Enviar los 3 recordatorios</button>
+                  <button class="msg-cta">Agendar follow-up para el viernes</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ai-bottom">
+          <div class="ai-input-wrap">
+            <div class="ai-input">
+              <input placeholder="Responder...">
+              <button class="voice"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
+              <button class="send"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ CASO 4: JOB CHECKLIST ═══════ -->
+  <h2 class="section-h"><span class="num">4</span>Caso · Checklist del job + shopping list</h2>
+  <div class="mock">
+    <div class="mock-label"><span class="title">/shop · AI arma checklist y shopping list embebidos</span><span class="mono">Conversación ejemplo</span></div>
+    <div class="mock-body">
+      <div class="ai-app" style="min-height: 680px;">
+        <div class="ai-top">
+          <div class="ai-brand">
+            <div class="ai-badge">
+              <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2" ry="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg>
+            </div>
+            <div>
+              <div class="ai-brand-name"><span class="status"></span>WorkPilot AI</div>
+              <div class="ai-brand-sub">Job prep · Kitchen remodel Chen</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ai-main">
+          <div class="ai-convo">
+            <div class="msg user">
+              <div class="msg-body">Mañana empiezo el kitchen remodel de Linda Chen. Lista lo que necesito llevar y los pasos del día.</div>
+              <div class="msg-avatar">M</div>
+            </div>
+            <div class="msg assistant">
+              <div class="msg-avatar"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2" ry="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg></div>
+              <div class="msg-body">
+                <p>Saqué los materiales de EST-1040 (Chen) y armé tu checklist + shopping list:</p>
+                <div class="rich-block">
+                  <div class="head">
+                    <div class="t">
+                      <svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                      Shopping list · Pasar por Home Depot antes
+                    </div>
+                    <span class="meta">8 items · ~$825</span>
+                  </div>
+                  <div class="rich-check">
+                    <div class="rich-check-item"><input type="checkbox"><div class="l"><b>1× Rheem 50-gal gas water heater</b><div class="s">Modelo XG-50-2 · aisle 14 · $780</div></div></div>
+                    <div class="rich-check-item"><input type="checkbox"><div class="l"><b>2× PEX-A tubing 3/4" × 10ft</b><div class="s">aisle 12 · $14 c/u</div></div></div>
+                    <div class="rich-check-item"><input type="checkbox"><div class="l"><b>1× T&amp;P relief valve + discharge tube</b></div></div>
+                    <div class="rich-check-item"><input type="checkbox"><div class="l"><b>2× Flex water connectors 3/4" × 18"</b></div></div>
+                    <div class="rich-check-item"><input type="checkbox"><div class="l"><b>1× Expansion tank 2-gal</b></div></div>
+                  </div>
+                </div>
+                <div class="rich-block">
+                  <div class="head">
+                    <div class="t">
+                      <svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                      Checklist del día · ETA 6h
+                    </div>
+                    <span class="meta">9:00 AM start</span>
+                  </div>
+                  <div class="rich-check">
+                    <div class="rich-check-item"><input type="checkbox" checked><div class="l"><b>Llamar a Linda 30min antes</b><div class="s">Confirmar acceso al sótano · (555) 234-1211</div></div></div>
+                    <div class="rich-check-item"><input type="checkbox"><div class="l"><b>Cortar agua &amp; gas del tanque viejo</b><div class="s">Válvulas en la entrada del sótano</div></div></div>
+                    <div class="rich-check-item"><input type="checkbox"><div class="l"><b>Drenar &amp; remover unidad existente</b><div class="s">~45 min · cuidado con corrosión en válvula</div></div></div>
+                    <div class="rich-check-item"><input type="checkbox"><div class="l"><b>Instalar nuevo tanque + T&amp;P + expansión</b><div class="s">~2.5h · seguir code NY (altura mínima 18")</div></div></div>
+                    <div class="rich-check-item"><input type="checkbox"><div class="l"><b>Pressure test + flush del sistema</b></div></div>
+                    <div class="rich-check-item"><input type="checkbox"><div class="l"><b>Foto antes/después + checklist de inspección</b><div class="s">Subir al job para documentación</div></div></div>
+                    <div class="rich-check-item"><input type="checkbox"><div class="l"><b>Cobrar balance ($987.20) al terminar</b><div class="s">Depósito de $1,000 ya pagado</div></div></div>
+                  </div>
+                </div>
+                <div class="msg-cta-row">
+                  <button class="msg-cta primary">Abrir en mobile para el trabajo</button>
+                  <button class="msg-cta">Guardar en el job #87</button>
+                  <button class="msg-cta">Compartir con mi ayudante</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ai-bottom">
+          <div class="ai-input-wrap">
+            <div class="ai-input">
+              <input placeholder="Añadir algo más al checklist...">
+              <button class="voice"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
+              <button class="send"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ VOICE MODE ═══════ -->
+  <h2 class="section-h"><span class="num">5</span>Voice mode · Manos ocupadas</h2>
+  <div class="note-fix">
+    <strong>Para cuando estás en obra:</strong> botón de voz activa un mode hands-free. AI te habla y tú respondes verbalmente. Útil para crear estimates en terreno, actualizar un job, o consultar info mientras manejas.
+  </div>
+  <div class="mock">
+    <div class="mock-label"><span class="title">Voice mode activo</span><span class="mono">Hands-free AI</span></div>
+    <div class="mock-body">
+      <div class="voice-mode">
+        <div class="voice-avatar"></div>
+        <div class="voice-status">● Escuchando...</div>
+        <div class="voice-transcript">"Marca el kitchen sink replacement como completado y cobra el balance."</div>
+        <div class="voice-controls">
+          <button class="voice-btn" title="Mute">
+            <svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+          </button>
+          <button class="voice-btn mic" title="Push to talk">
+            <svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+          </button>
+          <button class="voice-btn end" title="End">
+            <svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ MOBILE ═══════ -->
+  <h2 class="section-h"><span class="num">M</span>Mobile · AI en el terreno</h2>
+  <div class="mock">
+    <div class="mock-label"><span class="title">Mobile 375px</span><span class="mono">Empty state</span></div>
+    <div class="mobile-viewport">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="ai-top" style="padding: 12px 14px;">
+            <div class="ai-brand">
+              <div class="ai-badge" style="width: 24px; height: 24px;">
+                <svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2" ry="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg>
+              </div>
+              <div>
+                <div class="ai-brand-name" style="font-size: 13px;"><span class="status"></span>WorkPilot AI</div>
+              </div>
+            </div>
+            <div class="right">
+              <button class="icon-btn"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
+            </div>
+          </div>
+
+          <div style="padding: 24px 16px 16px; text-align: center;">
+            <div style="width: 52px; height: 52px; background: var(--brand); color: var(--ai-accent); border-radius: 12px; margin: 0 auto 14px; display: flex; align-items: center; justify-content: center;">
+              <svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="10" rx="2" ry="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg>
+            </div>
+            <h2 style="font-size: 18px; font-weight: 700; letter-spacing: -0.02em;">Hola Moises</h2>
+            <p style="font-size: 12px; color: var(--text-2); margin-top: 4px;">¿En qué te ayudo hoy?</p>
+          </div>
+
+          <div style="padding: 0 16px 8px;">
+            <div class="ai-alert overdue" style="padding: 8px 12px; font-size: 11px; margin-bottom: 6px;">
+              <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <div class="body"><b>2 facturas vencidas</b> 8+ días</div>
+              <span class="arrow">→</span>
+            </div>
+          </div>
+
+          <div style="padding: 4px 16px 0; display: flex; flex-direction: column; gap: 6px;">
+            <button class="ai-case" style="padding: 12px 14px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="icon" style="margin: 0;">
+                  <svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                <div style="flex: 1;">
+                  <div class="t" style="font-size: 12.5px;">Crear estimate</div>
+                  <div class="s" style="font-size: 10.5px; margin-top: 2px;">Guiado por zona y tipo de trabajo</div>
+                </div>
+              </div>
+            </button>
+            <button class="ai-case" style="padding: 12px 14px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="icon" style="margin: 0;">
+                  <svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                </div>
+                <div style="flex: 1;">
+                  <div class="t" style="font-size: 12.5px;">Pulso del mes</div>
+                  <div class="s" style="font-size: 10.5px; margin-top: 2px;">Revenue, vencidos, red flags</div>
+                </div>
+              </div>
+            </button>
+            <button class="ai-case" style="padding: 12px 14px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="icon" style="margin: 0;">
+                  <svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                </div>
+                <div style="flex: 1;">
+                  <div class="t" style="font-size: 12.5px;">Follow up</div>
+                  <div class="s" style="font-size: 10.5px; margin-top: 2px;">Facturas vencidas y estimates fríos</div>
+                </div>
+              </div>
+            </button>
+            <button class="ai-case" style="padding: 12px 14px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="icon" style="margin: 0;">
+                  <svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                </div>
+                <div style="flex: 1;">
+                  <div class="t" style="font-size: 12.5px;">Shopping list</div>
+                  <div class="s" style="font-size: 10.5px; margin-top: 2px;">Materiales de los jobs de hoy/semana</div>
+                </div>
+              </div>
+            </button>
+          </div>
+
+          <div style="margin-top: auto; padding: 12px 14px; background: var(--surface); border-top: 1px solid var(--border);">
+            <div class="ai-input">
+              <input placeholder="Pregunta o escribe /" style="font-size: 13px;">
+              <button class="voice" style="width: 30px; height: 30px;"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg></button>
+              <button class="send" style="width: 30px; height: 30px;"><svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 20px 24px; margin-top: 32px;">
+    <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 10px;">Casos de uso cubiertos</h3>
+    <p style="color: var(--text-2); line-height: 1.6; font-size: 13px;">
+      ① <strong>Business Pulse</strong> — KPIs + red flags + CTAs accionables · ② <strong>Create Estimate</strong> — AI genera borrador con line items basados en historial · ③ <strong>Follow Up</strong> — identifica cobranzas, redacta SMS/Email, envía · ④ <strong>Job Prep</strong> — checklist + shopping list embebidos, exportable a mobile · ⑤ <strong>Voice Mode</strong> — hands-free para cuando estás en obra.
+    </p>
+    <p style="color: var(--text-2); line-height: 1.6; font-size: 13px; margin-top: 8px;">
+      Componentes reutilizables detectados: <code>RichBlock</code> (head + body + actions), <code>KpiGrid</code>, <code>FollowUpList</code>, <code>Checklist</code>, <code>CtaRow</code>, <code>ModelSelector</code>, <code>InputBar</code>, <code>AlertBanner</code>.
+    </p>
+  </div>
+</div>
+</body>
+</html>

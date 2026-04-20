@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Estrategia AI — WorkPilot</title>
+  <link rel="stylesheet" href="_styles.css">
+</head>
+<body>
+
+  <div class="cover">
+    <div class="cover-header">
+      <div class="cover-logo"><span class="cover-logo-mark">W</span>WorkPilot</div>
+      <span class="cover-badge">Confidencial · Uso interno</span>
+    </div>
+    <div class="cover-body">
+      <div class="cover-kicker">DOCUMENTO ESTRATÉGICO · 05</div>
+      <h1 class="cover-title">Estrategia AI</h1>
+      <p class="cover-subtitle">WorkPilot AI como diferenciador core: arquitectura, capacidades, casos de uso, comparación con competidores y plan de evolución.</p>
+    </div>
+    <div class="cover-footer">
+      <div class="cover-meta">
+        <span><strong>Versión</strong> 1.0</span>
+        <span><strong>Fecha</strong> Abril 2026</span>
+      </div>
+      <div class="cover-meta" style="text-align: right;">
+        <span><strong>Audiencia</strong> Founders · Producto · AI Eng</span>
+        <span>workpilot.io</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <nav class="toc">
+      <h2>Tabla de contenidos</h2>
+      <ul class="toc-list">
+        <li><span class="toc-title">1. WorkPilot AI en una frase</span><span class="toc-page">3</span></li>
+        <li><span class="toc-title">2. Arquitectura: cómo funciona</span><span class="toc-page">4</span></li>
+        <li><span class="toc-title">3. Las 37 tools agrupadas</span><span class="toc-page">6</span></li>
+        <li><span class="toc-title">4. Rich Blocks visuales</span><span class="toc-page">9</span></li>
+        <li><span class="toc-title">5. Cinco casos de uso con Carlos</span><span class="toc-page">10</span></li>
+        <li><span class="toc-title">6. AI vs competidores</span><span class="toc-page">13</span></li>
+        <li><span class="toc-title">7. Evolución planeada</span><span class="toc-page">15</span></li>
+        <li><span class="toc-title">8. Riesgos y guardrails</span><span class="toc-page">17</span></li>
+        <li><span class="toc-title">9. Métricas del AI</span><span class="toc-page">18</span></li>
+        <li><span class="toc-title">10. Recomendaciones</span><span class="toc-page">19</span></li>
+      </ul>
+    </nav>
+
+    <section>
+      <h2>1. WorkPilot AI en una frase</h2>
+
+      <div class="callout insight">
+        <span class="callout-label">La tesis</span>
+        <div class="callout-body">
+          WorkPilot AI es un <strong>copiloto conversacional que ejecuta</strong> el negocio del contratista — no un chatbot que responde, sino un operador que crea estimates, registra gastos, envía emails y analiza rentabilidad desde conversación natural. Es la única plataforma SMB donde <em>hablar con el AI</em> equivale a <em>operar el negocio</em>.
+        </div>
+      </div>
+
+      <h3>Qué lo hace distinto</h3>
+      <table>
+        <thead><tr><th>Dimensión</th><th>Chatbot tradicional</th><th>WorkPilot AI</th></tr></thead>
+        <tbody>
+          <tr><td>Rol</td><td>Responde preguntas</td><td>Ejecuta acciones</td></tr>
+          <tr><td>Contexto</td><td>Sesión efímera</td><td>Snapshot precargado de tu negocio</td></tr>
+          <tr><td>Integración</td><td>Lee docs; sugiere</td><td>37 tools conectadas a la DB real</td></tr>
+          <tr><td>Autonomía</td><td>Reactivo</td><td>Proactivo (con L2 confirmación)</td></tr>
+          <tr><td>Aprendizaje</td><td>Ninguno</td><td>Guarda preferencias del contratista</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Modelos usados</h3>
+      <div class="kpi-grid cols-2">
+        <div class="kpi-card">
+          <div class="kpi-value" style="font-size: 14pt;">Claude Sonnet 4.5</div>
+          <div class="kpi-label">Modelo primario · Razonamiento + tool calls</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value" style="font-size: 14pt;">Claude Haiku</div>
+          <div class="kpi-label">Fallback rápido · Respuestas simples</div>
+        </div>
+      </div>
+
+      <p style="margin-top: 10pt;">Estrategia dual-modelo: <strong>Haiku por default</strong> (barato, rápido) para consultas sobre el snapshot. <strong>Sonnet escalado</strong> automáticamente cuando hay tool calls (acciones que modifican estado).</p>
+    </section>
+
+    <section class="page-break">
+      <h2>2. Arquitectura: cómo funciona</h2>
+
+      <div class="mermaid">
+graph TB
+    U[Usuario] -->|mensaje| FE[Chat UI]
+    FE -->|POST| API[API /assistant]
+    API --> SP[System Prompt<br/>+ Snapshot precargado]
+    API --> CH[Historial últimos 10 msg]
+    API --> CL[Claude API<br/>con 37 tools]
+
+    CL -->|respuesta texto| FE
+    CL -->|tool_use| TH[Tool Handlers]
+    TH --> DB[(Supabase DB)]
+    TH -->|resultado| CL
+    CL -->|final| FE
+
+    FE --> RB[Rich Blocks Renderer]
+    RB -->|checklist, tabla, KPI| U
+      </div>
+
+      <h3>Las 4 piezas clave</h3>
+
+      <h4>1. System prompt</h4>
+      <p>Instrucciones base en español: formato de números, estilo conversacional, reglas de confirmación L1/L2, cuándo usar tools vs responder directo. Define el "carácter" del AI.</p>
+
+      <h4>2. Snapshot precargado</h4>
+      <p>Antes de cada request al modelo, se inyecta un resumen compacto del negocio del contratista: jobs activos, estimates pendientes, invoices overdue, clientes top, revenue del mes. Esto <strong>evita tool calls innecesarios</strong> para preguntas básicas.</p>
+
+      <div class="callout insight">
+        <span class="callout-label">Por qué snapshot importa</span>
+        <div class="callout-body">
+          Sin snapshot, preguntar "¿cuánto facturé este mes?" gatilla tool call → query DB → respuesta (500ms+). Con snapshot, el modelo ya lo sabe y responde directo (100ms). Reduce latencia y costo de tokens.
+        </div>
+      </div>
+
+      <h4>3. Tools (37)</h4>
+      <p>Cada tool es una función TypeScript que recibe inputs del AI y ejecuta una acción: lee DB, crea entity, envía email. El AI decide cuándo llamarlas.</p>
+
+      <h4>4. Confirmación L1 vs L2</h4>
+      <table class="compact">
+        <thead><tr><th>Nivel</th><th>Ejemplos</th><th>Comportamiento</th></tr></thead>
+        <tbody>
+          <tr><td><strong>L1</strong> (ejecuta directo)</td><td>create_estimate (draft), update_client, get_*</td><td>Sin preguntar</td></tr>
+          <tr><td><strong>L2</strong> (confirma primero)</td><td>send_estimate_email, mark_paid, delete_*</td><td>"¿Confirmás enviar a juan@...?"</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="page-break">
+      <h2>3. Las 37 tools agrupadas</h2>
+
+      <p>Las tools son la razón por la cual WorkPilot AI no es un chatbot: son la interfaz operativa con el sistema.</p>
+
+      <h3>Lectura · Análisis (14 tools)</h3>
+      <p>Consultan estado del negocio sin modificar nada. La mayoría responden con data del snapshot, otras hacen queries específicas.</p>
+      <table class="compact">
+        <thead><tr><th>Tool</th><th>Propósito</th></tr></thead>
+        <tbody>
+          <tr><td><code>get_jobs</code></td><td>Lista jobs con filtros (status, cliente)</td></tr>
+          <tr><td><code>get_estimates</code></td><td>Lista estimates</td></tr>
+          <tr><td><code>get_invoices</code></td><td>Lista invoices</td></tr>
+          <tr><td><code>get_clients</code></td><td>Lista clientes</td></tr>
+          <tr><td><code>get_client_history</code></td><td>Historial completo de un cliente (todos sus jobs/invoices/pagos)</td></tr>
+          <tr><td><code>get_expenses</code></td><td>Expenses con filtro por job / tipo</td></tr>
+          <tr><td><code>get_technicians</code></td><td>Equipo disponible</td></tr>
+          <tr><td><code>get_change_orders</code></td><td>COs por job o estado</td></tr>
+          <tr><td><code>get_work_orders</code></td><td>WOs por técnico o estado</td></tr>
+          <tr><td><code>get_catalog_items</code></td><td>Biblioteca reutilizable</td></tr>
+          <tr><td><code>get_dashboard_stats</code></td><td>KPIs principales (revenue, margen, active jobs)</td></tr>
+          <tr><td><code>get_job_profitability</code></td><td>P&amp;L de un job específico</td></tr>
+          <tr><td><code>get_overdue_invoices</code></td><td>Alerta de cobros vencidos</td></tr>
+          <tr><td><code>get_pending_estimates</code></td><td>Alerta de estimates sin respuesta</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Creación (11 tools)</h3>
+      <table class="compact">
+        <thead><tr><th>Tool</th><th>Propósito</th></tr></thead>
+        <tbody>
+          <tr><td><code>create_job</code></td><td>Crear job nuevo</td></tr>
+          <tr><td><code>create_estimate</code></td><td>Estimate con line items (labor/material/sub)</td></tr>
+          <tr><td><code>create_invoice</code></td><td>Invoice independiente</td></tr>
+          <tr><td><code>create_invoice_from_estimate</code></td><td>Generar invoice desde estimate aprobado</td></tr>
+          <tr><td><code>create_client</code></td><td>Agregar cliente</td></tr>
+          <tr><td><code>create_expense</code></td><td>Registrar gasto contra un job</td></tr>
+          <tr><td><code>create_change_order</code></td><td>CO para trabajo extra</td></tr>
+          <tr><td><code>create_work_order</code></td><td>WO para técnico</td></tr>
+          <tr><td><code>create_catalog_item</code></td><td>Agregar item reutilizable al catálogo</td></tr>
+          <tr><td><code>create_technician</code></td><td>Agregar técnico al equipo</td></tr>
+          <tr><td><code>create_shopping_list</code></td><td>Lista de materiales con items</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Actualización (7 tools)</h3>
+      <table class="compact">
+        <thead><tr><th>Tool</th><th>Propósito</th></tr></thead>
+        <tbody>
+          <tr><td><code>update_client</code> / <code>update_job</code></td><td>Actualizar datos</td></tr>
+          <tr><td><code>update_estimate</code> / <code>update_invoice</code></td><td>Actualizar line items, fechas, notas</td></tr>
+          <tr><td><code>update_job_status</code></td><td>Cambiar estado (active → completed, etc.)</td></tr>
+          <tr><td><code>update_estimate_status</code></td><td>Cambiar estado (draft → sent, etc.)</td></tr>
+          <tr><td><code>assign_technician</code></td><td>Asignar técnico a job o work order</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Comunicación + Pagos (3 tools)</h3>
+      <table class="compact">
+        <thead><tr><th>Tool</th><th>Propósito</th></tr></thead>
+        <tbody>
+          <tr><td><code>send_estimate_email</code></td><td>Envía estimate al cliente con portal link (L2)</td></tr>
+          <tr><td><code>send_invoice_email</code></td><td>Envía invoice con link de pago (L2)</td></tr>
+          <tr><td><code>record_payment</code></td><td>Registra pago recibido (método, monto, fecha)</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Preferencias / aprendizaje (2 tools)</h3>
+      <table class="compact">
+        <thead><tr><th>Tool</th><th>Propósito</th></tr></thead>
+        <tbody>
+          <tr><td><code>get_preferences</code></td><td>Lee patrones aprendidos del contratista</td></tr>
+          <tr><td><code>save_preference</code></td><td>Guarda nuevo patrón (ej: "tasa mano de obra = $80/h")</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout insight">
+        <span class="callout-label">Asimetría competitiva</span>
+        <div class="callout-body">
+          37 tools operativas. Los "AI assistants" de competidores (Jobber AI, HCP Assistant) tienen 0-5 tools máximo, casi todas de lectura. La distancia no es de calidad de modelo, es de <strong>profundidad de integración</strong>.
+        </div>
+      </div>
+    </section>
+
+    <section class="page-break">
+      <h2>4. Rich Blocks visuales</h2>
+
+      <p>Las respuestas del AI no son solo texto: son componentes interactivos renderizados en línea en el chat. Esto rompe la dicotomía "chat vs dashboard" — obtenés ambos sin cambiar de contexto.</p>
+
+      <h3>Bloques disponibles</h3>
+      <table>
+        <thead><tr><th>Bloque</th><th>Uso</th><th>Interactivo?</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Metrics strip</strong></td><td>KPIs alineados horizontal (revenue, margen, jobs)</td><td>No</td></tr>
+          <tr><td><strong>Insights</strong></td><td>Card con ícono + variante (positive/negative/warning/info)</td><td>No</td></tr>
+          <tr><td><strong>Client breakdown</strong></td><td>Lista con % y montos; barra horizontal</td><td>No</td></tr>
+          <tr><td><strong>Tables</strong></td><td>Comparativas de jobs/estimates/clientes</td><td>No</td></tr>
+          <tr><td><strong>Chart</strong></td><td>Gráfico bar/line embebido</td><td>No</td></tr>
+          <tr><td><strong>Rich Checklist</strong></td><td>Items con checkbox, editables, que crean expenses</td><td><strong>Sí</strong></td></tr>
+          <tr><td><strong>Action buttons</strong></td><td>Botones que ejecutan navegación o mandan mensaje al AI</td><td><strong>Sí</strong></td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout insight">
+        <span class="callout-label">Por qué importa</span>
+        <div class="callout-body">
+          Un chatbot tradicional dice "tus top 3 clientes son...". WorkPilot AI muestra una <strong>barra visual</strong> con porcentajes en vivo + botones "Ver historia" y "Crear estimate". Es chat <em>y</em> dashboard simultáneamente.
+        </div>
+      </div>
+    </section>
+
+    <section class="page-break">
+      <h2>5. Cinco casos de uso con Carlos</h2>
+
+      <p>Ejemplos reales de cómo un contratista usa WorkPilot AI en su día.</p>
+
+      <h3>Caso 1 — Cotizar en la ruta</h3>
+      <div class="persona-box">
+        <p><span class="persona-name">Carlos</span> maneja de vuelta de Miami a Fort Lauderdale. Entró un lead por WhatsApp: reparación de calentador en casa de familia Pérez. Activa voice mode.</p>
+        <p><em>Carlos:</em> "Crea un estimate para María Pérez, calentador nuevo marca Rheem instalación completa, $1,800 mano de obra, $2,100 material."</p>
+        <p><em>WorkPilot AI:</em> "Listo. Estimate EST-087 creado como draft. Total $4,290 con tax. ¿Te lo envío por email?"</p>
+        <p><em>Carlos:</em> "Mandalo."</p>
+        <p><em>WorkPilot AI:</em> "Enviado a maria.perez@gmail.com con link de portal. Te aviso cuando firme."</p>
+      </div>
+      <p><strong>Tools usadas:</strong> create_estimate, send_estimate_email (L2 confirmó con "mandalo"). <strong>Tiempo total:</strong> 45 segundos manejando.</p>
+
+      <h3>Caso 2 — Materiales en el depósito</h3>
+      <div class="persona-box">
+        <p>Carlos está en Home Depot comprando para el baño de Mendoza.</p>
+        <p><em>Carlos:</em> "Qué necesito para el baño de Mendoza?"</p>
+        <p><em>WorkPilot AI:</em> [Muestra Rich Checklist con 8 items y costos estimados]</p>
+        <p>Carlos tilda 5 items, ajusta un precio, toca "Ya compré todo".</p>
+        <p><em>WorkPilot AI:</em> "5 expenses creados en job Mendoza, total $680. Lista cerrada."</p>
+      </div>
+      <p><strong>Tools usadas:</strong> create_shopping_list (previo), create_expense × 5.</p>
+
+      <h3>Caso 3 — Revisar rentabilidad al final del día</h3>
+      <div class="persona-box">
+        <p><em>Carlos:</em> "Cuánto gané con el job Mendoza?"</p>
+        <p><em>WorkPilot AI:</em> [Rich Card con] <strong>Revenue:</strong> $6,450 · <strong>Costs:</strong> $4,120 · <strong>Margin:</strong> 36%. "Está arriba de tu promedio (28%). El 62% del costo fue material — revisá si estás cargando markup suficiente."</p>
+      </div>
+      <p><strong>Tools usadas:</strong> get_job_profitability. <strong>Valor agregado:</strong> sugiere acción, no solo muestra números.</p>
+
+      <h3>Caso 4 — Seguimiento de estimates pendientes</h3>
+      <div class="persona-box">
+        <p><em>Carlos (a la mañana, tomando café):</em> "Qué tengo pendiente?"</p>
+        <p><em>WorkPilot AI:</em> "3 estimates sent hace más de 5 días sin respuesta: Pérez ($4,290), López ($2,150), Castro ($890). ¿Les mando follow-up?"</p>
+        <p><em>Carlos:</em> "Sí, a los 3."</p>
+        <p><em>WorkPilot AI:</em> "3 emails enviados. También tenés invoice #042 vencido hace 7 días — Rodríguez."</p>
+      </div>
+      <p><strong>Tools usadas:</strong> get_pending_estimates, send_estimate_email × 3, get_overdue_invoices.</p>
+
+      <h3>Caso 5 — Alta de cliente + job + estimate en cadena</h3>
+      <div class="persona-box">
+        <p><em>Carlos:</em> "Nuevo cliente: Roberto Vega, teléfono 305-555-1234, drenaje tapado en su casa. Cotizá $350 servicio."</p>
+        <p><em>WorkPilot AI:</em> "Cliente Roberto Vega creado. Job 'Drenaje - R. Vega' creado como lead. Estimate EST-088 con $350 + tax = $385. ¿Envío o mantengo en draft?"</p>
+        <p><em>Carlos:</em> "Enviá."</p>
+      </div>
+      <p><strong>Tools usadas:</strong> create_client, create_job, create_estimate, send_estimate_email. <strong>4 acciones en 1 conversación.</strong></p>
+    </section>
+
+    <section class="page-break">
+      <h2>6. AI vs competidores</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 22%;">Capacidad AI</th>
+            <th>WorkPilot</th>
+            <th>Jobber AI</th>
+            <th>HCP Assistant</th>
+            <th>ServiceTitan AI</th>
+            <th>FieldEdge</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Conversación natural</td><td>✅ ES/EN</td><td>Beta EN</td><td>Limitado</td><td>✅ EN</td><td>❌</td></tr>
+          <tr><td>Crea estimates</td><td>✅</td><td>❌</td><td>❌</td><td>Limitado</td><td>❌</td></tr>
+          <tr><td>Envía emails</td><td>✅ con L2</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td></tr>
+          <tr><td>Registra expenses</td><td>✅</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td></tr>
+          <tr><td>Análisis P&amp;L</td><td>✅</td><td>Dashboards</td><td>Dashboards</td><td>Dashboards</td><td>Reports</td></tr>
+          <tr><td>Voice mode</td><td>✅ ElevenLabs</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td></tr>
+          <tr><td>Rich Blocks en chat</td><td>✅</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td></tr>
+          <tr><td>Aprendizaje / prefs</td><td>✅</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td></tr>
+          <tr><td>Tool count</td><td>37</td><td>~5</td><td>~3</td><td>~10</td><td>0</td></tr>
+          <tr><td>Multi-idioma</td><td>✅ ES/EN</td><td>EN</td><td>EN</td><td>EN</td><td>EN</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout insight">
+        <span class="callout-label">Lectura honesta</span>
+        <div class="callout-body">
+          Los competidores tienen "AI" más como buzzword que como producto. Jobber AI está en beta (2025). HCP Assistant es search glorificado. ServiceTitan AI es análisis pasivo. <strong>WorkPilot es el único donde el AI opera</strong>, no solo describe.
+        </div>
+      </div>
+
+      <h3>Ventana de oportunidad</h3>
+      <p>Estimamos 12–18 meses antes de que algún competidor alcance paridad operativa en AI. La apuesta: <strong>ampliar la distancia durante este período</strong> con agentes autónomos y vision.</p>
+    </section>
+
+    <section class="page-break">
+      <h2>7. Evolución planeada</h2>
+
+      <h3>Fase actual (Q1–Q2 2026): Ejecutor conversacional</h3>
+      <p><strong>Status:</strong> En producción. El AI ejecuta todas las acciones core del contratista por conversación. <strong>Siguiente:</strong> más tools (shopping list, inventory, contracts).</p>
+
+      <h3>Fase 2 (Q3 2026): AI con visión</h3>
+      <p>Claude Vision integrado. Capacidades nuevas:</p>
+      <ul>
+        <li><strong>Foto → estimate:</strong> contratista toma foto del problema, AI identifica el trabajo necesario y genera cotización</li>
+        <li><strong>Foto de recibo → expense:</strong> escanear ticket de Home Depot, crear gasto automático</li>
+        <li><strong>Foto de obra → update work order:</strong> técnico envía foto, AI actualiza estado</li>
+      </ul>
+
+      <div class="callout insight">
+        <span class="callout-label">Esto es categoría</span>
+        <div class="callout-body">
+          Foto → estimate en 10 segundos es la feature que redefine cómo se cotiza. De 20 minutos a 20 segundos. Redefine la competencia.
+        </div>
+      </div>
+
+      <h3>Fase 3 (Q4 2026): Agente autónomo</h3>
+      <p>El AI pasa de "reactivo con permisos L2" a "proactivo con agenda propia". Ejemplos:</p>
+      <ul>
+        <li>Cada mañana envía follow-ups de estimates pendientes sin preguntar</li>
+        <li>Marca invoices overdue y envía primer recordatorio automático</li>
+        <li>Sugiere upsells basado en historial del cliente</li>
+        <li>Detecta jobs sin cerrar y alerta</li>
+        <li>Propone precios basado en márgenes actuales</li>
+      </ul>
+
+      <h3>Fase 4 (2027+): AI como co-founder operativo</h3>
+      <p>Visión larga: un sistema donde el contratista delega el 50%+ de la operación del negocio al AI. Él se enfoca en vender + ejecutar; el AI hace el resto.</p>
+
+      <div class="mermaid">
+gantt
+    title Evolución AI WorkPilot
+    dateFormat YYYY-MM
+    section Fase 1: Ejecutor
+    En producción        :done,  f1, 2025-09, 2026-06
+    section Fase 2: Vision
+    Foto→estimate MVP    :active, f2, 2026-05, 2026-09
+    Producción           :       f2b, 2026-09, 2026-12
+    section Fase 3: Autónomo
+    Guardrails design    :       f3, 2026-08, 2026-11
+    Beta agente          :       f3b, 2026-11, 2027-02
+    Prod agente          :       f3c, 2027-02, 2027-06
+    section Fase 4: Co-founder
+    Vision larga         :       f4, 2027-06, 2028-06
+      </div>
+    </section>
+
+    <section class="page-break">
+      <h2>8. Riesgos y guardrails</h2>
+
+      <div class="callout critical">
+        <span class="callout-label">Riesgo 1: Alucinaciones con impacto económico</span>
+        <div class="callout-body">
+          El AI podría inventar un precio, crear un job para cliente equivocado, enviar un email con datos incorrectos. En acciones con efecto monetario o hacia terceros (emails), esto sería catastrófico.<br/><br/>
+          <strong>Guardrails:</strong> (1) Toda acción L2 requiere confirmación explícita. (2) Audit log de toda tool call. (3) Datos del snapshot validados desde la DB, no generados. (4) Nombres de clientes matcheados contra clientes reales antes de ejecutar.
+        </div>
+      </div>
+
+      <div class="callout critical">
+        <span class="callout-label">Riesgo 2: Costo por usuario escalando</span>
+        <div class="callout-body">
+          Si cada usuario hace 100 mensajes al día con Sonnet, el costo puede superar el <span class="amount">$29</span> del plan Pro.<br/><br/>
+          <strong>Guardrails:</strong> (1) Haiku por default, Sonnet solo con tools. (2) Budget cap por usuario/mes (ej. $5). (3) Alertas internas si usuario X excede. (4) Rate limiting en API /assistant.
+        </div>
+      </div>
+
+      <div class="callout warning">
+        <span class="callout-label">Riesgo 3: Dependencia de Anthropic</span>
+        <div class="callout-body">
+          Rate limits, cambios de precio, outages afectan todo el producto.<br/><br/>
+          <strong>Guardrails:</strong> (1) Arquitectura agnóstica (cambio a OpenAI/Google posible). (2) Haiku como fallback de Sonnet. (3) Retry con backoff. (4) Modo degradado sin AI (pantallas siguen funcionando).
+        </div>
+      </div>
+
+      <div class="callout warning">
+        <span class="callout-label">Riesgo 4: Overconfidence del usuario en el AI</span>
+        <div class="callout-body">
+          Si el AI "casi siempre" tiene razón, el user deja de revisar. Errores silenciosos se acumulan.<br/><br/>
+          <strong>Guardrails:</strong> (1) Mostrar cálculos con números. (2) Confirmaciones L2 incluyen resumen completo. (3) Audit log visible al usuario. (4) Education: "revisá siempre los documentos antes de enviar".
+        </div>
+      </div>
+    </section>
+
+    <section class="page-break">
+      <h2>9. Métricas del AI</h2>
+
+      <h3>Métricas de adopción</h3>
+      <table class="compact">
+        <thead><tr><th>Métrica</th><th>Target</th><th>Alerta si</th></tr></thead>
+        <tbody>
+          <tr><td>% users activos del AI (MAU)</td><td>&gt; 60%</td><td>&lt; 40%</td></tr>
+          <tr><td>Mensajes promedio / user / día</td><td>5–10</td><td>&lt; 2</td></tr>
+          <tr><td>% tool calls sobre mensajes</td><td>&gt; 30%</td><td>&lt; 15%</td></tr>
+          <tr><td>Tiempo a 1er uso de AI (nuevo user)</td><td>&lt; 1 hora</td><td>&gt; 24 horas</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Métricas de calidad</h3>
+      <table class="compact">
+        <thead><tr><th>Métrica</th><th>Target</th><th>Alerta si</th></tr></thead>
+        <tbody>
+          <tr><td>Tool call success rate</td><td>&gt; 95%</td><td>&lt; 90%</td></tr>
+          <tr><td>Errores al modelar respuesta</td><td>&lt; 2%</td><td>&gt; 5%</td></tr>
+          <tr><td>L2 confirmation rate (aprobadas)</td><td>&gt; 80%</td><td>&lt; 60%</td></tr>
+          <tr><td>Satisfacción AI (thumbs up rate)</td><td>&gt; 70%</td><td>&lt; 50%</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Métricas de costo</h3>
+      <table class="compact">
+        <thead><tr><th>Métrica</th><th>Target</th><th>Alerta si</th></tr></thead>
+        <tbody>
+          <tr><td>Costo AI promedio / user / mes</td><td>&lt; $3</td><td>&gt; $5</td></tr>
+          <tr><td>Tokens Sonnet vs Haiku ratio</td><td>1:4</td><td>1:1 (muy caro)</td></tr>
+          <tr><td>Cache hit rate (prompt)</td><td>&gt; 50%</td><td>&lt; 20%</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="page-break">
+      <h2>10. Recomendaciones</h2>
+
+      <div class="recommendations">
+        <h3>Seis decisiones para AI</h3>
+        <ol>
+          <li><strong>Proteger la ventana de 12–18 meses.</strong> Invertir agresivamente en AI mientras competencia reacciona lenta. 1 AI engineer dedicado full-time.</li>
+          <li><strong>Vision primero, autónomo después.</strong> Foto → estimate es market-defining y menos riesgoso que agente autónomo. Priorizar Fase 2 antes que Fase 3.</li>
+          <li><strong>Instrumentar métricas de AI YA.</strong> Sin datos, decisiones son opiniones. Dashboard interno con las 12 métricas anteriores.</li>
+          <li><strong>Budget caps por usuario.</strong> Antes de lanzar más tools, implementar rate limiting y caps de costo. Un user malicioso no puede quemar nuestro margen.</li>
+          <li><strong>Marketing agresivo de AI.</strong> Videos con Carlos usando voice. Landing dedicada "WorkPilot AI". Pitch central debe ser AI, no CRM.</li>
+          <li><strong>Branding "Powered by Claude".</strong> Mencionar tecnología subyacente genera credibilidad. Anthropic es marca positiva.</li>
+        </ol>
+      </div>
+    </section>
+  </div>
+
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#1E3A5F',
+        primaryTextColor: '#ffffff',
+        primaryBorderColor: '#0F2440',
+        lineColor: '#64748B',
+        secondaryColor: '#3B82F6',
+        tertiaryColor: '#F1F5F9',
+        fontFamily: 'Inter, sans-serif',
+      },
+    });
+    await mermaid.run();
+    window.mermaid_ready = true;
+  </script>
+</body>
+</html>

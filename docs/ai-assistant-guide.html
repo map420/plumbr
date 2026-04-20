@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>WorkPilot AI Assistant — Guía de Usuario</title>
+<style>
+  @page { margin: 1.5cm; size: letter; }
+  @media print {
+    .no-print { display: none !important; }
+    .page-break { page-break-before: always; }
+    body { font-size: 11pt; }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: #1a202c; line-height: 1.6; max-width: 850px; margin: 0 auto; padding: 40px 32px; }
+
+  .cover { text-align: center; padding: 80px 0 60px; }
+  .cover h1 { font-size: 36px; font-weight: 800; color: #1E3A5F; margin-bottom: 8px; }
+  .cover .subtitle { font-size: 18px; color: #64748b; margin-bottom: 32px; }
+  .cover .badge { display: inline-block; background: #F97316; color: white; font-size: 13px; font-weight: 600; padding: 6px 16px; border-radius: 20px; }
+
+  h2 { font-size: 22px; font-weight: 700; color: #1E3A5F; margin: 40px 0 16px; padding-bottom: 8px; border-bottom: 3px solid #F97316; }
+  h3 { font-size: 16px; font-weight: 700; color: #334155; margin: 24px 0 10px; }
+
+  .flow-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+  .flow-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; }
+  .flow-card .emoji { font-size: 28px; margin-bottom: 8px; display: block; }
+  .flow-card .title { font-size: 15px; font-weight: 700; color: #1E3A5F; margin-bottom: 4px; }
+  .flow-card .desc { font-size: 13px; color: #64748b; margin-bottom: 10px; }
+  .flow-card .example { background: white; border-radius: 8px; padding: 10px 12px; font-size: 12px; color: #475569; border-left: 3px solid #F97316; }
+  .flow-card .example strong { color: #1E3A5F; }
+
+  .convo { background: #f1f5f9; border-radius: 12px; padding: 20px; margin: 16px 0; }
+  .convo .title { font-size: 14px; font-weight: 700; color: #1E3A5F; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .msg { margin-bottom: 10px; display: flex; gap: 10px; align-items: flex-start; }
+  .msg:last-child { margin-bottom: 0; }
+  .msg .avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: white; flex-shrink: 0; }
+  .msg .avatar.user { background: #1E3A5F; }
+  .msg .avatar.ai { background: #F97316; }
+  .msg .bubble { background: white; border-radius: 10px; padding: 10px 14px; font-size: 13px; color: #334155; max-width: 85%; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+  .msg .bubble.user-bubble { background: #1E3A5F; color: white; }
+  .msg .bubble .action-btn { display: inline-block; background: #F97316; color: white; font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 6px; margin: 4px 4px 0 0; }
+  .msg .bubble .tool-tag { display: inline-block; background: #dbeafe; color: #1e40af; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; margin-bottom: 6px; }
+
+  .level { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-right: 6px; }
+  .level.l1 { background: #dcfce7; color: #166534; }
+  .level.l2 { background: #fef3c7; color: #92400e; }
+
+  .qa-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0; }
+  .qa-card { background: #1E3A5F; color: white; border-radius: 10px; padding: 16px; }
+  .qa-card .qa-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .qa-card .qa-desc { font-size: 12px; opacity: 0.8; }
+
+  .tip { background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 14px 16px; margin: 16px 0; font-size: 13px; color: #92400e; }
+  .tip strong { color: #78350f; }
+
+  .footer { text-align: center; margin-top: 48px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #94a3b8; }
+
+  .print-bar { position: fixed; top: 0; left: 0; right: 0; background: #1E3A5F; color: white; padding: 10px 20px; display: flex; align-items: center; gap: 12px; z-index: 100; }
+  .print-bar button { background: #F97316; color: white; border: none; padding: 8px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; }
+  .print-bar span { font-size: 13px; opacity: 0.8; }
+  body { padding-top: 60px; }
+  @media print { body { padding-top: 0; } }
+  @media (max-width: 600px) {
+    .flow-grid, .qa-grid { grid-template-columns: 1fr; }
+    body { padding: 20px 16px 40px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="print-bar no-print">
+  <button onclick="window.print()">Guardar como PDF</button>
+  <span>Haz click o presiona Ctrl+P para guardar esta guia como PDF</span>
+</div>
+
+<!-- PORTADA -->
+<div class="cover">
+  <h1>WorkPilot AI Assistant</h1>
+  <p class="subtitle">Tu copiloto de negocio. Pregunta lo que sea, crea lo que necesites, analiza todo.</p>
+  <span class="badge">Guia de Usuario</span>
+</div>
+
+<!-- INICIO RAPIDO -->
+<h2>Inicio Rapido</h2>
+<p>Abre el Asistente IA desde el menu lateral o toca el icono del robot en el celular. Puedes escribir en espanol o ingles — el asistente responde en tu idioma.</p>
+
+<h3>Accesos rapidos para empezar</h3>
+<div class="qa-grid">
+  <div class="qa-card">
+    <div class="qa-title">Crear Presupuesto</div>
+    <div class="qa-desc">Cotiza un trabajo segun el cliente, la zona y el tipo de obra</div>
+  </div>
+  <div class="qa-card">
+    <div class="qa-title">Pulso del Negocio</div>
+    <div class="qa-desc">Ingresos, facturas vencidas, presupuestos pendientes, alertas</div>
+  </div>
+  <div class="qa-card">
+    <div class="qa-title">Seguimiento</div>
+    <div class="qa-desc">Que necesita atencion? Vencidos + presupuestos sin respuesta</div>
+  </div>
+  <div class="qa-card">
+    <div class="qa-title">Analisis de Trabajos</div>
+    <div class="qa-desc">Cuales trabajos pierden dinero? Que puedes hacer?</div>
+  </div>
+</div>
+
+<div class="tip">
+  <strong>Tip:</strong> Puedes elegir el modelo de IA. <strong>Auto</strong> (recomendado) elige el mejor automaticamente. <strong>Sonnet</strong> es mas inteligente para analisis complejos. <strong>Haiku</strong> es mas rapido para preguntas simples.
+</div>
+
+<!-- CREAR COSAS -->
+<h2 class="page-break">Crear Cosas</h2>
+<p>Dile al asistente lo que necesitas. Te pedira los detalles paso a paso y lo crea por ti.</p>
+
+<div class="flow-grid">
+  <div class="flow-card">
+    <span class="emoji">📋</span>
+    <div class="title">Crear un Presupuesto</div>
+    <div class="desc">El asistente te pide cliente, tipo de trabajo, items y precios. Calcula impuestos y total automaticamente.</div>
+    <div class="example"><strong>Tu:</strong> "Crea un presupuesto para Maria Lopez — remodelacion de cocina"</div>
+  </div>
+  <div class="flow-card">
+    <span class="emoji">🏗️</span>
+    <div class="title">Crear un Trabajo</div>
+    <div class="desc">Configura un proyecto nuevo con info del cliente, presupuesto y direccion.</div>
+    <div class="example"><strong>Tu:</strong> "Nuevo trabajo: renovacion de bano para Carlos Mendoza, presupuesto $5,000"</div>
+  </div>
+  <div class="flow-card">
+    <span class="emoji">🧾</span>
+    <div class="title">Crear una Factura</div>
+    <div class="desc">Crea desde cero o convierte un presupuesto aprobado.</div>
+    <div class="example"><strong>Tu:</strong> "Convierte el presupuesto EST-003 a factura"</div>
+  </div>
+  <div class="flow-card">
+    <span class="emoji">👤</span>
+    <div class="title">Agregar un Cliente</div>
+    <div class="desc">Registra un cliente nuevo con nombre, email y telefono.</div>
+    <div class="example"><strong>Tu:</strong> "Agrega al cliente Juan Perez, email juan@email.com"</div>
+  </div>
+  <div class="flow-card">
+    <span class="emoji">💸</span>
+    <div class="title">Registrar un Gasto</div>
+    <div class="desc">Registra costos de materiales, mano de obra o subcontratistas en un trabajo.</div>
+    <div class="example"><strong>Tu:</strong> "Registra $350 en materiales para el trabajo del bano de Mendoza"</div>
+  </div>
+  <div class="flow-card">
+    <span class="emoji">🛒</span>
+    <div class="title">Lista de Compras</div>
+    <div class="desc">Genera una lista de materiales con precios. Marca lo que compraste — los gastos se registran solos.</div>
+    <div class="example"><strong>Tu:</strong> "Que materiales necesito para remodelar un bano?"</div>
+  </div>
+  <div class="flow-card">
+    <span class="emoji">👷</span>
+    <div class="title">Agregar un Tecnico</div>
+    <div class="desc">Registra un miembro del equipo con tarifa y contacto.</div>
+    <div class="example"><strong>Tu:</strong> "Agrega al tecnico Miguel, $35/hora, miguel@email.com"</div>
+  </div>
+  <div class="flow-card">
+    <span class="emoji">💳</span>
+    <div class="title">Registrar un Pago</div>
+    <div class="desc">Registra que un cliente pago una factura (efectivo, cheque, tarjeta, transferencia).</div>
+    <div class="example"><strong>Tu:</strong> "Marca la factura INV-005 como pagada con cheque"</div>
+  </div>
+</div>
+
+<!-- EJEMPLO CONVERSACION: CREAR -->
+<div class="convo">
+  <div class="title">Ejemplo: Crear un presupuesto</div>
+  <div class="msg"><div class="avatar user">Tu</div><div class="bubble user-bubble">Crea un presupuesto para Roberto Silva — instalacion de aire acondicionado</div></div>
+  <div class="msg"><div class="avatar ai">IA</div><div class="bubble">Voy a armar ese presupuesto. Que items incluyo?<br><br>Comunes para instalacion de AC:<br>1. Unidad de AC — $1,200<br>2. Mano de obra (instalacion) — $800<br>3. Materiales de ductos — $400<br><br>Quieres usar estos o ajustar algo?</div></div>
+  <div class="msg"><div class="avatar user">Tu</div><div class="bubble user-bubble">Usa esos pero cambia la mano de obra a $950</div></div>
+  <div class="msg"><div class="avatar ai">IA</div><div class="bubble"><span class="tool-tag">Creando presupuesto...</span><br><br>Listo! Presupuesto <strong>EST-012</strong> creado para Roberto Silva:<br><br>| Item | Monto |<br>|------|-------|<br>| Unidad AC | $1,200 |<br>| Mano de obra | $950 |<br>| Ductos | $400 |<br>| <strong>Total</strong> | <strong>$2,550 + impuesto</strong> |<br><br><span class="action-btn">Ver Presupuesto</span> <span class="action-btn">Enviar al Cliente</span></div></div>
+</div>
+
+<!-- CONSULTAR DATOS -->
+<h2 class="page-break">Consultar Datos</h2>
+<p>Preguntale al asistente sobre tu negocio — busca en tus datos y te da la respuesta.</p>
+
+<div class="flow-grid">
+  <div class="flow-card">
+    <span class="emoji">📊</span>
+    <div class="title">Resumen del Negocio</div>
+    <div class="desc">Ingresos, margenes, pipeline, tendencias — todo de un vistazo.</div>
+    <div class="example"><strong>Tu:</strong> "Como va mi negocio este mes?"</div>
+  </div>
+  <div class="flow-card">
+    <span class="emoji">⚠️</span>
+    <div class="title">Facturas Vencidas</div>
+    <div class="desc">Ve cuales clientes te deben y cuanto tiempo llevan.</div>
+    <div class="example"><strong>Tu:</strong> "Quien me debe dinero?"</div>
+  </div>
+  <div class="flow-card">
+    <span class="emoji">📈</span>
+    <div class="title">Rentabilidad de Trabajos</div>
+    <div class="desc">Compara presupuesto vs costo real en cualquier trabajo.</div>
+    <div class="example"><strong>Tu:</strong> "Estoy ganando dinero en el trabajo de Mendoza?"</div>
+  </div>
+  <div class="flow-card">
+    <span class="emoji">👥</span>
+    <div class="title">Historial de Cliente</div>
+    <div class="desc">Ve todo lo que has hecho para un cliente — trabajos, presupuestos, facturas.</div>
+    <div class="example"><strong>Tu:</strong> "Muestrame todo sobre Roberto Silva"</div>
+  </div>
+  <div class="flow-card">
+    <span class="emoji">📋</span>
+    <div class="title">Detalle de Presupuesto</div>
+    <div class="desc">Ve lo que incluye cualquier presupuesto — items, totales, estado.</div>
+    <div class="example"><strong>Tu:</strong> "Que items tiene el presupuesto EST-005?"</div>
+  </div>
+  <div class="flow-card">
+    <span class="emoji">⏳</span>
+    <div class="title">Presupuestos Pendientes</div>
+    <div class="desc">Cuales presupuestos estan esperando aprobacion del cliente?</div>
+    <div class="example"><strong>Tu:</strong> "Cuales presupuestos no han sido aprobados?"</div>
+  </div>
+</div>
+
+<!-- TOMAR ACCION -->
+<h2>Tomar Accion</h2>
+<p>El asistente puede ejecutar acciones por ti. Algunas son instantaneas, otras te piden confirmacion primero.</p>
+
+<h3><span class="level l1">INSTANTANEO</span> Estas pasan de inmediato</h3>
+<ul style="margin: 8px 0 16px 20px; font-size: 14px; color: #475569;">
+  <li>Crear un borrador (trabajo, presupuesto, factura, cliente)</li>
+  <li>Actualizar datos (nombre, presupuesto, notas, fechas)</li>
+  <li>Cambiar el estado de un trabajo (lead a activo, etc.)</li>
+  <li>Asignar un tecnico a un trabajo</li>
+  <li>Guardar un item en tu catalogo</li>
+  <li>Consultar cualquier dato</li>
+</ul>
+
+<h3><span class="level l2">CON CONFIRMACION</span> El asistente te explica antes de hacerlas</h3>
+<ul style="margin: 8px 0 16px 20px; font-size: 14px; color: #475569;">
+  <li>Enviar un presupuesto por email al cliente</li>
+  <li>Enviar una factura por email al cliente</li>
+  <li>Marcar una factura como pagada</li>
+  <li>Marcar un trabajo como completado</li>
+</ul>
+
+<div class="convo">
+  <div class="title">Ejemplo: Accion con confirmacion</div>
+  <div class="msg"><div class="avatar user">Tu</div><div class="bubble user-bubble">Envia el presupuesto EST-003 al cliente</div></div>
+  <div class="msg"><div class="avatar ai">IA</div><div class="bubble">Voy a enviar <strong>EST-003</strong> ($2,550) a <strong>Roberto Silva</strong> a roberto@email.com.<br><br>Esto va a:<br>- Enviar el presupuesto por email con link al portal<br>- Cambiar el estado de Borrador a Enviado<br>- El cliente puede aprobar o rechazar en linea<br><br>Lo envio?<br><br><span class="action-btn">Si, enviar</span> <span class="action-btn">No, cancelar</span></div></div>
+</div>
+
+<!-- ANALISIS Y CONSEJOS -->
+<h2 class="page-break">Analisis y Consejos</h2>
+<p>El asistente analiza tus datos reales y te da recomendaciones especificas y accionables — no consejos genericos.</p>
+
+<div class="flow-grid">
+  <div class="flow-card">
+    <span class="emoji">🔍</span>
+    <div class="title">Tendencias de Ingresos</div>
+    <div class="desc">Compara meses, detecta caidas, identifica por que.</div>
+    <div class="example"><strong>Tu:</strong> "Por que bajaron mis ingresos este mes?"</div>
+  </div>
+  <div class="flow-card">
+    <span class="emoji">🎯</span>
+    <div class="title">Tasa de Conversion</div>
+    <div class="desc">Cuantos presupuestos se convierten en trabajos? Que esta cambiando?</div>
+    <div class="example"><strong>Tu:</strong> "Se estan convirtiendo bien mis presupuestos?"</div>
+  </div>
+  <div class="flow-card">
+    <span class="emoji">💡</span>
+    <div class="title">Sugerencias de Seguimiento</div>
+    <div class="desc">Encuentra clientes inactivos, borradores sin enviar, presupuestos sin respuesta.</div>
+    <div class="example"><strong>Tu:</strong> "A que le debo dar seguimiento?"</div>
+  </div>
+  <div class="flow-card">
+    <span class="emoji">💰</span>
+    <div class="title">Analisis de Precios</div>
+    <div class="desc">Revisa si el valor promedio de tus presupuestos esta bajando.</div>
+    <div class="example"><strong>Tu:</strong> "Estoy cobrando bien mis trabajos?"</div>
+  </div>
+</div>
+
+<div class="convo">
+  <div class="title">Ejemplo: Analisis de negocio</div>
+  <div class="msg"><div class="avatar user">Tu</div><div class="bubble user-bubble">Pulso del negocio</div></div>
+  <div class="msg"><div class="avatar ai">IA</div><div class="bubble"><span class="tool-tag">Buscando tus datos...</span><br><br><strong>Pulso del Negocio — Abril 2026</strong><br><br>Ingresos: <strong>$4,226</strong> este mes<br>Pipeline: 2 prospectos, 3 trabajos activos, 1 completado<br>Tasa de conversion: 75% (3 de 4 presupuestos aprobados)<br><br><strong>Necesita atencion:</strong><br>- Roberto Silva tiene <strong>$400 vencidos</strong> (12 dias) en INV-008<br>- EST-011 enviado a Maria Lopez hace <strong>9 dias</strong> — sin respuesta<br>- No hay prospectos nuevos este mes<br><br><span class="action-btn">Dar seguimiento a INV-008</span> <span class="action-btn">Reenviar EST-011</span> <span class="action-btn">Pedir consejo a la IA</span></div></div>
+</div>
+
+<!-- LISTAS DE COMPRAS -->
+<h2>Listas de Compras</h2>
+<p>Preguntale al asistente que materiales necesitas para un trabajo. Genera una lista con precios estimados que puedes llevar a la ferreteria.</p>
+
+<div class="convo">
+  <div class="title">Ejemplo: Lista de materiales</div>
+  <div class="msg"><div class="avatar user">Tu</div><div class="bubble user-bubble">Que materiales necesito para remodelar un bano?</div></div>
+  <div class="msg"><div class="avatar ai">IA</div><div class="bubble">Aqui tienes una lista de materiales para una remodelacion de bano estandar:<br><br>- Ceramica (15 m2) — $450<br>- Fragua + adhesivo — $85<br>- Inodoro — $250<br>- Vanity + lavabo — $380<br>- Griferia de ducha — $120<br>- Tubos PVC + accesorios — $95<br>- Membrana impermeabilizante — $65<br><br><strong>Total estimado: $1,445</strong></div></div>
+</div>
+
+<div class="tip">
+  <strong>Como funciona:</strong> Cuando el asistente crea una lista de compras, cada item tiene un checkbox. Marcalo cuando lo compres — el costo se registra automaticamente como gasto en el trabajo vinculado. Tambien puedes imprimir la lista para llevarla a la tienda.
+</div>
+
+<!-- MODO VOZ -->
+<h2>Modo Voz</h2>
+<p>Toca el icono del microfono para hablar con el asistente en vez de escribir. Ideal para cuando estas en la obra con las manos sucias.</p>
+
+<div class="flow-grid" style="grid-template-columns: 1fr;">
+  <div class="flow-card">
+    <span class="emoji">🎙️</span>
+    <div class="title">Como funciona el modo voz</div>
+    <div class="desc">El asistente responde con frases cortas y naturales. Sin tablas ni graficos — solo conversacion. Los numeros se dicen de forma natural ("cuatro mil dolares" en vez de "$4,000").</div>
+    <div class="example"><strong>Tu (hablando):</strong> "Cuanto me debe Roberto Silva?"<br><strong>IA (hablando):</strong> "Roberto tiene una factura vencida de cuatrocientos dolares. Lleva doce dias. Quieres que le envie un recordatorio?"</div>
+  </div>
+</div>
+
+<!-- TIPS -->
+<h2 class="page-break">Tips y Trucos</h2>
+
+<div class="flow-grid">
+  <div class="flow-card">
+    <span class="emoji">🧠</span>
+    <div class="title">Recuerda tus preferencias</div>
+    <div class="desc">Di "siempre usa 20% de markup" o "mi impuesto es 8.25%" y el asistente lo guarda para futuros presupuestos.</div>
+  </div>
+  <div class="flow-card">
+    <span class="emoji">🔗</span>
+    <div class="title">Encadena acciones</div>
+    <div class="desc">Di "Crea un presupuesto para Maria y enviaselo" y el asistente hace ambas cosas — primero crea, luego te pide confirmar el envio.</div>
+  </div>
+  <div class="flow-card">
+    <span class="emoji">🌐</span>
+    <div class="title">Funciona en espanol e ingles</div>
+    <div class="desc">Escribe o habla en cualquier idioma. El asistente responde automaticamente en tu idioma.</div>
+  </div>
+  <div class="flow-card">
+    <span class="emoji">📱</span>
+    <div class="title">Funciona en el celular</div>
+    <div class="desc">El asistente funciona completo en tu telefono. Usa el modo voz en la obra para operar sin manos.</div>
+  </div>
+</div>
+
+<h3>Cosas que puedes decir</h3>
+<div style="columns: 2; column-gap: 24px; font-size: 13px; color: #475569; margin: 12px 0;">
+  <p style="margin-bottom: 6px;">"Crea un presupuesto para..."</p>
+  <p style="margin-bottom: 6px;">"Cuanto me debe [cliente]?"</p>
+  <p style="margin-bottom: 6px;">"Muestrame las facturas vencidas"</p>
+  <p style="margin-bottom: 6px;">"Estoy ganando dinero en [trabajo]?"</p>
+  <p style="margin-bottom: 6px;">"Que materiales necesito para...?"</p>
+  <p style="margin-bottom: 6px;">"Envia el presupuesto EST-005 al cliente"</p>
+  <p style="margin-bottom: 6px;">"Marca la factura INV-003 como pagada en efectivo"</p>
+  <p style="margin-bottom: 6px;">"Agrega a [nombre] como cliente"</p>
+  <p style="margin-bottom: 6px;">"Registra $500 en materiales para [trabajo]"</p>
+  <p style="margin-bottom: 6px;">"Quien no ha tenido trabajo en 3 meses?"</p>
+  <p style="margin-bottom: 6px;">"A que le debo dar seguimiento?"</p>
+  <p style="margin-bottom: 6px;">"Resumen del negocio este mes"</p>
+  <p style="margin-bottom: 6px;">"Convierte el presupuesto EST-008 a factura"</p>
+  <p style="margin-bottom: 6px;">"Asigna a Miguel al trabajo de Mendoza"</p>
+  <p style="margin-bottom: 6px;">"Siempre usa 15% de markup en mano de obra"</p>
+  <p style="margin-bottom: 6px;">"Compara este mes contra el mes pasado"</p>
+</div>
+
+<div class="footer">
+  WorkPilot AI Assistant — Guia de Usuario &middot; Abril 2026
+</div>
+
+</body>
+</html>

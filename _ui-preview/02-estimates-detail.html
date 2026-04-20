@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Estimate Detail — Before / After</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --wp-primary: #1E3A5F; --wp-primary-dark: #0F2440; --wp-primary-light: #2A4F7A;
+    --wp-accent: #F97316; --wp-accent-hover: #ea6c0a; --wp-accent-subtle: #FFF7ED;
+    --wp-success: #059669; --wp-success-bg: #ECFDF5;
+    --wp-warning: #D97706; --wp-warning-bg: #FFFBEB;
+    --wp-error: #DC2626; --wp-error-bg: #FEF2F2;
+    --wp-info: #2563EB; --wp-info-bg: #EFF6FF;
+    --wp-purple: #7C3AED; --wp-purple-bg: #F5F3FF;
+    --wp-text-primary: #0F172A; --wp-text-secondary: #475569; --wp-text-muted: #94A3B8;
+    --wp-bg-primary: #FFFFFF; --wp-bg-secondary: #F8FAFC; --wp-bg-muted: #F1F5F9;
+    --wp-border: #E2E8F0; --wp-border-light: #F1F5F9;
+    --wp-elevation-1: 0 1px 2px rgb(15 23 42 / 0.04), 0 1px 3px rgb(15 23 42 / 0.06);
+    --wp-elevation-2: 0 4px 12px rgb(15 23 42 / 0.05), 0 2px 4px rgb(15 23 42 / 0.04);
+    --wp-elevation-3: 0 12px 40px rgb(15 23 42 / 0.08), 0 4px 12px rgb(15 23 42 / 0.04);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #EEF2F6; color: var(--wp-text-primary); -webkit-font-smoothing: antialiased; }
+  .shell { max-width: 1480px; margin: 0 auto; padding: 32px 24px 64px; }
+  .page-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--wp-border); }
+  .page-header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .page-header p { font-size: 13px; color: var(--wp-text-muted); }
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .compare-col { background: white; border: 1px solid var(--wp-border); border-radius: 14px; overflow: hidden; box-shadow: 0 1px 2px rgb(0 0 0 / 0.03); }
+  .compare-label { padding: 14px 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 1px solid var(--wp-border-light); background: var(--wp-bg-secondary); }
+  .compare-label.before { color: #64748B; }
+  .compare-label.after { color: var(--wp-accent); background: var(--wp-accent-subtle); }
+  .viewport { padding: 16px; background: var(--wp-bg-secondary); min-height: 680px; }
+  /* ═════════ BEFORE ═════════ */
+  .b-breadcrumb { font-size: 12px; color: var(--wp-text-muted); margin-bottom: 8px; }
+  .b-breadcrumb a { color: var(--wp-accent); text-decoration: none; }
+  .b-doc-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 20px;
+  }
+  .b-doc-title { font-size: 24px; font-weight: 700; }
+  .b-doc-meta { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+  .b-badge { font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
+  .b-badge-sent { background: var(--wp-info-bg); color: var(--wp-info); }
+  .b-view-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; padding: 3px 8px; border-radius: 999px;
+    background: var(--wp-info-bg); color: var(--wp-info);
+  }
+  .b-btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .b-btn {
+    padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;
+    border: 1px solid var(--wp-border); background: white; color: var(--wp-text-secondary);
+    display: inline-flex; align-items: center; gap: 4px; cursor: pointer;
+  }
+  .b-btn-primary { background: var(--wp-accent); color: white; border: none; }
+  .b-btn-purple { background: #7C3AED; color: white; border: none; }
+  .b-btn-danger { color: var(--wp-error); border-color: #FECACA; }
+  .b-card {
+    background: white; border: 1px solid var(--wp-border);
+    border-radius: 12px; padding: 16px; margin-bottom: 16px;
+  }
+  .b-status-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .b-status-row span.label { font-size: 13px; color: var(--wp-text-muted); margin-right: 4px; }
+  .b-status-pill {
+    padding: 5px 10px; border-radius: 999px; font-size: 11px; font-weight: 600;
+    background: var(--wp-bg-muted); color: var(--wp-text-secondary);
+    border: none; cursor: pointer;
+  }
+  .b-status-pill-active { background: var(--wp-primary); color: white; }
+  .b-info-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px; font-size: 13px;
+  }
+  .b-info-grid .k { color: var(--wp-text-muted); font-size: 12px; margin-bottom: 3px; }
+  .b-info-grid .v { font-weight: 500; }
+  .b-table { width: 100%; font-size: 13px; border-collapse: collapse; }
+  .b-table th {
+    text-align: left; padding: 8px 0; font-size: 10px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--wp-text-muted); border-bottom: 1px solid var(--wp-border);
+  }
+  .b-table td { padding: 10px 0; border-bottom: 1px solid var(--wp-border-light); }
+  .b-totals { margin-left: auto; max-width: 280px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--wp-border); }
+  .b-totals .row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; color: var(--wp-text-muted); }
+  .b-totals .row.total { font-weight: 700; color: var(--wp-text-primary); font-size: 15px; padding-top: 10px; margin-top: 4px; border-top: 1px solid var(--wp-border); }
+
+  /* ═════════ AFTER ═════════ */
+  .a-doc-layout {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 16px;
+  }
+  .a-doc-main { min-width: 0; }
+  .a-doc-sidebar { display: flex; flex-direction: column; gap: 12px; }
+  .a-breadcrumb { font-size: 12px; color: var(--wp-text-muted); margin-bottom: 10px; display: flex; gap: 6px; align-items: center; }
+  .a-breadcrumb a { color: var(--wp-text-secondary); text-decoration: none; }
+  .a-breadcrumb a:hover { color: var(--wp-accent); }
+  .a-breadcrumb svg { color: var(--wp-text-muted); }
+  .a-doc-header-card {
+    background: white; border: 1px solid var(--wp-border);
+    border-radius: 14px; padding: 20px; margin-bottom: 12px;
+    box-shadow: var(--wp-elevation-1);
+  }
+  .a-doc-header-top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+  }
+  .a-doc-title {
+    font-size: 26px; font-weight: 700; letter-spacing: -0.025em;
+    line-height: 1.1;
+  }
+  .a-doc-title-sub {
+    font-size: 13px; color: var(--wp-text-muted); margin-top: 4px;
+  }
+  .a-doc-total-block {
+    text-align: right;
+  }
+  .a-doc-total-label {
+    font-size: 10px; font-weight: 700; color: var(--wp-text-muted);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .a-doc-total-value {
+    font-size: 26px; font-weight: 800; letter-spacing: -0.025em;
+    color: var(--wp-text-primary); font-variant-numeric: tabular-nums;
+    line-height: 1.1; margin-top: 2px;
+  }
+  .a-doc-meta-row {
+    display: flex; gap: 16px; margin-top: 16px;
+    padding-top: 16px; border-top: 1px solid var(--wp-border-light);
+    flex-wrap: wrap;
+  }
+  .a-meta-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--wp-text-secondary);
+  }
+  .a-meta-chip svg { color: var(--wp-text-muted); }
+  .a-meta-chip strong { color: var(--wp-text-primary); font-weight: 600; }
+  .a-status-pill-lg {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 600;
+    background: var(--wp-info-bg); color: var(--wp-info);
+  }
+  .a-status-pill-lg .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--wp-info); box-shadow: 0 0 0 4px rgb(37 99 235 / 0.15); }
+
+  .a-action-bar {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    background: white; border: 1px solid var(--wp-border);
+    border-radius: 12px; padding: 8px;
+    margin-bottom: 12px;
+    box-shadow: var(--wp-elevation-1);
+  }
+  .a-action-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 600;
+    border: none; background: transparent; color: var(--wp-text-secondary);
+    cursor: pointer; transition: all 120ms;
+  }
+  .a-action-btn:hover { background: var(--wp-bg-muted); color: var(--wp-text-primary); }
+  .a-action-btn.primary {
+    background: var(--wp-accent); color: white;
+    box-shadow: 0 1px 2px rgb(249 115 22 / 0.3);
+  }
+  .a-action-btn.primary:hover { background: var(--wp-accent-hover); color: white; }
+  .a-action-btn.purple {
+    background: var(--wp-purple); color: white;
+  }
+  .a-action-btn.purple:hover { background: #6D28D9; color: white; }
+  .a-action-divider { width: 1px; background: var(--wp-border); margin: 6px 4px; }
+
+  .a-section {
+    background: white; border: 1px solid var(--wp-border);
+    border-radius: 14px; padding: 20px;
+    margin-bottom: 12px;
+    box-shadow: var(--wp-elevation-1);
+  }
+  .a-section-title {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--wp-text-muted);
+    margin-bottom: 12px;
+  }
+  .a-client-card {
+    display: flex; gap: 12px; align-items: center;
+  }
+  .a-client-avatar-lg {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--wp-primary) 0%, var(--wp-primary-light) 100%);
+    color: white; font-size: 16px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .a-client-info { flex: 1; }
+  .a-client-info .name { font-weight: 700; font-size: 15px; }
+  .a-client-info .sub { font-size: 12px; color: var(--wp-text-muted); margin-top: 2px; }
+  .a-job-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 10px; border-radius: 8px;
+    background: var(--wp-accent-subtle); color: var(--wp-accent);
+    font-size: 11px; font-weight: 600;
+  }
+
+  .a-line-table { width: 100%; font-size: 13px; border-collapse: collapse; }
+  .a-line-table thead {
+    background: var(--wp-bg-secondary);
+  }
+  .a-line-table th {
+    text-align: left; padding: 10px 14px;
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--wp-text-muted);
+    border-bottom: 1px solid var(--wp-border);
+  }
+  .a-line-table th.center { text-align: center; }
+  .a-line-table th.right { text-align: right; }
+  .a-line-table td { padding: 12px 14px; border-bottom: 1px solid var(--wp-border-light); }
+  .a-line-table tbody tr:last-child td { border-bottom: none; }
+  .a-line-table td.center { text-align: center; color: var(--wp-text-muted); }
+  .a-line-table td.right { text-align: right; }
+  .a-line-table .type-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 10px; font-weight: 600; padding: 3px 8px;
+    border-radius: 6px; text-transform: capitalize;
+  }
+  .type-chip.labor { background: #EFF6FF; color: #1D4ED8; }
+  .type-chip.material { background: #F0FDF4; color: #15803D; }
+  .type-chip.subcontractor { background: #FEF3C7; color: #92400E; }
+  .type-chip.other { background: var(--wp-bg-muted); color: var(--wp-text-secondary); }
+
+  .a-totals-card {
+    background: linear-gradient(135deg, var(--wp-primary) 0%, var(--wp-primary-dark) 100%);
+    color: white;
+    border-radius: 14px; padding: 20px;
+    box-shadow: var(--wp-elevation-2);
+  }
+  .a-totals-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.7; }
+  .a-totals-value { font-size: 32px; font-weight: 800; letter-spacing: -0.025em; font-variant-numeric: tabular-nums; margin: 4px 0 12px; }
+  .a-totals-breakdown { display: flex; flex-direction: column; gap: 6px; padding-top: 12px; border-top: 1px solid rgb(255 255 255 / 0.2); }
+  .a-totals-breakdown .row { display: flex; justify-content: space-between; font-size: 12px; opacity: 0.9; }
+
+  .a-portal-card {
+    background: white; border: 1px dashed var(--wp-info);
+    border-radius: 14px; padding: 16px;
+    box-shadow: var(--wp-elevation-1);
+  }
+  .a-portal-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--wp-info);
+    margin-bottom: 10px;
+  }
+  .a-portal-link {
+    background: var(--wp-bg-secondary); border-radius: 8px;
+    padding: 8px 10px; font-size: 11px; color: var(--wp-text-muted);
+    word-break: break-all; margin-bottom: 10px;
+    font-family: ui-monospace, 'SF Mono', Monaco, monospace;
+  }
+  .a-portal-actions { display: flex; gap: 6px; }
+  .a-portal-actions button {
+    flex: 1;
+    padding: 6px 10px; font-size: 11px; font-weight: 600;
+    border-radius: 8px; cursor: pointer;
+  }
+  .a-portal-actions .copy {
+    background: var(--wp-info); color: white; border: none;
+  }
+  .a-portal-actions .share {
+    background: white; color: var(--wp-info); border: 1px solid var(--wp-info);
+  }
+  .a-activity-card {
+    background: white; border: 1px solid var(--wp-border);
+    border-radius: 14px; padding: 16px;
+    box-shadow: var(--wp-elevation-1);
+  }
+  .a-activity-title {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--wp-text-muted); margin-bottom: 12px;
+  }
+  .a-activity-item {
+    display: flex; gap: 10px; padding: 8px 0;
+    border-bottom: 1px solid var(--wp-border-light);
+    font-size: 12px;
+  }
+  .a-activity-item:last-child { border-bottom: none; }
+  .a-activity-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    margin-top: 5px; flex-shrink: 0;
+  }
+  .a-activity-dot.info { background: var(--wp-info); }
+  .a-activity-dot.success { background: var(--wp-success); }
+  .a-activity-dot.muted { background: var(--wp-text-muted); }
+  .a-activity-label { font-weight: 600; }
+  .a-activity-time { color: var(--wp-text-muted); font-size: 11px; margin-top: 2px; }
+
+  /* Mobile */
+  .mobile-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 40px; }
+  .phone-frame {
+    background: #1a1a1a; border-radius: 32px; padding: 10px;
+    width: 395px; margin: 0 auto;
+    box-shadow: 0 20px 60px rgb(0 0 0 / 0.15);
+  }
+  .phone-screen {
+    background: white; border-radius: 24px; overflow: hidden; height: 760px;
+  }
+  .mob-nav {
+    display: flex; align-items: center; padding: 10px 16px;
+    border-bottom: 1px solid var(--wp-border-light);
+  }
+  .mob-nav .back { color: var(--wp-accent); font-size: 14px; font-weight: 500; flex: 1; }
+  .mob-nav .title { font-size: 14px; font-weight: 700; }
+  .mob-nav .action { color: var(--wp-accent); font-size: 14px; font-weight: 500; flex: 1; text-align: right; }
+  .mob-actions-strip {
+    display: flex; border-bottom: 1px solid var(--wp-border-light);
+  }
+  .mob-action-item {
+    flex: 1; padding: 10px 0; text-align: center;
+    font-size: 9px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.03em; color: var(--wp-text-secondary);
+  }
+  .mob-action-item svg { display: block; margin: 0 auto 2px; }
+
+  .mob-status-bar {
+    padding: 6px 0; text-align: center;
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    background: var(--wp-info-bg); color: var(--wp-info);
+  }
+
+  .mob-doc { padding: 16px 20px; }
+  .mob-company {
+    display: flex; gap: 10px; padding-bottom: 16px; margin-bottom: 16px;
+    border-bottom: 1px solid var(--wp-border-light);
+  }
+  .mob-logo {
+    width: 42px; height: 42px; border-radius: 10px;
+    background: var(--wp-primary); color: white;
+    font-size: 14px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .mob-company-info p { font-size: 13px; font-weight: 700; line-height: 1.2; }
+  .mob-company-info .sub { font-size: 10px; color: var(--wp-text-muted); margin-top: 2px; font-weight: 400; }
+  .mob-section { padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px solid var(--wp-border-light); }
+  .mob-section-label { font-size: 10px; font-weight: 700; color: var(--wp-text-primary); margin-bottom: 4px; text-transform: none; }
+  .mob-kv { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; }
+  .mob-kv .k { color: var(--wp-text-muted); }
+  .mob-kv .v { color: var(--wp-text-primary); }
+  .mob-total-big {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding-top: 10px; margin-top: 4px;
+    border-top: 2px solid var(--wp-primary);
+    font-weight: 700;
+  }
+  .mob-total-big .k { font-size: 14px; }
+  .mob-total-big .v { font-size: 16px; }
+
+  /* NEW mobile detail */
+  .mob-nav-new {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 12px; border-bottom: 1px solid var(--wp-border-light);
+  }
+  .mob-nav-new .back {
+    display: flex; align-items: center; gap: 2px;
+    color: var(--wp-text-primary); font-size: 14px; font-weight: 600;
+  }
+  .mob-nav-new .back svg { color: var(--wp-accent); }
+  .mob-nav-new .actions { display: flex; gap: 4px; }
+  .mob-nav-new .actions button {
+    width: 32px; height: 32px; border-radius: 8px;
+    border: none; background: var(--wp-bg-secondary);
+    color: var(--wp-text-secondary);
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .mob-hero-new {
+    padding: 18px 20px 14px;
+    background: linear-gradient(135deg, var(--wp-primary) 0%, var(--wp-primary-dark) 100%);
+    color: white;
+  }
+  .mob-hero-new .est-num {
+    font-size: 11px; font-weight: 700; opacity: 0.7;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .mob-hero-new .total {
+    font-size: 36px; font-weight: 800; letter-spacing: -0.025em;
+    margin: 2px 0 8px; font-variant-numeric: tabular-nums;
+  }
+  .mob-hero-new .client-row {
+    display: flex; justify-content: space-between;
+    padding-top: 12px; border-top: 1px solid rgb(255 255 255 / 0.18);
+    font-size: 12px;
+  }
+  .mob-hero-new .client-row .k { opacity: 0.7; }
+  .mob-hero-new .client-row .v { font-weight: 600; }
+
+  .mob-status-new {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 20px; background: var(--wp-info-bg);
+  }
+  .mob-status-new .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; background: white; border-radius: 999px;
+    font-size: 11px; font-weight: 700; color: var(--wp-info);
+  }
+  .mob-status-new .pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--wp-info); }
+  .mob-status-new .viewed {
+    font-size: 11px; color: var(--wp-info); margin-left: auto;
+    display: flex; align-items: center; gap: 4px;
+  }
+
+  .mob-actions-new {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px; padding: 12px;
+  }
+  .mob-action-primary {
+    background: var(--wp-accent); color: white;
+    padding: 10px; border-radius: 10px;
+    font-size: 13px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    border: none;
+  }
+  .mob-action-secondary {
+    background: var(--wp-purple); color: white;
+    padding: 10px; border-radius: 10px;
+    font-size: 13px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    border: none;
+  }
+  .mob-quick-actions {
+    display: flex; justify-content: space-between;
+    padding: 0 12px 14px;
+  }
+  .mob-quick-item {
+    flex: 1; text-align: center;
+    padding: 8px 4px;
+    background: var(--wp-bg-secondary);
+    border-radius: 8px;
+    margin: 0 3px;
+    font-size: 10px; font-weight: 600;
+    color: var(--wp-text-secondary);
+  }
+  .mob-quick-item svg { display: block; margin: 0 auto 4px; color: var(--wp-primary); }
+
+  .mob-line-new {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding: 10px 0; border-bottom: 1px solid var(--wp-border-light);
+  }
+  .mob-line-new:last-child { border-bottom: none; }
+  .mob-line-new .body { flex: 1; margin-right: 8px; }
+  .mob-line-new .type {
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.05em; color: #1D4ED8; background: #EFF6FF;
+    padding: 2px 6px; border-radius: 4px; display: inline-block;
+    margin-bottom: 2px;
+  }
+  .mob-line-new .type.material { color: #15803D; background: #F0FDF4; }
+  .mob-line-new .desc { font-size: 13px; line-height: 1.3; }
+  .mob-line-new .qty-row { font-size: 11px; color: var(--wp-text-muted); margin-top: 2px; }
+  .mob-line-new .amount { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="page-header">
+    <div>
+      <h1>Estimate Detail · [id]</h1>
+      <p>Vista de detalle + acciones · Desktop</p>
+    </div>
+  </div>
+
+  <div class="compare-grid">
+    <!-- BEFORE -->
+    <div class="compare-col">
+      <div class="compare-label before">● Actual (Before)</div>
+      <div class="viewport" style="min-height: 900px;">
+        <div class="b-breadcrumb"><a href="#">Estimates</a> / EST-1042</div>
+        <div class="b-doc-header">
+          <div>
+            <div class="b-doc-title">EST-1042</div>
+            <div class="b-doc-meta">
+              <span class="b-badge b-badge-sent">sent</span>
+              <span class="b-view-chip">👁 Viewed 3 times</span>
+              <span style="color: var(--wp-text-muted); font-size: 11px;">💼 Kitchen remodel →</span>
+            </div>
+          </div>
+          <div class="b-btn-row">
+            <button class="b-btn-primary">✉ Email to Client</button>
+            <button class="b-btn-purple">→ Convert to Invoice</button>
+            <button class="b-btn">🛒 Materials List</button>
+            <button class="b-btn">📄 Print</button>
+            <button class="b-btn">✎ Edit</button>
+            <button class="b-btn b-btn-danger">🗑 Delete</button>
+          </div>
+        </div>
+        <div class="b-card">
+          <div class="b-status-row">
+            <span class="label">Status:</span>
+            <button class="b-status-pill">Draft</button>
+            <button class="b-status-pill b-status-pill-active">Sent</button>
+            <button class="b-status-pill">Approved</button>
+            <button class="b-status-pill">Rejected</button>
+            <button class="b-status-pill">Converted</button>
+          </div>
+        </div>
+        <div class="b-card">
+          <div class="b-info-grid">
+            <div><div class="k">Client</div><div class="v">María González</div></div>
+            <div><div class="k">Email</div><div class="v">maria@example.com</div></div>
+            <div><div class="k">Valid Until</div><div class="v">May 14, 2026</div></div>
+          </div>
+        </div>
+        <div class="b-card">
+          <table class="b-table">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Description</th>
+                <th style="text-align:center;">Qty</th>
+                <th style="text-align:right;">Unit Price</th>
+                <th style="text-align:right;">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="b-badge b-badge-sent" style="background: var(--wp-bg-muted); color: var(--wp-text-secondary);">labor</span></td>
+                <td>Kitchen sink replacement</td>
+                <td style="text-align:center; color: var(--wp-text-muted)">4</td>
+                <td style="text-align:right; color: var(--wp-text-muted)">$125.00</td>
+                <td style="text-align:right; font-weight:500;">$500.00</td>
+              </tr>
+              <tr>
+                <td><span class="b-badge" style="background: var(--wp-bg-muted); color: var(--wp-text-secondary);">material</span></td>
+                <td>PEX pipe, fittings, valves</td>
+                <td style="text-align:center; color: var(--wp-text-muted)">1</td>
+                <td style="text-align:right; color: var(--wp-text-muted)">$185.00</td>
+                <td style="text-align:right; font-weight:500;">$185.00</td>
+              </tr>
+              <tr>
+                <td><span class="b-badge" style="background: var(--wp-bg-muted); color: var(--wp-text-secondary);">labor</span></td>
+                <td>Dishwasher line installation</td>
+                <td style="text-align:center; color: var(--wp-text-muted)">3</td>
+                <td style="text-align:right; color: var(--wp-text-muted)">$125.00</td>
+                <td style="text-align:right; font-weight:500;">$375.00</td>
+              </tr>
+              <tr>
+                <td><span class="b-badge" style="background: var(--wp-bg-muted); color: var(--wp-text-secondary);">material</span></td>
+                <td>Faucet (brushed nickel)</td>
+                <td style="text-align:center; color: var(--wp-text-muted)">1</td>
+                <td style="text-align:right; color: var(--wp-text-muted)">$340.00</td>
+                <td style="text-align:right; font-weight:500;">$340.00</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="b-totals">
+            <div class="row"><span>Subtotal</span><span>$1,400.00</span></div>
+            <div class="row"><span>Tax (8%)</span><span>$112.00</span></div>
+            <div class="row total"><span>Total</span><span>$1,512.00</span></div>
+          </div>
+        </div>
+        <div class="b-card" style="font-size: 13px;">
+          <div style="color: var(--wp-text-muted); font-size: 12px; margin-bottom: 4px;">Notes</div>
+          <p style="color: var(--wp-text-secondary);">Work to start within 2 weeks of approval. 50% deposit required to schedule.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- AFTER -->
+    <div class="compare-col">
+      <div class="compare-label after">◆ Rediseño (After)</div>
+      <div class="viewport" style="min-height: 900px;">
+        <div class="a-breadcrumb">
+          <a href="#">Estimates</a>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+          <span>EST-1042</span>
+        </div>
+
+        <div class="a-doc-layout">
+          <div class="a-doc-main">
+            <div class="a-doc-header-card">
+              <div class="a-doc-header-top">
+                <div>
+                  <div class="a-doc-title">EST-1042</div>
+                  <div class="a-doc-title-sub">Creado el 14 de Abril · Expira May 14</div>
+                </div>
+                <div class="a-doc-total-block">
+                  <div class="a-doc-total-label">Total</div>
+                  <div class="a-doc-total-value">$1,512.00</div>
+                </div>
+              </div>
+              <div class="a-doc-meta-row">
+                <span class="a-status-pill-lg"><span class="dot"></span>Sent · awaiting reply</span>
+                <span class="a-meta-chip">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <strong>3</strong> views
+                </span>
+                <span class="a-meta-chip">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                  Linked to <strong>Kitchen remodel</strong>
+                </span>
+              </div>
+            </div>
+
+            <div class="a-action-bar">
+              <button class="a-action-btn primary">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22 6 12 13 2 6"/></svg>
+                Email
+              </button>
+              <button class="a-action-btn purple">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                Convert to Invoice
+              </button>
+              <span class="a-action-divider"></span>
+              <button class="a-action-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                Materials
+              </button>
+              <button class="a-action-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                Print
+              </button>
+              <button class="a-action-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Edit
+              </button>
+              <div style="flex:1"></div>
+              <button class="a-action-btn" style="color: var(--wp-error);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </button>
+            </div>
+
+            <div class="a-section">
+              <div class="a-section-title">Prepared for</div>
+              <div class="a-client-card">
+                <div class="a-client-avatar-lg">MG</div>
+                <div class="a-client-info">
+                  <div class="name">María González</div>
+                  <div class="sub">maria@example.com · (555) 234-9811</div>
+                </div>
+                <div class="a-job-chip">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                  Kitchen remodel →
+                </div>
+              </div>
+            </div>
+
+            <div class="a-section" style="padding: 0; overflow: hidden;">
+              <table class="a-line-table">
+                <thead>
+                  <tr>
+                    <th>Description</th>
+                    <th class="center">Qty</th>
+                    <th class="right">Rate</th>
+                    <th class="right">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <span class="type-chip labor">Labor</span>
+                      <div style="margin-top: 4px;">Kitchen sink replacement</div>
+                    </td>
+                    <td class="center">4</td>
+                    <td class="right">$125.00</td>
+                    <td class="right"><strong style="font-variant-numeric: tabular-nums;">$500.00</strong></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="type-chip material">Material</span>
+                      <div style="margin-top: 4px;">PEX pipe, fittings, valves</div>
+                    </td>
+                    <td class="center">1</td>
+                    <td class="right">$185.00</td>
+                    <td class="right"><strong style="font-variant-numeric: tabular-nums;">$185.00</strong></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="type-chip labor">Labor</span>
+                      <div style="margin-top: 4px;">Dishwasher line installation</div>
+                    </td>
+                    <td class="center">3</td>
+                    <td class="right">$125.00</td>
+                    <td class="right"><strong style="font-variant-numeric: tabular-nums;">$375.00</strong></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="type-chip material">Material</span>
+                      <div style="margin-top: 4px;">Faucet (brushed nickel)</div>
+                    </td>
+                    <td class="center">1</td>
+                    <td class="right">$340.00</td>
+                    <td class="right"><strong style="font-variant-numeric: tabular-nums;">$340.00</strong></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="a-section">
+              <div class="a-section-title">Notes</div>
+              <p style="font-size: 13px; color: var(--wp-text-secondary); line-height: 1.5;">
+                Work to start within 2 weeks of approval. 50% deposit required to schedule.
+                Includes all materials and labor. One-year warranty on workmanship.
+              </p>
+            </div>
+          </div>
+
+          <div class="a-doc-sidebar">
+            <div class="a-totals-card">
+              <div class="a-totals-label">Total amount</div>
+              <div class="a-totals-value">$1,512.00</div>
+              <div class="a-totals-breakdown">
+                <div class="row"><span>Subtotal</span><span>$1,400.00</span></div>
+                <div class="row"><span>Tax (8%)</span><span>$112.00</span></div>
+              </div>
+            </div>
+
+            <div class="a-activity-card">
+              <div class="a-activity-title">Timeline</div>
+              <div class="a-activity-item">
+                <div class="a-activity-dot success"></div>
+                <div>
+                  <div class="a-activity-label">Client viewed</div>
+                  <div class="a-activity-time">3 times · last Apr 15, 2:14pm</div>
+                </div>
+              </div>
+              <div class="a-activity-item">
+                <div class="a-activity-dot info"></div>
+                <div>
+                  <div class="a-activity-label">Email sent</div>
+                  <div class="a-activity-time">Apr 14, 9:03am</div>
+                </div>
+              </div>
+              <div class="a-activity-item">
+                <div class="a-activity-dot muted"></div>
+                <div>
+                  <div class="a-activity-label">Created</div>
+                  <div class="a-activity-time">Apr 14, 8:45am</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="a-portal-card">
+              <div class="a-portal-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                Client portal
+              </div>
+              <div class="a-portal-link">workpilot.mrlabs.io/en/portal/tok_8f3n2...</div>
+              <div class="a-portal-actions">
+                <button class="copy">Copy link</button>
+                <button class="share">Share</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOBILE -->
+  <div class="page-header" style="margin-top: 48px;">
+    <div>
+      <h1>Vista Móvil · Detail</h1>
+      <p>Pantalla 375px</p>
+    </div>
+  </div>
+
+  <div class="mobile-compare">
+    <div>
+      <div class="compare-label before" style="text-align: center; border-radius: 8px; margin-bottom: 16px;">● Actual (Before)</div>
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <div class="mob-nav">
+            <span class="back">← Estimates</span>
+            <span class="title">#1042</span>
+            <span class="action">Edit</span>
+          </div>
+          <div class="mob-actions-strip">
+            <div class="mob-action-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              SEND
+            </div>
+            <div class="mob-action-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/></svg>
+              PRINT
+            </div>
+            <div class="mob-action-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              INVOICE
+            </div>
+            <div class="mob-action-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              MORE
+            </div>
+          </div>
+          <div class="mob-status-bar">SENT ▾</div>
+          <div class="mob-doc">
+            <div class="mob-company">
+              <div class="mob-logo">WP</div>
+              <div class="mob-company-info">
+                <p>WorkPilot</p>
+                <div class="sub">Phone: (555) 100-2000</div>
+                <div class="sub">Email: ops@workpilot.com</div>
+              </div>
+            </div>
+            <div class="mob-section">
+              <p class="mob-section-label">Prepared For</p>
+              <p style="font-size: 14px; font-weight: 600;">María González</p>
+              <p style="font-size: 11px; color: var(--wp-text-muted);">maria@example.com</p>
+            </div>
+            <div class="mob-section">
+              <div class="mob-kv"><span class="k">Estimate #</span><span class="v">1042</span></div>
+              <div class="mob-kv"><span class="k">Date</span><span class="v">04/14/2026</span></div>
+              <div class="mob-kv"><span class="k">Valid Until</span><span class="v">05/14/2026</span></div>
+            </div>
+            <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--wp-text-muted); letter-spacing: 0.04em; display: flex; justify-content: space-between; padding-bottom: 4px; border-bottom: 2px solid var(--wp-border);">
+              <span>DESCRIPTION</span>
+              <span style="display: flex; gap: 16px;"><span>QTY</span><span>TOTAL</span></span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--wp-border-light); font-size: 12px;">
+              <span><span style="color: var(--wp-text-muted); font-size: 10px;">labor · </span>Kitchen sink</span>
+              <span style="display: flex; gap: 16px;"><span>4</span><span>$500.00</span></span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--wp-border-light); font-size: 12px;">
+              <span><span style="color: var(--wp-text-muted); font-size: 10px;">material · </span>PEX pipe</span>
+              <span style="display: flex; gap: 16px;"><span>1</span><span>$185.00</span></span>
+            </div>
+            <div class="mob-total-big">
+              <span class="k">Total</span>
+              <span class="v">$1,512.00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="compare-label after" style="text-align: center; border-radius: 8px; margin-bottom: 16px;">◆ Rediseño (After)</div>
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <div class="mob-nav-new">
+            <div class="back">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+              Estimates
+            </div>
+            <div class="actions">
+              <button>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <button>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="mob-hero-new">
+            <div class="est-num">Estimate · #1042</div>
+            <div class="total">$1,512.00</div>
+            <div class="client-row">
+              <span class="k">María González</span>
+              <span class="v">Valid until May 14</span>
+            </div>
+          </div>
+
+          <div class="mob-status-new">
+            <span class="pill"><span class="dot"></span>Sent</span>
+            <span class="viewed">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              Viewed 3x · 2h ago
+            </span>
+          </div>
+
+          <div class="mob-actions-new">
+            <button class="mob-action-primary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Resend
+            </button>
+            <button class="mob-action-secondary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              Invoice it
+            </button>
+          </div>
+
+          <div class="mob-quick-actions">
+            <div class="mob-quick-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/></svg>
+              Print
+            </div>
+            <div class="mob-quick-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+              Materials
+            </div>
+            <div class="mob-quick-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+              SMS
+            </div>
+            <div class="mob-quick-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              Portal
+            </div>
+          </div>
+
+          <div style="padding: 4px 20px 16px;">
+            <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--wp-text-muted); letter-spacing: 0.06em; padding-bottom: 6px; border-bottom: 1px solid var(--wp-border);">LINE ITEMS · 4</div>
+            <div class="mob-line-new">
+              <div class="body">
+                <span class="type">Labor</span>
+                <div class="desc">Kitchen sink replacement</div>
+                <div class="qty-row">4 × $125.00</div>
+              </div>
+              <div class="amount">$500.00</div>
+            </div>
+            <div class="mob-line-new">
+              <div class="body">
+                <span class="type material">Material</span>
+                <div class="desc">PEX pipe, fittings, valves</div>
+                <div class="qty-row">1 × $185.00</div>
+              </div>
+              <div class="amount">$185.00</div>
+            </div>
+            <div class="mob-line-new">
+              <div class="body">
+                <span class="type">Labor</span>
+                <div class="desc">Dishwasher line install</div>
+                <div class="qty-row">3 × $125.00</div>
+              </div>
+              <div class="amount">$375.00</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

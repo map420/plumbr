@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WorkPilot AI — Conversational Rich Demo (Opción B: JSON)</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: #F8FAFC;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.demo-header {
+  max-width: 560px;
+  margin: 0 auto 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.demo-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0F172A;
+}
+
+.demo-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: #94A3B8;
+  background: #F1F5F9;
+  padding: 4px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+
+.demo-tabs {
+  max-width: 560px;
+  margin: 0 auto 20px;
+  display: flex;
+  gap: 4px;
+  background: white;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.demo-tab {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  background: transparent;
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  color: #94A3B8;
+  cursor: pointer;
+  text-align: center;
+}
+
+.demo-tab:hover { color: #475569; }
+.demo-tab.active { background: #F1F5F9; color: #1E3A5F; font-weight: 600; }
+
+/* Chat frame */
+.chat-frame {
+  max-width: 560px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #E2E8F0;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+
+.chat-body { padding: 20px 16px; }
+
+/* Messages */
+.msg { margin-bottom: 16px; animation: msgIn 0.35s ease; }
+@keyframes msgIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.msg-user { display: flex; justify-content: flex-end; }
+.msg-user .bubble {
+  background: #1E3A5F;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 16px 16px 4px 16px;
+  font-size: 13px;
+  max-width: 320px;
+  line-height: 1.5;
+}
+
+.msg-bot { display: flex; gap: 8px; align-items: flex-start; }
+
+.bot-bubble {
+  background: white;
+  border: 1px solid #F1F5F9;
+  border-radius: 16px 16px 16px 4px;
+  padding: 20px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  flex: 1;
+}
+
+/* ═══ RICH BLOCKS ═══ */
+.rich-blocks > * + * { margin-top: 20px; }
+
+/* Prose */
+.blk-prose {
+  font-size: 14px;
+  line-height: 1.75;
+  color: #0F172A;
+}
+
+.blk-prose .n {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-weight: 600;
+  color: #1E3A5F;
+  background: #F1F5F9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.blk-prose .h {
+  font-weight: 600;
+  color: #0F172A;
+}
+
+/* Metrics */
+.blk-metrics {
+  display: flex;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #E2E8F0;
+}
+
+.blk-metric-item {
+  flex: 1;
+  padding: 14px 10px;
+  text-align: center;
+  background: white;
+  border-right: 1px solid #E2E8F0;
+}
+
+.blk-metric-item:last-child { border-right: none; }
+
+.blk-metric-val {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 17px;
+  font-weight: 600;
+  color: #0F172A;
+}
+
+.blk-metric-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: #94A3B8;
+  margin-top: 4px;
+  letter-spacing: 0.3px;
+}
+
+/* Insights */
+.blk-insights { display: flex; flex-direction: column; gap: 4px; }
+
+.blk-insight {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  background: #F8FAFC;
+  color: #475569;
+  border-left: 3px solid #E2E8F0;
+}
+
+.blk-insight strong { font-weight: 600; color: #0F172A; }
+.blk-insight-icon { flex-shrink: 0; font-size: 11px; margin-top: 3px; opacity: 0.7; }
+
+.blk-insight.positive { border-left-color: #059669; }
+.blk-insight.positive .blk-insight-icon { color: #059669; opacity: 1; }
+
+.blk-insight.negative { border-left-color: #DC2626; }
+.blk-insight.negative .blk-insight-icon { color: #DC2626; opacity: 1; }
+
+.blk-insight.warning { border-left-color: #D97706; }
+.blk-insight.warning .blk-insight-icon { color: #D97706; opacity: 1; }
+
+.blk-insight.info { border-left-color: #1E3A5F; }
+.blk-insight.info .blk-insight-icon { color: #1E3A5F; opacity: 1; }
+
+/* Client breakdown */
+.blk-clients {
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.blk-client-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 14px;
+  gap: 10px;
+}
+
+.blk-client-row + .blk-client-row { border-top: 1px solid #E2E8F0; }
+
+.blk-client-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.blk-client-dot.primary { background: #1E3A5F; }
+.blk-client-dot.secondary { background: #94A3B8; }
+
+.blk-client-detail { flex: 1; }
+.blk-client-name { font-size: 13px; font-weight: 500; color: #0F172A; }
+.blk-client-pct { font-size: 10px; color: #94A3B8; margin-top: 1px; }
+.blk-client-amount { font-family: ui-monospace, monospace; font-size: 13px; font-weight: 500; color: #0F172A; }
+
+.blk-client-bar { height: 3px; background: #F1F5F9; margin: 0 14px; border-radius: 2px; overflow: hidden; }
+.blk-client-bar-fill { height: 100%; border-radius: 2px; background: #1E3A5F; animation: barGrow 0.8s ease 0.4s forwards; transform: scaleX(0); transform-origin: left; }
+@keyframes barGrow { to { transform: scaleX(1); } }
+
+/* List */
+.blk-list { display: flex; flex-direction: column; gap: 4px; }
+
+.blk-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #0F172A;
+}
+
+.blk-list-item strong { font-weight: 600; }
+
+.blk-list-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  background: #F1F5F9;
+  color: #94A3B8;
+  font-weight: 600;
+}
+
+/* Table */
+.blk-table { border: 1px solid #E2E8F0; border-radius: 10px; overflow-x: auto; }
+.blk-table-head, .blk-table-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 10px 14px; }
+.blk-table-head { background: #F8FAFC; }
+.blk-table-head span { font-size: 10px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: #94A3B8; }
+.blk-table-row { border-top: 1px solid #F1F5F9; }
+.blk-table-row span { font-size: 13px; color: #0F172A; word-break: break-word; }
+
+/* Actions */
+.blk-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.blk-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.blk-action-primary { background: #1E3A5F; color: white; }
+.blk-action-primary:hover { filter: brightness(1.1); }
+.blk-action-ghost { background: transparent; color: #475569; border: 1px solid #E2E8F0; }
+.blk-action-ghost:hover { border-color: #94A3B8; color: #0F172A; }
+.blk-action-arrow { transition: transform 0.2s; font-size: 11px; }
+.blk-action-btn:hover .blk-action-arrow { transform: translateX(2px); }
+
+/* Heading */
+.blk-heading {
+  font-weight: 600;
+  color: #0F172A;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.blk-heading-h2 { font-size: 15px; margin-bottom: 6px; }
+.blk-heading-h3 { font-size: 13px; margin-bottom: 2px; border-bottom: none; padding-bottom: 0; }
+
+/* JSON view */
+.json-view {
+  max-width: 560px;
+  margin: 20px auto 0;
+  background: #1E293B;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.json-header {
+  padding: 10px 16px;
+  background: #0F172A;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.json-header span {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94A3B8;
+  letter-spacing: 0.5px;
+}
+
+.json-body {
+  padding: 16px;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #E2E8F0;
+  overflow-x: auto;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.json-body .key { color: #7DD3FC; }
+.json-body .str { color: #86EFAC; }
+.json-body .num { color: #FDE68A; }
+
+.chat-content { display: none; }
+.chat-content.active { display: block; }
+</style>
+</head>
+<body>
+
+<div class="demo-header">
+  <div class="demo-title">WorkPilot AI — Conversational Rich</div>
+  <div class="demo-badge">OPCIÓN B: JSON</div>
+</div>
+
+<div class="demo-tabs">
+  <button class="demo-tab active" onclick="showTab('summary')">Resumen</button>
+  <button class="demo-tab" onclick="showTab('jobs')">Trabajos</button>
+  <button class="demo-tab" onclick="showTab('advice')">Consejo</button>
+</div>
+
+<!-- ═══ CHAT FRAME ═══ -->
+<div class="chat-frame">
+  <div class="chat-body">
+
+    <!-- TAB 1: Resumen -->
+    <div class="chat-content active" id="tab-summary">
+      <div class="msg msg-user">
+        <div class="bubble">Dame el resumen del negocio de abril</div>
+      </div>
+      <div class="msg msg-bot">
+        <div class="bot-bubble">
+          <div class="rich-blocks" id="render-summary"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: Trabajos -->
+    <div class="chat-content" id="tab-jobs">
+      <div class="msg msg-user">
+        <div class="bubble">¿Qué trabajos tengo activos?</div>
+      </div>
+      <div class="msg msg-bot">
+        <div class="bot-bubble">
+          <div class="rich-blocks" id="render-jobs"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: Consejo -->
+    <div class="chat-content" id="tab-advice">
+      <div class="msg msg-user">
+        <div class="bubble">¿Qué debería hacer para mejorar?</div>
+      </div>
+      <div class="msg msg-bot">
+        <div class="bot-bubble">
+          <div class="rich-blocks" id="render-advice"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ JSON VIEW ═══ -->
+<div class="json-view">
+  <div class="json-header">
+    <span>JSON RESPONSE (Opción B)</span>
+    <span id="json-tab-label">summary</span>
+  </div>
+  <div class="json-body">
+    <pre id="json-display"></pre>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// OPCIÓN B: El AI devuelve JSON, el frontend renderiza
+// ═══════════════════════════════════════════
+
+// Estos son los JSON que el AI devolvería:
+
+const responses = {
+  summary: [
+    { type: "prose", content: 'Este mes cerraste con <span class="n">$4,226.75</span> de ingresos provenientes de <span class="h">4 facturas pagadas</span>. No tienes facturas vencidas ni estimados pendientes — tu cobranza está impecable.' },
+    { type: "metrics", items: [
+      { value: "5", label: "Activos" },
+      { value: "6", label: "Total" },
+      { value: "3", label: "Clientes" },
+      { value: "0", label: "Vencidas", color: "green" }
+    ]},
+    { type: "clients", items: [
+      { name: "Carlos Mendoza", pct: "99.7%", amount: "$4,215.75", dotColor: "primary" },
+      { name: "Moises AP", pct: "0.3%", amount: "$11.00", dotColor: "secondary" }
+    ]},
+    { type: "insights", items: [
+      { variant: "positive", icon: "✓", text: "<strong>Flujo de caja sano</strong> — cero cuentas vencidas y pipeline limpio." },
+      { variant: "negative", icon: "⚡", text: "<strong>Concentración 99.7%</strong> en Carlos Mendoza. Diversificar reduciría tu riesgo." }
+    ]},
+    { type: "actions", items: [
+      { label: "Ver dashboard", variant: "primary", action: "navigate:/dashboard" },
+      { label: "Nuevo estimado", variant: "ghost", action: "navigate:/estimates/new" }
+    ]}
+  ],
+
+  jobs: [
+    { type: "prose", content: 'Tienes <span class="n">5</span> trabajos activos ahora mismo. Ninguno tiene factura vencida, pero hay <span class="h">2 por facturar</span> esta semana.' },
+    { type: "list", items: [
+      { icon: "✓", text: "<strong>Remodelación cocina</strong> — Carlos Mendoza · $2,800" },
+      { icon: "✓", text: "<strong>Instalación pisos</strong> — Carlos Mendoza · $1,200" },
+      { icon: "!", text: "<strong>Pintura exterior</strong> — Carlos Mendoza · Por facturar" },
+      { icon: "!", text: "<strong>Reparación techo</strong> — Moises AP · Por facturar" },
+      { icon: "◻", text: "<strong>Plomería baño</strong> — Carlos Mendoza · En espera" }
+    ]},
+    { type: "insights", items: [
+      { variant: "warning", icon: "⏱", text: "Tienes <strong>2 trabajos por facturar</strong> — generar la factura esta semana mejoraría tu flujo de caja." }
+    ]},
+    { type: "actions", items: [
+      { label: "Ver todos los trabajos", variant: "primary", action: "navigate:/jobs" },
+      { label: "Crear factura", variant: "ghost", action: "send:Quiero crear una factura" }
+    ]}
+  ],
+
+  advice: [
+    { type: "prose", content: 'Tu negocio está sano en cobranza, pero hay un punto clave a trabajar: <span class="h">la concentración de ingresos</span>.' },
+    { type: "prose", content: 'Ahora mismo, <span class="h">Carlos Mendoza</span> representa el <span class="n">99.7%</span> de tus ingresos. Si ese cliente se detiene, tu flujo cae a casi cero.' },
+    { type: "list", items: [
+      { icon: "1", text: "<strong>Diversificar cartera</strong> — busca al menos 2-3 clientes activos simultáneos para distribuir riesgo." },
+      { icon: "2", text: "<strong>Subir ticket a clientes menores</strong> — Moises AP solo generó $11. ¿Hay oportunidad de ofrecerle más servicios?" },
+      { icon: "3", text: "<strong>Pipeline de estimados</strong> — tienes 0 estimados pendientes. Enviar al menos 3-5 estimados por semana te daría previsibilidad." }
+    ]},
+    { type: "insights", items: [
+      { variant: "info", icon: "💡", text: "Regla general: ningún cliente debería representar más del <strong>30-40%</strong> de tus ingresos." }
+    ]}
+  ]
+};
+
+// ═══════════════════════════════════════════
+// RENDERER: JSON → HTML (esto es lo que haría el frontend)
+// ═══════════════════════════════════════════
+
+function renderBlocks(blocks, container) {
+  container.innerHTML = '';
+  blocks.forEach(block => {
+    const el = document.createElement('div');
+
+    switch (block.type) {
+      case 'prose':
+        el.className = 'blk-prose';
+        el.innerHTML = block.content;
+        break;
+
+      case 'metrics':
+        el.className = 'blk-metrics';
+        el.innerHTML = block.items.map(m =>
+          `<div class="blk-metric-item">
+            <div class="blk-metric-val" ${m.color ? `style="color:${m.color === 'green' ? '#059669' : ''}"` : ''}>${m.value}</div>
+            <div class="blk-metric-label">${m.label}</div>
+          </div>`
+        ).join('');
+        break;
+
+      case 'clients':
+        el.className = 'blk-clients';
+        el.innerHTML = block.items.map(c =>
+          `<div class="blk-client-row">
+            <div class="blk-client-dot ${c.dotColor || 'primary'}"></div>
+            <div class="blk-client-detail">
+              <div class="blk-client-name">${c.name}</div>
+              <div class="blk-client-pct">${c.pct} del total</div>
+            </div>
+            <div class="blk-client-amount">${c.amount}</div>
+          </div>
+          <div class="blk-client-bar"><div class="blk-client-bar-fill" style="width:${c.pct}"></div></div>`
+        ).join('');
+        break;
+
+      case 'insights':
+        el.className = 'blk-insights';
+        el.innerHTML = block.items.map(ins =>
+          `<div class="blk-insight ${ins.variant}">
+            <span class="blk-insight-icon">${ins.icon}</span>
+            <span>${ins.text}</span>
+          </div>`
+        ).join('');
+        break;
+
+      case 'list':
+        el.className = 'blk-list';
+        el.innerHTML = block.items.map(item => {
+          const iconClass = item.icon === '✓' ? 'done' : item.icon === '!' ? 'pending' : '';
+          return `<div class="blk-list-item">
+            <div class="blk-list-icon ${iconClass}">${item.icon}</div>
+            <div>${item.text}</div>
+          </div>`;
+        }).join('');
+        break;
+
+      case 'table':
+        el.className = 'blk-table';
+        el.innerHTML = `
+          <div class="blk-table-head">${block.headers.map(h => `<span>${h}</span>`).join('')}</div>
+          ${block.rows.map(row => `<div class="blk-table-row">${row.map(cell => `<span>${cell}</span>`).join('')}</div>`).join('')}
+        `;
+        break;
+
+      case 'actions':
+        el.className = 'blk-actions';
+        el.innerHTML = block.items.map(a =>
+          `<button class="blk-action-btn ${a.variant === 'primary' ? 'blk-action-primary' : 'blk-action-ghost'}" onclick="alert('Action: ${a.action}')">
+            ${a.label} <span class="blk-action-arrow">→</span>
+          </button>`
+        ).join('');
+        break;
+    }
+
+    container.appendChild(el);
+  });
+}
+
+// ═══════════════════════════════════════════
+// JSON DISPLAY: Syntax highlighted
+// ═══════════════════════════════════════════
+
+function syntaxHighlight(json) {
+  return JSON.stringify(json, null, 2)
+    .replace(/(".*?")(?=\s*:)/g, '<span class="key">$1</span>')
+    .replace(/:\s*(".*?")/g, ': <span class="str">$1</span>')
+    .replace(/:\s*(\d+)/g, ': <span class="num">$1</span>');
+}
+
+// ═══════════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════════
+
+function showTab(id) {
+  document.querySelectorAll('.chat-content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.demo-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.target.classList.add('active');
+
+  document.getElementById('json-display').innerHTML = syntaxHighlight(responses[id]);
+  document.getElementById('json-tab-label').textContent = id;
+
+  // Re-render with animation
+  renderBlocks(responses[id], document.getElementById('render-' + id));
+}
+
+// Initial render
+renderBlocks(responses.summary, document.getElementById('render-summary'));
+renderBlocks(responses.jobs, document.getElementById('render-jobs'));
+renderBlocks(responses.advice, document.getElementById('render-advice'));
+document.getElementById('json-display').innerHTML = syntaxHighlight(responses.summary);
+</script>
+
+</body>
+</html>

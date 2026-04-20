@@ -4,6 +4,50 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Tailwind v4 @theme — utilities reference CSS vars so values auto-swap
+   between light and dark themes based on `.dark` class on <html>.
+   Naming follows shadcn conventions (background, foreground, card, etc). */
+@theme {
+  /* Semantic surfaces / text — replace bg-white, text-slate-*, border-slate-* across the app */
+  --color-background: var(--wp-app-bg);
+  --color-foreground: var(--wp-text);
+  --color-card: var(--wp-surface);
+  --color-card-foreground: var(--wp-text);
+  --color-muted: var(--wp-surface-2);
+  --color-muted-foreground: var(--wp-text-2);
+  --color-subtle: var(--wp-surface-3);
+  --color-subtle-foreground: var(--wp-text-3);
+  --color-meta-foreground: var(--wp-text-3);
+  --color-label-foreground: var(--wp-text-4);
+  --color-placeholder-foreground: var(--wp-text-5);
+  --color-border: var(--wp-border-v2);
+  --color-input: var(--wp-surface);
+  --color-ring: var(--wp-border-focus);
+
+  /* Brand/accent tokens */
+  --color-navy: var(--wp-navy);
+  --color-navy-600: var(--wp-navy-600);
+  --color-navy-500: var(--wp-navy-500);
+  --color-navy-400: var(--wp-navy-400);
+  --color-brand: var(--wp-brand);
+  --color-brand-hover: var(--wp-brand-hover);
+  --color-brand-soft: var(--wp-brand-soft);
+  --color-brand-bg: var(--wp-brand-bg);
+  --color-brand-border: var(--wp-brand-border);
+  --color-brand-text: var(--wp-brand-text);
+  --color-cta: var(--wp-cta);
+  --color-cta-hover: var(--wp-cta-hover);
+  --color-cta-subtle: var(--wp-cta-subtle);
+  --color-ai: var(--wp-ai);
+  --color-ai-strong: var(--wp-ai-strong);
+  --color-ai-hover: var(--wp-ai-hover);
+  --color-ai-bg: var(--wp-ai-bg);
+  --color-ai-bg-hover: var(--wp-ai-bg-hover);
+  --color-ai-border: var(--wp-ai-border);
+  --color-ai-text: var(--wp-ai-text);
+  --color-ai-text-soft: var(--wp-ai-text-soft);
+}
+
 /* ═══════════════════════════════════════════════════════════════
    WorkPilot Design System
    Premium contractor management — Refined Utility aesthetic
@@ -20,24 +64,35 @@
        Legacy tokens below are kept as aliases for backward compatibility.
        ═══════════════════════════════════════════════════════════════ */
 
-    /* v2 Brand — single color, used for primary actions (Stripe/Linear style) */
-    --wp-brand: #0F172A;
-    --wp-brand-hover: #1E293B;
-    --wp-brand-subtle: #F1F5F9;
+    /* Brand — AMBER como identidad (unificado con CTA).
+       El sidebar/primary-dark elements usan --wp-primary aparte (alias abajo). */
+    --wp-brand: #D97706;
+    --wp-brand-hover: #B45309;
+    --wp-brand-soft: #F59E0B;
+    --wp-brand-bg: #FFFBEB;
+    --wp-brand-border: #FDE68A;
+    --wp-brand-text: #FFFFFF;       /* texto sobre amber brand */
+    --wp-brand-subtle: #FFFBEB;     /* alias */
+    --wp-brand-glow: rgba(217, 119, 6, 0.2);
 
-    /* v2 Surfaces (neutral zinc scale) */
+    /* Surfaces — stone palette (warm neutrals, matches contractor/trade aesthetic) */
     --wp-surface: #FFFFFF;
-    --wp-surface-2: #F7F7F8;
-    --wp-surface-3: #F1F1F3;
+    --wp-surface-2: #F5F5F4;
+    --wp-surface-3: #EEEEEC;
+    --wp-surface-hover: #F0F0EE;
+    --wp-app-bg: #FAFAF9;
 
-    /* v2 Text (zinc scale) */
-    --wp-text: #18181B;
-    --wp-text-2: #52525B;
-    --wp-text-3: #A1A1AA;
+    /* Text — stone scale (5 niveles) */
+    --wp-text: #1C1917;    /* 1 — Números hero, headings, active labels */
+    --wp-text-2: #44403C;  /* 2 — Body, párrafos, button labels */
+    --wp-text-3: #78716C;  /* 3 — Meta, secondary, status labels */
+    --wp-text-4: #A8A29E;  /* 4 — Small labels, ALL-CAPS headers */
+    --wp-text-5: #D6D3D1;  /* 5 — Placeholders, muted, separators */
 
-    /* v2 Borders */
-    --wp-border-v2: #EAEAEC;
-    --wp-border-hover: #D4D4D8;
+    /* Borders — stone */
+    --wp-border-v2: #E7E5E4;
+    --wp-border-hover: #D6D3D1;
+    --wp-border-soft: #F0EEEC;
 
     /* v2 Status (Tailwind 700-level, less saturated) */
     --wp-success-v2: #15803D;
@@ -84,13 +139,39 @@
        .badge-*, etc.) now render with v2 palette without JSX changes.
        ═══════════════════════════════════════════════════════════════ */
 
-    /* Brand */
-    --wp-primary: var(--wp-brand);
+    /* Primary — dark ink usado por sidebar, modals dark, etc.
+       Desacoplado de brand (que ahora es amber) para mantener sidebar dark en light theme. */
+    --wp-primary: var(--wp-text);
     --wp-primary-dark: #0F2440;
-    --wp-primary-light: #1E293B;
+    --wp-primary-light: #44403C;
     --wp-accent: var(--wp-brand);
     --wp-accent-hover: var(--wp-brand-hover);
     --wp-accent-subtle: var(--wp-brand-subtle);
+
+    /* Navy — legacy marketing only. No usar en dashboard. */
+    --wp-navy: #0F2440;
+    --wp-navy-600: #15304F;
+    --wp-navy-500: #1E3A5F;
+    --wp-navy-400: #2E4A6F;
+
+    /* CTA — alias a brand (ambos son amber ahora, unificado) */
+    --wp-cta: var(--wp-brand);
+    --wp-cta-hover: var(--wp-brand-hover);
+    --wp-cta-subtle: var(--wp-brand-bg);
+
+    /* AI identity — SKY darker en light (#0284C7 sky-600) para contraste sobre bg blanco.
+       bg sutil #F0F9FF, text oscuro #0369A1 legible sobre bg claro. */
+    --wp-ai: #0284C7;
+    --wp-ai-strong: #0369A1;
+    --wp-ai-hover: #075985;
+    --wp-ai-bg: #F0F9FF;
+    --wp-ai-bg-hover: #E0F2FE;
+    --wp-ai-border: #BAE6FD;
+    --wp-ai-border-strong: #0284C7;
+    --wp-ai-text: #0369A1;
+    --wp-ai-text-soft: #0284C7;
+    --wp-ai-glow: rgba(14, 165, 233, 0.25);
+    --wp-ai-gradient: linear-gradient(135deg, #0284C7 0%, #0369A1 60%, #075985 100%);
 
     /* Semantic */
     --wp-success: var(--wp-success-v2);
@@ -151,36 +232,114 @@
     --foreground: 15 23 42;
   }
 
-  /* Dark mode tokens (ready for future use) */
+  /* ═══════════════════════════════════════════════════════════════
+     Dark mode — completo
+     Background stack: app > card > muted > subtle (de más oscuro a menos)
+     Text stack: primary > secondary > muted (de más contraste a menos)
+     Borders: default > light (sub-dividers)
+     ═══════════════════════════════════════════════════════════════ */
   .dark {
-    --wp-primary: #3B82F6;
-    --wp-primary-dark: #1E3A5F;
-    --wp-primary-light: #60A5FA;
-    --wp-accent: #FB923C;
-    --wp-accent-hover: #F97316;
-    --wp-accent-subtle: #431407;
-    --wp-success: #34D399;
-    --wp-success-bg: #064E3B;
-    --wp-warning: #FBBF24;
-    --wp-warning-bg: #451A03;
-    --wp-error: #F87171;
-    --wp-error-bg: #450A0A;
-    --wp-info: #60A5FA;
-    --wp-info-bg: #172554;
-    --wp-text-primary: #F1F5F9;
-    --wp-text-secondary: #94A3B8;
-    --wp-text-muted: #64748B;
-    --wp-text-inverse: #0F172A;
-    --wp-bg-primary: #0F172A;
-    --wp-bg-secondary: #1E293B;
-    --wp-bg-muted: #334155;
-    --wp-border: #334155;
-    --wp-border-light: #1E293B;
-    --wp-border-focus: #3B82F6;
+    /* Brand — amber sigue siendo la identidad en dark (brighter pop) */
+    --wp-brand: #F59E0B;
+    --wp-brand-hover: #D97706;
+    --wp-brand-soft: #FCD34D;
+    --wp-brand-bg: #2A1C05;
+    --wp-brand-border: #78350F;
+    --wp-brand-text: #1C1000;       /* near-black sobre amber claro */
+    --wp-brand-subtle: #2A1C05;
+    --wp-brand-glow: rgba(245, 158, 11, 0.4);
+
+    /* Surfaces — valores del guide */
+    --wp-surface: #111215;
+    --wp-surface-2: #16181C;
+    --wp-surface-3: #1A1D22;
+    --wp-surface-hover: #1F2229;
+    --wp-app-bg: #08090B;
+
+    /* Text — 5 niveles (FFFFFF puro solo para números hero/active) */
+    --wp-text: #FFFFFF;
+    --wp-text-2: #E4E4E7;
+    --wp-text-3: #A1A1AA;
+    --wp-text-4: #8B8B93;
+    --wp-text-5: #6B6B73;
+
+    /* Borders — guide values */
+    --wp-border-v2: #25282F;
+    --wp-border-hover: #2D3038;
+    --wp-border-soft: #1D2026;
+
+    /* Semantic status — more saturated to pop on dark */
+    --wp-success-v2: #34D399;
+    --wp-success-bg-v2: #052E1B;
+    --wp-success-border: #15803D;
+    --wp-warning-v2: #FBBF24;
+    --wp-warning-bg-v2: #3D2A06;
+    --wp-warning-border: #B45309;
+    --wp-error-v2: #F87171;
+    --wp-error-bg-v2: #3D0A0A;
+    --wp-error-border: #B91C1C;
+    --wp-info-v2: #60A5FA;
+    --wp-info-bg-v2: #0F1E3D;
+    --wp-info-border: #1D4ED8;
+    --wp-purple: #C084FC;
+    --wp-purple-bg: #2E1065;
+    --wp-purple-border: #6D28D9;
+
+    /* Legacy aliases */
+    --wp-primary: var(--wp-surface);
+    --wp-primary-dark: #0F2440;
+    --wp-primary-light: #1E293B;
+    --wp-accent: var(--wp-brand);
+    --wp-accent-hover: var(--wp-brand-hover);
+    --wp-accent-subtle: var(--wp-brand-bg);
+
+    /* Navy legacy */
+    --wp-navy: #1E3A5F;
+    --wp-navy-600: #2E4A6F;
+    --wp-navy-500: #3A5A85;
+    --wp-navy-400: #5A7BA8;
+
+    /* CTA alias a brand (unificado) */
+    --wp-cta: var(--wp-brand);
+    --wp-cta-hover: var(--wp-brand-hover);
+    --wp-cta-subtle: var(--wp-brand-bg);
+
+    /* AI identity dark — sky-500 primary, DEEP navy-blue bg sólido para cards.
+       El "brillo" sale del box-shadow glow externo, no del bg. */
+    --wp-ai: #0EA5E9;
+    --wp-ai-strong: #0284C7;
+    --wp-ai-hover: #0369A1;
+    --wp-ai-bg: #082F4A;
+    --wp-ai-bg-hover: #0B3A5C;
+    --wp-ai-border: #155E8C;
+    --wp-ai-border-strong: #0284C7;
+    --wp-ai-text: #BAE6FD;
+    --wp-ai-text-soft: #7DD3FC;
+    --wp-ai-glow: rgba(14, 165, 233, 0.4);
+    --wp-ai-gradient: linear-gradient(135deg, #0EA5E9 0%, #0284C7 60%, #0369A1 100%);
+    /* Aliases semanticos (consumidos por la app legacy y por @theme) */
+    --wp-success: var(--wp-success-v2);
+    --wp-success-bg: var(--wp-success-bg-v2);
+    --wp-warning: var(--wp-warning-v2);
+    --wp-warning-bg: var(--wp-warning-bg-v2);
+    --wp-error: var(--wp-error-v2);
+    --wp-error-bg: var(--wp-error-bg-v2);
+    --wp-info: var(--wp-info-v2);
+    --wp-info-bg: var(--wp-info-bg-v2);
+    --wp-text-primary: var(--wp-text);
+    --wp-text-secondary: var(--wp-text-2);
+    --wp-text-muted: var(--wp-text-3);
+    --wp-text-inverse: #0F0F12;
+    --wp-bg-primary: var(--wp-surface);
+    --wp-bg-secondary: var(--wp-app-bg);
+    --wp-bg-muted: var(--wp-surface-2);
+    --wp-border: var(--wp-border-v2);
+    --wp-border-light: var(--wp-surface-3);
+    --wp-border-focus: #60A5FA;
     --wp-shadow-xs: 0 1px 2px rgb(0 0 0 / 0.3);
     --wp-shadow-sm: 0 1px 3px rgb(0 0 0 / 0.3);
-    --wp-shadow-md: 0 4px 12px rgb(0 0 0 / 0.3);
-    --wp-shadow-lg: 0 12px 40px rgb(0 0 0 / 0.4);
+    --wp-shadow-md: 0 4px 12px rgb(0 0 0 / 0.35);
+    --wp-shadow-lg: 0 12px 40px rgb(0 0 0 / 0.45);
     --wp-shadow-xl: 0 20px 60px rgb(0 0 0 / 0.5);
   }
 
@@ -353,8 +512,13 @@
   /* ── Navigation ──────────────────────────────────────────────── */
 
   .plumbr-nav {
-    background-color: var(--wp-primary);
-    color: var(--wp-text-inverse);
+    /* Sidebar auto-adapta por tema:
+       - Light: surface-2 (#F5F5F4) — gris claro sutil vs main bg (#FAFAF9)
+       - Dark: surface (#111215) — misma tonalidad que cards, separación por border
+       Texto usa text-2 para body + text para items activos. */
+    background-color: var(--wp-surface-2);
+    color: var(--wp-text-2);
+    border-right: 1px solid var(--wp-border-v2);
   }
 
   .nav-item {
@@ -410,6 +574,7 @@
   .badge-converted { background: #F5F3FF; color: #7C3AED; }
   .badge-lead { background: #F0F9FF; color: #0369A1; }
   .badge-on-hold { background: #FEFCE8; color: #A16207; }
+  .badge-scheduled { background: #EFF6FF; color: #1D4ED8; }
 
 
   /* ── Tab Navigation ──────────────────────────────────────────── */
@@ -684,6 +849,20 @@
   @keyframes fadeSlideIn {
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Pulse sutil para StatusDot/Sparkle — escalado con fade para que no sea invasivo */
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.5; transform: scale(1.25); }
+  }
+  .animate-pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+
+  /* Tabular nums — montos monetarios, stats hero. Sin tnum los dígitos bailan. */
+  .number-display {
+    font-feature-settings: 'tnum';
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.03em;
   }
 
   @keyframes shimmer {
@@ -1048,23 +1227,17 @@
   }
 
   /* v2 AI card (navy hero with AI-themed accent) */
+  /* AI insight card — DEEP bg sólido + glow externo (no bright solid bg).
+     El brillo sale del box-shadow outset, no del fondo. */
   .wp-ai-card {
-    background: linear-gradient(135deg, var(--wp-brand) 0%, #1E293B 100%);
-    color: white;
-    border-radius: 10px;
-    padding: 18px;
+    background: var(--wp-ai-bg);
+    color: var(--wp-ai-text);
+    border: 1px solid var(--wp-ai-border);
+    border-radius: 12px;
+    padding: 16px;
     position: relative;
     overflow: hidden;
-  }
-  .wp-ai-card::before {
-    content: '';
-    position: absolute;
-    top: -40px;
-    right: -40px;
-    width: 140px;
-    height: 140px;
-    background: radial-gradient(circle, rgb(255 255 255 / 0.06) 0%, transparent 70%);
-    pointer-events: none;
+    box-shadow: 0 0 40px rgb(0 0 0 / 0.4), 0 0 20px var(--wp-ai-glow);
   }
   .wp-ai-card-head {
     display: flex;
@@ -1077,12 +1250,13 @@
     width: 28px;
     height: 28px;
     border-radius: 6px;
-    background: rgb(255 255 255 / 0.08);
+    background: var(--wp-ai-strong);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--wp-ai-accent);
+    color: #FFFFFF;
     flex-shrink: 0;
+    box-shadow: 0 0 14px var(--wp-ai-glow);
   }
 
   /* v2 Type chips (for line items) */
@@ -1110,4 +1284,42 @@
   .sl-side-col {
     display: none;
   }
+}
+
+/* ── Clerk UserProfile embedded in Settings — blend into our card system ── */
+.wp-account-embed {
+  width: 100%;
+}
+.wp-account-embed .cl-rootBox,
+.wp-account-embed .cl-cardBox {
+  width: 100% !important;
+  max-width: none !important;
+}
+.wp-account-embed .cl-cardBox {
+  box-shadow: none !important;
+  border: 1px solid var(--wp-border-v2) !important;
+  border-radius: 12px !important;
+  background: var(--wp-surface) !important;
+  overflow: hidden;
+}
+/* Hide Clerk's internal left nav (Profile / Security) — tab "Profile" already scopes this */
+.wp-account-embed .cl-navbar,
+.wp-account-embed .cl-navbarButtons {
+  display: none !important;
+}
+/* Hide "Secured by Clerk" / "Development mode" footer */
+.wp-account-embed .cl-footer,
+.wp-account-embed .cl-internal-1ta0xpz,
+.wp-account-embed [class*="cl-footer"] {
+  display: none !important;
+}
+/* Let pages fill full width */
+.wp-account-embed .cl-pageScrollBox,
+.wp-account-embed .cl-scrollBox,
+.wp-account-embed .cl-main {
+  width: 100% !important;
+  max-width: none !important;
+}
+.wp-account-embed .cl-page {
+  padding: 20px 24px !important;
 }

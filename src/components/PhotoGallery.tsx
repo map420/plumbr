@@ -22,7 +22,7 @@ export function PhotoGallery({ photos, canDelete = false }: { photos: Photo[]; c
     <>
       <div className="grid grid-cols-4 gap-2">
         {photos.map(photo => (
-          <div key={photo.id} className="relative group rounded-lg overflow-hidden bg-slate-100 aspect-square">
+          <div key={photo.id} className="relative group rounded-lg overflow-hidden bg-muted aspect-square">
             <img
               src={photo.thumbnailUrl || photo.url}
               alt={photo.description || 'Photo'}

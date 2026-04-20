@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Análisis de Mercado — WorkPilot</title>
+  <link rel="stylesheet" href="_styles.css">
+</head>
+<body>
+
+  <div class="cover">
+    <div class="cover-header">
+      <div class="cover-logo"><span class="cover-logo-mark">W</span>WorkPilot</div>
+      <span class="cover-badge">Confidencial · Uso interno</span>
+    </div>
+    <div class="cover-body">
+      <div class="cover-kicker">DOCUMENTO ESTRATÉGICO · 08</div>
+      <h1 class="cover-title">Análisis de Mercado</h1>
+      <p class="cover-subtitle">TAM / SAM / SOM, segmentos objetivo, tendencias, verticales potenciales y oportunidades geográficas.</p>
+    </div>
+    <div class="cover-footer">
+      <div class="cover-meta">
+        <span><strong>Versión</strong> 1.0</span>
+        <span><strong>Fecha</strong> Abril 2026</span>
+      </div>
+      <div class="cover-meta" style="text-align: right;">
+        <span><strong>Audiencia</strong> Founders · Estrategia · Inversores</span>
+        <span>workpilot.io</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <nav class="toc">
+      <h2>Tabla de contenidos</h2>
+      <ul class="toc-list">
+        <li><span class="toc-title">1. Tamaño del mercado: TAM/SAM/SOM</span><span class="toc-page">3</span></li>
+        <li><span class="toc-title">2. Segmentos objetivo</span><span class="toc-page">5</span></li>
+        <li><span class="toc-title">3. Tendencias macro</span><span class="toc-page">8</span></li>
+        <li><span class="toc-title">4. Verticales potenciales</span><span class="toc-page">10</span></li>
+        <li><span class="toc-title">5. Geografías y priorización</span><span class="toc-page">12</span></li>
+        <li><span class="toc-title">6. Oportunidades específicas</span><span class="toc-page">14</span></li>
+        <li><span class="toc-title">7. Recomendaciones</span><span class="toc-page">16</span></li>
+      </ul>
+    </nav>
+
+    <section>
+      <h2>1. Tamaño del mercado: TAM / SAM / SOM</h2>
+
+      <p>El mercado de servicios residenciales (home services) supera los <span class="amount">$600 mil millones USD</span> globalmente. Dentro de ese ecosistema, el software para contratistas es un mercado en expansión rápida con consolidación incompleta.</p>
+
+      <h3>TAM — Total Addressable Market</h3>
+      <div class="kpi-grid cols-2">
+        <div class="kpi-card">
+          <div class="kpi-value">~10M</div>
+          <div class="kpi-label">Negocios contratistas globales</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">$3.5B</div>
+          <div class="kpi-label">Gasto anual en software (est.)</div>
+        </div>
+      </div>
+      <p>Incluye todo el ecosistema de contratistas residenciales: plomería, electricidad, HVAC, paisajismo, pintura, limpieza, mantenimiento, pest control, locksmith, handyman, renovaciones menores. Global.</p>
+
+      <h3>SAM — Serviceable Addressable Market</h3>
+      <div class="kpi-grid cols-2">
+        <div class="kpi-card">
+          <div class="kpi-value">~2M</div>
+          <div class="kpi-label">Negocios en US + LATAM</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">$720M</div>
+          <div class="kpi-label">Spend anual alcanzable</div>
+        </div>
+      </div>
+      <p>Filtros aplicados:</p>
+      <ul>
+        <li><strong>Geografía:</strong> US + LATAM (donde tenemos producto bilingüe + Stripe/payments funcionales)</li>
+        <li><strong>Tamaño:</strong> 1–20 empleados (nuestro ICP — enterprise va a ServiceTitan)</li>
+        <li><strong>Digitalización:</strong> con smartphone + internet decente (≈80% del segmento)</li>
+      </ul>
+
+      <h3>SOM — Serviceable Obtainable Market</h3>
+      <div class="kpi-grid cols-2">
+        <div class="kpi-card">
+          <div class="kpi-value">50K</div>
+          <div class="kpi-label">Clientes target a 3 años</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">$18M</div>
+          <div class="kpi-label">ARR realistic a 3 años</div>
+        </div>
+      </div>
+      <p>Basado en: 2.5% penetration del SAM en 3 años, ARPU blended $360/año. Asume escenario base (ver doc 06 — Modelo de Negocio).</p>
+
+      <div class="callout insight">
+        <span class="callout-label">Lectura del tamaño</span>
+        <div class="callout-body">
+          El SAM alcanzable (<span class="amount">$720M</span>) es lo suficientemente grande para construir un negocio de <span class="amount">$100M+ ARR</span> sin salir del segmento inicial. No necesitamos pivotes para ser exitosos — necesitamos ejecución.
+        </div>
+      </div>
+
+      <h3>Growth del mercado</h3>
+      <ul>
+        <li>Home services software crece ~18% anual CAGR (Grand View Research, 2024)</li>
+        <li>AI-native SaaS crece 40%+ anual en categorías comparables</li>
+        <li>Labor shortage en contratistas acelera digitalización para mantener productividad</li>
+        <li>Adopción de pagos digitales en LATAM crece 25%+ anual</li>
+      </ul>
+    </section>
+
+    <section class="page-break">
+      <h2>2. Segmentos objetivo</h2>
+
+      <p>Cuatro segmentos con comportamiento, dolor y disposición a pagar distintos. La estrategia de producto y marketing se adapta a cada uno.</p>
+
+      <h3>Matriz de segmentos</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 20%;">Segmento</th>
+            <th>Tamaño equipo</th>
+            <th>Volumen estimados/mes</th>
+            <th>Dolor principal</th>
+            <th>Plan ideal</th>
+            <th>% del SAM</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Solo practitioner</strong></td>
+            <td>1</td>
+            <td>5–15</td>
+            <td>Cotizar rápido y cobrar sin olvidos</td>
+            <td>Starter → Pro</td>
+            <td>55%</td>
+          </tr>
+          <tr>
+            <td><strong>Small crew</strong></td>
+            <td>2–5</td>
+            <td>15–40</td>
+            <td>Coordinar técnicos + rentabilidad por job</td>
+            <td>Pro</td>
+            <td>30%</td>
+          </tr>
+          <tr>
+            <td><strong>Growing business</strong></td>
+            <td>6–20</td>
+            <td>40–150</td>
+            <td>Escalar sin sumar admins</td>
+            <td>Pro + add-ons</td>
+            <td>12%</td>
+          </tr>
+          <tr>
+            <td><strong>Multi-trade</strong></td>
+            <td>variable</td>
+            <td>variable</td>
+            <td>Un sistema que cubra 2+ oficios</td>
+            <td>Pro (futuro: Growth)</td>
+            <td>3%</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Solo practitioner — el mayor volumen</h3>
+      <div class="persona-box">
+        <p><span class="persona-name">Juan</span>, 42 años, plomero independiente en Houston. Trabaja de 7am a 6pm, factura <span class="amount">$90K/año</span>. Usa WhatsApp para todo. Su esposa le hace las facturas en Word los domingos. Pierde ~10% de jobs por cotizar tarde. No tiene contador.</p>
+      </div>
+      <ul>
+        <li><strong>Dolor principal:</strong> "no doy abasto, pero no puedo pagar una secretaria"</li>
+        <li><strong>Disposition a pagar:</strong> <span class="amount">$20–40/mes</span> si ve ROI claro</li>
+        <li><strong>Canales efectivos:</strong> Facebook groups, YouTube, referrals de colegas</li>
+        <li><strong>Mensaje que funciona:</strong> "Cotizá desde la camioneta en 2 minutos"</li>
+      </ul>
+
+      <h3>Small crew — el sweet spot</h3>
+      <div class="persona-box">
+        <p><span class="persona-name">Carlos</span>, 38 años, plomero con 3 técnicos en Miami. Factura <span class="amount">$220K/año</span>. Usa Excel + WhatsApp. Perdió <span class="amount">$30K</span> el año pasado entre olvidos y cotizaciones tardías. Quiere escalar a 6 técnicos pero no sabe cómo.</p>
+      </div>
+      <ul>
+        <li><strong>Dolor principal:</strong> "cada día apago más fuegos que ejecuto trabajo"</li>
+        <li><strong>Disposition a pagar:</strong> <span class="amount">$50–80/mes</span> si resuelve coordinación</li>
+        <li><strong>Canales efectivos:</strong> Google search, LinkedIn, webinars</li>
+        <li><strong>Mensaje que funciona:</strong> "Coordiná tu equipo sin WhatsApp"</li>
+      </ul>
+
+      <div class="callout insight">
+        <span class="callout-label">Por qué Small crew es sweet spot</span>
+        <div class="callout-body">
+          (1) Tamaño suficiente para justificar <span class="amount">$29/mes</span> sin pensarlo. (2) Dolor suficiente para buscar activamente solución. (3) Trigger events claros (3er técnico, 1er invoice perdido) que movilizan búsqueda. (4) Influencian a Solo practitioner (referrals).
+        </div>
+      </div>
+
+      <h3>Growing business — alto valor</h3>
+      <div class="persona-box">
+        <p><span class="persona-name">Ana</span>, 45 años, dueña de empresa de HVAC con 12 técnicos en Dallas. Factura <span class="amount">$1.2M/año</span>. Hoy usa Housecall Pro pero está frustrada con reporting. Quiere P&amp;L por cliente y margen por servicio.</p>
+      </div>
+      <ul>
+        <li><strong>Dolor principal:</strong> "tengo datos pero no insights"</li>
+        <li><strong>Disposition a pagar:</strong> <span class="amount">$100–200/mes</span> si desbloquea reporting avanzado</li>
+        <li><strong>Canales efectivos:</strong> contenido educativo, case studies, demos 1:1</li>
+        <li><strong>Mensaje que funciona:</strong> "Descubrí qué jobs te dejan plata real"</li>
+      </ul>
+
+      <h3>Multi-trade — nicho específico</h3>
+      <p>Contratistas que cubren 2+ oficios (ej: plomería + eléctrica, o HVAC + mantenimiento general). Representan ~3% del SAM pero ticket alto y loyalty fuerte. Necesitan categorización flexible de jobs/servicios.</p>
+    </section>
+
+    <section class="page-break">
+      <h2>3. Tendencias macro</h2>
+
+      <p>Seis tendencias estructurales que favorecen a WorkPilot en los próximos 3–5 años.</p>
+
+      <h3>① Adopción masiva de AI en pymes</h3>
+      <p>Post-2023, el 60%+ de pymes US consideran o usan herramientas AI (Microsoft Work Trend Index). La ventana para ser "el AI-first [categoría]" está abierta pero se cierra rápido — todos quieren el espacio.</p>
+
+      <h3>② Labor shortage en contratistas</h3>
+      <p>US tendrá déficit de 500,000+ trabajadores skilled en trades para 2030 (US BLS). Contratistas buscan herramientas que multipliquen productividad de los empleados existentes. <strong>AI que trabaja "por" el contratista es respuesta directa.</strong></p>
+
+      <h3>③ Digitalización acelerada post-COVID</h3>
+      <p>Contratistas boomers que resistían software se jubilan. Generación millennial/Gen X toma las riendas y espera herramientas digitales modernas. Curva de adopción S-shaped.</p>
+
+      <h3>④ Pagos digitales ubicuos</h3>
+      <p>Stripe, Apple Pay, Cash App — clientes ya no esperan recibir factura en papel. Exigen pagar online. Contratistas con pagos online ganan más deals (data Stripe: 2–3x faster collections).</p>
+
+      <h3>⑤ Hispanic/Latino contractor market growth</h3>
+      <p>30%+ de contratistas de servicios residenciales en US son hispanohablantes. Esta demografía crece 3x más rápido que el promedio. <strong>Mercado históricamente desatendido por software en inglés.</strong></p>
+
+      <h3>⑥ Financiarización de pagos al consumidor</h3>
+      <p>Home improvement financing (Klarna, Affirm, GreenSky) permite a contratistas vender trabajos de <span class="amount">$5K+</span> con pagos a plazos. Herramientas que integran financing cobran más.</p>
+
+      <div class="callout insight">
+        <span class="callout-label">Tendencia que redefine</span>
+        <div class="callout-body">
+          Las tendencias ① (AI) y ⑤ (Hispanic market) son nuestro "nuevo viento" estratégico. Ningún competidor grande tiene respuesta rápida a ambas simultáneamente. <strong>Capturar este viento requiere foco, no features.</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="page-break">
+      <h2>4. Verticales potenciales</h2>
+
+      <p>WorkPilot arranca con plomería (inspirado en Plumbr original) pero la arquitectura es agnóstica al oficio. Expansión vertical es un multiplicador natural.</p>
+
+      <h3>Verticales evaluadas</h3>
+      <table>
+        <thead><tr><th>Vertical</th><th>Tamaño US</th><th>Encaje WorkPilot</th><th>Prioridad</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Plumbing</strong> (actual)</td>
+            <td>~120K negocios</td>
+            <td>100% — producto nació aquí</td>
+            <td><span class="pill success">Core</span></td>
+          </tr>
+          <tr>
+            <td><strong>Electrical</strong></td>
+            <td>~80K negocios</td>
+            <td>95% — mismo flujo; diferente catalog</td>
+            <td><span class="pill success">Inmediato</span></td>
+          </tr>
+          <tr>
+            <td><strong>HVAC</strong></td>
+            <td>~105K negocios</td>
+            <td>90% — requiere service agreements</td>
+            <td><span class="pill success">Inmediato</span></td>
+          </tr>
+          <tr>
+            <td><strong>Landscaping</strong></td>
+            <td>~125K negocios</td>
+            <td>85% — trabajos recurrentes (monthly)</td>
+            <td><span class="pill warning">Q3 2026</span></td>
+          </tr>
+          <tr>
+            <td><strong>Cleaning services</strong></td>
+            <td>~1M negocios (inc. freelancers)</td>
+            <td>80% — muy price-sensitive; recurring</td>
+            <td><span class="pill warning">Q4 2026</span></td>
+          </tr>
+          <tr>
+            <td><strong>Pest control</strong></td>
+            <td>~30K negocios</td>
+            <td>85% — requiere tracking químicos/regulaciones</td>
+            <td><span class="pill neutral">2027</span></td>
+          </tr>
+          <tr>
+            <td><strong>Locksmith</strong></td>
+            <td>~15K negocios</td>
+            <td>80% — servicios emergencia; dispatch crítico</td>
+            <td><span class="pill neutral">2027</span></td>
+          </tr>
+          <tr>
+            <td><strong>Handyman / renovations</strong></td>
+            <td>~50K negocios</td>
+            <td>95% — trabajos variados; encaja perfecto</td>
+            <td><span class="pill success">Inmediato</span></td>
+          </tr>
+          <tr>
+            <td><strong>General contractors (small)</strong></td>
+            <td>~60K</td>
+            <td>70% — jobs de mayor duración; subcontratación compleja</td>
+            <td><span class="pill neutral">2027</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Estrategia vertical</h3>
+      <ol>
+        <li><strong>No rebrand por vertical.</strong> WorkPilot es multi-vertical. Landing per-vertical ("WorkPilot para Electricistas") con copy ajustado, pero mismo producto.</li>
+        <li><strong>Catalog pre-cargado.</strong> Cada vertical tiene starter catalog con items típicos. Reduce tiempo a primer estimate.</li>
+        <li><strong>Workflows levemente customizados.</strong> HVAC necesita service agreements, landscaping jobs recurrentes, cleaning recurring schedules. Features activables por vertical.</li>
+        <li><strong>Marketing content segmentado.</strong> Posts, videos, case studies por vertical.</li>
+      </ol>
+
+      <div class="callout insight">
+        <span class="callout-label">Electrical + HVAC primero</span>
+        <div class="callout-body">
+          Ambas verticales tienen flujo casi idéntico a plumbing + catálogos predecibles + tickets promedio más altos (mejor unit economics). Expansión "gratis" en producto, sustancial en revenue.
+        </div>
+      </div>
+    </section>
+
+    <section class="page-break">
+      <h2>5. Geografías y priorización</h2>
+
+      <p>La bilingualidad nativa ES/EN nos posiciona para una estrategia multi-regional. Priorización por encaje producto-mercado.</p>
+
+      <h3>Priorización geográfica</h3>
+      <table>
+        <thead><tr><th>Geo</th><th>Tamaño</th><th>Encaje</th><th>Retos</th><th>Prioridad</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>US (EN)</strong></td>
+            <td>~800K contratistas</td>
+            <td>Alto</td>
+            <td>Competencia (Jobber, HCP)</td>
+            <td><span class="pill success">P0 · Actual</span></td>
+          </tr>
+          <tr>
+            <td><strong>US (ES)</strong></td>
+            <td>~240K contratistas (30%)</td>
+            <td>Muy alto</td>
+            <td>SEO en español; brand awareness</td>
+            <td><span class="pill success">P0 · Actual</span></td>
+          </tr>
+          <tr>
+            <td><strong>México</strong></td>
+            <td>~400K contratistas</td>
+            <td>Muy alto</td>
+            <td>Pagos (OXXO, SPEI); regulación fiscal (CFDI)</td>
+            <td><span class="pill warning">P1 · Q3 2026</span></td>
+          </tr>
+          <tr>
+            <td><strong>Colombia</strong></td>
+            <td>~150K contratistas</td>
+            <td>Alto</td>
+            <td>Métodos pago (PSE); volumen menor</td>
+            <td><span class="pill warning">P2 · Q4 2026</span></td>
+          </tr>
+          <tr>
+            <td><strong>Argentina</strong></td>
+            <td>~100K contratistas</td>
+            <td>Alto</td>
+            <td>Inflación; inestabilidad economic</td>
+            <td><span class="pill warning">P2 · Q1 2027</span></td>
+          </tr>
+          <tr>
+            <td><strong>Chile</strong></td>
+            <td>~60K contratistas</td>
+            <td>Alto</td>
+            <td>Volumen menor; integración bancaria</td>
+            <td><span class="pill neutral">P3 · 2027</span></td>
+          </tr>
+          <tr>
+            <td><strong>Brasil (PT)</strong></td>
+            <td>~500K contratistas</td>
+            <td>Medio</td>
+            <td>Requiere portugués; complejidad fiscal</td>
+            <td><span class="pill neutral">P3 · 2027+</span></td>
+          </tr>
+          <tr>
+            <td><strong>España</strong></td>
+            <td>~80K contratistas</td>
+            <td>Alto</td>
+            <td>Mercado saturado; regulación EU</td>
+            <td><span class="pill neutral">P3 · 2027+</span></td>
+          </tr>
+          <tr>
+            <td><strong>UK / Australia</strong></td>
+            <td>Grande</td>
+            <td>Medio</td>
+            <td>Jobber dominante; barrera alta</td>
+            <td><span class="pill neutral">No prioridad</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Por qué LATAM ahora</h3>
+      <p>Tres razones estratégicas:</p>
+      <ol>
+        <li><strong>Competidores ausentes.</strong> Jobber, HCP, ServiceTitan no tienen producto local. Mercado vacío de software moderno.</li>
+        <li><strong>Arbitraje de pricing.</strong> Willingness to pay de <span class="amount">$15–25</span>/mes — en volumen, rentable.</li>
+        <li><strong>Ventana de oportunidad.</strong> Si un competidor se despierta, tomará 18–24 meses tener paridad. Tenemos ventaja temporal.</li>
+      </ol>
+
+      <div class="callout warning">
+        <span class="callout-label">Complejidades a resolver antes de LATAM</span>
+        <div class="callout-body">
+          (1) Integración de pagos locales (OXXO/SPEI en MX, PSE en CO, Mercado Pago multi-región). (2) Regulación fiscal (CFDI México, factura electrónica en varios países). (3) Soporte en hora regional. (4) Brand local — construcción de confianza.
+        </div>
+      </div>
+    </section>
+
+    <section class="page-break">
+      <h2>6. Oportunidades específicas</h2>
+
+      <h3>Oportunidad 1 — Hispanic contractor market US</h3>
+      <p>240K contratistas hispanohablantes en US, sin software dedicado en su idioma. Go-to-market diferenciado:</p>
+      <ul>
+        <li>Marketing en español en mercados clave: Miami, Los Angeles, Houston, Phoenix, NY</li>
+        <li>Partnerships con asociaciones hispanas (NAHB Hispanic Enterprises, NALC)</li>
+        <li>Contenido SEO "software plomero español" sin competencia</li>
+        <li>Webinars en español con contractors referentes</li>
+      </ul>
+
+      <h3>Oportunidad 2 — Conversión de FieldEdge</h3>
+      <p>FieldEdge tiene ~5K clientes con base envejecida. Campaña específica de migración:</p>
+      <ul>
+        <li>"Upgrade desde FieldEdge" — import tool para datos</li>
+        <li>3 meses gratis para migradores</li>
+        <li>Caso de éxito con 1–2 primeros migrados</li>
+        <li>Target HVAC/Electrical (donde FieldEdge tiene más base)</li>
+      </ul>
+
+      <h3>Oportunidad 3 — Partnerships con supply chains locales</h3>
+      <p>Integración con Home Depot Pro API, Ferguson, Grainger — contratista ve precios en vivo dentro de Shopping List AI, incluso hace pedidos. Valor único, moat adicional.</p>
+
+      <h3>Oportunidad 4 — Plataforma de técnicos freelance</h3>
+      <p>Marketplace interno: contratistas pueden subcontratar técnicos verificados para jobs grandes. Network effect directo entre partes. Revenue adicional vía commission.</p>
+
+      <h3>Oportunidad 5 — Vertical "new construction" (small)</h3>
+      <p>Contratistas que hacen renovaciones mayores o nueva construcción residencial pequeña. Jobs de mayor duración (2–6 meses), tickets altos (<span class="amount">$20–100K</span>), necesidad de change orders complejos. Paga mucho, churns poco.</p>
+
+      <h3>Oportunidad 6 — Franchise management</h3>
+      <p>Contratistas con múltiples ubicaciones / franquicias. Mercado de nicho pero con tickets enormes (<span class="amount">$200–500/mes por location</span>). Require multi-tenant dentro de tenant, reporting consolidado.</p>
+
+      <div class="callout insight">
+        <span class="callout-label">Foco sobre oportunidades</span>
+        <div class="callout-body">
+          Con 6 oportunidades grandes, la tentación es perseguir todas. Disciplina: <strong>Oportunidad 1 (Hispanic US) + Oportunidad 2 (FieldEdge migration)</strong> son las más alineadas con estrategia actual y menor costo de ejecución. Las otras son "later" — important but not now.
+        </div>
+      </div>
+    </section>
+
+    <section class="page-break">
+      <h2>7. Recomendaciones</h2>
+
+      <div class="recommendations">
+        <h3>Siete decisiones de mercado para los próximos 12 meses</h3>
+        <ol>
+          <li><strong>Doblar en Hispanic US.</strong> Campaña dedicada Q2 — mercado ignorado, ventaja lingüística única. Meta: 1,000 users hispanos en 6 meses.</li>
+          <li><strong>Preparar México para Q3.</strong> Integración OXXO/SPEI + CFDI en paralelo con marketing local. Lanzar con pricing <span class="amount">$19/mes</span>.</li>
+          <li><strong>Electrical + HVAC como expansion vertical Q2.</strong> Catalog pre-cargado + landings per-vertical. Cero costo técnico, alto upside.</li>
+          <li><strong>Campaña migración FieldEdge.</strong> Import tool + 3 meses gratis. Target 500 migradores año 1.</li>
+          <li><strong>No entrar UK/Australia.</strong> Jobber dominante. Recursos mejor invertidos en LATAM sin competencia.</li>
+          <li><strong>Partnership Home Depot Pro API.</strong> Integración estratégica. Unique selling point difícil de replicar.</li>
+          <li><strong>Instrumentar segmentación.</strong> Cada user paid debe caer en 1 de los 4 segmentos (automático por signals). Customer Success y marketing se ajustan por segmento.</li>
+        </ol>
+      </div>
+    </section>
+  </div>
+
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#1E3A5F',
+        primaryTextColor: '#ffffff',
+        primaryBorderColor: '#0F2440',
+        lineColor: '#64748B',
+        secondaryColor: '#3B82F6',
+        tertiaryColor: '#F1F5F9',
+        fontFamily: 'Inter, sans-serif',
+      },
+    });
+    await mermaid.run();
+    window.mermaid_ready = true;
+  </script>
+</body>
+</html>

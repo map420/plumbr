@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import { ClerkProvider } from '@clerk/nextjs'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 import { Analytics } from '@vercel/analytics/react'
@@ -40,13 +39,15 @@ export default async function LocaleLayout({
 
   const messages = await getMessages()
 
+  // ClerkProvider lives in (auth) + (dashboard) route-group layouts only —
+  // marketing/portal/blog don't need Clerk and skip its ~100KB bundle.
+  // Vercel Analytics only loads on Vercel (the script 404s otherwise — visible in dev/self-hosted).
+  const onVercel = !!process.env.VERCEL
   return (
-    <ClerkProvider>
-      <NextIntlClientProvider locale={locale} messages={messages}>
-        <JsonLd />
-        {children}
-        <Analytics />
-      </NextIntlClientProvider>
-    </ClerkProvider>
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      <JsonLd />
+      {children}
+      {onVercel && <Analytics />}
+    </NextIntlClientProvider>
   )
 }

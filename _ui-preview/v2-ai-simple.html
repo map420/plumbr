@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>WorkPilot AI — versión simple</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #FAFAFA; color: #18181B;
+    padding: 40px 20px;
+  }
+  .shell { max-width: 900px; margin: 0 auto; }
+
+  h1 {
+    font-size: 28px; font-weight: 700;
+    letter-spacing: -0.02em; margin-bottom: 6px;
+  }
+  h1 span { color: #0F172A; }
+  .sub { color: #52525B; font-size: 14px; margin-bottom: 32px; }
+
+  h2 {
+    font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: #A1A1AA;
+    margin: 32px 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #EAEAEC;
+  }
+
+  /* Chat card */
+  .chat {
+    background: white; border: 1px solid #EAEAEC;
+    border-radius: 12px; overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    margin-bottom: 24px;
+  }
+  .chat-head {
+    padding: 14px 18px;
+    background: #F7F7F8;
+    border-bottom: 1px solid #EAEAEC;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .badge {
+    width: 28px; height: 28px;
+    background: #0F172A; color: #A5B4FC;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .chat-head .name {
+    font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .chat-head .name .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #15803D;
+  }
+  .chat-body { padding: 18px; }
+
+  /* Empty state */
+  .empty { text-align: center; padding: 20px 10px 10px; }
+  .empty .logo {
+    width: 48px; height: 48px; margin: 0 auto 12px;
+    background: #0F172A; color: #A5B4FC;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .empty h3 {
+    font-size: 18px; font-weight: 700;
+    letter-spacing: -0.01em; margin-bottom: 4px;
+  }
+  .empty p {
+    font-size: 12px; color: #52525B;
+    margin-bottom: 18px;
+  }
+  .alerts {
+    max-width: 380px; margin: 0 auto 18px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .alert {
+    text-align: left; padding: 9px 12px;
+    border-radius: 8px; font-size: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .alert.err { background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
+  .alert.warn { background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A; }
+  .alert .body { flex: 1; }
+  .alert b { font-weight: 600; }
+
+  .cases {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px; max-width: 520px; margin: 0 auto;
+  }
+  .case {
+    background: white; border: 1px solid #EAEAEC;
+    border-radius: 8px; padding: 12px 14px;
+    text-align: left; cursor: pointer;
+  }
+  .case:hover { border-color: #0F172A; }
+  .case .t {
+    font-size: 13px; font-weight: 600;
+    margin-bottom: 3px;
+  }
+  .case .t .kbd {
+    display: inline-block;
+    font-family: ui-monospace, monospace; font-size: 10px;
+    background: #F1F1F3; padding: 1px 5px;
+    border-radius: 3px; margin-left: 4px;
+    color: #52525B;
+  }
+  .case .s { font-size: 11px; color: #52525B; line-height: 1.4; }
+
+  /* Messages */
+  .msg {
+    margin-bottom: 14px;
+    display: flex; gap: 10px;
+  }
+  .msg.user { justify-content: flex-end; }
+  .msg-ava {
+    width: 28px; height: 28px; border-radius: 6px;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600;
+  }
+  .msg.user .msg-ava { background: #0F172A; color: white; order: 2; }
+  .msg.ai .msg-ava { background: #0F172A; color: #A5B4FC; }
+  .msg-body {
+    max-width: 80%;
+    padding: 10px 14px; border-radius: 10px;
+    font-size: 13px; line-height: 1.55;
+  }
+  .msg.user .msg-body {
+    background: #0F172A; color: white;
+    border-bottom-right-radius: 4px;
+  }
+  .msg.ai .msg-body {
+    background: #F7F7F8; border: 1px solid #EAEAEC;
+    border-bottom-left-radius: 4px;
+  }
+  .msg-body strong { font-weight: 600; }
+  .msg-body ul { margin: 8px 0; padding-left: 18px; font-size: 12.5px; }
+  .msg-body li { margin-bottom: 3px; }
+
+  /* Embedded block */
+  .block {
+    background: white; border: 1px solid #EAEAEC;
+    border-radius: 8px;
+    margin: 10px 0 4px; overflow: hidden;
+  }
+  .block-head {
+    padding: 8px 12px;
+    background: #F7F7F8;
+    border-bottom: 1px solid #EAEAEC;
+    font-size: 11px; font-weight: 600;
+    display: flex; justify-content: space-between;
+  }
+  .kpi-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; }
+  .kpi-grid > div { padding: 10px 12px; border-right: 1px solid #EAEAEC; }
+  .kpi-grid > div:last-child { border-right: none; }
+  .kpi-lbl { font-size: 10px; color: #A1A1AA; font-weight: 500; text-transform: uppercase; }
+  .kpi-v { font-size: 16px; font-weight: 700; margin-top: 2px; }
+
+  .cta-row {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  .cta {
+    padding: 5px 10px; font-size: 11px; font-weight: 500;
+    border-radius: 999px; border: 1px solid #EAEAEC;
+    background: white; cursor: pointer; color: #52525B;
+  }
+  .cta.primary {
+    background: #0F172A; color: white; border-color: #0F172A;
+  }
+
+  .input {
+    display: flex; gap: 6px; padding: 4px;
+    background: #F7F7F8; border: 1px solid #EAEAEC;
+    border-radius: 10px; margin-top: 10px;
+  }
+  .input input {
+    flex: 1; border: none; background: transparent;
+    padding: 8px 10px; font-size: 13px; outline: none;
+  }
+  .input .send {
+    width: 32px; height: 32px; border-radius: 6px;
+    background: #0F172A; color: white; border: none;
+    cursor: pointer;
+  }
+
+  .good {
+    background: #F0FDF4; border: 1px solid #BBF7D0;
+    color: #15803D; padding: 12px 16px;
+    border-radius: 8px; margin-bottom: 20px;
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="good">
+    ✅ Si estás viendo esta página, los archivos HTML sí abren. Esta es una versión simplificada del AI mock con 2 casos.
+  </div>
+
+  <h1>WorkPilot <span>AI</span> — mock simple</h1>
+  <div class="sub">Empty state + 1 caso de uso · Sin dependencias externas, todo inline</div>
+
+  <h2>1 · Empty state</h2>
+  <div class="chat">
+    <div class="chat-head">
+      <div class="badge">◆</div>
+      <div class="name"><span class="dot"></span>WorkPilot AI</div>
+    </div>
+    <div class="chat-body">
+      <div class="empty">
+        <div class="logo">◆</div>
+        <h3>Hola Moises</h3>
+        <p>¿En qué te ayudo hoy?</p>
+
+        <div class="alerts">
+          <div class="alert err">
+            <span>⚠</span>
+            <div class="body"><b>2 facturas vencidas</b> hace 8+ días</div>
+          </div>
+          <div class="alert warn">
+            <span>⏱</span>
+            <div class="body"><b>3 estimates fríos</b> sin respuesta 3+ días</div>
+          </div>
+        </div>
+
+        <div class="cases">
+          <div class="case">
+            <div class="t">Crear estimate <span class="kbd">/est</span></div>
+            <div class="s">Guío el pricing por zona</div>
+          </div>
+          <div class="case">
+            <div class="t">Pulso del mes <span class="kbd">/pulse</span></div>
+            <div class="s">Revenue, vencidos, red flags</div>
+          </div>
+          <div class="case">
+            <div class="t">Follow up <span class="kbd">/follow</span></div>
+            <div class="s">Cobranzas + redacción</div>
+          </div>
+          <div class="case">
+            <div class="t">Shopping list <span class="kbd">/shop</span></div>
+            <div class="s">Materiales por job</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2>2 · Caso · Pulso del negocio</h2>
+  <div class="chat">
+    <div class="chat-head">
+      <div class="badge">◆</div>
+      <div class="name"><span class="dot"></span>WorkPilot AI</div>
+    </div>
+    <div class="chat-body">
+      <div class="msg user">
+        <div class="msg-body">¿Cómo voy este mes?</div>
+        <div class="msg-ava">M</div>
+      </div>
+      <div class="msg ai">
+        <div class="msg-ava">◆</div>
+        <div class="msg-body">
+          <p>Pulso de abril al día de hoy:</p>
+          <div class="block">
+            <div class="block-head">
+              <span>Abril 2026 · KPIs</span>
+              <span style="color:#A1A1AA;">16 días</span>
+            </div>
+            <div class="kpi-grid">
+              <div>
+                <div class="kpi-lbl">Revenue</div>
+                <div class="kpi-v">$28,450</div>
+                <div style="font-size:10px;color:#15803D;">↑ 12% vs marzo</div>
+              </div>
+              <div>
+                <div class="kpi-lbl">Unpaid</div>
+                <div class="kpi-v" style="color:#B45309;">$6,420</div>
+                <div style="font-size:10px;color:#B91C1C;">7 abiertas</div>
+              </div>
+              <div>
+                <div class="kpi-lbl">Win rate</div>
+                <div class="kpi-v">68%</div>
+                <div style="font-size:10px;color:#15803D;">↑ 5 pts</div>
+              </div>
+            </div>
+          </div>
+          <p><strong>🟢 Lo bueno:</strong></p>
+          <ul>
+            <li>Vas camino a ~<strong>$32,800</strong> al cierre del mes.</li>
+            <li>Kitchen remodel de Chen aprobado (+$3,450).</li>
+          </ul>
+          <p><strong>🔴 Red flags:</strong></p>
+          <ul>
+            <li><strong>$2,400 vencidos 15+ días</strong> — afecta tu runway de caja.</li>
+            <li><strong>3 estimates fríos</strong> — reenvía hoy.</li>
+          </ul>
+          <div class="cta-row">
+            <button class="cta primary">📤 Enviar recordatorios</button>
+            <button class="cta">Ver vencidas</button>
+            <button class="cta">Exportar PDF</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="input">
+        <input placeholder="Responder...">
+        <button class="send">→</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

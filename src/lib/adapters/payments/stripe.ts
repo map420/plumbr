@@ -39,17 +39,68 @@ export const stripeAdapter: PaymentsAdapter = {
     return { id: customer.id }
   },
 
-  async createPaymentLink({ amountCents, currency, description, metadata }) {
-    // Create a one-time price on the fly
-    const price = await getStripe().prices.create({
+  async createPaymentLink({ amountCents, currency, description, metadata, stripeAccount }) {
+    const stripe = getStripe()
+    // Direct Charge: el price + paymentLink se crean EN LA CUENTA DEL CONTRACTOR.
+    // Pago aterriza directo en su balance, NO en el platform account.
+    const requestOpts = stripeAccount ? { stripeAccount } : undefined
+
+    const price = await stripe.prices.create({
       unit_amount: amountCents,
       currency,
       product_data: { name: description },
-    })
-    const link = await getStripe().paymentLinks.create({
+    }, requestOpts)
+
+    const link = await stripe.paymentLinks.create({
       line_items: [{ price: price.id, quantity: 1 }],
       ...(metadata && { metadata }),
-    })
+      // Propagate metadata to each generated PaymentIntent so the webhook
+      // can look up invoiceId from payment_intent.metadata.
+      ...(metadata && { payment_intent_data: { metadata } }),
+    }, requestOpts)
+
     return { url: link.url, id: link.id }
+  },
+
+  // ── Stripe Connect Express ──
+  async createConnectAccount({ email, country = 'US', metadata }) {
+    const account = await getStripe().accounts.create({
+      type: 'express',
+      country,
+      email,
+      capabilities: {
+        card_payments: { requested: true },
+        transfers: { requested: true },
+      },
+      ...(metadata && { metadata }),
+    })
+    return { accountId: account.id }
+  },
+
+  async createConnectAccountLink({ accountId, refreshUrl, returnUrl }) {
+    const link = await getStripe().accountLinks.create({
+      account: accountId,
+      refresh_url: refreshUrl,
+      return_url: returnUrl,
+      type: 'account_onboarding',
+    })
+    return { url: link.url }
+  },
+
+  async getConnectAccount(accountId) {
+    const account = await getStripe().accounts.retrieve(accountId)
+    return {
+      id: account.id,
+      chargesEnabled: account.charges_enabled ?? false,
+      payoutsEnabled: account.payouts_enabled ?? false,
+      detailsSubmitted: account.details_submitted ?? false,
+      requirementsCurrentlyDue: account.requirements?.currently_due ?? [],
+      requirementsPastDue: account.requirements?.past_due ?? [],
+    }
+  },
+
+  async createConnectLoginLink(accountId) {
+    const link = await getStripe().accounts.createLoginLink(accountId)
+    return { url: link.url }
   },
 }

@@ -70,7 +70,7 @@ export function SwipeableRow({ children, actions, className = '' }: {
           dragElastic={0.1}
           onDragEnd={handleDragEnd}
           style={{ x, touchAction: 'pan-y' }}
-          className="relative bg-white"
+          className="relative bg-card"
         >
           {children}
         </m.div>

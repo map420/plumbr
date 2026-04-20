@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { DollarSign, TrendingUp, Receipt, ChevronRight } from 'lucide-react'
 import { KpiCard, ClientAvatar, StatusPill, type StatusTone } from '@/components/ui'
+import { deriveInvoiceStatus } from '@/lib/status/derived'
 
 type DueInvoice = {
   id: string; number: string; clientName: string; total: string
@@ -110,12 +111,15 @@ export function PaymentsClient({ dueInvoices, ytdRevenue, monthRevenue, winRate,
                 </div>
                 <span className="text-xs font-mono hidden md:block" style={{ color: 'var(--wp-text-2)' }}>#{inv.number.replace('INV-', '')}</span>
                 <span className="text-xs hidden md:block" style={{ color: 'var(--wp-text-3)' }}>
-                  {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—'}
+                  {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { month: 'short', day: 'numeric' }) : '—'}
                 </span>
                 <div className="hidden md:block">
-                  <StatusPill tone={STATUS_TONE[inv.status] ?? 'neutral'}>
-                    {inv.status}
-                  </StatusPill>
+                  {(() => {
+                    const d = deriveInvoiceStatus(inv as unknown as { status: string; dueDate: string | null; paidAt: string | null })
+                    return (
+                      <StatusPill tone={STATUS_TONE[d] ?? 'neutral'}>{d}</StatusPill>
+                    )
+                  })()}
                 </div>
                 <span className="text-sm font-semibold tabular-nums text-right" style={{ color: inv.status === 'overdue' ? 'var(--wp-error-v2)' : 'var(--wp-text)' }}>
                   ${parseFloat(inv.total).toLocaleString('en-US', { minimumFractionDigits: 2 })}

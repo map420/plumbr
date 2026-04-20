@@ -52,7 +52,7 @@ export async function createPhoto(data: {
     sortOrder: 0,
   })
 
-  revalidatePath('/[locale]/jobs', 'page')
+  revalidatePath('/[locale]/projects', 'page')
   revalidatePath('/[locale]/estimates', 'page')
   return photo
 }
@@ -60,6 +60,6 @@ export async function createPhoto(data: {
 export async function deletePhoto(id: string) {
   const userId = await requireAuth()
   await dbAdapter.photos.delete(id, userId)
-  revalidatePath('/[locale]/jobs', 'page')
+  revalidatePath('/[locale]/projects', 'page')
   revalidatePath('/[locale]/estimates', 'page')
 }

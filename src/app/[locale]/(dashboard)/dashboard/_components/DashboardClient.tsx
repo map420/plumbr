@@ -78,7 +78,7 @@ export function DashboardClient({ translations: t }: { translations: T }) {
         <h2 className="text-sm font-semibold mb-3" style={{ color: 'var(--wp-text)' }}>{t.quickActions.title}</h2>
         <div className="flex gap-2 flex-wrap">
           <Link href={`/${locale}/estimates/new`} className="btn-primary btn-sm">{t.quickActions.newEstimate}</Link>
-          <Link href={`/${locale}/jobs/new`} className="btn-secondary btn-sm">{t.quickActions.newJob}</Link>
+          <Link href={`/${locale}/projects/new`} className="btn-secondary btn-sm">{t.quickActions.newJob}</Link>
         </div>
       </div>
     </div>

@@ -90,7 +90,7 @@ BUSINESS ADVISOR — When analyzing revenue, projections, or giving recommendati
 - Pricing signals: compare average estimate value over time. If it's dropping, the contractor may be underpricing.
 - Pipeline health: ratio of leads→active→completed. A healthy business has consistent flow at each stage.
 - Cash flow timing: avg days to pay trending up means clients are paying slower — suggest adjusting payment terms or deposits.
-When making recommendations, always tie them to specific data points: real client names, real estimate numbers, real amounts. Never give generic advice — every suggestion must reference something actionable in their data. The snapshot shows KPIs only — call tools (get_jobs, get_estimates, get_invoices, get_client_history) to look up the specific records you need before making data-driven recommendations.
+When making recommendations, always tie them to specific data points: real client names, real estimate numbers, real amounts. Never give generic advice — every suggestion must reference something actionable in their data. The snapshot shows KPIs only — call tools (get_jobs, get_estimates, get_invoices, get_client_history) to look up the specific records you need before making data-driven recommendations. Note: the tool is named get_jobs for internal reasons but the user-facing term is "project" — always say "project" in your responses.
 
 ACTIONS — Syntax at END of message: {{ACTION:label|type|target}} Types: navigate (path) | send (message). Max 4 per response. EVERY response with a next step MUST have action buttons. Use real names/IDs/amounts. No actions in voice mode.
 
@@ -103,7 +103,7 @@ FORMATTING — Use standard markdown. The UI automatically styles it:
 - |tables| become styled data tables
 Keep responses clean and structured with headings, bullets, and tables when showing data.
 
-MATERIAL LISTS — When user asks for materials/shopping list for a specific job, output bullet list with prices (e.g. "- Cerámica 25m² - $450"). CRITICAL: if the list is for ONE specific job, call get_jobs first to get the UUID, then include marker at top of your response: <!-- job:THE_JOB_ID -->. The marker is invisible to the user and lets the system pre-link the job. If user didn't specify a job or it's ambiguous, OMIT the marker — the user will pick the job when saving.`
+MATERIAL LISTS — When user asks for materials/shopping list for a specific project, output bullet list with prices (e.g. "- Cerámica 25m² - $450"). CRITICAL: if the list is for ONE specific project, call get_jobs first to get the UUID, then include marker at top of your response: <!-- job:THE_PROJECT_ID -->. The marker is invisible to the user and lets the system pre-link the project. If user didn't specify a project or it's ambiguous, OMIT the marker — the user will pick the project when saving.`
 
 const VOICE_INSTRUCTIONS = '\n\nVOICE MODE IS ACTIVE. Keep responses to 1-3 sentences maximum. No tables, no charts, no markdown formatting. Be direct and conversational. Numbers should be spoken naturally (e.g. "four thousand dollars" not "$4,000.00"). Never say "WorkPilot" — say "tu negocio" or "your business" instead. Never say "contratista" or "contractor" — just say "tu negocio" or "your business". Keep it simple and natural.'
 
@@ -189,8 +189,8 @@ async function fetchPreloadContext(userId: string): Promise<string> {
 
   const snapshot = `SNAPSHOT (KPIs only — use tools to look up specific records):
 Pipeline: ${leads.length} leads → ${activeJobs.length} active → ${completedJobs.length} completed | ${jobs.length} total${winRate !== null ? ` | Win rate: ${winRate}%` : ''}
-Active jobs: ${activeJobNames || 'none'}
-Avg job budget: $${avgBudget.toFixed(0)}
+Active projects: ${activeJobNames || 'none'}
+Avg project budget: $${avgBudget.toFixed(0)}
 Estimates: ${draftEst.length} draft, ${sentEst.length} pending ($${sentEst.reduce((s, e) => s + parseFloat(e.total), 0).toFixed(0)}), ${approvedEst.length} approved
 Invoices: ${sentInv.length} unpaid ($${sentInv.reduce((s, i) => s + parseFloat(i.total), 0).toFixed(0)}), ${overdueInv.length} overdue ($${overdueInv.reduce((s, i) => s + parseFloat(i.total), 0).toFixed(0)}), ${paidInv.length} paid
 Revenue: $${revenueThisMonth.toFixed(0)} this month | $${totalRevenue.toFixed(0)} all-time
@@ -325,7 +325,7 @@ async function processMessages(
     const toolModel = PRIMARY_MODEL
 
     const toolNames: Record<string, string> = {
-      get_jobs: 'Looking up your jobs', get_estimates: 'Checking estimates',
+      get_jobs: 'Looking up your projects', get_estimates: 'Checking estimates',
       get_invoices: 'Reviewing invoices', get_clients: 'Searching clients',
       get_client_history: 'Getting client history', get_expenses: 'Checking expenses',
       get_dashboard_stats: 'Calculating business stats', get_technicians: 'Looking up your team',

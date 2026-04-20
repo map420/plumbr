@@ -3,20 +3,28 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useLocale } from 'next-intl'
-import { ChevronLeft, Send, Loader2, Bot, AudioLines, Trash2, ArrowRight, AlertTriangle, Clock } from 'lucide-react'
+import { ChevronLeft, Send, Loader2, AudioLines, Trash2, ArrowRight, AlertTriangle, Clock } from 'lucide-react'
+import { SparkleIcon } from '@/components/icons/SparkleIcon'
 import type { Alert } from '../page'
 import { useAssistantChat } from '@/components/assistant/useAssistantChat'
 import { renderContent, parseActions, ActionButtons, extractChecklist, type ActionBlock, type RenderContext } from '@/components/assistant/ChatRenderers'
 import { RichChecklist } from '@/components/assistant/RichBlocks'
-import { VoiceAssistant } from '@/components/VoiceAssistant'
+import dynamic from 'next/dynamic'
+
+// VoiceAssistant pulls in ElevenLabs SDK (~60KB). Only load on demand when
+// the user clicks the voice call button — most chat sessions never open it.
+const VoiceAssistant = dynamic(() => import('@/components/VoiceAssistant').then(m => m.VoiceAssistant), {
+  ssr: false,
+  loading: () => <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center"><Loader2 className="animate-spin text-white" size={32} /></div>,
+})
 
 const MODEL_LABELS = { auto: 'Auto', sonnet: 'Sonnet', haiku: 'Haiku' } as const
 const QUICK_ACTIONS = [
   { icon: '📝', label: 'Create Estimate', subtitle: 'Guided pricing by zone and type of work. I fill the form for you.', shortcut: '/est', example: 'Estimate for a kitchen remodel in Queens...', message: 'I want to create an estimate. Help me choose the type of work and price it based on the client\'s location.' },
   { icon: '📊', label: 'Business Pulse', subtitle: 'Revenue, unpaid, pending estimates, red flags summary.', shortcut: '/pulse', example: 'How am I doing this month?', message: 'Give me a business summary for this month — revenue, overdue invoices, pending estimates, and any red flags.' },
   { icon: '💰', label: 'Follow Up', subtitle: 'Overdue invoices and stale estimates. I draft the messages.', shortcut: '/follow', example: 'Who owes me money this week?', message: 'What needs my attention? Show overdue invoices and stale estimates, and help me follow up.' },
-  { icon: '📈', label: 'Margin Analysis', subtitle: 'Which jobs are losing money and what to do about it.', shortcut: '/margin', example: 'Analyze jobs from the last quarter', message: 'Analyze my job profitability. Which jobs are losing money and what can I do about it?' },
-  { icon: '🛒', label: 'Shopping List', subtitle: 'Materials for the week grouped by supplier and route.', shortcut: '/shop', example: 'Materials for this week\'s jobs', message: 'Prepare a materials shopping list for all my jobs this week, grouped by supplier.' },
+  { icon: '📈', label: 'Margin Analysis', subtitle: 'Which projects are losing money and what to do about it.', shortcut: '/margin', example: 'Analyze projects from the last quarter', message: 'Analyze my project profitability. Which projects are losing money and what can I do about it?' },
+  { icon: '🛒', label: 'Shopping List', subtitle: 'Materials for the week grouped by supplier and route.', shortcut: '/shop', example: 'Materials for this week\'s projects', message: 'Prepare a materials shopping list for all my projects this week, grouped by supplier.' },
   { icon: '✉️', label: 'Draft Message', subtitle: 'SMS, email or reminder personalized for a client.', shortcut: '/draft', example: 'Gentle reminder to Linda Chen about INV-232', message: 'Help me draft a message to a client. Ask me which client, the purpose, and suggested tone.' },
 ]
 
@@ -24,7 +32,7 @@ const SUGGESTION_PILLS = [
   { emoji: '📊', text: 'How am I doing this month?', message: 'Give me a business summary for this month — revenue, overdue invoices, pending estimates, and any red flags.' },
   { emoji: '📝', text: 'Create estimate for a new client', message: 'I want to create an estimate for a new client. Guide me through the process.' },
   { emoji: '💰', text: 'Send reminders to overdue invoices', message: 'What invoices are overdue? Help me send reminders.' },
-  { emoji: '⚙️', text: 'My least profitable job this week', message: 'Which of my current jobs has the worst margin this week?' },
+  { emoji: '⚙️', text: 'My least profitable project this week', message: 'Which of my current projects has the worst margin this week?' },
 ]
 
 function ModelSelector({ model, setModel }: { model: keyof typeof MODEL_LABELS; setModel: (m: any) => void }) {
@@ -60,20 +68,20 @@ function InputBar({ chat, onVoice }: { chat: ReturnType<typeof useAssistantChat>
       {onVoice && !chat.loading && !chat.input.trim() && (
         <button onClick={onVoice}
           className="w-8 h-8 flex items-center justify-center rounded-full shrink-0 transition-colors"
-          style={{ color: 'var(--wp-text-muted)' }} title="Voice mode">
+          style={{ color: 'var(--wp-text-muted)' }} title="Voice mode" aria-label="Voice mode">
           <AudioLines size={18} />
         </button>
       )}
       {chat.loading ? (
         <button onClick={chat.handleStop}
           className="w-8 h-8 flex items-center justify-center text-white rounded-full transition-colors shrink-0 mr-0.5"
-          style={{ background: 'var(--wp-text-muted)' }} title="Stop">
-          <div className="w-3 h-3 rounded-sm bg-white" />
+          style={{ background: 'var(--wp-text-muted)' }} title="Stop" aria-label="Stop generation">
+          <div className="w-3 h-3 rounded-sm bg-card" />
         </button>
       ) : (
         <button onClick={() => chat.handleSend()} disabled={!chat.input.trim()}
           className="w-8 h-8 flex items-center justify-center text-white rounded-full disabled:opacity-30 transition-colors shrink-0 mr-0.5"
-          style={{ background: 'var(--wp-accent)' }}>
+          style={{ background: 'var(--wp-accent)' }} aria-label="Send message">
           <Send size={14} />
         </button>
       )}
@@ -158,7 +166,7 @@ export function AssistantPageClient({ alerts = [] }: { alerts?: Alert[] }) {
         <div className="flex-1 flex items-center gap-3">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'var(--wp-brand)' }}>
-              <Bot size={16} style={{ color: 'var(--wp-ai-accent, #A5B4FC)' }} />
+              <SparkleIcon size={16} style={{ color: 'var(--wp-ai-accent, #A5B4FC)' }} />
             </div>
             <span className="text-sm font-semibold" style={{ color: 'var(--wp-text-primary)' }}>WorkPilot AI</span>
             <span className="flex items-center gap-1.5 text-[10px] font-medium" style={{ color: 'var(--wp-text-muted)' }}>
@@ -199,7 +207,7 @@ export function AssistantPageClient({ alerts = [] }: { alerts?: Alert[] }) {
           {/* Centered icon + text */}
           <div className="flex-1 flex flex-col items-center justify-center px-4">
             <div className="w-14 h-14 rounded-2xl mb-4 flex items-center justify-center" style={{ background: 'var(--wp-bg-muted)' }}>
-              <Bot size={28} style={{ color: 'var(--wp-text-muted)' }} />
+              <SparkleIcon size={28} style={{ color: 'var(--wp-text-muted)' }} />
             </div>
             <p className="text-lg font-semibold mb-1" style={{ color: 'var(--wp-text-primary)' }}>How can I help you today?</p>
             <p className="text-sm text-center" style={{ color: 'var(--wp-text-muted)' }}>Ask about your business, create documents, or get insights.</p>
@@ -231,7 +239,7 @@ export function AssistantPageClient({ alerts = [] }: { alerts?: Alert[] }) {
           <div className="w-full max-w-[720px] mx-auto flex flex-col items-center pt-12 pb-8 px-4">
             {/* Logo + greeting */}
             <div className="w-14 h-14 rounded-2xl mb-5 flex items-center justify-center" style={{ background: 'var(--wp-brand)', color: 'var(--wp-ai-accent, #A5B4FC)' }}>
-              <Bot size={28} />
+              <SparkleIcon size={28} />
             </div>
             <p className="text-xl font-bold mb-1" style={{ color: 'var(--wp-text-primary)', letterSpacing: '-0.02em' }}>
               {locale === 'es' ? 'Hola, soy WorkPilot AI' : 'Hi, I\'m WorkPilot AI'}
@@ -321,7 +329,7 @@ export function AssistantPageClient({ alerts = [] }: { alerts?: Alert[] }) {
                       <div
                         className={`max-w-[85%] md:max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${msg.role === 'user' ? 'rounded-br-md' : 'rounded-bl-md'}`}
                         style={msg.role === 'user'
-                          ? { background: 'var(--wp-primary)', color: 'white' }
+                          ? { background: 'var(--wp-primary)', color: 'var(--wp-text-inverse)' }
                           : { background: 'var(--wp-bg-primary)', color: 'var(--wp-text-secondary)', boxShadow: 'var(--wp-shadow-xs)' }
                         }>
                         {msg.role === 'assistant' ? renderContent(cleanText, renderCtx) : <div className="whitespace-pre-wrap">{msg.content}</div>}

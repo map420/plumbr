@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>plumbr — v2 · Índice maestro</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAFAFA;
+    --surface: #FFFFFF;
+    --surface-2: #F7F7F8;
+    --border: #EAEAEC;
+    --text: #18181B;
+    --text-2: #52525B;
+    --text-3: #A1A1AA;
+    --brand: #0F172A;
+    --brand-hover: #1E293B;
+    --success: #15803D;
+    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.04);
+    --shadow-2: 0 2px 4px rgb(0 0 0 / 0.04), 0 1px 2px rgb(0 0 0 / 0.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: linear-gradient(180deg, #F8FAFC 0%, #EEF2F6 100%);
+    color: var(--text); min-height: 100vh; padding: 60px 24px;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { text-decoration: none; color: inherit; }
+  .container { max-width: 1080px; margin: 0 auto; }
+
+  .hero { text-align: center; margin-bottom: 40px; }
+  .brand-tag { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; background: var(--brand); color: white; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 18px; }
+  .hero h1 { font-size: 42px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 10px; }
+  .hero h1 span { color: var(--brand); }
+  .hero p { font-size: 15px; color: var(--text-2); max-width: 600px; margin: 0 auto; line-height: 1.6; }
+
+  .counter {
+    display: inline-flex; gap: 16px; margin-top: 20px;
+    font-size: 13px; color: var(--text-2);
+  }
+  .counter strong { color: var(--text); font-weight: 700; }
+  .counter .sep { color: var(--text-3); }
+
+  .group-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--text-3);
+    margin: 40px 0 14px;
+    padding-bottom: 8px; border-bottom: 1px solid var(--border);
+  }
+
+  .grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;
+  }
+  .card-link {
+    display: block;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px 22px;
+    transition: all 200ms; box-shadow: var(--shadow-1);
+    position: relative;
+  }
+  .card-link:hover {
+    transform: translateY(-2px); border-color: var(--brand);
+    box-shadow: 0 20px 40px rgb(15 23 42 / 0.08), 0 4px 12px rgb(0 0 0 / 0.04);
+  }
+  .card-link.featured {
+    background: linear-gradient(135deg, var(--brand) 0%, #1E293B 100%);
+    color: white; border: none;
+  }
+  .card-link.featured .step { background: rgb(255 255 255 / 0.15); color: white; }
+  .card-link.featured h3 { color: white; }
+  .card-link.featured p { color: rgb(255 255 255 / 0.75); }
+  .card-link.featured .path { color: rgb(255 255 255 / 0.5); }
+
+  .step {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 7px;
+    background: var(--brand); color: white;
+    font-size: 12px; font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .card-link h3 {
+    font-size: 16px; font-weight: 700; letter-spacing: -0.01em;
+    margin-bottom: 4px;
+  }
+  .card-link p {
+    font-size: 12.5px; color: var(--text-2); line-height: 1.5;
+    margin-bottom: 10px;
+  }
+  .card-link .path {
+    font-family: ui-monospace, 'SF Mono', monospace; font-size: 10px;
+    color: var(--text-3); font-weight: 500;
+    padding: 3px 8px; background: var(--surface-2);
+    border-radius: 5px; display: inline-block;
+    border: 1px solid var(--border);
+  }
+  .card-link.featured .path { background: rgb(255 255 255 / 0.08); border-color: rgb(255 255 255 / 0.15); }
+
+  .card-link .count-tag {
+    position: absolute; top: 16px; right: 20px;
+    font-size: 10px; font-weight: 700;
+    padding: 3px 8px; border-radius: 999px;
+    background: var(--surface-2); color: var(--text-2);
+    border: 1px solid var(--border);
+  }
+  .card-link.featured .count-tag { background: rgb(255 255 255 / 0.1); color: white; border-color: rgb(255 255 255 / 0.15); }
+
+  .cta-row {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 24px;
+    margin-top: 48px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .cta-row h3 { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 3px; }
+  .cta-row p { font-size: 13px; color: var(--text-2); }
+  .btn-plan {
+    background: var(--brand); color: white; border: none;
+    padding: 12px 18px; border-radius: 10px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: inherit;
+  }
+  .btn-plan:hover { background: var(--brand-hover); }
+
+  .footnote { text-align: center; font-size: 12px; color: var(--text-3); line-height: 1.6; margin-top: 32px; }
+  .footnote code { background: white; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border); font-size: 11px; color: var(--text); }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="hero">
+    <div class="brand-tag">◆ plumbr redesign v2</div>
+    <h1>Todos los mockups de <span>plumbr</span></h1>
+    <p>Rediseño completo de la aplicación con paleta profesional desaturada, layout unificado y componentes reutilizables. Navega cualquier vista y al final encontrarás el plan de implementación.</p>
+    <div class="counter">
+      <span><strong>15</strong> vistas</span>
+      <span class="sep">·</span>
+      <span><strong>4</strong> archivos de mockups</span>
+      <span class="sep">·</span>
+      <span><strong>v2</strong> paleta</span>
+    </div>
+  </div>
+
+  <!-- ═════ Grupo: core ═════ -->
+  <div class="group-title">Core views</div>
+  <div class="grid">
+    <a href="v2-dashboard.html" class="card-link featured">
+      <span class="count-tag">Hub</span>
+      <div class="step">🏠</div>
+      <h3>Dashboard</h3>
+      <p>Home del contratista. Dinero, pipeline, gráfico con proyección AI, agenda, alertas y 3 insights de WorkPilot AI.</p>
+      <span class="path">/dashboard</span>
+    </a>
+    <a href="v2-workpilot-ai.html" class="card-link featured">
+      <span class="count-tag">AI</span>
+      <div class="step">◆</div>
+      <h3>WorkPilot AI</h3>
+      <p>5 casos de uso reales + empty state + voice mode. Create estimate, Business pulse, Follow up, Job prep y voice hands-free.</p>
+      <span class="path">/assistant</span>
+    </a>
+  </div>
+
+  <!-- ═════ Grupo: Estimates ═════ -->
+  <div class="group-title">Estimates (iteración 1)</div>
+  <div class="grid">
+    <a href="v2-refined.html" class="card-link">
+      <span class="count-tag">4 vistas</span>
+      <div class="step">◆</div>
+      <h3>Estimates · completo (v2)</h3>
+      <p>Lista + Detail + Form wizard + Print. Paleta muted aplicada y layout corregido (action bar jerarquizada, stepped form).</p>
+      <span class="path">/estimates · /[id] · /new · /print</span>
+    </a>
+    <a href="01-estimates-list.html" class="card-link">
+      <span class="count-tag">v1 before/after</span>
+      <div class="step">1</div>
+      <h3>Estimates · comparativa v1</h3>
+      <p>Primera iteración con comparativas before/after. Útil para ver la evolución de decisiones.</p>
+      <span class="path">/estimates</span>
+    </a>
+  </div>
+
+  <!-- ═════ Grupo: Business ═════ -->
+  <div class="group-title">Business views · Gallery 1</div>
+  <div class="grid">
+    <a href="v2-gallery-1.html#clients" class="card-link">
+      <span class="count-tag">list + detail</span>
+      <div class="step">1</div>
+      <h3>Clients</h3>
+      <p>Directorio con avatares, LTV, saldos y tags. Detail con hero + historial de documentos + financials.</p>
+      <span class="path">/clients · /clients/[id]</span>
+    </a>
+    <a href="v2-gallery-1.html#jobs" class="card-link">
+      <span class="count-tag">kanban + detail</span>
+      <div class="step">2</div>
+      <h3>Jobs</h3>
+      <p>Pipeline kanban (Lead / Scheduled / Active / Done) + detail con timer, checklist, fotos y documentos vinculados.</p>
+      <span class="path">/jobs · /jobs/[id]</span>
+    </a>
+    <a href="v2-gallery-1.html#invoices" class="card-link">
+      <span class="count-tag">list + detail</span>
+      <div class="step">3</div>
+      <h3>Invoices</h3>
+      <p>Lista agrupada por urgencia, KPIs de cobranza, detail con progress bar de pago y timeline de payments.</p>
+      <span class="path">/invoices · /invoices/[id]</span>
+    </a>
+    <a href="v2-gallery-1.html#payments" class="card-link">
+      <span class="count-tag">list</span>
+      <div class="step">4</div>
+      <h3>Payments</h3>
+      <p>Historial de ingresos por método (Stripe, cash, check) con fees y net amount.</p>
+      <span class="path">/payments</span>
+    </a>
+    <a href="v2-gallery-1.html#expenses" class="card-link">
+      <span class="count-tag">list</span>
+      <div class="step">5</div>
+      <h3>Expenses</h3>
+      <p>Gastos con categorización, vinculación a jobs, tracking de recibos escaneados.</p>
+      <span class="path">/expenses</span>
+    </a>
+  </div>
+
+  <!-- ═════ Grupo: Operations ═════ -->
+  <div class="group-title">Operations &amp; Settings · Gallery 2</div>
+  <div class="grid">
+    <a href="v2-gallery-2.html#schedule" class="card-link">
+      <span class="count-tag">calendar</span>
+      <div class="step">6</div>
+      <h3>Schedule</h3>
+      <p>Calendario semanal con eventos multi-técnico, filtros por team member, mini-calendario lateral y navegación.</p>
+      <span class="path">/schedule</span>
+    </a>
+    <a href="v2-gallery-2.html#shopping" class="card-link">
+      <span class="count-tag">list</span>
+      <div class="step">7</div>
+      <h3>Shopping list</h3>
+      <p>Materiales agrupados por proveedor con total, checkboxes, link a jobs, tip de ruta de WorkPilot AI.</p>
+      <span class="path">/shopping-list</span>
+    </a>
+    <a href="v2-gallery-2.html#field" class="card-link">
+      <span class="count-tag">mobile</span>
+      <div class="step">8</div>
+      <h3>Field mode</h3>
+      <p>Vista mobile full-screen para el técnico en obra. Timer, checklist, foto, cobrar, Ask AI.</p>
+      <span class="path">/field/[jobId]</span>
+    </a>
+    <a href="v2-gallery-2.html#team" class="card-link">
+      <span class="count-tag">grid</span>
+      <div class="step">9</div>
+      <h3>Team</h3>
+      <p>Técnicos y subs con stats mensuales (jobs, revenue, rating) y disponibilidad en tiempo real.</p>
+      <span class="path">/team</span>
+    </a>
+    <a href="v2-gallery-2.html#referrals" class="card-link">
+      <span class="count-tag">program</span>
+      <div class="step">10</div>
+      <h3>Referrals</h3>
+      <p>Programa de referidos con código compartible, contador de créditos y tabla de referidos activos.</p>
+      <span class="path">/referrals</span>
+    </a>
+    <a href="v2-gallery-2.html#settings" class="card-link">
+      <span class="count-tag">multi-tab</span>
+      <div class="step">11</div>
+      <h3>Settings</h3>
+      <p>Sidebar nav con Profile, Company, Billing, Tax, Notifications, Integrations, Team, Templates, Catalog.</p>
+      <span class="path">/settings</span>
+    </a>
+    <a href="v2-gallery-2.html#ai-pref" class="card-link featured">
+      <span class="count-tag">AI control</span>
+      <div class="step">◆</div>
+      <h3>AI preferences</h3>
+      <p>Controla qué puede hacer WorkPilot AI: modelo, borradores, recordatorios auto, tono, uso mensual.</p>
+      <span class="path">/settings/ai-preferences</span>
+    </a>
+  </div>
+
+  <div class="cta-row">
+    <div>
+      <h3>Plan de implementación</h3>
+      <p>Roadmap seguro para aplicar los mockups al código sin romper la app.</p>
+    </div>
+    <a class="btn-plan" href="v2-implementation-plan.html">
+      Ver plan completo
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
+  </div>
+
+  <div class="footnote">
+    Todos los mockups son estáticos y no afectan tu app. Al abrir la ruta <code>C:\Users\Moises\Documents\plumbr\_ui-preview\</code> en el navegador puedes verlos.
+  </div>
+</div>
+</body>
+</html>

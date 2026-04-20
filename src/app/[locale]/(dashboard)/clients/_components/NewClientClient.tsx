@@ -34,7 +34,7 @@ export function NewClientClient() {
       {saved && <Toast message="Client saved successfully!" onDone={() => setSaved(false)} />}
 
       {/* ── MOBILE LAYOUT ─────────────────────── */}
-      <div className="md:hidden bg-white min-h-full">
+      <div className="md:hidden bg-card min-h-full">
         {/* Header: Cancel | New Client | Done */}
         <form onSubmit={handleSubmit} id="client-form">
           <div className="flex items-center px-4 py-2.5" style={{ borderBottom: '1px solid var(--wp-border-light)' }}>

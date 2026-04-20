@@ -8,6 +8,7 @@ import { isPro, STARTER_LIMITS } from '@/lib/stripe'
 import { invalidateUserData } from '@/lib/cache-tags'
 import { getUserPlan } from './billing'
 import { requireUser as requireAuth } from './auth-helpers'
+import { parseDateOnly } from '@/lib/format'
 
 export async function getJobs() {
   const userId = await requireAuth()
@@ -79,11 +80,11 @@ export async function createJob(data: {
     status: data.status as 'lead' | 'active' | 'on_hold' | 'completed' | 'cancelled',
     budgetedCost: data.budgetedCost || '0',
     actualCost: data.actualCost || '0',
-    startDate: data.startDate ? new Date(data.startDate) : null,
-    endDate: data.endDate ? new Date(data.endDate) : null,
+    startDate: parseDateOnly(data.startDate),
+    endDate: parseDateOnly(data.endDate),
     notes: data.notes || null,
   })
-  revalidatePath('/[locale]/jobs', 'page')
+  revalidatePath('/[locale]/projects', 'page')
   invalidateUserData(userId)
   return job
 }
@@ -106,8 +107,8 @@ export async function updateJob(id: string, data: Partial<{
   if (data.status !== undefined) patch.status = data.status
   if (data.budgetedCost !== undefined) patch.budgetedCost = data.budgetedCost
   if (data.actualCost !== undefined) patch.actualCost = data.actualCost
-  if (data.startDate !== undefined) patch.startDate = data.startDate ? new Date(data.startDate) : null
-  if (data.endDate !== undefined) patch.endDate = data.endDate ? new Date(data.endDate) : null
+  if (data.startDate !== undefined) patch.startDate = parseDateOnly(data.startDate)
+  if (data.endDate !== undefined) patch.endDate = parseDateOnly(data.endDate)
   if (data.notes !== undefined) patch.notes = data.notes || null
 
   const job = await dbAdapter.jobs.update(id, userId, patch as Parameters<typeof dbAdapter.jobs.update>[2])
@@ -142,13 +143,13 @@ export async function updateJob(id: string, data: Partial<{
         type: 'job_completed_no_invoice',
         title: `Job "${job.name}" completed`,
         body: `No invoice created yet for ${job.clientName}. Create one now.`,
-        href: `/en/jobs/${id}`,
+        href: `/en/projects/${id}`,
         read: false,
       }).catch(err => console.error('[NOTIF] job_completed_no_invoice failed:', err))
     }
   }
 
-  revalidatePath('/[locale]/jobs', 'page')
+  revalidatePath('/[locale]/projects', 'page')
   invalidateUserData(userId)
   return job
 }
@@ -156,6 +157,6 @@ export async function updateJob(id: string, data: Partial<{
 export async function deleteJob(id: string) {
   const userId = await requireAuth()
   await dbAdapter.jobs.delete(id, userId)
-  revalidatePath('/[locale]/jobs', 'page')
+  revalidatePath('/[locale]/projects', 'page')
   invalidateUserData(userId)
 }

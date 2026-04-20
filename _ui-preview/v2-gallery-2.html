@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>plumbr — v2 Gallery 2 · Operations & Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAFAFA;
+    --surface: #FFFFFF;
+    --surface-2: #F7F7F8;
+    --surface-3: #F1F1F3;
+    --border: #EAEAEC;
+    --border-hover: #D4D4D8;
+    --text: #18181B;
+    --text-2: #52525B;
+    --text-3: #A1A1AA;
+    --brand: #0F172A;
+    --brand-hover: #1E293B;
+    --brand-subtle: #F1F5F9;
+    --ai-accent: #A5B4FC;
+    --success: #15803D;
+    --success-bg: #F0FDF4;
+    --success-border: #BBF7D0;
+    --warning: #B45309;
+    --warning-bg: #FFFBEB;
+    --warning-border: #FDE68A;
+    --danger: #B91C1C;
+    --danger-bg: #FEF2F2;
+    --danger-border: #FECACA;
+    --info: #1D4ED8;
+    --info-bg: #EFF6FF;
+    --info-border: #BFDBFE;
+    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.04);
+    --shadow-2: 0 2px 4px rgb(0 0 0 / 0.04), 0 1px 2px rgb(0 0 0 / 0.06);
+    --r-sm: 6px; --r-md: 8px; --r-lg: 10px; --r-xl: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+  a { color: inherit; text-decoration: none; }
+  code, .mono { font-family: 'JetBrains Mono', monospace; }
+
+  .shell { max-width: 1320px; margin: 0 auto; padding: 40px 24px 80px; }
+  .page-header { margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-end; }
+  .page-header h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+  .page-header p { font-size: 14px; color: var(--text-2); margin-top: 4px; }
+  .nav-back { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-2); font-weight: 500; padding: 6px 12px; border-radius: var(--r-md); background: var(--surface); border: 1px solid var(--border); }
+
+  h2.section-h { font-size: 13px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-3); margin: 56px 0 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); scroll-margin-top: 20px; }
+  h2.section-h .num { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 6px; background: var(--brand); color: white; font-size: 11px; margin-right: 8px; vertical-align: middle; }
+
+  .mock { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-xl); overflow: hidden; box-shadow: var(--shadow-1); margin-bottom: 20px; }
+  .mock-label { padding: 10px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); background: var(--surface-2); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
+  .mock-label .title { color: var(--text); }
+  .mock-body { padding: 24px; background: var(--bg); }
+
+  .ic { display: inline-block; vertical-align: middle; }
+
+  .btn { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; padding: 8px 14px; border-radius: var(--r-md); border: 1px solid transparent; cursor: pointer; font-family: inherit; }
+  .btn.primary { background: var(--brand); color: white; }
+  .btn.secondary { background: var(--surface); color: var(--text); border-color: var(--border); box-shadow: var(--shadow-1); }
+  .btn.ghost { background: transparent; color: var(--text-2); }
+  .btn.sm { padding: 6px 10px; font-size: 12px; }
+
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; background: var(--surface-3); color: var(--text-2); border: 1px solid var(--border); }
+  .pill .dot { width: 5px; height: 5px; border-radius: 50%; }
+  .pill.active { background: var(--info-bg); color: var(--info); border-color: var(--info-border); }
+  .pill.active .dot { background: var(--info); }
+  .pill.done { background: var(--success-bg); color: var(--success); border-color: var(--success-border); }
+  .pill.done .dot { background: var(--success); }
+  .pill.warn { background: var(--warning-bg); color: var(--warning); border-color: var(--warning-border); }
+  .pill.warn .dot { background: var(--warning); }
+
+  .avatar { width: 32px; height: 32px; border-radius: 50%; color: white; font-weight: 600; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; background: var(--text); flex-shrink: 0; }
+  .avatar.a2 { background: #52525B; }
+  .avatar.a3 { background: #3F3F46; }
+  .avatar.a4 { background: #18181B; }
+
+  .list-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; }
+  .list-title h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .list-title p { font-size: 13px; color: var(--text-2); margin-top: 2px; }
+
+  .toc { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 14px 18px; margin-bottom: 24px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .toc a { display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-sm); font-size: 12px; color: var(--text-2); font-weight: 500; }
+  .toc a .n { display: inline-flex; width: 16px; height: 16px; background: var(--brand); color: white; border-radius: 3px; font-size: 9px; font-weight: 700; align-items: center; justify-content: center; }
+
+  .breadcrumb { font-size: 12px; color: var(--text-3); display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
+  .breadcrumb svg { color: var(--text-3); }
+
+  /* SCHEDULE */
+  .sched-layout { display: grid; grid-template-columns: 260px 1fr; gap: 16px; }
+  .sched-side { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 16px; height: fit-content; }
+  .mini-cal { background: var(--surface-2); border-radius: var(--r-md); padding: 10px; margin-bottom: 14px; }
+  .mini-cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 0 4px; }
+  .mini-cal-head b { font-size: 13px; }
+  .mini-cal-head button { width: 22px; height: 22px; background: transparent; border: none; color: var(--text-2); border-radius: 4px; cursor: pointer; }
+  .mini-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; font-size: 10px; }
+  .mini-cal-grid .wd { color: var(--text-3); font-weight: 600; padding: 2px 0; }
+  .mini-cal-grid .d { padding: 5px 0; border-radius: 4px; color: var(--text-2); cursor: pointer; font-weight: 500; }
+  .mini-cal-grid .d.dim { color: var(--text-3); opacity: 0.5; }
+  .mini-cal-grid .d.today { background: var(--brand); color: white; font-weight: 700; }
+  .mini-cal-grid .d.has { position: relative; font-weight: 600; color: var(--text); }
+  .mini-cal-grid .d.has::after { content: ''; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); width: 3px; height: 3px; background: var(--info); border-radius: 50%; }
+
+  .sched-list { font-size: 12px; margin-bottom: 16px; }
+  .sched-list-head { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-3); margin-bottom: 6px; }
+  .sched-list-item { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); align-items: center; font-size: 12px; }
+  .sched-list-item:last-child { border-bottom: none; }
+  .sched-list-item .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .sched-list-item .dot.blue { background: var(--info); }
+  .sched-list-item .dot.green { background: var(--success); }
+  .sched-list-item .dot.amber { background: var(--warning); }
+
+  .team-filters { display: flex; flex-direction: column; gap: 6px; font-size: 12px; }
+  .team-filter { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--r-sm); cursor: pointer; }
+  .team-filter:hover { background: var(--surface-2); }
+  .team-filter input { accent-color: var(--brand); }
+  .team-filter .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .team-filter .name { flex: 1; }
+  .team-filter .count { color: var(--text-3); font-size: 11px; }
+
+  .sched-main { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; }
+  .sched-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+  .sched-head .title { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+  .sched-head .sub { font-size: 12px; color: var(--text-3); margin-top: 1px; }
+  .sched-nav { display: flex; gap: 6px; align-items: center; }
+  .sched-nav button { width: 28px; height: 28px; border: 1px solid var(--border); background: var(--surface); border-radius: var(--r-sm); cursor: pointer; color: var(--text-2); display: flex; align-items: center; justify-content: center; }
+  .sched-view-toggle { display: flex; gap: 2px; padding: 2px; background: var(--surface-3); border-radius: var(--r-sm); margin-left: 8px; }
+  .sched-view-toggle button { padding: 4px 10px; border: none; background: transparent; font-size: 11px; font-weight: 500; color: var(--text-2); border-radius: 4px; cursor: pointer; font-family: inherit; }
+  .sched-view-toggle button.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow-1); }
+
+  .sched-grid { display: grid; grid-template-columns: 60px repeat(5, 1fr); min-height: 500px; }
+  .sched-time-col, .sched-day-col { border-right: 1px solid var(--border); }
+  .sched-day-col:last-child { border-right: none; }
+  .sched-day-head { padding: 10px 8px; text-align: center; border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 600; color: var(--text-2); background: var(--surface-2); }
+  .sched-day-head .num { font-size: 18px; font-weight: 700; color: var(--text); margin-top: 2px; letter-spacing: -0.01em; }
+  .sched-day-head.today { background: var(--brand-subtle); color: var(--brand); }
+  .sched-day-head.today .num { color: var(--brand); }
+
+  .sched-hour { height: 60px; border-bottom: 1px solid var(--border); padding: 6px 8px; font-size: 10px; color: var(--text-3); text-align: right; }
+  .sched-cell { height: 60px; border-bottom: 1px solid var(--border); position: relative; }
+  .sched-event {
+    position: absolute; left: 4px; right: 4px;
+    border-radius: var(--r-sm); padding: 5px 8px;
+    font-size: 11px; font-weight: 500;
+    overflow: hidden; cursor: pointer; border: 1px solid;
+    box-shadow: var(--shadow-1);
+  }
+  .sched-event .time { font-size: 10px; opacity: 0.8; margin-bottom: 1px; }
+  .sched-event .t { font-weight: 600; line-height: 1.2; }
+  .sched-event.blue { background: #EFF6FF; border-color: #BFDBFE; color: #1E40AF; }
+  .sched-event.green { background: #F0FDF4; border-color: #BBF7D0; color: #15803D; }
+  .sched-event.amber { background: #FFFBEB; border-color: #FDE68A; color: #B45309; }
+  .sched-event.purple { background: #F5F3FF; border-color: #DDD6FE; color: #6D28D9; }
+  .sched-event.rose { background: #FFF1F2; border-color: #FECDD3; color: #BE123C; }
+
+  /* SHOPPING LIST */
+  .shop-grid { display: grid; grid-template-columns: 1fr 320px; gap: 16px; }
+  .shop-list { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; }
+  .shop-group { border-bottom: 1px solid var(--border); }
+  .shop-group:last-child { border-bottom: none; }
+  .shop-group-head { padding: 12px 18px; background: var(--surface-2); display: flex; justify-content: space-between; align-items: center; }
+  .shop-group-title { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--text-2); }
+  .shop-group-title .ic-box { width: 24px; height: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; color: var(--text-2); }
+  .shop-group-meta { font-size: 11px; color: var(--text-3); font-weight: 500; }
+  .shop-item { padding: 10px 18px; display: flex; gap: 10px; align-items: center; border-top: 1px solid var(--border); font-size: 13px; }
+  .shop-item:first-of-type { border-top: none; }
+  .shop-item.done .t, .shop-item.done .qty { text-decoration: line-through; color: var(--text-3); }
+  .shop-item input[type=checkbox] { accent-color: var(--brand); cursor: pointer; }
+  .shop-item .t { flex: 1; }
+  .shop-item .t b { font-weight: 500; }
+  .shop-item .s { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+  .shop-item .qty { font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+  .shop-item .price { color: var(--text-3); font-size: 11px; font-variant-numeric: tabular-nums; }
+
+  /* FIELD MOBILE */
+  .field-viewport { background: #E5E5E7; padding: 32px; display: flex; justify-content: center; }
+  .phone { width: 395px; background: #1a1a1a; border-radius: 32px; padding: 10px; box-shadow: var(--shadow-2); }
+  .phone-screen { background: var(--bg); border-radius: 24px; overflow: hidden; min-height: 760px; }
+  .field-nav { padding: 12px 14px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+  .field-nav .back { color: var(--text-2); font-weight: 500; font-size: 14px; display: flex; align-items: center; gap: 4px; }
+  .field-nav .title { font-size: 14px; font-weight: 700; flex: 1; text-align: center; }
+  .field-nav .more { color: var(--text-3); }
+
+  .field-hero {
+    background: linear-gradient(135deg, var(--brand) 0%, #1E293B 100%);
+    color: white; padding: 18px 20px;
+  }
+  .field-hero .num { font-size: 11px; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.06em; }
+  .field-hero .t { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; margin: 2px 0; }
+  .field-hero .client { font-size: 13px; opacity: 0.85; display: flex; align-items: center; gap: 6px; }
+  .field-hero .addr { font-size: 12px; opacity: 0.7; margin-top: 4px; }
+
+  .field-timer {
+    background: rgb(255 255 255 / 0.08);
+    border: 1px solid rgb(255 255 255 / 0.1);
+    border-radius: var(--r-md);
+    padding: 12px 14px; margin-top: 14px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .field-timer .l { font-size: 11px; opacity: 0.7; }
+  .field-timer .v { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .field-timer .stop {
+    background: var(--danger); color: white; border: none;
+    padding: 8px 14px; border-radius: var(--r-sm); font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+
+  .field-actions { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; padding: 8px; gap: 4px; }
+  .field-act { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: 10px 6px; text-align: center; font-size: 10px; font-weight: 600; color: var(--text-2); cursor: pointer; }
+  .field-act .ic-box { display: block; margin: 0 auto 4px; color: var(--brand); }
+
+  .field-section { padding: 6px 16px; }
+  .field-section-head { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-3); padding: 10px 0 6px; display: flex; justify-content: space-between; }
+  .field-check {
+    padding: 10px 12px; display: flex; gap: 10px; align-items: flex-start;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-md); margin-bottom: 6px;
+    font-size: 13px;
+  }
+  .field-check input[type=checkbox] { margin-top: 2px; accent-color: var(--brand); }
+  .field-check.done .t { text-decoration: line-through; color: var(--text-3); }
+  .field-check .t b { font-weight: 500; }
+  .field-check .s { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+  .field-check.active { border-color: var(--brand); background: var(--brand-subtle); }
+
+  /* TEAM */
+  .team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .team-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 18px; }
+  .team-card-head { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
+  .team-avatar-lg { width: 44px; height: 44px; border-radius: 50%; color: white; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; background: var(--text); }
+  .team-card .name { font-weight: 600; font-size: 14px; }
+  .team-card .role { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+  .team-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; background: var(--border); border-radius: var(--r-sm); overflow: hidden; margin-bottom: 12px; }
+  .team-stat { background: var(--surface); padding: 8px 10px; text-align: center; }
+  .team-stat .k { font-size: 9px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.04em; }
+  .team-stat .v { font-size: 14px; font-weight: 700; margin-top: 1px; font-variant-numeric: tabular-nums; }
+  .team-availability { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-2); }
+  .team-status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); margin-right: 4px; display: inline-block; }
+
+  /* REFERRALS */
+  .refer-hero { background: linear-gradient(135deg, var(--brand) 0%, #1E293B 100%); color: white; border-radius: var(--r-lg); padding: 28px; display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; align-items: center; }
+  .refer-hero .title { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .refer-hero .desc { font-size: 13px; opacity: 0.8; margin-top: 6px; line-height: 1.5; }
+  .refer-code { background: rgb(255 255 255 / 0.08); border: 1px dashed rgb(255 255 255 / 0.2); border-radius: var(--r-md); padding: 12px 16px; margin-top: 14px; display: flex; justify-content: space-between; align-items: center; }
+  .refer-code .code { font-family: monospace; font-size: 18px; font-weight: 700; letter-spacing: 0.1em; }
+  .refer-code button { background: white; color: var(--brand); border: none; padding: 6px 14px; border-radius: var(--r-sm); font-weight: 600; font-size: 12px; cursor: pointer; }
+  .refer-stats-box { background: rgb(255 255 255 / 0.05); border: 1px solid rgb(255 255 255 / 0.08); border-radius: var(--r-md); padding: 16px; }
+  .refer-stats-box .big { font-size: 36px; font-weight: 800; letter-spacing: -0.025em; }
+  .refer-stats-box .sub { font-size: 11px; opacity: 0.7; margin-top: 2px; }
+
+  /* SETTINGS */
+  .settings-layout { display: grid; grid-template-columns: 220px 1fr; gap: 16px; }
+  .settings-nav { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 8px; height: fit-content; }
+  .settings-nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: var(--r-sm); font-size: 13px; color: var(--text-2); cursor: pointer; }
+  .settings-nav-item:hover { background: var(--surface-2); color: var(--text); }
+  .settings-nav-item.active { background: var(--brand); color: white; font-weight: 500; }
+  .settings-nav-group { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-3); padding: 10px 12px 6px; }
+
+  .settings-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; }
+  .settings-panel-head { padding: 18px 22px; border-bottom: 1px solid var(--border); }
+  .settings-panel-head h2 { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+  .settings-panel-head p { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+  .settings-row { padding: 16px 22px; border-bottom: 1px solid var(--border); display: grid; grid-template-columns: 200px 1fr; gap: 24px; align-items: center; }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-row .label { font-size: 13px; font-weight: 500; }
+  .settings-row .hint { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+  .settings-row input, .settings-row select {
+    width: 100%; border: 1px solid var(--border); background: var(--surface);
+    padding: 8px 12px; font-size: 13px; border-radius: var(--r-md); outline: none; font-family: inherit;
+  }
+  .settings-row input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgb(15 23 42 / 0.08); }
+
+  .tg { width: 38px; height: 22px; background: var(--border); border-radius: 999px; position: relative; cursor: pointer; flex-shrink: 0; }
+  .tg::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: white; border-radius: 50%; box-shadow: var(--shadow-1); transition: transform 150ms; }
+  .tg.on { background: var(--brand); }
+  .tg.on::after { transform: translateX(16px); }
+
+  .settings-ai-card { background: linear-gradient(135deg, var(--brand) 0%, #1E293B 100%); color: white; border-radius: var(--r-md); padding: 18px; margin: 16px 22px; }
+  .settings-ai-card .t { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .settings-ai-card .d { font-size: 12px; opacity: 0.8; line-height: 1.5; }
+
+  .ai-pref-row { padding: 14px 22px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .ai-pref-row:last-child { border-bottom: none; }
+  .ai-pref-row .lbl { flex: 1; }
+  .ai-pref-row .t { font-size: 13px; font-weight: 500; }
+  .ai-pref-row .s { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="page-header">
+    <div>
+      <h1>plumbr · v2 Gallery 2 — Operations &amp; Settings</h1>
+      <p>Schedule · Shopping list · Field · Team · Referrals · Settings</p>
+    </div>
+    <a class="nav-back" href="v2-all-views-index.html">← Índice</a>
+  </div>
+
+  <div class="toc">
+    <a href="#schedule"><span class="n">9</span>Schedule</a>
+    <a href="#shopping"><span class="n">10</span>Shopping list</a>
+    <a href="#field"><span class="n">11</span>Field mode</a>
+    <a href="#team"><span class="n">12</span>Team</a>
+    <a href="#referrals"><span class="n">13</span>Referrals</a>
+    <a href="#settings"><span class="n">14</span>Settings</a>
+    <a href="#ai-pref"><span class="n">15</span>AI preferences</a>
+  </div>
+
+  <!-- ═══════ 9 · SCHEDULE ═══════ -->
+  <h2 id="schedule" class="section-h"><span class="num">9</span>Schedule · /schedule</h2>
+  <div class="mock">
+    <div class="mock-label"><span class="title">Calendar semanal con eventos de múltiples técnicos</span><span class="mono">Desktop</span></div>
+    <div class="mock-body">
+      <div class="list-head">
+        <div class="list-title">
+          <h1>Schedule</h1>
+          <p>Semana del 13–19 de abril · 18 jobs agendados · 3 hoy</p>
+        </div>
+        <button class="btn primary">+ Nuevo evento</button>
+      </div>
+
+      <div class="sched-layout">
+        <div class="sched-side">
+          <div class="mini-cal">
+            <div class="mini-cal-head">
+              <b>Abril 2026</b>
+              <div><button>‹</button><button>›</button></div>
+            </div>
+            <div class="mini-cal-grid">
+              <div class="wd">L</div><div class="wd">M</div><div class="wd">X</div><div class="wd">J</div><div class="wd">V</div><div class="wd">S</div><div class="wd">D</div>
+              <div class="d dim">31</div><div class="d">1</div><div class="d has">2</div><div class="d">3</div><div class="d">4</div><div class="d">5</div><div class="d">6</div>
+              <div class="d">7</div><div class="d has">8</div><div class="d has">9</div><div class="d">10</div><div class="d has">11</div><div class="d">12</div><div class="d">13</div>
+              <div class="d has">14</div><div class="d has">15</div><div class="d today">16</div><div class="d has">17</div><div class="d has">18</div><div class="d">19</div><div class="d">20</div>
+              <div class="d has">21</div><div class="d">22</div><div class="d">23</div><div class="d">24</div><div class="d">25</div><div class="d dim">26</div><div class="d dim">27</div>
+            </div>
+          </div>
+
+          <div class="sched-list">
+            <div class="sched-list-head">Hoy · 3 jobs</div>
+            <div class="sched-list-item"><span class="dot blue"></span><span>9:00 · Kitchen sink · MG</span></div>
+            <div class="sched-list-item"><span class="dot green"></span><span>1:30 · Water heater · RS</span></div>
+            <div class="sched-list-item"><span class="dot amber"></span><span>5:00 · Faucet repair · JW</span></div>
+          </div>
+
+          <div class="sched-list-head">Técnicos</div>
+          <div class="team-filters">
+            <label class="team-filter"><input type="checkbox" checked><span class="dot" style="background: var(--info);"></span><span class="name">Moises</span><span class="count">6</span></label>
+            <label class="team-filter"><input type="checkbox" checked><span class="dot" style="background: var(--success);"></span><span class="name">Carlos P.</span><span class="count">4</span></label>
+            <label class="team-filter"><input type="checkbox" checked><span class="dot" style="background: var(--warning);"></span><span class="name">Diego L.</span><span class="count">3</span></label>
+            <label class="team-filter"><input type="checkbox" checked><span class="dot" style="background: #7C3AED;"></span><span class="name">Sub: ABC</span><span class="count">2</span></label>
+          </div>
+        </div>
+
+        <div class="sched-main">
+          <div class="sched-head">
+            <div>
+              <div class="title">Abril 13 – 19, 2026</div>
+              <div class="sub">Semana 16 · 18 eventos</div>
+            </div>
+            <div class="sched-nav">
+              <button>‹</button>
+              <button class="btn secondary sm" style="padding: 4px 12px;">Today</button>
+              <button>›</button>
+              <div class="sched-view-toggle">
+                <button>Day</button>
+                <button class="active">Week</button>
+                <button>Month</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="sched-grid">
+            <div>
+              <div class="sched-day-head" style="background: var(--surface-2);">&nbsp;</div>
+              <div class="sched-hour">8 AM</div>
+              <div class="sched-hour">9 AM</div>
+              <div class="sched-hour">10 AM</div>
+              <div class="sched-hour">11 AM</div>
+              <div class="sched-hour">12 PM</div>
+              <div class="sched-hour">1 PM</div>
+              <div class="sched-hour">2 PM</div>
+            </div>
+
+            <div class="sched-day-col">
+              <div class="sched-day-head">Mon<div class="num">13</div></div>
+              <div class="sched-cell"></div>
+              <div class="sched-cell"><div class="sched-event blue" style="top: 8px; height: 110px;"><div class="time">9:00 · Moises</div><div class="t">Toilet install · Chen</div></div></div>
+              <div class="sched-cell"></div>
+              <div class="sched-cell"><div class="sched-event green" style="top: 8px; height: 50px;"><div class="time">11:30 · Carlos</div><div class="t">Leak repair</div></div></div>
+              <div class="sched-cell"></div>
+              <div class="sched-cell"></div>
+              <div class="sched-cell"><div class="sched-event purple" style="top: 10px; height: 50px;"><div class="time">2:00 · Sub ABC</div><div class="t">Inspection</div></div></div>
+              <div class="sched-cell"></div>
+            </div>
+
+            <div class="sched-day-col">
+              <div class="sched-day-head">Tue<div class="num">14</div></div>
+              <div class="sched-cell"><div class="sched-event amber" style="top: 20px; height: 70px;"><div class="time">8:30 · Diego</div><div class="t">Garbage disposal</div></div></div>
+              <div class="sched-cell"></div>
+              <div class="sched-cell"><div class="sched-event blue" style="top: 20px; height: 90px;"><div class="time">10:00 · Moises</div><div class="t">Kitchen faucet</div></div></div>
+              <div class="sched-cell"></div>
+              <div class="sched-cell"></div>
+              <div class="sched-cell"><div class="sched-event green" style="top: 18px; height: 80px;"><div class="time">1:00 · Carlos</div><div class="t">Drain clean</div></div></div>
+              <div class="sched-cell"></div>
+              <div class="sched-cell"></div>
+            </div>
+
+            <div class="sched-day-col">
+              <div class="sched-day-head">Wed<div class="num">15</div></div>
+              <div class="sched-cell"></div>
+              <div class="sched-cell"><div class="sched-event blue" style="top: 10px; height: 130px;"><div class="time">9:00 · Moises</div><div class="t">Bathroom · Martinez</div></div></div>
+              <div class="sched-cell"></div>
+              <div class="sched-cell"></div>
+              <div class="sched-cell"></div>
+              <div class="sched-cell"><div class="sched-event amber" style="top: 8px; height: 50px;"><div class="time">1:30 · Diego</div><div class="t">Water softener</div></div></div>
+              <div class="sched-cell"></div>
+              <div class="sched-cell"></div>
+            </div>
+
+            <div class="sched-day-col">
+              <div class="sched-day-head today">Thu<div class="num">16</div></div>
+              <div class="sched-cell"></div>
+              <div class="sched-cell">
+                <div class="sched-event blue" style="top: 8px; height: 110px; outline: 2px solid var(--info); outline-offset: 1px;">
+                  <div class="time">9:00 · Moises · en curso</div>
+                  <div class="t">Kitchen sink · González</div>
+                </div>
+              </div>
+              <div class="sched-cell"></div>
+              <div class="sched-cell"></div>
+              <div class="sched-cell"></div>
+              <div class="sched-cell"><div class="sched-event green" style="top: 18px; height: 160px;"><div class="time">1:30 · Moises</div><div class="t">Water heater · Sánchez</div></div></div>
+              <div class="sched-cell"></div>
+              <div class="sched-cell"></div>
+            </div>
+
+            <div class="sched-day-col">
+              <div class="sched-day-head">Fri<div class="num">17</div></div>
+              <div class="sched-cell"><div class="sched-event amber" style="top: 20px; height: 100px;"><div class="time">8:30 · Carlos</div><div class="t">Sewer snake · Walker</div></div></div>
+              <div class="sched-cell"></div>
+              <div class="sched-cell"></div>
+              <div class="sched-cell"><div class="sched-event rose" style="top: 10px; height: 50px;"><div class="time">11:00</div><div class="t">Inspection · DOB</div></div></div>
+              <div class="sched-cell"></div>
+              <div class="sched-cell"><div class="sched-event blue" style="top: 8px; height: 110px;"><div class="time">1:00 · Moises</div><div class="t">Consultation · lead</div></div></div>
+              <div class="sched-cell"></div>
+              <div class="sched-cell"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ 10 · SHOPPING LIST ═══════ -->
+  <h2 id="shopping" class="section-h"><span class="num">10</span>Shopping list · /shopping-list</h2>
+  <div class="mock">
+    <div class="mock-label"><span class="title">Lista de materiales agrupada por proveedor · Optimizada para run al supply house</span><span class="mono">Desktop</span></div>
+    <div class="mock-body">
+      <div class="list-head">
+        <div class="list-title">
+          <h1>Shopping list · Semana 16</h1>
+          <p>Materiales agregados de 4 jobs · $1,847 estimado · 2 proveedores</p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn secondary">Print / PDF</button>
+          <button class="btn secondary">Share with team</button>
+          <button class="btn primary">Mark all bought</button>
+        </div>
+      </div>
+
+      <div class="shop-grid">
+        <div class="shop-list">
+          <div class="shop-group">
+            <div class="shop-group-head">
+              <div class="shop-group-title">
+                <div class="ic-box">🏪</div>
+                <span>Home Depot · Queens</span>
+                <span class="pill"><span class="dot" style="background: var(--info);"></span>5 items</span>
+              </div>
+              <div class="shop-group-meta">~$1,145 · 20 min de ruta</div>
+            </div>
+            <div class="shop-item done">
+              <input type="checkbox" checked>
+              <div class="t"><b>Rheem 50-gal gas water heater</b><div class="s">Aisle 14 · para JOB-101 (Chen)</div></div>
+              <span class="qty">1×</span>
+              <span class="price">$780.00</span>
+            </div>
+            <div class="shop-item done">
+              <input type="checkbox" checked>
+              <div class="t"><b>PEX-A tubing 3/4" × 10ft</b><div class="s">Aisle 12 · JOB-101, JOB-96</div></div>
+              <span class="qty">2×</span>
+              <span class="price">$28.00</span>
+            </div>
+            <div class="shop-item">
+              <input type="checkbox">
+              <div class="t"><b>T&amp;P valve + discharge tube</b><div class="s">Aisle 14 · JOB-101</div></div>
+              <span class="qty">1×</span>
+              <span class="price">$42.00</span>
+            </div>
+            <div class="shop-item">
+              <input type="checkbox">
+              <div class="t"><b>Expansion tank 2-gal</b><div class="s">Aisle 14 · JOB-101 (required by code)</div></div>
+              <span class="qty">1×</span>
+              <span class="price">$58.00</span>
+            </div>
+            <div class="shop-item">
+              <input type="checkbox">
+              <div class="t"><b>Dishwasher supply line 6ft</b><div class="s">Aisle 12 · JOB-99</div></div>
+              <span class="qty">1×</span>
+              <span class="price">$24.00</span>
+            </div>
+          </div>
+
+          <div class="shop-group">
+            <div class="shop-group-head">
+              <div class="shop-group-title">
+                <div class="ic-box">🔧</div>
+                <span>Ferguson Plumbing · Queens</span>
+                <span class="pill"><span class="dot" style="background: var(--warning);"></span>3 items</span>
+              </div>
+              <div class="shop-group-meta">~$702 · 35 min de ruta</div>
+            </div>
+            <div class="shop-item">
+              <input type="checkbox">
+              <div class="t"><b>Moen 1200 cartridge kit</b><div class="s">JOB-97 (Martinez bathroom)</div></div>
+              <span class="qty">2×</span>
+              <span class="price">$124.00</span>
+            </div>
+            <div class="shop-item">
+              <input type="checkbox">
+              <div class="t"><b>Copper sweat fittings mixed</b><div class="s">Backup stock · no job específico</div></div>
+              <span class="qty">1 set</span>
+              <span class="price">$185.00</span>
+            </div>
+            <div class="shop-item">
+              <input type="checkbox">
+              <div class="t"><b>Shower valve rough-in Delta</b><div class="s">JOB-97 · premium finish solicitado por cliente</div></div>
+              <span class="qty">1×</span>
+              <span class="price">$393.00</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div style="background: var(--brand); color: white; border-radius: var(--r-lg); padding: 18px;">
+            <div style="font-size: 11px; opacity: 0.7; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em;">Total</div>
+            <div style="font-size: 28px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1; margin-top: 6px;">$1,847.00</div>
+            <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid rgb(255 255 255 / 0.12); font-size: 12px; opacity: 0.85;">
+              <div style="display: flex; justify-content: space-between; padding: 3px 0;"><span>Already bought</span><span>$808</span></div>
+              <div style="display: flex; justify-content: space-between; padding: 3px 0;"><span>Remaining</span><span>$1,039</span></div>
+              <div style="display: flex; justify-content: space-between; padding: 3px 0;"><span>Tax not included</span><span>—</span></div>
+            </div>
+          </div>
+
+          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 16px; margin-top: 12px;">
+            <div style="font-size: 11px; font-weight: 500; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 10px;">Linked jobs</div>
+            <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12px;">
+              <div style="display: flex; justify-content: space-between;"><span>JOB-101 · Chen</span><span style="color: var(--text-2);">4 items</span></div>
+              <div style="display: flex; justify-content: space-between;"><span>JOB-99 · González</span><span style="color: var(--text-2);">1 item</span></div>
+              <div style="display: flex; justify-content: space-between;"><span>JOB-97 · Martinez</span><span style="color: var(--text-2);">2 items</span></div>
+              <div style="display: flex; justify-content: space-between;"><span>JOB-96 · Sánchez</span><span style="color: var(--text-2);">1 item</span></div>
+            </div>
+          </div>
+
+          <div style="background: linear-gradient(135deg, var(--brand) 0%, #1E293B 100%); color: white; border-radius: var(--r-lg); padding: 16px; margin-top: 12px;">
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; margin-bottom: 6px; color: var(--ai-accent);">◆ WorkPilot AI</div>
+            <p style="font-size: 12px; line-height: 1.5; opacity: 0.9;">Si pasas primero por Home Depot (20min), luego Ferguson (35min) y de ahí al primer job, ahorras 40min vs el orden actual. <a style="color: var(--ai-accent); font-weight: 600; margin-top: 6px; display: inline-block;">Optimizar ruta →</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ 11 · FIELD MODE ═══════ -->
+  <h2 id="field" class="section-h"><span class="num">11</span>Field mode · /field/[jobId] · Mobile-first</h2>
+  <div class="mock">
+    <div class="mock-label"><span class="title">Vista full-screen para el técnico en obra · con timer, checklist, fotos</span><span class="mono">Mobile 375px</span></div>
+    <div class="field-viewport">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="field-nav">
+            <span class="back"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Salir</span>
+            <span class="title">Field mode</span>
+            <span class="more"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></span>
+          </div>
+
+          <div class="field-hero">
+            <div class="num">JOB-98 · En curso</div>
+            <div class="t">Kitchen sink replacement</div>
+            <div class="client">👤 María González</div>
+            <div class="addr">📍 124 E 86th St, Manhattan · 2.4 mi</div>
+            <div class="field-timer">
+              <div>
+                <div class="l">Clocked in hace</div>
+                <div class="v">2h 14m</div>
+              </div>
+              <button class="stop">Stop</button>
+            </div>
+          </div>
+
+          <div class="field-actions">
+            <div class="field-act">
+              <svg class="ic-box" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              Foto
+            </div>
+            <div class="field-act">
+              <svg class="ic-box" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              Llamar
+            </div>
+            <div class="field-act">
+              <svg class="ic-box" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              Cobrar
+            </div>
+            <div class="field-act">
+              <svg class="ic-box" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2" ry="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg>
+              Ask AI
+            </div>
+          </div>
+
+          <div class="field-section">
+            <div class="field-section-head">
+              <span>Checklist · 4/7</span>
+              <span style="color: var(--success);">57% done</span>
+            </div>
+            <div class="field-check done"><input type="checkbox" checked><div><div class="t"><b>Llamar cliente 30min antes</b></div><div class="s">Confirmado 8:30 AM</div></div></div>
+            <div class="field-check done"><input type="checkbox" checked><div><div class="t"><b>Cortar agua del fregadero</b></div></div></div>
+            <div class="field-check done"><input type="checkbox" checked><div><div class="t"><b>Desmontar fregadero viejo</b></div><div class="s">Foto ✓</div></div></div>
+            <div class="field-check done"><input type="checkbox" checked><div><div class="t"><b>Preparar superficie y sellador</b></div></div></div>
+            <div class="field-check active"><input type="checkbox"><div><div class="t"><b>Instalar nuevo fregadero</b></div><div class="s" style="color: var(--warning);">← en progreso</div></div></div>
+            <div class="field-check"><input type="checkbox"><div><div class="t"><b>Conectar P-trap + pressure test</b></div></div></div>
+            <div class="field-check"><input type="checkbox"><div><div class="t"><b>Cobrar balance ($512)</b></div><div class="s">$1,000 depósito ya pagado</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ 12 · TEAM ═══════ -->
+  <h2 id="team" class="section-h"><span class="num">12</span>Team · /team</h2>
+  <div class="mock">
+    <div class="mock-label"><span class="title">Técnicos y subcontratistas · performance y disponibilidad</span><span class="mono">Desktop</span></div>
+    <div class="mock-body">
+      <div class="list-head">
+        <div class="list-title">
+          <h1>Team</h1>
+          <p>4 miembros activos + 2 subs · Total jobs este mes: 23</p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn secondary">Manage roles</button>
+          <button class="btn primary">+ Invite team member</button>
+        </div>
+      </div>
+
+      <div class="team-grid">
+        <div class="team-card">
+          <div class="team-card-head">
+            <div class="team-avatar-lg">MA</div>
+            <div>
+              <div class="name">Moises (tú)</div>
+              <div class="role">Owner · Master plumber</div>
+            </div>
+          </div>
+          <div class="team-stats">
+            <div class="team-stat"><div class="k">Jobs MTD</div><div class="v">6</div></div>
+            <div class="team-stat"><div class="k">Revenue</div><div class="v">$12.4k</div></div>
+            <div class="team-stat"><div class="k">Rating</div><div class="v">4.9</div></div>
+          </div>
+          <div class="team-availability">
+            <span><span class="team-status-dot"></span>En obra · Kitchen sink · González</span>
+            <a style="color: var(--text-3); font-size: 11px;">Schedule →</a>
+          </div>
+        </div>
+
+        <div class="team-card">
+          <div class="team-card-head">
+            <div class="team-avatar-lg" style="background: #2E4374;">CP</div>
+            <div>
+              <div class="name">Carlos Pérez</div>
+              <div class="role">Technician · Certified</div>
+            </div>
+          </div>
+          <div class="team-stats">
+            <div class="team-stat"><div class="k">Jobs MTD</div><div class="v">4</div></div>
+            <div class="team-stat"><div class="k">Revenue</div><div class="v">$8.2k</div></div>
+            <div class="team-stat"><div class="k">Rating</div><div class="v">4.7</div></div>
+          </div>
+          <div class="team-availability">
+            <span><span class="team-status-dot"></span>Disponible · libre hasta las 3pm</span>
+            <a style="color: var(--text-3); font-size: 11px;">Assign →</a>
+          </div>
+        </div>
+
+        <div class="team-card">
+          <div class="team-card-head">
+            <div class="team-avatar-lg" style="background: #7C2D12;">DL</div>
+            <div>
+              <div class="name">Diego López</div>
+              <div class="role">Apprentice · Year 2</div>
+            </div>
+          </div>
+          <div class="team-stats">
+            <div class="team-stat"><div class="k">Jobs MTD</div><div class="v">3</div></div>
+            <div class="team-stat"><div class="k">Revenue</div><div class="v">$2.8k</div></div>
+            <div class="team-stat"><div class="k">Rating</div><div class="v">4.8</div></div>
+          </div>
+          <div class="team-availability">
+            <span><span class="team-status-dot" style="background: var(--warning);"></span>En obra · Garbage disposal</span>
+            <a style="color: var(--text-3); font-size: 11px;">Schedule →</a>
+          </div>
+        </div>
+
+        <div class="team-card">
+          <div class="team-card-head">
+            <div class="team-avatar-lg" style="background: #581C87;">A</div>
+            <div>
+              <div class="name">ABC Plumbing Subs</div>
+              <div class="role">Subcontractor · 1099</div>
+            </div>
+          </div>
+          <div class="team-stats">
+            <div class="team-stat"><div class="k">Jobs MTD</div><div class="v">2</div></div>
+            <div class="team-stat"><div class="k">Paid out</div><div class="v">$3.4k</div></div>
+            <div class="team-stat"><div class="k">Rating</div><div class="v">4.5</div></div>
+          </div>
+          <div class="team-availability">
+            <span><span class="team-status-dot"></span>Available</span>
+            <a style="color: var(--text-3); font-size: 11px;">Contact →</a>
+          </div>
+        </div>
+
+        <div class="team-card">
+          <div class="team-card-head">
+            <div class="team-avatar-lg" style="background: #166534;">LR</div>
+            <div>
+              <div class="name">Luis Ramírez</div>
+              <div class="role">Technician · Part-time</div>
+            </div>
+          </div>
+          <div class="team-stats">
+            <div class="team-stat"><div class="k">Jobs MTD</div><div class="v">2</div></div>
+            <div class="team-stat"><div class="k">Revenue</div><div class="v">$1.6k</div></div>
+            <div class="team-stat"><div class="k">Rating</div><div class="v">4.6</div></div>
+          </div>
+          <div class="team-availability">
+            <span><span class="team-status-dot" style="background: var(--text-3);"></span>Off today</span>
+            <a style="color: var(--text-3); font-size: 11px;">Schedule →</a>
+          </div>
+        </div>
+
+        <div class="team-card" style="background: var(--surface-2); border-style: dashed; display: flex; align-items: center; justify-content: center; min-height: 200px; color: var(--text-3);">
+          <div style="text-align: center;">
+            <div style="font-size: 24px;">+</div>
+            <div style="font-size: 13px; margin-top: 4px;">Invite member</div>
+            <div style="font-size: 11px; margin-top: 2px;">Hasta 3 más en plan Pro</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ 13 · REFERRALS ═══════ -->
+  <h2 id="referrals" class="section-h"><span class="num">13</span>Referrals · /referrals</h2>
+  <div class="mock">
+    <div class="mock-label"><span class="title">Programa de referidos con código compartible</span><span class="mono">Desktop</span></div>
+    <div class="mock-body">
+      <div class="list-head">
+        <div class="list-title">
+          <h1>Referrals</h1>
+          <p>Comparte plumbr con otros plomeros y gana 1 mes gratis por cada referido activo.</p>
+        </div>
+      </div>
+
+      <div class="refer-hero">
+        <div>
+          <div class="title">Comparte tu código · gana meses gratis</div>
+          <div class="desc">Cuando alguien usa tu código al registrarse y se suscribe al plan Pro, ambos reciben un mes gratis. Sin límite de referidos.</div>
+          <div class="refer-code">
+            <div>
+              <div style="font-size: 10px; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Tu código</div>
+              <div class="code">MOISES-P4K2</div>
+            </div>
+            <button>Copy</button>
+          </div>
+        </div>
+        <div>
+          <div class="refer-stats-box" style="margin-bottom: 10px;">
+            <div class="big">4</div>
+            <div class="sub">Referidos activos este año</div>
+          </div>
+          <div class="refer-stats-box">
+            <div class="big" style="color: var(--ai-accent);">4 meses</div>
+            <div class="sub">Créditos acumulados</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden;">
+        <div style="padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="font-size: 14px; font-weight: 600;">Tus referidos</h3>
+          <span style="font-size: 11px; color: var(--text-3);">6 total · 4 activos · 2 trial</span>
+        </div>
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead style="background: var(--surface-2);"><tr>
+            <th style="text-align: left; padding: 10px 20px; font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase;">Nombre</th>
+            <th style="text-align: left; padding: 10px 20px; font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase;">Se unió</th>
+            <th style="text-align: left; padding: 10px 20px; font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase;">Plan</th>
+            <th style="text-align: right; padding: 10px 20px; font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase;">Crédito</th>
+          </tr></thead>
+          <tbody>
+            <tr style="border-bottom: 1px solid var(--border); font-size: 13px;">
+              <td style="padding: 12px 20px;"><div style="display: flex; gap: 10px; align-items: center;"><div class="avatar">JM</div><span>Juan Martínez · Brooklyn Plumbing</span></div></td>
+              <td style="padding: 12px 20px; color: var(--text-2);">Feb 2026</td>
+              <td style="padding: 12px 20px;"><span class="pill done"><span class="dot"></span>Pro</span></td>
+              <td style="padding: 12px 20px; text-align: right; color: var(--success); font-weight: 600;">+1 mes</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border); font-size: 13px;">
+              <td style="padding: 12px 20px;"><div style="display: flex; gap: 10px; align-items: center;"><div class="avatar a2">SF</div><span>Sergio Flores · SF Plumbers Inc</span></div></td>
+              <td style="padding: 12px 20px; color: var(--text-2);">Mar 2026</td>
+              <td style="padding: 12px 20px;"><span class="pill done"><span class="dot"></span>Pro</span></td>
+              <td style="padding: 12px 20px; text-align: right; color: var(--success); font-weight: 600;">+1 mes</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border); font-size: 13px;">
+              <td style="padding: 12px 20px;"><div style="display: flex; gap: 10px; align-items: center;"><div class="avatar a3">RP</div><span>Ricardo Peña · Pena Services</span></div></td>
+              <td style="padding: 12px 20px; color: var(--text-2);">Mar 2026</td>
+              <td style="padding: 12px 20px;"><span class="pill warn"><span class="dot"></span>Trial</span></td>
+              <td style="padding: 12px 20px; text-align: right; color: var(--text-3);">Pendiente</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border); font-size: 13px;">
+              <td style="padding: 12px 20px;"><div style="display: flex; gap: 10px; align-items: center;"><div class="avatar a4">ED</div><span>Elena Díaz · EZ Plumb Co.</span></div></td>
+              <td style="padding: 12px 20px; color: var(--text-2);">Apr 2026</td>
+              <td style="padding: 12px 20px;"><span class="pill done"><span class="dot"></span>Pro</span></td>
+              <td style="padding: 12px 20px; text-align: right; color: var(--success); font-weight: 600;">+1 mes</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ 14 · SETTINGS ═══════ -->
+  <h2 id="settings" class="section-h"><span class="num">14</span>Settings · /settings</h2>
+  <div class="mock">
+    <div class="mock-label"><span class="title">Configuración de cuenta · compañía · billing</span><span class="mono">Desktop</span></div>
+    <div class="mock-body">
+      <div class="settings-layout">
+        <div class="settings-nav">
+          <div class="settings-nav-group">Account</div>
+          <div class="settings-nav-item">
+            <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Profile
+          </div>
+          <div class="settings-nav-item active">
+            <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
+            Company
+          </div>
+          <div class="settings-nav-item">
+            <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            Billing &amp; plan
+          </div>
+          <div class="settings-nav-item">
+            <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1l3 7 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/></svg>
+            Tax settings
+          </div>
+          <div class="settings-nav-group">Preferences</div>
+          <div class="settings-nav-item">
+            <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            Notifications
+          </div>
+          <div class="settings-nav-item">
+            <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2" ry="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg>
+            AI preferences
+          </div>
+          <div class="settings-nav-item">
+            <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Integrations
+          </div>
+          <div class="settings-nav-group">Workspace</div>
+          <div class="settings-nav-item">
+            <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Team &amp; roles
+          </div>
+          <div class="settings-nav-item">
+            <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            Templates
+          </div>
+          <div class="settings-nav-item">
+            <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-4"/><polyline points="12 7 12 17"/><polyline points="9 14 12 17 15 14"/></svg>
+            Item catalog
+          </div>
+        </div>
+
+        <div class="settings-panel">
+          <div class="settings-panel-head">
+            <h2>Company</h2>
+            <p>Información que aparece en estimates, invoices y el portal del cliente</p>
+          </div>
+
+          <div class="settings-row">
+            <div class="label">Logo</div>
+            <div style="display: flex; gap: 12px; align-items: center;">
+              <div style="width: 56px; height: 56px; background: var(--brand); color: white; border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; font-weight: 800;">WP</div>
+              <button class="btn secondary sm">Upload new</button>
+              <span style="font-size: 11px; color: var(--text-3);">PNG, SVG o JPG · máx 2 MB</span>
+            </div>
+          </div>
+
+          <div class="settings-row">
+            <div class="label">Nombre comercial<div class="hint">Cómo aparece en documentos</div></div>
+            <input value="WorkPilot Plumbing LLC">
+          </div>
+
+          <div class="settings-row">
+            <div class="label">Business Tax ID · EIN</div>
+            <input value="12-3456789">
+          </div>
+
+          <div class="settings-row">
+            <div class="label">License<div class="hint">Número de licencia de plomero</div></div>
+            <input value="C-36-982 · NY">
+          </div>
+
+          <div class="settings-row">
+            <div class="label">Contacto principal</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <input value="(555) 100-2000" placeholder="Phone">
+              <input value="ops@workpilot.com" placeholder="Email">
+            </div>
+          </div>
+
+          <div class="settings-row">
+            <div class="label">Dirección</div>
+            <div style="display: grid; grid-template-columns: 1fr 120px 80px; gap: 10px;">
+              <input value="847 Metropolitan Ave">
+              <input value="Brooklyn">
+              <input value="11211">
+            </div>
+          </div>
+
+          <div class="settings-row">
+            <div class="label">Moneda por defecto</div>
+            <select>
+              <option>USD — US Dollar</option>
+              <option>EUR — Euro</option>
+              <option>MXN — Peso Mexicano</option>
+            </select>
+          </div>
+
+          <div class="settings-row">
+            <div class="label">Tax rate por defecto<div class="hint">Se aplica al crear nuevos estimates</div></div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <input value="8" style="width: 80px;">
+              <span style="color: var(--text-2); font-size: 13px;">%</span>
+              <span class="pill done"><span class="dot"></span>New York, NY</span>
+            </div>
+          </div>
+
+          <div style="padding: 16px 22px; background: var(--surface-2); border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px;">
+            <button class="btn ghost">Cancel</button>
+            <button class="btn primary">Guardar cambios</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ 15 · AI PREFERENCES ═══════ -->
+  <h2 id="ai-pref" class="section-h"><span class="num">15</span>AI preferences · /settings/ai-preferences</h2>
+  <div class="mock">
+    <div class="mock-label"><span class="title">Control de lo que WorkPilot AI puede hacer</span><span class="mono">Desktop</span></div>
+    <div class="mock-body">
+      <div class="settings-layout">
+        <div class="settings-nav">
+          <div class="settings-nav-group">Account</div>
+          <div class="settings-nav-item">Profile</div>
+          <div class="settings-nav-item">Company</div>
+          <div class="settings-nav-item">Billing</div>
+          <div class="settings-nav-group">Preferences</div>
+          <div class="settings-nav-item">Notifications</div>
+          <div class="settings-nav-item active">
+            <svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2" ry="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg>
+            AI preferences
+          </div>
+          <div class="settings-nav-item">Integrations</div>
+        </div>
+
+        <div class="settings-panel">
+          <div class="settings-panel-head">
+            <h2>AI preferences</h2>
+            <p>Controla cómo WorkPilot AI opera sobre tus datos y qué acciones puede tomar automáticamente.</p>
+          </div>
+
+          <div class="settings-ai-card">
+            <div class="t" style="color: var(--ai-accent);"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2" ry="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg>WorkPilot AI está activo</div>
+            <div class="d">Plan Pro · Claude Sonnet 4.6 + Haiku 4.5 para tareas rápidas. Auto-selección para balancear costo y calidad.</div>
+          </div>
+
+          <div class="ai-pref-row">
+            <div class="lbl">
+              <div class="t">Modelo por defecto</div>
+              <div class="s">Auto elige entre Sonnet y Haiku según la tarea</div>
+            </div>
+            <select style="width: 160px; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--r-sm); font-size: 12px; font-family: inherit;">
+              <option>Auto (recomendado)</option>
+              <option>Claude Sonnet 4.6</option>
+              <option>Claude Haiku 4.5</option>
+            </select>
+          </div>
+
+          <div class="ai-pref-row">
+            <div class="lbl">
+              <div class="t">Generar borradores de estimates</div>
+              <div class="s">AI puede crear drafts basados en tus precios históricos y la zona del cliente</div>
+            </div>
+            <div class="tg on"></div>
+          </div>
+
+          <div class="ai-pref-row">
+            <div class="lbl">
+              <div class="t">Redactar mensajes a clientes (SMS / email)</div>
+              <div class="s">AI redacta el borrador. Tú revisas antes de enviar</div>
+            </div>
+            <div class="tg on"></div>
+          </div>
+
+          <div class="ai-pref-row">
+            <div class="lbl">
+              <div class="t">Enviar recordatorios automáticos de cobranza</div>
+              <div class="s">Cuando una factura pasa 7 días vencida, AI envía el recordatorio sin revisión previa</div>
+            </div>
+            <div class="tg"></div>
+          </div>
+
+          <div class="ai-pref-row">
+            <div class="lbl">
+              <div class="t">Insights diarios en dashboard</div>
+              <div class="s">AI analiza tus números y muestra alertas en el home</div>
+            </div>
+            <div class="tg on"></div>
+          </div>
+
+          <div class="ai-pref-row">
+            <div class="lbl">
+              <div class="t">Permitir voice mode</div>
+              <div class="s">Comando por voz hands-free para cuando estás en obra</div>
+            </div>
+            <div class="tg on"></div>
+          </div>
+
+          <div class="ai-pref-row">
+            <div class="lbl">
+              <div class="t">Usar mis datos para entrenar mejores prompts</div>
+              <div class="s">Anthropic no usa tus datos para entrenar modelos · esto es solo para optimizar tus prompts personales</div>
+            </div>
+            <div class="tg"></div>
+          </div>
+
+          <div class="ai-pref-row">
+            <div class="lbl">
+              <div class="t">Tono preferido de los mensajes AI</div>
+              <div class="s">Cómo debe sonar AI cuando redacta para clientes</div>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn secondary sm">Formal</button>
+              <button class="btn primary sm">Friendly</button>
+              <button class="btn secondary sm">Direct</button>
+            </div>
+          </div>
+
+          <div class="ai-pref-row">
+            <div class="lbl">
+              <div class="t">Límite de uso mensual</div>
+              <div class="s">Plan Pro: 2,000 requests/mes · usados: 340 (17%)</div>
+            </div>
+            <div style="width: 180px;">
+              <div style="height: 6px; background: var(--surface-3); border-radius: 999px; overflow: hidden;">
+                <div style="width: 17%; height: 100%; background: var(--brand);"></div>
+              </div>
+              <div style="font-size: 11px; color: var(--text-3); margin-top: 4px;">340 / 2,000</div>
+            </div>
+          </div>
+
+          <div style="padding: 16px 22px; background: var(--surface-2); border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px;">
+            <button class="btn ghost">Restablecer defaults</button>
+            <button class="btn primary">Guardar preferencias</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 20px 24px; margin-top: 40px; display: flex; justify-content: space-between; align-items: center;">
+    <p style="color: var(--text-2);">Todas las vistas principales cubiertas. Volver al índice para ver el plan de implementación.</p>
+    <a class="btn primary" href="v2-all-views-index.html">← Ver índice completo</a>
+  </div>
+</div>
+</body>
+</html>

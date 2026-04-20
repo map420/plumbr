@@ -116,7 +116,7 @@ export function NewInvoiceClient({ translations: t, clients = [], taxPercent = 0
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white md:bg-transparent min-h-full max-w-3xl">
+    <form onSubmit={handleSubmit} className="bg-card md:bg-transparent min-h-full max-w-3xl">
       {/* Mobile header */}
       <div className="flex items-center px-4 py-2.5 md:hidden" style={{ borderBottom: '1px solid var(--wp-border-light)' }}>
         <div className="flex-1 flex items-center justify-start">
@@ -142,26 +142,26 @@ export function NewInvoiceClient({ translations: t, clients = [], taxPercent = 0
           <p style={{ fontSize: '0.6rem', fontWeight: 600, color: '#94A3B8', textTransform: 'uppercase' as const, letterSpacing: '0.08em', marginBottom: '0.75rem' }}>Client</p>
           <div className="space-y-4">
             <div ref={clientDropdownRef} className="relative">
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 {t.fields.clientName}
-                {clients.length > 0 && <span className="ml-2 text-xs font-normal text-slate-400">— search existing or type new</span>}
+                {clients.length > 0 && <span className="ml-2 text-xs font-normal text-subtle-foreground">— search existing or type new</span>}
               </label>
               <div className="relative">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-subtle-foreground" />
                 <input type="text" required value={clientSearch}
                   onChange={e => { setClientSearch(e.target.value); setClientName(e.target.value); setShowClientDropdown(true); if (!e.target.value) clearClient() }}
                   onFocus={() => { if (!selectedClientId && clients.length > 0) setShowClientDropdown(true) }}
                   placeholder="Client name..."
-                  className={`w-full border rounded-lg pl-8 pr-8 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E3A5F]/30 ${selectedClientId ? 'border-[#1E3A5F]/40 bg-blue-50 text-[#1E3A5F] font-medium' : 'border-slate-200'}`}
+                  className={`w-full border rounded-lg pl-8 pr-8 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500/30 ${selectedClientId ? 'border-navy-500/40 bg-blue-50 text-navy-500 font-medium' : 'border-border'}`}
                 />
-                {selectedClientId && <button type="button" onClick={clearClient} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"><X size={14} /></button>}
+                {selectedClientId && <button type="button" onClick={clearClient} className="absolute right-3 top-1/2 -translate-y-1/2 text-subtle-foreground hover:text-muted-foreground"><X size={14} /></button>}
               </div>
               {showClientDropdown && !selectedClientId && filteredClients.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                <div className="absolute z-10 w-full mt-1 bg-card border border-border rounded-lg shadow-lg max-h-40 overflow-y-auto">
                   {filteredClients.map(c => (
-                    <button key={c.id} type="button" onClick={() => selectClient(c)} className="w-full text-left px-4 py-2.5 hover:bg-slate-50 border-b border-slate-100 last:border-0">
-                      <p className="text-sm font-medium text-slate-800">{c.name}</p>
-                      {c.email && <p className="text-xs text-slate-400">{c.email}</p>}
+                    <button key={c.id} type="button" onClick={() => selectClient(c)} className="w-full text-left px-4 py-2.5 hover:bg-muted border-b border-border last:border-0">
+                      <p className="text-sm font-medium text-foreground">{c.name}</p>
+                      {c.email && <p className="text-xs text-subtle-foreground">{c.email}</p>}
                     </button>
                   ))}
                 </div>
@@ -170,12 +170,12 @@ export function NewInvoiceClient({ translations: t, clients = [], taxPercent = 0
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">{t.fields.clientEmail}</label>
-                <input type="email" value={clientEmail} onChange={e => setClientEmail(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" />
+                <label className="block text-sm font-medium text-foreground mb-1">{t.fields.clientEmail}</label>
+                <input type="email" value={clientEmail} onChange={e => setClientEmail(e.target.value)} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Client Phone</label>
-                <input type="tel" value={clientPhone} onChange={e => setClientPhone(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none" placeholder="(555) 000-0000" />
+                <label className="block text-sm font-medium text-foreground mb-1">Client Phone</label>
+                <input type="tel" value={clientPhone} onChange={e => setClientPhone(e.target.value)} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none" placeholder="(555) 000-0000" />
               </div>
             </div>
           </div>
@@ -185,7 +185,7 @@ export function NewInvoiceClient({ translations: t, clients = [], taxPercent = 0
         <div style={{ borderBottom: '1px solid var(--wp-border-light)', paddingBottom: '1.25rem', marginBottom: '1.25rem' }}>
           <p style={{ fontSize: '0.6rem', fontWeight: 600, color: '#94A3B8', textTransform: 'uppercase' as const, letterSpacing: '0.08em', marginBottom: '0.75rem' }}>Work</p>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-slate-800">{t.lineItems.title}</h3>
+            <h3 className="font-semibold text-foreground">{t.lineItems.title}</h3>
           </div>
 
           <div className="space-y-3 mb-4">
@@ -193,27 +193,27 @@ export function NewInvoiceClient({ translations: t, clients = [], taxPercent = 0
               <div key={i} className="rounded-lg p-3" style={{ border: '1px solid var(--wp-border-light)', background: 'var(--wp-bg-secondary)' }}>
                 <div className="flex items-center gap-2 mb-2">
                   <select value={item.type} onChange={e => updateItem(i, 'type', e.target.value as LineItemType)}
-                    className="border border-slate-200 rounded px-2 py-1.5 text-xs focus:outline-none shrink-0" style={{ width: '90px' }}>
+                    className="border border-border rounded px-2 py-1.5 text-xs focus:outline-none shrink-0" style={{ width: '90px' }}>
                     {(Object.keys(t.lineItems.type) as LineItemType[]).map(type => <option key={type} value={type}>{t.lineItems.type[type]}</option>)}
                   </select>
                   <input value={item.description} onChange={e => updateItem(i, 'description', e.target.value)}
-                    placeholder="Description" className="flex-1 border border-slate-200 rounded px-2 py-1.5 text-xs focus:outline-none min-w-0" />
+                    placeholder="Description" className="flex-1 border border-border rounded px-2 py-1.5 text-xs focus:outline-none min-w-0" />
                   <button type="button" onClick={() => setItems(items.filter((_, idx) => idx !== i))}
                     className="shrink-0 p-1 text-slate-300 hover:text-red-500"><Trash2 size={14} /></button>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="flex-1">
-                    <label className="text-[10px] text-slate-400 mb-0.5 block">Qty</label>
+                    <label className="text-[10px] text-subtle-foreground mb-0.5 block">Qty</label>
                     <input type="number" min="0" step="0.01" value={item.quantity} onChange={e => updateItem(i, 'quantity', parseFloat(e.target.value) || 0)}
-                      className="w-full border border-slate-200 rounded px-2 py-1.5 text-xs text-center focus:outline-none" />
+                      className="w-full border border-border rounded px-2 py-1.5 text-xs text-center focus:outline-none" />
                   </div>
                   <div className="flex-1">
-                    <label className="text-[10px] text-slate-400 mb-0.5 block">Rate</label>
+                    <label className="text-[10px] text-subtle-foreground mb-0.5 block">Rate</label>
                     <input type="number" min="0" step="0.01" value={item.unitPrice} onChange={e => updateItem(i, 'unitPrice', parseFloat(e.target.value) || 0)}
-                      className="w-full border border-slate-200 rounded px-2 py-1.5 text-xs text-right focus:outline-none" />
+                      className="w-full border border-border rounded px-2 py-1.5 text-xs text-right focus:outline-none" />
                   </div>
                   <div style={{ width: '80px' }} className="text-right">
-                    <label className="text-[10px] text-slate-400 mb-0.5 block">Total</label>
+                    <label className="text-[10px] text-subtle-foreground mb-0.5 block">Total</label>
                     <p className="text-xs font-bold py-1.5" style={{ color: 'var(--wp-text-primary)' }}>
                       ${(item.quantity * item.unitPrice).toFixed(2)}
                     </p>
@@ -224,7 +224,7 @@ export function NewInvoiceClient({ translations: t, clients = [], taxPercent = 0
           </div>
 
           <button type="button" onClick={() => setItems([...items, { type: 'labor', description: '', quantity: 1, unitPrice: 0, total: 0 }])}
-            className="flex items-center gap-1 text-sm text-[#F97316] hover:text-orange-600 font-medium">
+            className="flex items-center gap-1 text-sm text-cta hover:text-orange-600 font-medium">
             <Plus size={15} /> {t.lineItems.add}
           </button>
         </div>
@@ -233,15 +233,15 @@ export function NewInvoiceClient({ translations: t, clients = [], taxPercent = 0
         <div style={{ borderBottom: '1px solid var(--wp-border-light)', paddingBottom: '1.25rem', marginBottom: '1.25rem' }}>
           <p style={{ fontSize: '0.6rem', fontWeight: 600, color: '#94A3B8', textTransform: 'uppercase' as const, letterSpacing: '0.08em', marginBottom: '0.75rem' }}>Pricing</p>
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between text-slate-600">
+            <div className="flex justify-between text-muted-foreground">
               <span>{t.fields.subtotal}</span>
               <span>${subtotal.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between text-slate-600">
+            <div className="flex justify-between text-muted-foreground">
               <span>{t.fields.tax} ({taxPercent}%)</span>
               <span>${tax.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between font-bold text-slate-900 text-base pt-1">
+            <div className="flex justify-between font-bold text-foreground text-base pt-1">
               <span>{t.fields.total}</span>
               <span>${total.toFixed(2)}</span>
             </div>

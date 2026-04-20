@@ -7,6 +7,7 @@ import { deleteEstimate, updateEstimate, resendEstimateEmail } from '@/lib/actio
 import { createInvoice } from '@/lib/actions/invoices'
 import { createShoppingListFromEstimate } from '@/lib/actions/shopping-lists'
 import { ConfirmModal } from '@/components/ConfirmModal'
+import { Toast } from '@/components/Toast'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { BottomSheet } from '@/components/BottomSheet'
 import { Edit, Trash2, ArrowRight, Loader2, Briefcase, Eye, Smartphone, Mail, FileText, Link2, Copy, Check, ChevronLeft, MoreHorizontal, Printer, DollarSign, Send, ShoppingCart } from 'lucide-react'
@@ -19,22 +20,24 @@ import {
   StatusPill, ClientAvatar,
   type StatusTone, type TimelineItem,
 } from '@/components/ui'
+import { deriveEstimateStatus } from '@/lib/status/derived'
 
 type EstimateStatus = 'draft' | 'sent' | 'approved' | 'rejected' | 'converted'
 type LineItemType = 'labor' | 'material' | 'subcontractor' | 'other'
-type Estimate = { id: string; number: string; jobId: string | null; clientName: string; clientEmail: string | null; clientPhone?: string | null; status: string; subtotal: string; tax: string; total: string; validUntil: Date | null; notes: string | null; shareToken?: string | null; createdAt?: Date }
+type Estimate = { id: string; number: string; jobId: string | null; clientName: string; clientEmail: string | null; clientPhone?: string | null; status: string; subtotal: string; tax: string; total: string; validUntil: Date | null; notes: string | null; shareToken?: string | null; createdAt?: Date; markupPercent?: string | null; discountType?: string | null; discountValue?: string | null; signatureDataUrl?: string | null; signedByName?: string | null; signedAt?: Date | null; depositType?: string | null; depositAmount?: string | null; depositPaid?: boolean | null; depositPaidAt?: Date | null; contractId?: string | null }
 type CompanyInfo = { name: string; phone: string | null; email: string | null; logoUrl: string | null; businessTaxId: string | null }
 type LineItem = { id: string; type: string; description: string; quantity: string; unitPrice: string; total: string }
-type T = { back: string; edit: string; delete: string; convertToInvoice: string; status: Record<EstimateStatus, string>; fields: Record<string, string>; lineItems: { type: Record<LineItemType, string>; fields: Record<string, string> } }
+type T = { back: string; edit: string; delete: string; convertToInvoice: string; status: Record<EstimateStatus | 'expired', string>; fields: Record<string, string>; lineItems: { type: Record<LineItemType, string>; fields: Record<string, string> } }
 
 const STATUS_OPTIONS: EstimateStatus[] = ['draft', 'sent', 'approved', 'rejected', 'converted']
 
-const STATUS_TONE: Record<EstimateStatus, StatusTone> = {
+const STATUS_TONE: Record<string, StatusTone> = {
   draft: 'draft',
   sent: 'sent',
   approved: 'approved',
   rejected: 'rejected',
   converted: 'converted',
+  expired: 'warning',
 }
 
 const TYPE_CHIP_CLASS: Record<LineItemType, string> = {
@@ -55,7 +58,7 @@ function CompanyHeader({ company }: { company: CompanyInfo }) {
         <img src={company.logoUrl!} alt="" className="w-12 h-12 rounded-lg object-contain shrink-0" onError={() => setLogoError(true)} />
       ) : (
         <div className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'var(--wp-brand)' }}>
-          <span style={{ color: 'white', fontSize: '1rem', fontWeight: 800 }}>
+          <span style={{ color: 'var(--wp-text-inverse)', fontSize: '1rem', fontWeight: 800 }}>
             {company.name.split(' ').filter(w => w.length > 0).map(w => w[0]).join('').slice(0, 2).toUpperCase()}
           </span>
         </div>
@@ -72,13 +75,33 @@ function CompanyHeader({ company }: { company: CompanyInfo }) {
 
 type PhotoItem = { id: string; url: string; description: string | null; thumbnailUrl: string | null }
 
-export function EstimateDetailClient({ estimate, lineItems, job, viewCount = 0, clientPhone = null, shareToken: initialShareToken = null, photos = [], company, translations: t }: { estimate: Estimate; lineItems: LineItem[]; job: { id: string; name: string } | null; viewCount?: number; clientPhone?: string | null; shareToken?: string | null; photos?: PhotoItem[]; company?: CompanyInfo; translations: T }) {
+export function EstimateDetailClient({ estimate, lineItems, job, linkedInvoice = null, viewCount = 0, clientPhone = null, shareToken: initialShareToken = null, photos = [], company, userTaxRate = null, translations: t }: { estimate: Estimate; lineItems: LineItem[]; job: { id: string; name: string } | null; linkedInvoice?: { id: string; number: string } | null; viewCount?: number; clientPhone?: string | null; shareToken?: string | null; photos?: PhotoItem[]; company?: CompanyInfo; userTaxRate?: string | null; translations: T }) {
   const params = useParams()
   const router = useRouter()
   const locale = params.locale as string
+
+  // A1 — Source-of-truth para totales: sumar line items en render.
+  // El campo `estimate.subtotal` puede estar stale si alguien mutó items fuera de
+  // createEstimate/updateEstimate. Recompute aquí protege contra drift.
+  const liveSubtotal = lineItems.reduce((s, li) => s + parseFloat(li.total), 0)
+  const liveDiscountAmount = estimate.discountType === 'percent' && estimate.discountValue
+    ? liveSubtotal * (parseFloat(estimate.discountValue) / 100)
+    : estimate.discountType === 'fixed' && estimate.discountValue
+      ? parseFloat(estimate.discountValue)
+      : 0
+  const liveMarkupAmount = estimate.markupPercent
+    ? liveSubtotal * (parseFloat(estimate.markupPercent) / 100)
+    : 0
+  const liveTaxable = Math.max(liveSubtotal - liveDiscountAmount + liveMarkupAmount, 0)
+  // Tax rate viene del user profile (configurado en Settings > Company). Fallback a 0 si no configurado.
+  const taxRateDecimal = userTaxRate ? (parseFloat(userTaxRate) || 0) / 100 : 0
+  const liveTax = Math.round(liveTaxable * taxRateDecimal * 100) / 100
+  const liveTotal = Math.round((liveTaxable + liveTax) * 100) / 100
   const [isPending, startTransition] = useTransition()
   const [isConverting, setIsConverting] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [toast, setToast] = useState<{ message: string; variant?: 'success' | 'error' | 'warning' } | null>(null)
+  const notify = (message: string, variant: 'success' | 'error' | 'warning' = 'success') => setToast({ message, variant })
   const [isSendingSms, setIsSendingSms] = useState(false)
   const [isSendingEmail, setIsSendingEmail] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
@@ -100,12 +123,16 @@ export function EstimateDetailClient({ estimate, lineItems, job, viewCount = 0, 
       try {
         const result = await createShoppingListFromEstimate(estimate.id)
         if (result.created && result.list) {
+          notify(locale === 'es' ? 'Lista de compras creada' : 'Shopping list created')
           router.push(`/${locale}/shopping-list/${result.list.id}`)
         } else {
           setGenerateError('No material items in this estimate.')
+          notify(locale === 'es' ? 'Sin items de material' : 'No material items', 'warning')
         }
       } catch (err) {
-        setGenerateError((err as Error)?.message ?? 'Could not create shopping list.')
+        const msg = (err as Error)?.message ?? 'Could not create shopping list.'
+        setGenerateError(msg)
+        notify(msg, 'error')
       } finally {
         setIsGeneratingList(false)
       }
@@ -113,14 +140,19 @@ export function EstimateDetailClient({ estimate, lineItems, job, viewCount = 0, 
   }
 
   const status = estimate.status as EstimateStatus
+  const displayStatus = deriveEstimateStatus(estimate)
+  const displayStatusLabel = (t.status as Record<string, string>)[displayStatus] ?? displayStatus
   const portalUrl = currentShareToken
-    ? `${typeof window !== 'undefined' ? window.location.origin : ''}/en/portal/${currentShareToken}`
+    ? (typeof window !== 'undefined'
+        ? `${window.location.origin}/${locale === 'es' ? 'es' : 'en'}/portal/${currentShareToken}`
+        : '')
     : null
 
   async function handleCopyLink() {
     if (!portalUrl) return
     await navigator.clipboard.writeText(portalUrl)
     setLinkCopied(true)
+    notify(locale === 'es' ? 'Link copiado' : 'Link copied')
     setTimeout(() => setLinkCopied(false), 2000)
   }
 
@@ -132,9 +164,11 @@ export function EstimateDetailClient({ estimate, lineItems, job, viewCount = 0, 
       const result = await resendEstimateEmail(estimate.id)
       setEmailSent(true)
       if (result.shareToken) setCurrentShareToken(result.shareToken)
+      notify(locale === 'es' ? 'Email enviado' : 'Email sent')
       window.location.reload()
     } catch (err: unknown) {
-      alert('Failed to send: ' + (err instanceof Error ? err.message : String(err)))
+      const msg = err instanceof Error ? err.message : String(err)
+      notify((locale === 'es' ? 'Error enviando email: ' : 'Failed to send email: ') + msg, 'error')
     } finally {
       setIsSendingEmail(false)
     }
@@ -144,37 +178,110 @@ export function EstimateDetailClient({ estimate, lineItems, job, viewCount = 0, 
     setIsSendingSms(true)
     try {
       const result = await sendEstimateSms(estimate.id, clientPhone!)
-      if (!result.success) alert(result.error || 'SMS failed')
+      if (!result.success) {
+        notify(result.error || (locale === 'es' ? 'Error enviando SMS' : 'SMS failed'), 'error')
+      } else {
+        notify(locale === 'es' ? 'SMS enviado' : 'SMS sent')
+      }
     } catch (err: unknown) {
-      alert('SMS failed: ' + (err instanceof Error ? err.message : 'Unknown error'))
+      const msg = err instanceof Error ? err.message : 'Unknown error'
+      notify((locale === 'es' ? 'Error enviando SMS: ' : 'SMS failed: ') + msg, 'error')
     } finally {
       setIsSendingSms(false)
     }
   }
 
   function handleDelete() {
-    startTransition(async () => { await deleteEstimate(estimate.id); router.push(`/${locale}/estimates`) })
+    startTransition(async () => {
+      await deleteEstimate(estimate.id)
+      notify(locale === 'es' ? 'Estimate eliminado' : 'Estimate deleted')
+      router.push(`/${locale}/estimates`)
+    })
   }
 
+  const [showConvertConfirm, setShowConvertConfirm] = useState(false)
+
   function handleConvert() {
+    // A4 — Propagate markup + discount as explicit adjustment line items so the
+    // invoice's stored totals preserve the estimate's total exactly.
+    const baseSubtotal = lineItems.reduce((s, li) => s + parseFloat(li.total), 0)
+    const markupPct = estimate.markupPercent ? parseFloat(estimate.markupPercent) : 0
+    const markupAmount = baseSubtotal * (markupPct / 100)
+    const discountValue = estimate.discountValue ? parseFloat(estimate.discountValue) : 0
+    const discountAmount = estimate.discountType === 'percent'
+      ? baseSubtotal * (discountValue / 100)
+      : estimate.discountType === 'fixed' ? discountValue : 0
+
+    const convertedItems: { type: string; description: string; quantity: number; unitPrice: number; total: number }[] = lineItems.map((li) => ({
+      type: li.type,
+      description: li.description,
+      quantity: parseFloat(li.quantity),
+      unitPrice: parseFloat(li.unitPrice),
+      total: parseFloat(li.total),
+    }))
+
+    if (markupAmount > 0) {
+      convertedItems.push({
+        type: 'other',
+        description: `Service markup (${markupPct.toFixed(1)}%)`,
+        quantity: 1,
+        unitPrice: Math.round(markupAmount * 100) / 100,
+        total: Math.round(markupAmount * 100) / 100,
+      })
+    }
+    if (discountAmount > 0) {
+      const label = estimate.discountType === 'percent'
+        ? `Discount (${discountValue.toFixed(1)}%)`
+        : 'Discount'
+      convertedItems.push({
+        type: 'other',
+        description: label,
+        quantity: 1,
+        unitPrice: -Math.round(discountAmount * 100) / 100,
+        total: -Math.round(discountAmount * 100) / 100,
+      })
+    }
+
     setIsConverting(true)
     startTransition(async () => {
       try {
         const dueDate = new Date(); dueDate.setDate(dueDate.getDate() + 30)
         const invoice = await createInvoice(
-          { jobId: estimate.jobId ?? '', estimateId: estimate.id, clientName: estimate.clientName, clientEmail: estimate.clientEmail ?? '', status: 'draft', subtotal: parseFloat(estimate.subtotal), tax: parseFloat(estimate.tax), total: parseFloat(estimate.total), dueDate: dueDate.toISOString(), notes: estimate.notes ?? '' },
-          lineItems.map((li) => ({ type: li.type, description: li.description, quantity: parseFloat(li.quantity), unitPrice: parseFloat(li.unitPrice), total: parseFloat(li.total) }))
+          // A4 — usar valores live (derivados de line items) en vez del campo estimate.subtotal stale
+          { jobId: estimate.jobId ?? '', estimateId: estimate.id, clientName: estimate.clientName, clientEmail: estimate.clientEmail ?? '', status: 'draft', subtotal: liveSubtotal, tax: liveTax, total: liveTotal, dueDate: dueDate.toISOString(), notes: estimate.notes ?? '' },
+          convertedItems,
         )
         await updateEstimate(estimate.id, { status: 'converted', convertedToInvoiceId: invoice.id })
+        notify(locale === 'es' ? `Factura ${invoice.number} creada` : `Invoice ${invoice.number} created`)
         router.push(`/${locale}/invoices/${invoice.id}`)
+      } catch (e) {
+        notify((locale === 'es' ? 'Error al convertir: ' : 'Convert failed: ') + (e instanceof Error ? e.message : 'unknown'), 'error')
       } finally {
         setIsConverting(false)
+        setShowConvertConfirm(false)
       }
     })
   }
 
-  // Desktop timeline items (synthesized from estimate metadata)
+  // Desktop timeline items (synthesized from estimate metadata), newest first.
   const timelineItems: TimelineItem[] = []
+  if (status === 'approved' || status === 'converted') {
+    const signedLabel = estimate.signedByName
+      ? `${locale === 'es' ? 'Firmado por' : 'Signed by'} ${estimate.signedByName}`
+      : (locale === 'es' ? 'Aprobado por el cliente' : 'Approved by client')
+    timelineItems.push({
+      tone: 'success',
+      event: signedLabel,
+      time: estimate.signedAt ? new Date(estimate.signedAt).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US') : '—',
+    })
+  }
+  if (status === 'rejected') {
+    timelineItems.push({
+      tone: 'danger',
+      event: locale === 'es' ? 'Rechazado por el cliente' : 'Rejected by client',
+      time: '—',
+    })
+  }
   if (viewCount > 0) {
     timelineItems.push({
       tone: 'success',
@@ -186,17 +293,20 @@ export function EstimateDetailClient({ estimate, lineItems, job, viewCount = 0, 
     timelineItems.push({
       tone: 'info',
       event: locale === 'es' ? 'Email enviado al cliente' : 'Email sent',
-      time: estimate.createdAt ? new Date(estimate.createdAt).toLocaleDateString() : '—',
+      time: estimate.createdAt ? new Date(estimate.createdAt).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US') : '—',
     })
   }
   timelineItems.push({
     tone: 'neutral',
     event: locale === 'es' ? 'Creado' : 'Created',
-    time: estimate.createdAt ? new Date(estimate.createdAt).toLocaleDateString() : '—',
+    time: estimate.createdAt ? new Date(estimate.createdAt).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US') : '—',
   })
 
   return (
     <>
+      {toast && (
+        <Toast message={toast.message} variant={toast.variant} onDone={() => setToast(null)} />
+      )}
       {showDeleteModal && (
         <ConfirmModal
           title="Delete Estimate"
@@ -205,13 +315,24 @@ export function EstimateDetailClient({ estimate, lineItems, job, viewCount = 0, 
           onCancel={() => setShowDeleteModal(false)}
         />
       )}
+      {/* D3 — Convert to Invoice confirmation */}
+      {showConvertConfirm && (
+        <ConfirmModal
+          title={locale === 'es' ? 'Crear invoice desde estimate' : 'Create invoice from estimate'}
+          message={`${estimate.clientName} · ${estimate.number} — $${parseFloat(estimate.total).toFixed(2)}. ${locale === 'es' ? 'Se creará un invoice con vencimiento en 30 días. El estimate quedará marcado como Converted.' : 'An invoice will be created with a 30-day due date. The estimate will be marked Converted.'}`}
+          confirmText={locale === 'es' ? 'Crear invoice' : 'Create invoice'}
+          tone="primary"
+          onConfirm={handleConvert}
+          onCancel={() => setShowConvertConfirm(false)}
+        />
+      )}
       {showEmailModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
+          <div className="bg-card rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
             <h3 className="text-lg font-bold mb-1" style={{ color: 'var(--wp-text)' }}>Send to {estimate.clientName}?</h3>
             <p className="text-sm mb-4" style={{ color: 'var(--wp-text-3)' }}>Email: <span style={{ color: 'var(--wp-text-2)', fontWeight: 500 }}>{estimate.clientEmail}</span></p>
             <div className="rounded-lg p-3 mb-5 text-sm" style={{ background: 'var(--wp-surface-2)', color: 'var(--wp-text-2)' }}>
-              <p>Estimate <strong>{estimate.number}</strong> for <strong>${parseFloat(estimate.total).toFixed(2)}</strong>{estimate.validUntil ? ` — valid until ${new Date(estimate.validUntil).toLocaleDateString('en-US')}` : ''}.</p>
+              <p>Estimate <strong>{estimate.number}</strong> for <strong>${parseFloat(estimate.total).toFixed(2)}</strong>{estimate.validUntil ? ` — valid until ${new Date(estimate.validUntil).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US')}` : ''}.</p>
             </div>
             <div className="flex justify-end gap-3">
               <button onClick={() => setShowEmailModal(false)} className="btn-secondary btn-sm">Cancel</button>
@@ -250,7 +371,7 @@ export function EstimateDetailClient({ estimate, lineItems, job, viewCount = 0, 
       </BottomSheet>
 
       {/* ══════════════ MOBILE LAYOUT (Joist-style, preserved) ══════════════ */}
-      <div className="md:hidden bg-white min-h-full">
+      <div className="md:hidden bg-card min-h-full">
 
         <div className="flex items-center px-4 py-2.5" style={{ borderBottom: '1px solid var(--wp-border-light)' }}>
           <div className="flex-1 flex items-center justify-start">
@@ -283,7 +404,7 @@ export function EstimateDetailClient({ estimate, lineItems, job, viewCount = 0, 
             <Printer size={16} />
             PRINT
           </button>
-          <button onClick={status === 'approved' || status === 'sent' ? handleConvert : undefined}
+          <button onClick={status === 'approved' || status === 'sent' ? () => setShowConvertConfirm(true) : undefined}
             disabled={isConverting || (status !== 'approved' && status !== 'sent')}
             className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 disabled:opacity-30"
             style={{ color: 'var(--wp-text-2)', fontSize: '0.625rem', fontWeight: 600, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
@@ -300,11 +421,11 @@ export function EstimateDetailClient({ estimate, lineItems, job, viewCount = 0, 
 
         <button onClick={() => setShowStatusMenu(true)} className="w-full flex items-center justify-center gap-1 py-1.5"
           style={{
-            background: status === 'approved' ? 'var(--wp-success-bg-v2)' : status === 'sent' ? 'var(--wp-info-bg-v2)' : status === 'rejected' ? 'var(--wp-error-bg-v2)' : status === 'converted' ? 'var(--wp-purple-bg)' : 'var(--wp-surface-2)',
-            color: status === 'approved' ? 'var(--wp-success-v2)' : status === 'sent' ? 'var(--wp-info-v2)' : status === 'rejected' ? 'var(--wp-error-v2)' : status === 'converted' ? 'var(--wp-purple)' : 'var(--wp-text-2)',
+            background: displayStatus === 'approved' ? 'var(--wp-success-bg-v2)' : displayStatus === 'sent' ? 'var(--wp-info-bg-v2)' : displayStatus === 'rejected' ? 'var(--wp-error-bg-v2)' : displayStatus === 'converted' ? 'var(--wp-purple-bg)' : displayStatus === 'expired' ? 'var(--wp-warning-bg-v2)' : 'var(--wp-surface-2)',
+            color: displayStatus === 'approved' ? 'var(--wp-success-v2)' : displayStatus === 'sent' ? 'var(--wp-info-v2)' : displayStatus === 'rejected' ? 'var(--wp-error-v2)' : displayStatus === 'converted' ? 'var(--wp-purple)' : displayStatus === 'expired' ? 'var(--wp-warning-v2)' : 'var(--wp-text-2)',
             fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em',
           }}>
-          {t.status[status]} <ChevronLeft size={12} className="rotate-[-90deg]" />
+          {displayStatusLabel} <ChevronLeft size={12} className="rotate-[-90deg]" />
         </button>
 
         <BottomSheet open={showStatusMenu} onClose={() => setShowStatusMenu(false)} title="Change Status">
@@ -317,9 +438,14 @@ export function EstimateDetailClient({ estimate, lineItems, job, viewCount = 0, 
               <button key={opt.key} onClick={() => {
                 setShowStatusMenu(false)
                 startTransition(async () => {
-                  if (opt.key === 'sent') await resendEstimateEmail(estimate.id)
-                  else await updateEstimate(estimate.id, { status: opt.key })
-                  window.location.reload()
+                  try {
+                    if (opt.key === 'sent') await resendEstimateEmail(estimate.id)
+                    else await updateEstimate(estimate.id, { status: opt.key })
+                    notify(locale === 'es' ? `Estado: ${opt.label}` : `Status: ${opt.label}`)
+                    window.location.reload()
+                  } catch (e) {
+                    notify((e instanceof Error ? e.message : 'Update failed'), 'error')
+                  }
                 })
               }}
                 className="w-full flex items-center justify-between px-5 py-3.5 text-sm"
@@ -343,7 +469,7 @@ export function EstimateDetailClient({ estimate, lineItems, job, viewCount = 0, 
                 {clientPhone && <p style={{ fontSize: '0.75rem', color: 'var(--wp-text-3)' }}>{clientPhone}</p>}
               </div>
               {job && (
-                <Link href={`/${locale}/jobs/${job.id}`} className="flex items-center gap-1 shrink-0 px-2 py-1 rounded-md"
+                <Link href={`/${locale}/projects/${job.id}`} className="flex items-center gap-1 shrink-0 px-2 py-1 rounded-md"
                   style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--wp-brand)', background: 'var(--wp-brand-subtle)' }}>
                   <Briefcase size={10} /> Job →
                 </Link>
@@ -358,7 +484,7 @@ export function EstimateDetailClient({ estimate, lineItems, job, viewCount = 0, 
             </div>
             <div className="flex justify-between py-1.5" style={{ fontSize: '0.8125rem' }}>
               <span style={{ color: 'var(--wp-text-3)' }}>Date</span>
-              <span style={{ color: 'var(--wp-text)' }}>{new Date(estimate.createdAt || Date.now()).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}</span>
+              <span style={{ color: 'var(--wp-text)' }}>{new Date(estimate.createdAt || Date.now()).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}</span>
             </div>
             {company?.businessTaxId && (
               <div className="flex justify-between py-1.5" style={{ fontSize: '0.8125rem' }}>
@@ -369,7 +495,7 @@ export function EstimateDetailClient({ estimate, lineItems, job, viewCount = 0, 
             {estimate.validUntil && (
               <div className="flex justify-between py-1.5" style={{ fontSize: '0.8125rem' }}>
                 <span style={{ color: 'var(--wp-text-3)' }}>Valid Until</span>
-                <span style={{ color: 'var(--wp-text)' }}>{new Date(estimate.validUntil).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}</span>
+                <span style={{ color: 'var(--wp-text)' }}>{new Date(estimate.validUntil).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}</span>
               </div>
             )}
             {viewCount > 0 && (
@@ -409,20 +535,55 @@ export function EstimateDetailClient({ estimate, lineItems, job, viewCount = 0, 
           </div>
 
           <div className="flex justify-end mb-6">
-            <div style={{ width: '160px' }}>
+            <div style={{ width: '200px' }}>
               <div className="flex justify-between py-1" style={{ fontSize: '0.8125rem', color: 'var(--wp-text-3)' }}>
-                <span>Subtotal</span><span>${parseFloat(estimate.subtotal).toFixed(2)}</span>
+                <span>Subtotal</span><span>${liveSubtotal.toFixed(2)}</span>
               </div>
-              {parseFloat(estimate.tax) > 0 && (
+              {liveDiscountAmount > 0 && (
                 <div className="flex justify-between py-1" style={{ fontSize: '0.8125rem', color: 'var(--wp-text-3)' }}>
-                  <span>Tax</span><span>${parseFloat(estimate.tax).toFixed(2)}</span>
+                  <span>Discount{estimate.discountType === 'percent' ? ` (${estimate.discountValue}%)` : ''}</span>
+                  <span>-${liveDiscountAmount.toFixed(2)}</span>
+                </div>
+              )}
+              {liveMarkupAmount > 0 && (
+                <div className="flex justify-between py-1" style={{ fontSize: '0.8125rem', color: 'var(--wp-text-3)' }}>
+                  <span>Markup ({estimate.markupPercent}%)</span>
+                  <span>+${liveMarkupAmount.toFixed(2)}</span>
+                </div>
+              )}
+              {liveTax > 0 && (
+                <div className="flex justify-between py-1" style={{ fontSize: '0.8125rem', color: 'var(--wp-text-3)' }}>
+                  <span>Tax</span><span>${liveTax.toFixed(2)}</span>
                 </div>
               )}
               <div className="flex justify-between pt-2 mt-1" style={{ borderTop: '2px solid var(--wp-brand)', fontSize: '1rem', fontWeight: 700, color: 'var(--wp-text)' }}>
-                <span>Total</span><span>${parseFloat(estimate.total).toFixed(2)}</span>
+                <span>Total</span><span>${liveTotal.toFixed(2)}</span>
               </div>
             </div>
           </div>
+
+          {/* CLI-007 — Signed / Deposit / Contract chips */}
+          {(estimate.signatureDataUrl || estimate.depositAmount || estimate.contractId) && (
+            <div className="mb-4 pb-4 flex flex-wrap items-center gap-2" style={{ borderBottom: '1px solid var(--wp-border-light)' }}>
+              {estimate.signatureDataUrl && (
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full" style={{ background: 'var(--wp-success-bg-v2)', color: 'var(--wp-success-v2)' }}>
+                  ✓ Signed{estimate.signedByName ? ` by ${estimate.signedByName}` : ''}
+                  {estimate.signedAt && ` · ${new Date(estimate.signedAt).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US')}`}
+                </span>
+              )}
+              {estimate.depositAmount && parseFloat(estimate.depositAmount) > 0 && (
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full" style={{ background: estimate.depositPaid ? 'var(--wp-success-bg-v2)' : 'var(--wp-warning-bg-v2)', color: estimate.depositPaid ? 'var(--wp-success-v2)' : 'var(--wp-warning-v2)' }}>
+                  Deposit {estimate.depositType === 'percent' ? `${estimate.depositAmount}%` : `$${parseFloat(estimate.depositAmount).toFixed(2)}`}
+                  {estimate.depositPaid ? ` · Paid${estimate.depositPaidAt ? ' ' + new Date(estimate.depositPaidAt).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US') : ''}` : ' · Unpaid'}
+                </span>
+              )}
+              {estimate.contractId && (
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full" style={{ background: 'var(--wp-surface-2)', color: 'var(--wp-text-2)' }}>
+                  📎 Contract attached
+                </span>
+              )}
+            </div>
+          )}
 
           {estimate.notes && (
             <div className="mb-4 pb-4" style={{ borderBottom: '1px solid var(--wp-border-light)' }}>
@@ -474,23 +635,23 @@ export function EstimateDetailClient({ estimate, lineItems, job, viewCount = 0, 
                   <div className="text-2xl font-bold" style={{ color: 'var(--wp-text)', letterSpacing: '-0.025em' }}>{estimate.number}</div>
                   <div className="text-sm mt-1" style={{ color: 'var(--wp-text-3)' }}>
                     {estimate.createdAt && (
-                      <>{locale === 'es' ? 'Creado' : 'Issued'} {new Date(estimate.createdAt).toLocaleDateString()}</>
+                      <>{locale === 'es' ? 'Creado' : 'Issued'} {new Date(estimate.createdAt).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US')}</>
                     )}
                     {estimate.validUntil && (
-                      <>{' · '}{locale === 'es' ? 'Válido hasta' : 'Valid until'} {new Date(estimate.validUntil).toLocaleDateString()}</>
+                      <>{' · '}{locale === 'es' ? 'Válido hasta' : 'Valid until'} {new Date(estimate.validUntil).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US')}</>
                     )}
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--wp-text-3)' }}>Total</div>
                   <div className="text-2xl font-extrabold tabular-nums" style={{ color: 'var(--wp-text)', letterSpacing: '-0.025em' }}>
-                    ${parseFloat(estimate.total).toFixed(2)}
+                    ${liveTotal.toFixed(2)}
                   </div>
                 </div>
               </div>
               {/* Meta row */}
               <div className="flex items-center gap-4 mt-4 pt-4 flex-wrap" style={{ borderTop: '1px solid var(--wp-border-light)' }}>
-                <StatusPill tone={STATUS_TONE[status]}>{t.status[status]}</StatusPill>
+                <StatusPill tone={STATUS_TONE[displayStatus] ?? 'neutral'}>{displayStatusLabel}</StatusPill>
                 {viewCount > 0 && (
                   <span className="inline-flex items-center gap-1 text-xs" style={{ color: 'var(--wp-text-2)' }}>
                     <Eye size={14} style={{ color: 'var(--wp-text-3)' }} />
@@ -498,10 +659,33 @@ export function EstimateDetailClient({ estimate, lineItems, job, viewCount = 0, 
                   </span>
                 )}
                 {job && (
-                  <Link href={`/${locale}/jobs/${job.id}`} className="inline-flex items-center gap-1 text-xs" style={{ color: 'var(--wp-text-2)' }}>
+                  <Link href={`/${locale}/projects/${job.id}`} className="inline-flex items-center gap-1 text-xs" style={{ color: 'var(--wp-text-2)' }}>
                     <Briefcase size={14} style={{ color: 'var(--wp-text-3)' }} />
-                    Linked to <strong style={{ color: 'var(--wp-text)' }}>{job.name}</strong>
+                    {locale === 'es' ? 'Vinculado a' : 'Linked to'} <strong style={{ color: 'var(--wp-text)' }}>{job.name}</strong>
                   </Link>
+                )}
+                {linkedInvoice && (
+                  <Link href={`/${locale}/invoices/${linkedInvoice.id}`} className="inline-flex items-center gap-1 text-xs" style={{ color: 'var(--wp-text-2)' }}>
+                    <FileText size={14} style={{ color: 'var(--wp-text-3)' }} />
+                    {locale === 'es' ? 'Convertido en' : 'Converted to'} <strong style={{ color: 'var(--wp-text)' }}>{linkedInvoice.number}</strong>
+                  </Link>
+                )}
+                {estimate.signatureDataUrl && (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full" style={{ background: 'var(--wp-success-bg-v2)', color: 'var(--wp-success-v2)' }}>
+                    ✓ {locale === 'es' ? 'Firmado' : 'Signed'}{estimate.signedByName ? ` ${locale === 'es' ? 'por' : 'by'} ${estimate.signedByName}` : ''}
+                    {estimate.signedAt && ` · ${new Date(estimate.signedAt).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US')}`}
+                  </span>
+                )}
+                {estimate.depositAmount && parseFloat(estimate.depositAmount) > 0 && (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full" style={{ background: estimate.depositPaid ? 'var(--wp-success-bg-v2)' : 'var(--wp-warning-bg-v2)', color: estimate.depositPaid ? 'var(--wp-success-v2)' : 'var(--wp-warning-v2)' }}>
+                    {locale === 'es' ? 'Depósito' : 'Deposit'} {estimate.depositType === 'percent' ? `${estimate.depositAmount}%` : `$${parseFloat(estimate.depositAmount).toFixed(2)}`}
+                    {estimate.depositPaid ? ` · ${locale === 'es' ? 'Pagado' : 'Paid'}${estimate.depositPaidAt ? ' ' + new Date(estimate.depositPaidAt).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US') : ''}` : ` · ${locale === 'es' ? 'Sin pagar' : 'Unpaid'}`}
+                  </span>
+                )}
+                {estimate.contractId && (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full" style={{ background: 'var(--wp-surface-2)', color: 'var(--wp-text-2)' }}>
+                    📎 {locale === 'es' ? 'Contrato adjunto' : 'Contract attached'}
+                  </span>
                 )}
               </div>
             </div>
@@ -514,7 +698,7 @@ export function EstimateDetailClient({ estimate, lineItems, job, viewCount = 0, 
                 </button>
               )}
               {(status === 'approved' || status === 'sent') && (
-                <button onClick={handleConvert} disabled={isPending || isConverting} className="btn-sm" style={{ background: 'var(--wp-purple)', color: 'white', borderRadius: 'var(--wp-radius-md)', padding: '0.375rem 0.75rem', fontWeight: 600, fontSize: '0.75rem' }}>
+                <button onClick={() => setShowConvertConfirm(true)} disabled={isPending || isConverting} className="btn-sm" style={{ background: 'var(--wp-purple)', color: 'var(--wp-text-inverse)', borderRadius: 'var(--wp-radius-md)', padding: '0.375rem 0.75rem', fontWeight: 600, fontSize: '0.75rem' }}>
                   {isConverting ? <><Loader2 size={14} className="animate-spin" /> Converting...</> : <><ArrowRight size={14} /> {t.convertToInvoice}</>}
                 </button>
               )}
@@ -557,7 +741,7 @@ export function EstimateDetailClient({ estimate, lineItems, job, viewCount = 0, 
                   </div>
                 </div>
                 {job && (
-                  <Link href={`/${locale}/jobs/${job.id}`} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold" style={{ background: 'var(--wp-surface-2)', color: 'var(--wp-brand)' }}>
+                  <Link href={`/${locale}/projects/${job.id}`} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold" style={{ background: 'var(--wp-surface-2)', color: 'var(--wp-brand)' }}>
                     <Briefcase size={12} /> {job.name} →
                   </Link>
                 )}
@@ -624,10 +808,12 @@ export function EstimateDetailClient({ estimate, lineItems, job, viewCount = 0, 
           <DetailSidebar>
             <TotalsCard
               label={locale === 'es' ? 'Total' : 'Total amount'}
-              total={`$${parseFloat(estimate.total).toFixed(2)}`}
+              total={`$${liveTotal.toFixed(2)}`}
               rows={[
-                { k: 'Subtotal', v: `$${parseFloat(estimate.subtotal).toFixed(2)}` },
-                { k: 'Tax', v: `$${parseFloat(estimate.tax).toFixed(2)}` },
+                { k: 'Subtotal', v: `$${liveSubtotal.toFixed(2)}` },
+                ...(liveMarkupAmount > 0 ? [{ k: `Markup (${estimate.markupPercent}%)`, v: `+$${liveMarkupAmount.toFixed(2)}` }] : []),
+                ...(liveDiscountAmount > 0 ? [{ k: 'Discount', v: `-$${liveDiscountAmount.toFixed(2)}` }] : []),
+                { k: 'Tax', v: `$${liveTax.toFixed(2)}` },
               ]}
             />
 

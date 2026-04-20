@@ -6,9 +6,11 @@ import { emailAdapter } from '@/lib/adapters/email'
 import { paymentsAdapter } from '@/lib/adapters/payments'
 import { invoiceSentEmail, invoicePaidEmail } from '@/lib/email-templates'
 import { calculateTax } from '@/lib/tax'
+import { recomputeAndPersistTotals } from '@/lib/services/totals'
 import { revalidatePath } from 'next/cache'
 import { invalidateUserData } from '@/lib/cache-tags'
 import type { LineItemInput } from '@/lib/adapters/db/types'
+import { parseDateOnly } from '@/lib/format'
 
 
 export async function getInvoices() {
@@ -69,7 +71,7 @@ export async function createInvoice(data: {
     subtotal: String(serverSubtotalRounded),
     tax: String(serverTax),
     total: String(serverTotal),
-    dueDate: data.dueDate ? new Date(data.dueDate) : null,
+    dueDate: parseDateOnly(data.dueDate),
     paidAt: null,
     notes: data.notes || null,
     stripePaymentIntentId: null,
@@ -79,6 +81,9 @@ export async function createInvoice(data: {
     autoGenerateInvoice: false,
     reminderSentAt: null,
   } as any, lineItems)
+
+  // TRV-001/002 — Recompute canonical totals from inserted line items
+  await recomputeAndPersistTotals('invoice', invoice.id).catch(() => null)
 
   revalidatePath('/[locale]/invoices', 'page')
   invalidateUserData(userId)
@@ -90,12 +95,21 @@ export async function createInvoicePaymentLink(id: string): Promise<{ url: strin
   const invoice = await dbAdapter.invoices.findById(id, userId)
   if (!invoice) throw new Error('Invoice not found')
 
+  // Stripe Connect: si el contractor tiene connected account con charges habilitados,
+  // el pago va DIRECTO a su cuenta (Direct Charge). Platform fee = 0%.
+  // Si no tiene Connect configurado, el pago cae al platform (fallback legacy).
+  const user = await dbAdapter.users.findById(userId)
+  const stripeAccount = user?.stripeAccountId && user?.stripeAccountChargesEnabled
+    ? user.stripeAccountId
+    : undefined
+
   const amountCents = Math.round(parseFloat(invoice.total) * 100)
   const { url } = await paymentsAdapter.createPaymentLink({
     amountCents,
     currency: 'usd',
     description: `Invoice ${invoice.number} — ${invoice.clientName}`,
     metadata: { invoiceId: invoice.id, userId },
+    stripeAccount,
   })
 
   // Mark as sent if still draft
@@ -106,6 +120,24 @@ export async function createInvoicePaymentLink(id: string): Promise<{ url: strin
   }
 
   return { url }
+}
+
+/**
+ * Ensure the invoice has a shareToken. Returns the portal URL.
+ * Unlike sendInvoiceToClient, no email required — contractor can share link via WhatsApp/SMS/etc.
+ */
+export async function ensureInvoiceShareToken(id: string): Promise<{ token: string; portalUrl: string }> {
+  const userId = await requireAuth()
+  const invoice = await dbAdapter.invoices.findById(id, userId)
+  if (!invoice) throw new Error('Invoice not found')
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://workpilot.mrlabs.io'
+  const token = invoice.shareToken ?? crypto.randomUUID()
+  if (!invoice.shareToken) {
+    await dbAdapter.invoices.update(id, userId, { shareToken: token })
+    revalidatePath('/[locale]/invoices/[id]', 'page')
+  }
+  return { token, portalUrl: `${appUrl}/en/portal/${token}` }
 }
 
 export async function sendInvoiceToClient(id: string): Promise<{ sent: boolean; error?: string }> {

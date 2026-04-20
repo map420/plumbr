@@ -216,13 +216,13 @@ export async function GET(req: NextRequest) {
 
         await emailAdapter.send({
           to: contractor.email,
-          subject: `⚠️ Job "${job.name}" completed ${daysSinceCompleted} days ago — no invoice sent`,
+          subject: `⚠️ Project "${job.name}" completed ${daysSinceCompleted} days ago — no invoice sent`,
           html: jobUnbilledEmail({
             contractorName,
             jobName: job.name,
             clientName: job.clientName,
             daysSinceCompleted,
-            appUrl: `${appUrl}/en/jobs/${job.id}`,
+            appUrl: `${appUrl}/en/projects/${job.id}`,
           }),
         }).catch(() => null)
         results.unbilledAlerts++

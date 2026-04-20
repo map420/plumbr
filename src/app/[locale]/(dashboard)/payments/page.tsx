@@ -2,7 +2,8 @@ import { requireUser } from '@/lib/actions/auth-helpers'
 import { dbAdapter } from '@/lib/adapters/db'
 import { PaymentsClient } from './_components/PaymentsClient'
 
-export default async function PaymentsPage() {
+export default async function PaymentsPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params
   const userId = await requireUser()
   const [invoices, estimates] = await Promise.all([
     dbAdapter.invoices.findAll(userId),
@@ -41,7 +42,7 @@ export default async function PaymentsPage() {
         monthRevenue={monthRevenue}
         winRate={winRate}
         monthInvoiceVolume={monthInvoiceVolume}
-        monthName={now.toLocaleDateString('en-US', { month: 'long' })}
+        monthName={now.toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { month: 'long' })}
       />
     </div>
   )

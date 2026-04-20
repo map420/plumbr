@@ -8,8 +8,9 @@ import { InvoiceDetailClient } from '../_components/InvoiceDetailClient'
 
 export default async function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const [ti, tc, te, invoice, lineItems, viewCount] = await Promise.all([
+  const [ti, tc, te, tp, invoice, lineItems, viewCount] = await Promise.all([
     getTranslations('invoices'), getTranslations('common'), getTranslations('estimates'),
+    getTranslations('print.button'),
     getInvoice(id), getInvoiceLineItems(id), getDocumentViewCount(id, 'invoice'),
   ])
   if (!invoice) notFound()
@@ -24,7 +25,7 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
       viewCount={viewCount} clientPhone={client?.phone ?? null}
       shareToken={invoice.shareToken ?? null}
       translations={{
-        back: tc('back'), markAsPaid: ti('markAsPaid'), print: 'Print',
+        back: tc('back'), markAsPaid: ti('markAsPaid'), print: tp('printPdf'),
         status: { draft: ti('status.draft'), sent: ti('status.sent'), paid: ti('status.paid'), overdue: ti('status.overdue'), cancelled: ti('status.cancelled') },
         fields: { clientName: ti('fields.clientName'), clientEmail: ti('fields.clientEmail'), dueDate: ti('fields.dueDate'), notes: ti('fields.notes'), subtotal: ti('fields.subtotal'), tax: ti('fields.tax'), total: ti('fields.total') },
         lineItems: {

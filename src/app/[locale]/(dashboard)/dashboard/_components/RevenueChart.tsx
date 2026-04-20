@@ -13,12 +13,12 @@ export default function RevenueChart({ data }: Props) {
         <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
         <YAxis hide />
         <Tooltip
-          formatter={(v: any, name: any) => [`$${Number(v).toLocaleString()}`, name === 'revenue' ? 'Actual' : 'Projected']}
+          formatter={(v: any, name: any) => [`$${Number(v).toLocaleString('en-US')}`, name === 'revenue' ? 'Actual' : 'Projected']}
           contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }}
         />
         <ReferenceLine x={data[5]?.month} stroke="var(--wp-border)" strokeDasharray="3 3" />
-        <Bar dataKey="revenue" fill="#1E3A5F" radius={[3, 3, 0, 0]} />
-        <Bar dataKey="projected" fill="#1E3A5F" fillOpacity={0.2} radius={[3, 3, 0, 0]} />
+        <Bar dataKey="revenue" fill="var(--wp-cta)" radius={[3, 3, 0, 0]} />
+        <Bar dataKey="projected" fill="var(--wp-cta)" fillOpacity={0.2} radius={[3, 3, 0, 0]} />
       </ComposedChart>
     </ResponsiveContainer>
   )

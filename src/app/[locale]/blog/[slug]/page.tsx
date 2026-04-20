@@ -68,13 +68,13 @@ export default async function BlogPostPage({ params }: Props) {
           <div className="max-w-3xl mx-auto px-6">
             <Link
               href={`/${locale}/blog`}
-              className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-[#1E3A5F] mb-6 transition-colors"
+              className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-navy-500 mb-6 transition-colors"
             >
               <ArrowLeft size={14} /> Back to blog
             </Link>
 
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-xs font-semibold bg-[#F97316]/10 text-[#F97316] px-2.5 py-1 rounded-full">
+              <span className="text-xs font-semibold bg-cta/10 text-cta px-2.5 py-1 rounded-full">
                 {post.category}
               </span>
               <span className="text-slate-400 text-xs flex items-center gap-1">
@@ -85,13 +85,13 @@ export default async function BlogPostPage({ params }: Props) {
               </span>
             </div>
 
-            <h1 className="text-3xl md:text-4xl font-extrabold text-[#1E3A5F] leading-tight mb-4">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-navy-500 leading-tight mb-4">
               {post.title}
             </h1>
             <p className="text-lg text-slate-500 leading-relaxed">{post.excerpt}</p>
 
             <div className="flex items-center gap-3 mt-6 pt-6 border-t border-slate-200">
-              <div className="w-9 h-9 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-sm font-bold">
+              <div className="w-9 h-9 rounded-full bg-navy-500 flex items-center justify-center text-white text-sm font-bold">
                 {post.author.initials}
               </div>
               <div>
@@ -107,13 +107,13 @@ export default async function BlogPostPage({ params }: Props) {
           <div className="max-w-3xl mx-auto px-6">
             <div
               className="prose prose-slate prose-lg max-w-none
-                prose-headings:font-extrabold prose-headings:text-[#1E3A5F]
+                prose-headings:font-extrabold prose-headings:text-navy-500
                 prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-4
                 prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3
                 prose-p:text-slate-600 prose-p:leading-relaxed
                 prose-li:text-slate-600
                 prose-strong:text-slate-900
-                prose-a:text-[#F97316] prose-a:no-underline hover:prose-a:underline
+                prose-a:text-cta prose-a:no-underline hover:prose-a:underline
                 prose-table:text-sm prose-th:bg-[#F8FAFC] prose-th:font-semibold"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
@@ -123,14 +123,14 @@ export default async function BlogPostPage({ params }: Props) {
         {/* CTA banner */}
         <section className="py-12 bg-[#F8FAFC] border-y border-slate-100">
           <div className="max-w-3xl mx-auto px-6">
-            <div className="bg-[#1E3A5F] rounded-2xl p-8 text-center">
+            <div className="bg-navy-500 rounded-2xl p-8 text-center">
               <h2 className="text-2xl font-extrabold text-white mb-2">
                 Try WorkPilot free for 14 days
               </h2>
               <p className="text-white/60 mb-6">Estimates, job costing, invoicing and crew scheduling — built for contractors.</p>
               <Link
                 href={`/${locale}/sign-up`}
-                className="inline-flex items-center gap-2 bg-[#F97316] text-white font-bold px-6 py-3 rounded-xl hover:bg-[#ea6c0a] transition-colors"
+                className="inline-flex items-center gap-2 bg-cta text-white font-bold px-6 py-3 rounded-xl hover:bg-cta-hover transition-colors"
               >
                 Start free trial — no credit card
               </Link>
@@ -142,7 +142,7 @@ export default async function BlogPostPage({ params }: Props) {
         {allPosts.length > 0 && (
           <section className="py-12 bg-white">
             <div className="max-w-3xl mx-auto px-6">
-              <h2 className="text-xl font-bold text-[#1E3A5F] mb-6">More from the blog</h2>
+              <h2 className="text-xl font-bold text-navy-500 mb-6">More from the blog</h2>
               <div className="space-y-4">
                 {allPosts.map(p => (
                   <Link
@@ -150,11 +150,11 @@ export default async function BlogPostPage({ params }: Props) {
                     href={`/${locale}/blog/${p.slug}`}
                     className="flex items-start gap-4 group p-4 rounded-xl hover:bg-[#F8FAFC] transition-colors"
                   >
-                    <span className="text-xs font-semibold bg-[#F97316]/10 text-[#F97316] px-2.5 py-1 rounded-full mt-0.5 shrink-0">
+                    <span className="text-xs font-semibold bg-cta/10 text-cta px-2.5 py-1 rounded-full mt-0.5 shrink-0">
                       {p.category}
                     </span>
                     <div>
-                      <h3 className="font-semibold text-slate-900 text-sm group-hover:text-[#F97316] transition-colors leading-snug">
+                      <h3 className="font-semibold text-slate-900 text-sm group-hover:text-cta transition-colors leading-snug">
                         {p.title}
                       </h3>
                       <span className="text-slate-400 text-xs">{p.readMinutes} min read</span>

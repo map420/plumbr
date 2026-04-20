@@ -22,8 +22,17 @@ function isSameLocalDay(a: Date, b: Date): boolean {
   )
 }
 
-export function isScheduledToday(job: { status: string; startDate: Date | null }): boolean {
+export function isScheduledToday(job: { status: string; startDate: Date | null; endDate?: Date | null }): boolean {
   if (!SCHEDULED_STATUSES.has(job.status)) return false
   if (!job.startDate) return false
-  return isSameLocalDay(new Date(job.startDate), new Date())
+  // D7 — Un job está "hoy" si empieza hoy, O si su rango [startDate..endDate] incluye hoy.
+  const today = new Date()
+  const start = new Date(job.startDate); start.setHours(0, 0, 0, 0)
+  if (isSameLocalDay(start, today)) return true
+  if (job.endDate) {
+    const end = new Date(job.endDate); end.setHours(23, 59, 59, 999)
+    const todayStart = new Date(today); todayStart.setHours(0, 0, 0, 0)
+    return todayStart >= start && todayStart <= end
+  }
+  return false
 }

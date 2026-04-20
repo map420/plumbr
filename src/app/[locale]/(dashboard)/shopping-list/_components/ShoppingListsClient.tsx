@@ -68,7 +68,7 @@ export function ShoppingListsClient({ lists }: { lists: ListWithStats[] }) {
           <p className="text-sm mt-1" style={{ color: 'var(--wp-text-2)' }}>
             {lists.length} {lists.length === 1 ? 'list' : 'lists'}
             {pendingCost > 0 && (
-              <>{' · '}<span style={{ color: 'var(--wp-warning-v2)', fontWeight: 500 }}>${pendingCost.toLocaleString()}</span> pending</>
+              <>{' · '}<span style={{ color: 'var(--wp-warning-v2)', fontWeight: 500 }}>${pendingCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> pending</>
             )}
           </p>
         </div>
@@ -81,15 +81,15 @@ export function ShoppingListsClient({ lists }: { lists: ListWithStats[] }) {
         <div className="hidden md:grid grid-cols-3 gap-2.5 mb-5">
           <KpiCard
             tone="info"
-            label="Active"
+            label={locale === 'es' ? 'Activas' : 'Active'}
             value={activeLists.length}
-            sub={activeLists.length > 0 ? 'Linked to jobs' : undefined}
+            sub={activeLists.length > 0 ? (locale === 'es' ? 'Vinculadas a jobs' : 'Linked to jobs') : undefined}
           />
           <KpiCard
             tone="warning"
             label="Total pending"
-            value={`$${pendingCost.toLocaleString()}`}
-            sub={`$${purchasedCost.toLocaleString()} already bought`}
+            value={`$${pendingCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            sub={`$${purchasedCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} already bought`}
           />
           <KpiCard
             tone="success"
@@ -129,7 +129,7 @@ export function ShoppingListsClient({ lists }: { lists: ListWithStats[] }) {
         <EmptyState
           icon={<ShoppingCart size={36} />}
           title={
-            tab === 'active' ? (locale === 'es' ? 'Sin listas activas vinculadas a un job.' : 'No active lists linked to a job.')
+            tab === 'active' ? (locale === 'es' ? 'Sin listas activas vinculadas a un proyecto.' : 'No active lists linked to a project.')
             : tab === 'drafts' ? (locale === 'es' ? 'Sin borradores.' : 'No drafts.')
             : (locale === 'es' ? 'Sin listas completadas.' : 'No completed lists.')
           }
@@ -177,7 +177,7 @@ function ListCard({ list, locale }: { list: ListWithStats; locale: string }) {
             }} />
           </div>
           <span className="text-xs font-medium shrink-0 tabular-nums" style={{ color: 'var(--wp-text-3)' }}>
-            ${list.purchasedCost.toLocaleString()} / ${list.totalCost.toLocaleString()}
+            ${list.purchasedCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / ${list.totalCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
         </div>
       </div>

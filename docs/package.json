@@ -1,0 +1,14 @@
+{
+  "name": "workpilot-docs",
+  "version": "1.0.0",
+  "description": "Documentos gerenciales de WorkPilot — generación PDF desde HTML",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "generate": "node generate-pdfs.mjs",
+    "watch": "node generate-pdfs.mjs --watch"
+  },
+  "dependencies": {
+    "puppeteer": "^23.0.0"
+  }
+}

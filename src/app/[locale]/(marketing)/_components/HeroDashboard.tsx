@@ -28,7 +28,7 @@ export function HeroDashboard() {
         {/* Dashboard UI mockup */}
         <div className="bg-[#F8FAFC] flex" style={{ minHeight: '320px' }}>
           {/* Sidebar */}
-          <div className="w-14 bg-[#1E3A5F] flex flex-col items-center py-4 gap-4 shrink-0">
+          <div className="w-14 bg-navy-500 flex flex-col items-center py-4 gap-4 shrink-0">
             {['🔧', '📋', '🧾', '📅', '👥', '💰'].map((icon, i) => (
               <div
                 key={i}
@@ -47,14 +47,14 @@ export function HeroDashboard() {
                 <div className="h-3 w-32 bg-slate-800 rounded-full opacity-80 mb-1" />
                 <div className="h-2 w-24 bg-slate-400 rounded-full opacity-40" />
               </div>
-              <div className="h-7 w-24 bg-[#F97316] rounded-lg opacity-90" />
+              <div className="h-7 w-24 bg-cta rounded-lg opacity-90" />
             </div>
 
             {/* KPI cards */}
             <div className="grid grid-cols-4 gap-2">
               {[
                 { label: 'Active Jobs', val: '12', color: 'text-blue-600' },
-                { label: 'Open Estimates', val: '7', color: 'text-orange-500' },
+                { label: 'Open Estimates', val: '7', color: 'text-cta' },
                 { label: 'Revenue', val: '$24k', color: 'text-green-600' },
                 { label: 'Avg Margin', val: '38%', color: 'text-purple-600' },
               ].map(card => (
@@ -77,7 +77,7 @@ export function HeroDashboard() {
                         className="rounded-t-sm"
                         style={{
                           height: `${h}%`,
-                          backgroundColor: i === 5 ? '#F97316' : '#1E3A5F',
+                          backgroundColor: i === 5 ? 'var(--wp-cta)' : 'var(--wp-navy-500)',
                           opacity: i === 5 ? 1 : 0.5 + i * 0.08,
                         }}
                       />
@@ -114,7 +114,7 @@ export function HeroDashboard() {
       </div>
 
       {/* Glow */}
-      <div className="absolute -inset-4 bg-[#F97316]/10 blur-3xl rounded-full -z-10 opacity-60" />
+      <div className="absolute -inset-4 bg-cta/10 blur-3xl rounded-full -z-10 opacity-60" />
     </div>
   )
 }

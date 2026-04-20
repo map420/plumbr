@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Análisis de Riesgos — WorkPilot</title>
+  <link rel="stylesheet" href="_styles.css">
+</head>
+<body>
+
+  <div class="cover">
+    <div class="cover-header">
+      <div class="cover-logo"><span class="cover-logo-mark">W</span>WorkPilot</div>
+      <span class="cover-badge">Confidencial · Uso interno</span>
+    </div>
+    <div class="cover-body">
+      <div class="cover-kicker">DOCUMENTO DE RIESGOS · 07</div>
+      <h1 class="cover-title">Análisis de Riesgos</h1>
+      <p class="cover-subtitle">SWOT, moats, señales de churn y plan de contingencia. Qué puede matarnos y qué nos protege.</p>
+    </div>
+    <div class="cover-footer">
+      <div class="cover-meta">
+        <span><strong>Versión</strong> 1.0</span>
+        <span><strong>Fecha</strong> Abril 2026</span>
+      </div>
+      <div class="cover-meta" style="text-align: right;">
+        <span><strong>Audiencia</strong> Founders · Board · Leadership</span>
+        <span>workpilot.io</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <nav class="toc">
+      <h2>Tabla de contenidos</h2>
+      <ul class="toc-list">
+        <li><span class="toc-title">1. Análisis SWOT</span><span class="toc-page">3</span></li>
+        <li><span class="toc-title">2. Moats y defensibilidad</span><span class="toc-page">5</span></li>
+        <li><span class="toc-title">3. Riesgos de churn: 7 señales</span><span class="toc-page">7</span></li>
+        <li><span class="toc-title">4. Matriz de riesgos (prob × impacto)</span><span class="toc-page">9</span></li>
+        <li><span class="toc-title">5. Dependencias críticas externas</span><span class="toc-page">11</span></li>
+        <li><span class="toc-title">6. Plan de contingencia por proveedor</span><span class="toc-page">12</span></li>
+        <li><span class="toc-title">7. Recomendaciones</span><span class="toc-page">14</span></li>
+      </ul>
+    </nav>
+
+    <section>
+      <h2>1. Análisis SWOT</h2>
+
+      <p>Mirada honesta y accionable del estado competitivo de WorkPilot en este momento.</p>
+
+      <div class="swot-matrix">
+        <div class="swot-cell strengths">
+          <h4>S · Fortalezas <span style="font-size: 9pt; font-weight: 400; opacity: 0.7;">(internas, +)</span></h4>
+          <ul>
+            <li><strong>AI ejecutivo único</strong> con 37 tools operativas</li>
+            <li>Producto <strong>bilingüe nativo</strong> ES/EN</li>
+            <li>Precio agresivo <span class="amount">$29/mes</span> + plan gratis</li>
+            <li><strong>PWA offline-first</strong> para campo</li>
+            <li>Shopping List integrada con expenses (feature única)</li>
+            <li>Stack moderno serverless (velocidad de iteración)</li>
+            <li>Equipo lean con conocimiento profundo de dominio</li>
+          </ul>
+        </div>
+
+        <div class="swot-cell weaknesses">
+          <h4>W · Debilidades <span style="font-size: 9pt; font-weight: 400; opacity: 0.7;">(internas, −)</span></h4>
+          <ul>
+            <li><strong>Scheduling básico</strong> vs Jobber/HCP</li>
+            <li>QuickBooks sync incompleto</li>
+            <li>Sin mobile nativo (solo PWA)</li>
+            <li>Sin GPS ni inventory management</li>
+            <li>Reporting avanzado limitado</li>
+            <li>Marca poco conocida, baja search intent</li>
+            <li>Equipo pequeño — capacidad limitada</li>
+            <li>Métricas internas aún no instrumentadas</li>
+          </ul>
+        </div>
+
+        <div class="swot-cell opportunities">
+          <h4>O · Oportunidades <span style="font-size: 9pt; font-weight: 400; opacity: 0.7;">(externas, +)</span></h4>
+          <ul>
+            <li><strong>LATAM</strong> sin competidor serio (arbitraje regional)</li>
+            <li>Contratistas hispanohablantes en US (30%+ del mercado)</li>
+            <li>AI adoption masiva post 2024 — timing perfecto</li>
+            <li>Labor shortage contratistas → demanda de eficiencia</li>
+            <li>FieldEdge con base insatisfecha (disruption)</li>
+            <li>Consumer financing en servicios residenciales</li>
+            <li>Marketplace de proveedores locales (Home Depot, etc.)</li>
+          </ul>
+        </div>
+
+        <div class="swot-cell threats">
+          <h4>T · Amenazas <span style="font-size: 9pt; font-weight: 400; opacity: 0.7;">(externas, −)</span></h4>
+          <ul>
+            <li><strong>Jobber agrega AI serio</strong> (beta 2025)</li>
+            <li>ServiceTitan SMB-down attack</li>
+            <li>Nuevos entrants AI-native con más capital</li>
+            <li>Anthropic pricing / rate limits</li>
+            <li>Regulaciones de AI en EU/US (compliance costs)</li>
+            <li>Recesión económica → contratistas pospone digitalizar</li>
+            <li>Stripe / Clerk cambios que nos afecten</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Cruces SWOT accionables</h3>
+      <table>
+        <thead><tr><th>Estrategia</th><th>Cruce</th><th>Acción concreta</th></tr></thead>
+        <tbody>
+          <tr><td><strong>SO</strong> (Strength × Opportunity)</td><td>Bilingüe + LATAM</td><td>Launch México/Colombia/Argentina Q3 2026</td></tr>
+          <tr><td><strong>SO</strong></td><td>AI ejecutivo + AI adoption</td><td>Marketing agresivo "el único AI que opera" Q2</td></tr>
+          <tr><td><strong>WO</strong> (Weakness × Opportunity)</td><td>Scheduling débil + labor shortage</td><td>Cerrar gap scheduling antes de LATAM launch</td></tr>
+          <tr><td><strong>ST</strong> (Strength × Threat)</td><td>Moats bilingüe + Jobber AI</td><td>Accelerar localización LATAM antes que Jobber reaccione</td></tr>
+          <tr><td><strong>WT</strong> (Weakness × Threat)</td><td>QBO incompleto + ServiceTitan</td><td>Completar QBO sync Q2 o perdemos deals grandes</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="page-break">
+      <h2>2. Moats y defensibilidad</h2>
+
+      <p>¿Qué protege a WorkPilot de que un cliente se vaya o un nuevo competidor nos reemplace? Cinco moats en orden de fortaleza.</p>
+
+      <h3>Moat #1 · Datos históricos del negocio <span class="pill success">Alta defensibilidad</span></h3>
+      <p>Cada job, estimate, invoice, expense, cliente, foto queda en WorkPilot. Un contratista con 2 años en la plataforma tiene ~500 jobs, ~800 estimates, ~200 clientes y archivos digitales.</p>
+      <ul>
+        <li><strong>Costo de cambiar:</strong> días/semanas de migración con riesgo de pérdida</li>
+        <li><strong>Escala con tiempo:</strong> moat más fuerte con cada mes de uso</li>
+        <li><strong>Protección:</strong> permitir export cómodo (data portability) — paradójicamente aumenta confianza y retención</li>
+      </ul>
+
+      <h3>Moat #2 · AI aprendido con preferencias <span class="pill success">Alta defensibilidad</span></h3>
+      <p>La tabla <code>ai_preferences</code> guarda patrones del contratista: tasas mano de obra, zonas con precios distintos, proveedores frecuentes, descuentos por cliente. Cuantas más interacciones, mejor responde el AI.</p>
+      <ul>
+        <li><strong>Único:</strong> ningún competidor tiene esto (ni arquitectura para replicarlo rápido)</li>
+        <li><strong>Non-transferable:</strong> no se puede exportar a otra plataforma</li>
+        <li><strong>Protección:</strong> hacer visible al user cuánto "sabe" su AI (UI que muestre preferencias aprendidas)</li>
+      </ul>
+
+      <h3>Moat #3 · Catalog entrenado <span class="pill warning">Media defensibilidad</span></h3>
+      <p>Un contratista con 200 catalog items (labor + material pre-cargados) cotiza 5x más rápido. Rehacer ese catálogo en otra plataforma toma semanas.</p>
+
+      <h3>Moat #4 · Integraciones activas <span class="pill warning">Media defensibilidad</span></h3>
+      <p>QuickBooks conectado, Stripe Connect configurado, tokens de portal en cientos de clientes del contratista. Cambiar de plataforma implica reconfigurar todo.</p>
+
+      <h3>Moat #5 · Network effects potenciales <span class="pill neutral">Baja hoy, alta futura</span></h3>
+      <p>Cada estimate aprobado por portal nos da data de conversion. Futuro marketplace de técnicos + proveedores = effect directo entre participantes.</p>
+
+      <div class="callout warning">
+        <span class="callout-label">Moats que NO tenemos</span>
+        <div class="callout-body">
+          (1) Hardware lock-in — no usamos dispositivos propietarios. (2) Network effects directos entre contratistas — uno no depende de otro estar en la plataforma. (3) Brand dominante aún — estamos construyendo awareness. Estos son moats clase A que competidores como ServiceTitan sí empiezan a tener.
+        </div>
+      </div>
+
+      <h3>Cómo fortalecer moats existentes</h3>
+      <table class="compact">
+        <thead><tr><th>Moat</th><th>Acción para fortalecer</th></tr></thead>
+        <tbody>
+          <tr><td>Datos históricos</td><td>Features que dependan de histórico (ej: "tu margen vs año pasado")</td></tr>
+          <tr><td>AI preferences</td><td>Más tools con aprendizaje; mostrar valor visible</td></tr>
+          <tr><td>Catalog</td><td>Sync con catálogos de Home Depot API (auto-import)</td></tr>
+          <tr><td>Integraciones</td><td>QBO completo + Stripe Connect + hipotéticos Mercado Pago/OXXO</td></tr>
+          <tr><td>Network effects</td><td>Marketplace técnicos freelance con certificación</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="page-break">
+      <h2>3. Riesgos de churn: 7 señales tempranas</h2>
+
+      <p>Churn es la métrica que define si el negocio es sostenible. Detectar señales tempranas permite intervenir antes de que el user cancele.</p>
+
+      <table>
+        <thead><tr><th>#</th><th>Señal</th><th>Umbral de alerta</th><th>Acción sugerida</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td><strong>Baja actividad de estimates</strong></td>
+            <td>&lt; 2 estimates en último mes</td>
+            <td>Email: "¿Todo bien? Recordatorio de valor + link a plantillas"</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td><strong>Portal cliente nunca usado</strong></td>
+            <td>0 portal views en 30 días con estimates &gt; 1</td>
+            <td>Tutorial: "Tus clientes no están viendo tus cotizaciones"</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td><strong>AI nunca usado</strong></td>
+            <td>0 mensajes al AI en 30 días</td>
+            <td>Email con caso de uso + video 60s demo</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td><strong>No invitó técnicos</strong></td>
+            <td>User Pro con 0 técnicos a 30 días</td>
+            <td>Nudge: "Invitá un técnico y desbloqueá feature X"</td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td><strong>Sin expenses registrados</strong></td>
+            <td>0 expenses en 30 días</td>
+            <td>Email: "No estás viendo tu profit real"</td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td><strong>Sin invoices enviados</strong></td>
+            <td>0 invoices sent en 45 días</td>
+            <td>Alerta crítica: user no está facturando desde plataforma</td>
+          </tr>
+          <tr>
+            <td>7</td>
+            <td><strong>Último login &gt; 14 días</strong></td>
+            <td>No abre app en 2 semanas</td>
+            <td>Win-back email: "Te extrañamos" + oferta</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Score de riesgo de churn</h3>
+      <p>Cada señal suma puntos. Score total define la acción:</p>
+      <table class="compact">
+        <thead><tr><th>Score</th><th>Nivel</th><th>Acción automática</th></tr></thead>
+        <tbody>
+          <tr><td>0–2 señales</td><td><span class="pill success">Healthy</span></td><td>Ninguna</td></tr>
+          <tr><td>3 señales</td><td><span class="pill warning">At risk</span></td><td>Email drip de reengagement</td></tr>
+          <tr><td>4–5 señales</td><td><span class="pill error">High risk</span></td><td>Email + in-app modal + CS outreach</td></tr>
+          <tr><td>6+ señales</td><td><span class="pill error">Churn inminente</span></td><td>Customer success call en &lt; 48 hs</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout insight">
+        <span class="callout-label">Valor del score</span>
+        <div class="callout-body">
+          Churn reactivo (cuando el user cancela, es tarde) es 10x peor que churn proactivo (detectamos y actuamos). El score debe correr diariamente como job en el cron, y los users high risk ser parte del dashboard de Customer Success.
+        </div>
+      </div>
+    </section>
+
+    <section class="page-break">
+      <h2>4. Matriz de riesgos: probabilidad × impacto</h2>
+
+      <p>17 riesgos identificados, evaluados en probabilidad (1–5) × impacto (1–5). Score total indica prioridad de mitigación.</p>
+
+      <h3>Riesgos críticos (score ≥ 16)</h3>
+      <table>
+        <thead><tr><th>#</th><th>Riesgo</th><th>Prob</th><th>Imp</th><th>Score</th><th>Mitigación</th></tr></thead>
+        <tbody>
+          <tr><td>R1</td><td>Jobber cierra gap AI en 12 meses</td><td>4</td><td>5</td><td><strong>20</strong></td><td>Acelerar AI roadmap; vision + agente autónomo</td></tr>
+          <tr><td>R2</td><td>Churn excede 8% mensual</td><td>3</td><td>5</td><td><strong>15</strong></td><td>Score de riesgo + CS proactivo</td></tr>
+          <tr><td>R3</td><td>Anthropic sube precios 2x+</td><td>3</td><td>4</td><td><strong>12</strong></td><td>Haiku default; fallback multi-modelo</td></tr>
+          <tr><td>R4</td><td>Activation &lt; 40% crónico</td><td>3</td><td>4</td><td><strong>12</strong></td><td>Onboarding guiado P0</td></tr>
+          <tr><td>R5</td><td>Stripe account frozen</td><td>2</td><td>5</td><td>10</td><td>Stripe Connect multi-account; alt PSPs</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Riesgos moderados (score 8–15)</h3>
+      <table class="compact">
+        <thead><tr><th>#</th><th>Riesgo</th><th>Prob</th><th>Imp</th><th>Score</th></tr></thead>
+        <tbody>
+          <tr><td>R6</td><td>ServiceTitan lanza SMB tier a $99</td><td>3</td><td>3</td><td>9</td></tr>
+          <tr><td>R7</td><td>Regulación de AI compliance costosa</td><td>2</td><td>4</td><td>8</td></tr>
+          <tr><td>R8</td><td>Supabase pricing changes</td><td>2</td><td>4</td><td>8</td></tr>
+          <tr><td>R9</td><td>AI alucina acción con impacto económico</td><td>3</td><td>4</td><td>12</td></tr>
+          <tr><td>R10</td><td>Stripe Connect LATAM no disponible</td><td>4</td><td>2</td><td>8</td></tr>
+          <tr><td>R11</td><td>PWA no reconocida en App Store crea objeción</td><td>3</td><td>3</td><td>9</td></tr>
+          <tr><td>R12</td><td>Competidor AI-native con más capital</td><td>2</td><td>4</td><td>8</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Riesgos bajos (score &lt; 8, monitoring only)</h3>
+      <table class="compact">
+        <thead><tr><th>#</th><th>Riesgo</th><th>Prob</th><th>Imp</th><th>Score</th></tr></thead>
+        <tbody>
+          <tr><td>R13</td><td>Resend incidente grave deliverability</td><td>2</td><td>3</td><td>6</td></tr>
+          <tr><td>R14</td><td>Clerk cambia pricing tier bajo nuestros pies</td><td>2</td><td>3</td><td>6</td></tr>
+          <tr><td>R15</td><td>Vercel cambia free tier / costo edge</td><td>2</td><td>3</td><td>6</td></tr>
+          <tr><td>R16</td><td>ElevenLabs se cae / limita voice</td><td>2</td><td>2</td><td>4</td></tr>
+          <tr><td>R17</td><td>Recesión afecta dispositión a digitalizar</td><td>3</td><td>2</td><td>6</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout critical">
+        <span class="callout-label">Top 3 a mitigar YA</span>
+        <div class="callout-body">
+          <strong>R1 (Jobber AI)</strong>, <strong>R2 (churn)</strong> y <strong>R4 (activation)</strong> son los riesgos con mayor score y todos son controlables. El plan de los próximos 90 días debe atacar estos tres simultáneamente: AI aggressive roadmap + CS proactivo + onboarding.
+        </div>
+      </div>
+    </section>
+
+    <section class="page-break">
+      <h2>5. Dependencias críticas externas</h2>
+
+      <p>Nueve proveedores externos cuya falla o cambio impacta operación. Clasificados por criticidad.</p>
+
+      <table>
+        <thead><tr><th>Proveedor</th><th>Función</th><th>Criticidad</th><th>Alternativa</th></tr></thead>
+        <tbody>
+          <tr><td>Supabase</td><td>PostgreSQL + Storage</td><td><span class="pill error">Crítica</span></td><td>Self-host Postgres + S3; costly migration</td></tr>
+          <tr><td>Vercel</td><td>Hosting + Edge + Cron</td><td><span class="pill error">Crítica</span></td><td>Cloudflare Pages, Netlify, AWS Amplify</td></tr>
+          <tr><td>Clerk</td><td>Auth + SSO</td><td><span class="pill error">Crítica</span></td><td>Auth.js, custom con Supabase Auth</td></tr>
+          <tr><td>Stripe</td><td>Subscripciones + pagos cliente</td><td><span class="pill error">Crítica</span></td><td>Paddle (subs); dLocal (LATAM pagos)</td></tr>
+          <tr><td>Anthropic</td><td>Claude API (AI)</td><td><span class="pill warning">Alta</span></td><td>OpenAI GPT-4, Google Gemini</td></tr>
+          <tr><td>Resend</td><td>Transactional email</td><td><span class="pill warning">Alta</span></td><td>Postmark, SES, Sendgrid</td></tr>
+          <tr><td>ElevenLabs</td><td>Voice (TTS/STT)</td><td><span class="pill neutral">Media</span></td><td>speechSynthesis nativo browser</td></tr>
+          <tr><td>Svix</td><td>Webhook relay</td><td><span class="pill neutral">Baja</span></td><td>Webhooks directos</td></tr>
+          <tr><td>QuickBooks</td><td>OAuth integration</td><td><span class="pill neutral">Baja</span></td><td>Feature opcional; skippable si falla</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Arquitectura de mitigación</h3>
+      <p>Todos los proveedores críticos están detrás de un <code>adapter pattern</code> en <code>src/lib/adapters/</code>:</p>
+      <ul>
+        <li><code>db/</code> — abstrae Supabase/Postgres. Swappeable a otro Postgres.</li>
+        <li><code>email/</code> — abstrae Resend. Swappeable a Postmark/SES.</li>
+        <li><code>storage/</code> — abstrae Supabase Storage. Swappeable a S3.</li>
+      </ul>
+      <p>Esto reduce vendor lock-in técnico. El lock-in operacional (data, cuentas, integraciones del cliente) es más difícil de mover rápido.</p>
+    </section>
+
+    <section class="page-break">
+      <h2>6. Plan de contingencia por proveedor</h2>
+
+      <h3>Escenario: Supabase falla o sube precio 3x</h3>
+      <p><strong>Plazo de respuesta:</strong> 48–96 horas para migrar a Postgres self-hosted.</p>
+      <ul>
+        <li>Backup diario automático en S3 (ya configurado)</li>
+        <li>Drizzle ORM es agnóstico al provider Postgres</li>
+        <li>Tiempo de migración estimado: 2–3 días (incluyendo Storage)</li>
+        <li>Downtime esperado: 2–4 horas en ventana low-traffic</li>
+      </ul>
+
+      <h3>Escenario: Anthropic outage / rate limit severo</h3>
+      <p><strong>Plazo de respuesta:</strong> inmediato con auto-fallback.</p>
+      <ul>
+        <li>Haiku fallback ya implementado (si Sonnet falla)</li>
+        <li>Retry con backoff exponencial</li>
+        <li>UI muestra modo degradado si AI no disponible (resto de app funciona)</li>
+        <li>Plan B: swap a OpenAI GPT-4o en 1–2 días (tools definitions compatibles con pequeñas modificaciones)</li>
+      </ul>
+
+      <h3>Escenario: Stripe account frozen</h3>
+      <p><strong>Plazo de respuesta:</strong> crítico — afecta revenue y pagos de clientes.</p>
+      <ul>
+        <li>Stripe Connect: nuestra cuenta separada de cuentas de clientes</li>
+        <li>Subscripciones: pausa nuevos pagos, grandfather existentes hasta resolver</li>
+        <li>Paddle account pre-configurada como backup (no requiere live traffic)</li>
+        <li>LATAM: dLocal / Mercado Pago como alternativas regionales</li>
+      </ul>
+
+      <h3>Escenario: Clerk sube precios 5x</h3>
+      <p><strong>Plazo de respuesta:</strong> 1–2 semanas para migrar auth.</p>
+      <ul>
+        <li>Tabla <code>users</code> propia con Clerk ID linkeada (no perdemos datos)</li>
+        <li>Migration path: Auth.js con Supabase Auth</li>
+        <li>Usuarios no notan el cambio si hacemos transparent migration</li>
+      </ul>
+
+      <div class="callout insight">
+        <span class="callout-label">Disciplina de contingencia</span>
+        <div class="callout-body">
+          Cada 6 meses, hacer un <strong>"disaster recovery drill"</strong>: simular que un proveedor crítico falla y cronometrar cuánto tarda el equipo en activar plan B. Si tarda más del plazo comprometido, mejorar automation o runbook.
+        </div>
+      </div>
+    </section>
+
+    <section class="page-break">
+      <h2>7. Recomendaciones</h2>
+
+      <div class="recommendations">
+        <h3>Ocho acciones para reducir riesgo sistémico</h3>
+        <ol>
+          <li><strong>Implementar score de churn.</strong> Job diario que calcule señales por user y alimente dashboard de CS. Inversión: 1 semana. ROI: reducción de churn 20%+.</li>
+          <li><strong>Onboarding guiado a P0.</strong> Mitigación directa del riesgo R4. Meta: activation rate &gt; 60%.</li>
+          <li><strong>Disaster recovery drill cada 6 meses.</strong> Probar plan B de cada proveedor crítico. Identificar runbooks que fallan.</li>
+          <li><strong>Instrumentar AI cost caps por usuario.</strong> Evita que un user malicioso drene margen. Alert si excede $5/mes.</li>
+          <li><strong>Diversificar email provider.</strong> Configurar Postmark como hot-standby. Switchear en 1 hora si Resend falla.</li>
+          <li><strong>Exportación de datos automática.</strong> User puede descargar su data completa en 1 click. Esto paradójicamente reduce churn (confianza).</li>
+          <li><strong>Marketing agresivo de AI.</strong> Aprovechar ventana antes de Jobber AI producción. Cada mes ganado vale meses de ventaja futura.</li>
+          <li><strong>Revisar matriz de riesgos trimestralmente.</strong> Scores cambian con contexto. Board review obligatoria.</li>
+        </ol>
+      </div>
+    </section>
+  </div>
+
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#1E3A5F',
+        primaryTextColor: '#ffffff',
+        primaryBorderColor: '#0F2440',
+        lineColor: '#64748B',
+        secondaryColor: '#3B82F6',
+        tertiaryColor: '#F1F5F9',
+        fontFamily: 'Inter, sans-serif',
+      },
+    });
+    await mermaid.run();
+    window.mermaid_ready = true;
+  </script>
+</body>
+</html>

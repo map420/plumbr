@@ -59,7 +59,7 @@ export function PhotoUploader({ jobId, estimateId, lineItemId, maxPhotos = 4, on
         type="button"
         onClick={() => fileRef.current?.click()}
         disabled={uploading}
-        className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-50"
+        className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded border border-border text-muted-foreground hover:bg-muted disabled:opacity-50"
       >
         {uploading ? <Loader2 size={12} className="animate-spin" /> : <Camera size={12} />}
         {uploading ? 'Uploading...' : 'Upload Photos'}

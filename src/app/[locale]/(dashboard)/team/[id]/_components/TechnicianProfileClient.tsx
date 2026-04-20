@@ -8,7 +8,15 @@ import { useRouter } from 'next/navigation'
 import { Mail, Phone, DollarSign, Clock, ArrowLeft, Briefcase, Edit2, Check, X } from 'lucide-react'
 import { updateTechnician } from '@/lib/actions/technicians'
 
-type Technician = { id: string; name: string; email: string; phone: string | null; hourlyRate: string | null }
+type Technician = {
+  id: string; name: string; email: string; phone: string | null; hourlyRate: string | null
+  type?: 'employee' | 'subcontractor'
+  role?: string | null
+  tier?: string | null
+  rating?: string | null
+  availabilityStatus?: 'available' | 'busy' | 'off' | null
+  availabilityNote?: string | null
+}
 type Expense = { id: string; jobId: string; description: string; type: string; amount: string; date: Date; hours: string | null; ratePerHour: string | null }
 type Job = { id: string; name: string; clientName: string }
 
@@ -28,13 +36,33 @@ export function TechnicianProfileClient({ technician, laborExpenses, jobs, local
   const [rateValue, setRateValue] = useState(technician.hourlyRate ?? '')
   const [currentRate, setCurrentRate] = useState(technician.hourlyRate)
   const [editingProfile, setEditingProfile] = useState(false)
-  const [profileForm, setProfileForm] = useState({ name: technician.name, email: technician.email, phone: technician.phone ?? '' })
+  const [profileForm, setProfileForm] = useState({
+    name: technician.name,
+    email: technician.email,
+    phone: technician.phone ?? '',
+    type: (technician.type ?? 'employee') as 'employee' | 'subcontractor',
+    role: technician.role ?? '',
+    tier: technician.tier ?? '',
+    rating: technician.rating ?? '',
+    availabilityStatus: (technician.availabilityStatus ?? '') as '' | 'available' | 'busy' | 'off',
+    availabilityNote: technician.availabilityNote ?? '',
+  })
   const [isPending, startTransition] = useTransition()
 
   function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault()
     startTransition(async () => {
-      await updateTechnician(technician.id, { name: profileForm.name, email: profileForm.email, phone: profileForm.phone || undefined })
+      await updateTechnician(technician.id, {
+        name: profileForm.name,
+        email: profileForm.email,
+        phone: profileForm.phone,
+        type: profileForm.type,
+        role: profileForm.role,
+        tier: profileForm.tier,
+        rating: profileForm.rating,
+        availabilityStatus: profileForm.availabilityStatus || null,
+        availabilityNote: profileForm.availabilityNote,
+      })
       setEditingProfile(false)
       router.refresh()
     })
@@ -42,7 +70,7 @@ export function TechnicianProfileClient({ technician, laborExpenses, jobs, local
 
   function handleSaveRate() {
     startTransition(async () => {
-      await updateTechnician(technician.id, { hourlyRate: rateValue || undefined })
+      await updateTechnician(technician.id, { hourlyRate: rateValue })
       setCurrentRate(rateValue || null)
       setEditingRate(false)
     })
@@ -50,11 +78,14 @@ export function TechnicianProfileClient({ technician, laborExpenses, jobs, local
 
   const jobMap = Object.fromEntries(jobs.map(j => [j.id, j]))
 
-  const totalHours = laborExpenses.reduce((s, e) => s + parseFloat(e.hours ?? '0'), 0)
-  const totalCost = laborExpenses.reduce((s, e) => s + parseFloat(e.amount), 0)
+  // A5 — excluir expenses con fecha futura (proyecciones, no gasto real).
+  const nowMs = Date.now()
+  const actualLabor = laborExpenses.filter(e => !e.date || new Date(e.date).getTime() <= nowMs)
+  const totalHours = actualLabor.reduce((s, e) => s + parseFloat(e.hours ?? '0'), 0)
+  const totalCost = actualLabor.reduce((s, e) => s + parseFloat(e.amount), 0)
 
   const monthStart = startOfMonth()
-  const monthExpenses = laborExpenses.filter(e => new Date(e.date) >= monthStart)
+  const monthExpenses = actualLabor.filter(e => new Date(e.date) >= monthStart)
   const monthHours = monthExpenses.reduce((s, e) => s + parseFloat(e.hours ?? '0'), 0)
   const monthCost = monthExpenses.reduce((s, e) => s + parseFloat(e.amount), 0)
 
@@ -97,10 +128,10 @@ export function TechnicianProfileClient({ technician, laborExpenses, jobs, local
                       autoFocus
                     />
                     <span className="text-xs" style={{ color: 'var(--wp-text-muted)' }}>/hr</span>
-                    <button onClick={handleSaveRate} disabled={isPending} className="p-1 text-emerald-600 hover:text-emerald-700">
+                    <button onClick={handleSaveRate} disabled={isPending} className="p-1 text-emerald-600 hover:text-emerald-700" aria-label="Save rate">
                       <Check size={14} />
                     </button>
-                    <button onClick={() => { setEditingRate(false); setRateValue(currentRate ?? '') }} className="p-1" style={{ color: 'var(--wp-text-muted)' }}>
+                    <button onClick={() => { setEditingRate(false); setRateValue(currentRate ?? '') }} className="p-1" style={{ color: 'var(--wp-text-muted)' }} aria-label="Cancel edit">
                       <X size={14} />
                     </button>
                   </div>
@@ -129,6 +160,17 @@ export function TechnicianProfileClient({ technician, laborExpenses, jobs, local
       {editingProfile && (
         <form onSubmit={handleSaveProfile} className="card p-5 mb-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" style={{ color: 'var(--wp-text-muted)' }}>
+            <div className="sm:col-span-2">
+              <label className="text-xs font-medium mb-1 block">Type</label>
+              <select
+                value={profileForm.type}
+                onChange={e => setProfileForm(f => ({ ...f, type: e.target.value as 'employee' | 'subcontractor' }))}
+                className="input w-full"
+              >
+                <option value="employee">Employee</option>
+                <option value="subcontractor">Subcontractor</option>
+              </select>
+            </div>
             <div>
               <label className="text-xs font-medium mb-1 block">Name *</label>
               <input required value={profileForm.name} onChange={e => setProfileForm(f => ({ ...f, name: e.target.value }))} className="input" />
@@ -140,6 +182,45 @@ export function TechnicianProfileClient({ technician, laborExpenses, jobs, local
             <div>
               <label className="text-xs font-medium mb-1 block">Phone</label>
               <input value={profileForm.phone} onChange={e => setProfileForm(f => ({ ...f, phone: e.target.value }))} className="input" placeholder="(555) 000-0000" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block">Role</label>
+              <select
+                value={profileForm.role}
+                onChange={e => setProfileForm(f => ({ ...f, role: e.target.value }))}
+                className="input w-full"
+              >
+                <option value="">—</option>
+                <option value="Owner">Owner</option>
+                <option value="Technician">Technician</option>
+                <option value="Apprentice">Apprentice</option>
+                <option value="Subcontractor">Subcontractor</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block">Tier / Label</label>
+              <input value={profileForm.tier} onChange={e => setProfileForm(f => ({ ...f, tier: e.target.value }))} className="input" placeholder="Master plumber, Certified, Year 2…" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block">Rating (0-5)</label>
+              <input type="number" min="0" max="5" step="0.1" value={profileForm.rating} onChange={e => setProfileForm(f => ({ ...f, rating: e.target.value }))} className="input" placeholder="4.9" />
+            </div>
+            <div>
+              <label className="text-xs font-medium mb-1 block">Availability</label>
+              <select
+                value={profileForm.availabilityStatus}
+                onChange={e => setProfileForm(f => ({ ...f, availabilityStatus: e.target.value as typeof profileForm.availabilityStatus }))}
+                className="input w-full"
+              >
+                <option value="">—</option>
+                <option value="available">Available</option>
+                <option value="busy">Busy</option>
+                <option value="off">Off today</option>
+              </select>
+            </div>
+            <div className="sm:col-span-2">
+              <label className="text-xs font-medium mb-1 block">Status note</label>
+              <input value={profileForm.availabilityNote} onChange={e => setProfileForm(f => ({ ...f, availabilityNote: e.target.value }))} className="input" placeholder="free until 3pm / Kitchen sink · González" />
             </div>
           </div>
           <div className="flex gap-2 mt-4">
@@ -187,7 +268,7 @@ export function TechnicianProfileClient({ technician, laborExpenses, jobs, local
                     </div>
                     <div className="min-w-0">
                       {job ? (
-                        <Link href={`/${locale}/jobs/${job.id}`} className="text-sm font-medium hover:underline truncate block" style={{ color: 'var(--wp-primary)' }}>
+                        <Link href={`/${locale}/projects/${job.id}`} className="text-sm font-medium hover:underline truncate block" style={{ color: 'var(--wp-primary)' }}>
                           {job.name}
                         </Link>
                       ) : (
@@ -196,7 +277,7 @@ export function TechnicianProfileClient({ technician, laborExpenses, jobs, local
                       <p className="text-xs mt-0.5" style={{ color: 'var(--wp-text-muted)' }}>
                         {parseFloat(exp.hours ?? '0').toFixed(1)} hrs
                         {exp.ratePerHour ? ` @ $${parseFloat(exp.ratePerHour).toFixed(0)}/hr` : ''}
-                        {' · '}{new Date(exp.date).toLocaleDateString()}
+                        {' · '}{new Date(exp.date).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US')}
                       </p>
                     </div>
                   </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Pencil, Trash2, Save, X, CheckSquare, Square, RotateCcw } from 'lucide-react'
 import { addShoppingListItem, markItemPurchased, unmarkItemPurchased, updateShoppingListItem, deleteShoppingListItem, bulkMarkItemsPurchased } from '@/lib/actions/shopping-lists'
 
@@ -23,6 +24,7 @@ export function ShoppingListItems({
   setItems,
   onSpentChange,
   locale,
+  onToast,
 }: {
   listId: string
   jobId: string | null
@@ -30,7 +32,9 @@ export function ShoppingListItems({
   setItems: React.Dispatch<React.SetStateAction<Item[]>>
   onSpentChange: (delta: number) => void
   locale: string
+  onToast?: (msg: string, variant?: 'success' | 'error' | 'warning') => void
 }) {
+  const t = useTranslations('shoppingList')
   const [saving, setSaving] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editForm, setEditForm] = useState({ description: '', quantity: '', unit: '', estimatedCost: '', vendor: '', aisle: '' })
@@ -66,6 +70,9 @@ export function ShoppingListItems({
       })
       setItems(prev => [...prev, { ...item, quantity: null, unit: null, purchasedAt: null } as Item])
       setNewDesc(''); setNewCost(''); setNewVendor(''); setNewAisle(''); setShowAdd(false)
+      onToast?.(locale === 'es' ? 'Item agregado' : 'Item added')
+    } catch (e) {
+      onToast?.(e instanceof Error ? e.message : 'Error', 'error')
     } finally { setSaving(false) }
   }
 
@@ -76,6 +83,9 @@ export function ShoppingListItems({
       await markItemPurchased(item.id, jobId, item.estimatedCost)
       setItems(prev => prev.map(it => it.id === item.id ? { ...it, status: 'purchased', purchasedAt: new Date() } : it))
       onSpentChange(parseFloat(item.estimatedCost))
+      onToast?.(locale === 'es' ? 'Marcado como comprado' : 'Marked purchased')
+    } catch (e) {
+      onToast?.(e instanceof Error ? e.message : 'Error', 'error')
     } finally { setSaving(false) }
   }
 
@@ -85,6 +95,9 @@ export function ShoppingListItems({
       await unmarkItemPurchased(item.id)
       setItems(prev => prev.map(it => it.id === item.id ? { ...it, status: 'pending', purchasedAt: null } : it))
       onSpentChange(-parseFloat(item.estimatedCost))
+      onToast?.(locale === 'es' ? 'Desmarcado' : 'Unmarked')
+    } catch (e) {
+      onToast?.(e instanceof Error ? e.message : 'Error', 'error')
     } finally { setSaving(false) }
   }
 
@@ -94,6 +107,9 @@ export function ShoppingListItems({
     try {
       await deleteShoppingListItem(item.id)
       setItems(prev => prev.filter(it => it.id !== item.id))
+      onToast?.(locale === 'es' ? 'Item eliminado' : 'Item deleted')
+    } catch (e) {
+      onToast?.(e instanceof Error ? e.message : 'Error', 'error')
     } finally { setSaving(false) }
   }
 
@@ -124,6 +140,9 @@ export function ShoppingListItems({
         aisle: editForm.aisle || null,
       } : it))
       setEditingId(null)
+      onToast?.(locale === 'es' ? 'Item actualizado' : 'Item updated')
+    } catch (e) {
+      onToast?.(e instanceof Error ? e.message : 'Error', 'error')
     } finally { setSaving(false) }
   }
 
@@ -146,6 +165,9 @@ export function ShoppingListItems({
       setItems(prev => prev.map(it => ids.includes(it.id) && it.status === 'pending' ? { ...it, status: 'purchased', purchasedAt: new Date() } : it))
       onSpentChange(amount)
       setSelectedIds(new Set()); setSelectMode(false)
+      onToast?.(locale === 'es' ? `${purchased.length} items comprados` : `${purchased.length} items purchased`)
+    } catch (e) {
+      onToast?.(e instanceof Error ? e.message : 'Error', 'error')
     } finally { setSaving(false) }
   }
 
@@ -177,11 +199,11 @@ export function ShoppingListItems({
                 <span className="text-sm">{hasRealVendor ? '🏬' : '📦'}</span>
                 <span className="text-sm font-semibold" style={{ color: 'var(--wp-text)' }}>{vendor}</span>
                 <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--wp-info-bg-v2)', color: 'var(--wp-info-v2)' }}>
-                  ● {vItems.length} items
+                  ● {vItems.length} {locale === 'es' ? 'ítems' : 'items'}
                 </span>
               </div>
               <span className="text-xs tabular-nums" style={{ color: 'var(--wp-text-3)' }}>
-                ~${vTotal.toLocaleString()}
+                ~${vTotal.toLocaleString('en-US')}
               </span>
             </div>
             {/* Items */}
@@ -194,8 +216,8 @@ export function ShoppingListItems({
                     <input className="input text-sm" placeholder="Aisle" value={editForm.aisle} onChange={e => setEditForm(f => ({ ...f, aisle: e.target.value }))} />
                     <input type="number" className="input text-sm font-mono" value={editForm.estimatedCost} onChange={e => setEditForm(f => ({ ...f, estimatedCost: e.target.value }))} />
                     <div className="flex gap-1">
-                      <button onClick={saveEdit} className="btn-primary btn-sm text-xs"><Save size={12} /></button>
-                      <button onClick={() => setEditingId(null)} className="btn-secondary btn-sm text-xs"><X size={12} /></button>
+                      <button onClick={saveEdit} className="btn-primary btn-sm text-xs" aria-label="Save"><Save size={12} /></button>
+                      <button onClick={() => setEditingId(null)} className="btn-secondary btn-sm text-xs" aria-label="Cancel"><X size={12} /></button>
                     </div>
                   </div>
                 ) : selectMode ? (
@@ -231,7 +253,7 @@ export function ShoppingListItems({
         </div>
       ) : (
         <button onClick={() => setShowAdd(true)} className="w-full py-2.5 text-sm font-medium rounded-lg transition-colors" style={{ color: 'var(--wp-text-3)', border: '1px dashed var(--wp-border-v2)' }}>
-          + {locale === 'es' ? 'Agregar item' : 'Add item'}
+          + {t('addItem')}
         </button>
       )}
 
@@ -247,14 +269,14 @@ export function ShoppingListItems({
               </span>
             </div>
             <span className="text-xs tabular-nums" style={{ color: 'var(--wp-text-3)' }}>
-              ${purchasedItems.reduce((s, it) => s + parseFloat(it.estimatedCost), 0).toLocaleString()}
+              ${purchasedItems.reduce((s, it) => s + parseFloat(it.estimatedCost), 0).toLocaleString('en-US')}
             </span>
           </div>
           {purchasedItems.map((item, i) => (
             <div key={item.id} className="flex items-center gap-3 px-4 py-2.5" style={i > 0 ? { borderTop: '1px solid var(--wp-border-light)' } : undefined}>
               <div className="w-5 h-5 rounded flex items-center justify-center shrink-0 text-white text-[10px] font-bold" style={{ background: 'var(--wp-success-v2)' }}>✓</div>
               <span className="flex-1 text-sm line-through" style={{ color: 'var(--wp-text-3)' }}>{item.description}</span>
-              <span className="text-sm font-mono shrink-0" style={{ color: 'var(--wp-text-3)' }}>${parseFloat(item.estimatedCost).toLocaleString()}</span>
+              <span className="text-sm font-mono shrink-0" style={{ color: 'var(--wp-text-3)' }}>${parseFloat(item.estimatedCost).toLocaleString('en-US')}</span>
               <button onClick={() => handleUndoPurchase(item)} className="shrink-0 p-1 text-[var(--wp-text-3)]" title="Undo"><RotateCcw size={13} /></button>
               <button onClick={() => handleDeleteItem(item)} className="shrink-0 p-1 text-[var(--wp-text-3)] hover:text-[var(--wp-error-v2)]"><Trash2 size={13} /></button>
             </div>
@@ -272,7 +294,7 @@ function ItemRow({ item }: { item: Item }) {
         {item.description}
         {item.quantity && (
           <span className="text-xs ml-1" style={{ color: 'var(--wp-text-3)' }}>
-            · {parseFloat(item.quantity).toLocaleString()}{item.unit ? ` ${item.unit}` : '×'}
+            · {parseFloat(item.quantity).toLocaleString('en-US')}{item.unit ? ` ${item.unit}` : '×'}
           </span>
         )}
       </span>

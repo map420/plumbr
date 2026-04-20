@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { JobStatusBadge } from '@/components/jobs/JobStatusBadge'
 import { ChevronLeft, ChevronRight, Plus, CalendarDays, LayoutGrid, GripVertical } from 'lucide-react'
@@ -12,14 +12,18 @@ import {
   type DragStartEvent, type DragEndEvent,
 } from '@dnd-kit/core'
 import { updateJob } from '@/lib/actions/jobs'
+import { Toast } from '@/components/Toast'
 
 type JobStatus = 'lead' | 'active' | 'on_hold' | 'completed' | 'cancelled'
 type Job = { id: string; name: string; clientName: string; status: string; startDate: Date | null; endDate: Date | null }
 type T = { title: string; today: string; noJobs: string; status: Record<JobStatus, string> }
 
 function startOfWeek(date: Date) {
+  // ISO-like: weeks start on Monday (day 1). Sunday = 0 becomes the 7th day.
   const d = new Date(date)
-  d.setDate(d.getDate() - d.getDay())
+  const dow = d.getDay()
+  const diff = dow === 0 ? -6 : 1 - dow
+  d.setDate(d.getDate() + diff)
   d.setHours(0, 0, 0, 0)
   return d
 }
@@ -29,8 +33,11 @@ function sameDay(a: Date, b: Date) {
 }
 
 function jobsForDay(jobs: Job[], day: Date) {
+  // LST-006 — exclude completed/cancelled jobs from Schedule views even if their
+  // date range overlaps the day. Only "in-flight" jobs belong on the calendar.
   return jobs.filter((j) => {
     if (!j.startDate) return false
+    if (j.status === 'completed' || j.status === 'cancelled') return false
     const start = new Date(j.startDate); start.setHours(0, 0, 0, 0)
     if (j.endDate) {
       const end = new Date(j.endDate); end.setHours(23, 59, 59, 999)
@@ -40,9 +47,22 @@ function jobsForDay(jobs: Job[], day: Date) {
   })
 }
 
-const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December']
+// Helpers de locale — usan Intl.DateTimeFormat para producir nombres localizados.
+// Evitamos arrays hardcoded en cualquier idioma.
+function bcp47(locale: string) { return locale === 'es' ? 'es-ES' : 'en-US' }
+function weekdayShort(dayIndex: number, locale: string) {
+  // Ref: 7 de enero de 2024 = domingo (dayIndex 0).
+  const d = new Date(2024, 0, 7 + dayIndex)
+  return new Intl.DateTimeFormat(bcp47(locale), { weekday: 'short' }).format(d).replace(/\.$/, '')
+}
+function monthLong(monthIndex: number, locale: string) {
+  const d = new Date(2024, monthIndex, 1)
+  return new Intl.DateTimeFormat(bcp47(locale), { month: 'long' }).format(d)
+}
+function hourLabel(h: number, locale: string) {
+  const d = new Date(2024, 0, 1, h)
+  return new Intl.DateTimeFormat(bcp47(locale), { hour: 'numeric', hour12: true }).format(d)
+}
 
 type TechAssignment = { jobId: string; technicianId: string; technicianName: string }
 
@@ -56,10 +76,10 @@ function DraggableJob({ job, locale, t, techName }: { job: Job; locale: string; 
       style={{ background: 'color-mix(in srgb, var(--wp-primary) 8%, transparent)' }}
     >
       <div className="flex items-center gap-1">
-        <button {...listeners} {...attributes} className="cursor-grab active:cursor-grabbing shrink-0 touch-none" style={{ color: 'var(--wp-border)' }}>
+        <button {...listeners} {...attributes} className="cursor-grab active:cursor-grabbing shrink-0 touch-none" style={{ color: 'var(--wp-border)' }} aria-label="Drag to reorder">
           <GripVertical size={12} />
         </button>
-        <Link href={`/${locale}/jobs/${job.id}`} className="min-w-0 flex-1">
+        <Link href={`/${locale}/projects/${job.id}`} className="min-w-0 flex-1">
           <p className="text-xs font-medium truncate" style={{ color: 'var(--wp-primary)' }} title={job.name}>{job.name}</p>
           <p className="text-xs truncate" style={{ color: 'var(--wp-text-muted)' }} title={job.clientName}>{job.clientName}</p>
         </Link>
@@ -89,8 +109,10 @@ function DroppableDay({ day, children, isToday }: { day: Date; children: React.R
 
 export function ScheduleClient({ initialJobs, techAssignments = [], translations: t }: { initialJobs: Job[]; techAssignments?: TechAssignment[]; translations: T }) {
   const locale = useLocale()
+  const ts = useTranslations('schedule')
   const router = useRouter()
   const [jobs, setJobs] = useState(initialJobs)
+  const [toast, setToast] = useState<{ message: string; variant?: 'success' | 'error' | 'warning' } | null>(null)
   const [view, setView] = useState<'week' | 'month'>('week')
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()))
   const [monthDate, setMonthDate] = useState(() => { const d = new Date(); d.setDate(1); return d })
@@ -165,7 +187,7 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
         return `${jd.getFullYear()}-${jd.getMonth()}-${jd.getDate()}` === targetDayStr
       })
       if (conflicts.length > 0) {
-        const proceed = confirm(`⚠️ Schedule conflict: ${jobTechAssignment.technicianName} is already assigned to "${conflicts[0].name}" on ${targetDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}.\n\nMove anyway?`)
+        const proceed = confirm(`⚠️ Schedule conflict: ${jobTechAssignment.technicianName} is already assigned to "${conflicts[0].name}" on ${targetDate.toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { weekday: 'short', month: 'short', day: 'numeric' })}.\n\nMove anyway?`)
         if (!proceed) return
       }
     }
@@ -186,11 +208,15 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
     // Persist to DB
     const newStart = new Date(targetDate)
     newStart.setHours(oldStart.getHours(), oldStart.getMinutes())
-    await updateJob(jobId, { startDate: newStart.toISOString() }).catch(() => {
+    try {
+      await updateJob(jobId, { startDate: newStart.toISOString() })
+      setToast({ message: locale === 'es' ? `${job.name} movido` : `${job.name} moved`, variant: 'success' })
+      router.refresh()
+    } catch {
       // Revert on error
       setJobs(initialJobs)
-    })
-    router.refresh()
+      setToast({ message: locale === 'es' ? 'Error al mover el proyecto' : 'Failed to move project', variant: 'error' })
+    }
   }
 
   const weekDays = Array.from({ length: 7 }, (_, i) => {
@@ -204,7 +230,10 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
     const month = base.getMonth()
     const firstDay = new Date(year, month, 1)
     const lastDay = new Date(year, month + 1, 0)
-    const startPad = firstDay.getDay()
+    // Monday-first: convertir getDay() (0=Sun..6=Sat) a offset desde lunes.
+    // Consistente con mini cal + startOfWeek ISO-like de línea 21.
+    const dow = firstDay.getDay()
+    const startPad = dow === 0 ? 6 : dow - 1
     const cells: (Date | null)[] = Array(startPad).fill(null)
     for (let d = 1; d <= lastDay.getDate(); d++) cells.push(new Date(year, month, d))
     while (cells.length % 7 !== 0) cells.push(null)
@@ -215,7 +244,7 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
 
   const headerLabel = view === 'week'
     ? `${weekDays[0].toLocaleString('en', { month: 'short', day: 'numeric' })} – ${weekDays[6].toLocaleString('en', { month: 'short', day: 'numeric', year: 'numeric' })}`
-    : `${MONTH_NAMES[monthDate.getMonth()]} ${monthDate.getFullYear()}`
+    : `${monthLong(monthDate.getMonth(), locale)} ${monthDate.getFullYear()}`
 
   const mobileDays = Array.from({ length: 14 }, (_, i) => {
     const d = new Date()
@@ -226,16 +255,17 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
 
   return (
     <div className="px-4 pt-2 pb-4 md:p-8">
+      {toast && <Toast message={toast.message} variant={toast.variant} onDone={() => setToast(null)} />}
       <div className="hidden md:flex items-center justify-between mb-4">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--wp-text)' }}>{t.title}</h1>
           <p className="text-xs mt-0.5" style={{ color: 'var(--wp-text-3)' }}>
             {locale === 'es'
-              ? `Semana del ${weekDays[1].getDate()}–${weekDays[5].getDate()} de ${weekDays[1].toLocaleString('es', { month: 'long' })} · ${jobs.length} jobs agendados · ${todayJobs.length} hoy`
-              : `${jobs.length} scheduled jobs · ${todayJobs.length} today`}
+              ? `Semana del ${weekDays[1].getDate()}–${weekDays[5].getDate()} de ${monthLong(weekDays[1].getMonth(), locale)} · ${jobs.length} ${ts('events.scheduledJobs')} · ${todayJobs.length} hoy`
+              : `${jobs.length} ${ts('events.scheduledJobs')} · ${todayJobs.length} today`}
           </p>
         </div>
-        <button className="btn-primary btn-sm">+ {locale === 'es' ? 'Nuevo evento' : 'New event'}</button>
+        <button className="btn-primary btn-sm">+ {ts('nav.newEvent')}</button>
       </div>
 
       {/* Mobile list view (no DnD) */}
@@ -251,7 +281,7 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
                   className="text-xs font-bold uppercase tracking-wide"
                   style={{ color: isToday ? 'var(--wp-accent)' : 'var(--wp-text-tertiary)' }}
                 >
-                  {isToday ? 'Today' : day.toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric' })}
+                  {isToday ? ts('nav.today') : day.toLocaleDateString(bcp47(locale), { weekday: 'short', month: 'short', day: 'numeric' })}
                 </span>
               </div>
               {dayJobs.length === 0 ? (
@@ -261,7 +291,7 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
                   {dayJobs.map((job, idx) => (
                     <Link
                       key={job.id}
-                      href={`/${locale}/jobs/${job.id}`}
+                      href={`/${locale}/projects/${job.id}`}
                       className="card p-3 flex items-center justify-between transition-colors"
                       style={{ animation: `fadeSlideIn 0.3s ease both`, animationDelay: `${idx * 30}ms` }}
                     >
@@ -289,7 +319,7 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
           <div className="card p-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-bold" style={{ color: 'var(--wp-text)' }}>
-                {MONTH_NAMES[miniCalMonth.getMonth()]} {miniCalMonth.getFullYear()}
+                {monthLong(miniCalMonth.getMonth(), locale)} {miniCalMonth.getFullYear()}
               </span>
               <div className="flex gap-1">
                 <button onClick={() => {
@@ -305,9 +335,12 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
               </div>
             </div>
             <div className="grid grid-cols-7 gap-0">
-              {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map(d => (
-                <div key={d} className="text-center text-[9px] font-semibold py-1" style={{ color: 'var(--wp-text-3)' }}>{d}</div>
-              ))}
+              {[1,2,3,4,5,6,0].map(i => {
+                // Narrow (1-letter) abbreviations, Monday-first.
+                const d = new Date(2024, 0, 7 + i)
+                const label = new Intl.DateTimeFormat(bcp47(locale), { weekday: 'narrow' }).format(d)
+                return <div key={i} className="text-center text-[9px] font-semibold py-1" style={{ color: 'var(--wp-text-3)' }}>{label}</div>
+              })}
               {miniCalGrid.map((day, i) => {
                 if (!day) return <div key={i} className="h-7" />
                 const isToday = sameDay(day, new Date())
@@ -318,7 +351,7 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
                     setWeekStart(startOfWeek(day))
                     setView('week')
                   }} className="h-7 flex flex-col items-center justify-center rounded-md text-[11px] transition-colors hover:bg-[var(--wp-surface-2)]"
-                    style={isToday ? { background: 'var(--wp-brand)', color: 'white', fontWeight: 700 } : { color: 'var(--wp-text-2)' }}>
+                    style={isToday ? { background: 'var(--wp-brand)', color: 'var(--wp-text-inverse)', fontWeight: 700 } : { color: 'var(--wp-text-2)' }}>
                     {day.getDate()}
                     {hasJobs && !isToday && <span className="w-1 h-1 rounded-full mt-0.5" style={{ background: 'var(--wp-brand)' }} />}
                   </button>
@@ -331,8 +364,17 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
           <div className="card p-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-bold" style={{ color: 'var(--wp-text)' }}>
-                {locale === 'es' ? 'Hoy' : 'Today'} · {todayJobs.length} jobs
+                {ts('nav.today')} · {todayJobs.length} jobs
               </span>
+              {/* C4 — Today button: resetea semana/vista a hoy */}
+              <button
+                type="button"
+                onClick={() => { setWeekStart(startOfWeek(new Date())); setView('week') }}
+                className="text-[10px] font-semibold px-2 py-0.5 rounded hover:bg-[var(--wp-surface-2)]"
+                style={{ color: 'var(--wp-brand)' }}
+              >
+                {ts('nav.jumpToday')}
+              </button>
             </div>
             {todayJobs.length === 0 ? (
               <p className="text-xs" style={{ color: 'var(--wp-text-3)' }}>{t.noJobs}</p>
@@ -344,7 +386,7 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
                   const timeStr = job.startDate ? new Date(job.startDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : ''
                   const initials = job.clientName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
                   return (
-                    <Link key={job.id} href={`/${locale}/jobs/${job.id}`}
+                    <Link key={job.id} href={`/${locale}/projects/${job.id}`}
                       className="flex items-center gap-2 p-1.5 rounded-md transition-colors hover:bg-[var(--wp-surface-2)]"
                       style={{ borderLeft: `2px solid ${color}` }}>
                       <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: color }} />
@@ -365,7 +407,7 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
           {techs.length > 0 && (
             <div className="card p-3">
               <span className="text-xs font-bold block mb-2" style={{ color: 'var(--wp-text)' }}>
-                {locale === 'es' ? 'Técnicos' : 'Technicians'}
+                {ts('filter.technicians')}
               </span>
               <div className="space-y-1.5">
                 {techs.map((tech, i) => {
@@ -399,7 +441,7 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
         {view === 'week' && (() => {
           const HOUR_HEIGHT = 60
           const HEADER_HEIGHT = 44
-          const displayDays = weekDays.slice(1, 6) // Mon-Fri
+          const displayDays = weekDays // Mon-Sun (7 days, starts Monday)
 
           // Dynamic hour range based on actual jobs
           let minH = 8, maxH = 18
@@ -428,7 +470,7 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
           const weekNum = Math.ceil((weekDays[0].getDate() + new Date(weekDays[0].getFullYear(), weekDays[0].getMonth(), 1).getDay()) / 7)
 
           const calTitle = `${weekDays[0].toLocaleString(locale === 'es' ? 'es' : 'en', { month: 'long' })} ${weekDays[0].getDate()} – ${weekDays[6].getDate()}, ${weekDays[0].getFullYear()}`
-          const calSub = `${locale === 'es' ? 'Semana' : 'Week'} ${weekNum} · ${totalWeekJobs} ${locale === 'es' ? 'eventos' : 'events'}`
+          const calSub = `${ts('nav.week')} ${weekNum} · ${totalWeekJobs} ${locale === 'es' ? 'eventos' : 'events'}`
 
           return (
               <TimeSlotGrid
@@ -455,8 +497,9 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
         {view === 'month' && (
           <div>
             <div className="grid grid-cols-7 mb-1">
-              {DAY_NAMES.map(d => (
-                <div key={d} className="text-center text-xs font-semibold py-2" style={{ color: 'var(--wp-text-muted)' }}>{d}</div>
+              {/* Monday-first header (consistente con mini cal + startOfWeek) */}
+              {[1,2,3,4,5,6,0].map(i => (
+                <div key={i} className="text-center text-xs font-semibold py-2" style={{ color: 'var(--wp-text-muted)' }}>{weekdayShort(i, locale)}</div>
               ))}
             </div>
             <div className="grid grid-cols-7 gap-1">
@@ -475,7 +518,7 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
                         <DraggableMonthJob key={job.id} job={job} locale={locale} />
                       ))}
                       {dayJobs.length > 2 && (
-                        <p className="text-[10px]" style={{ color: 'var(--wp-text-muted)' }}>+{dayJobs.length - 2} more</p>
+                        <p className="text-[10px]" style={{ color: 'var(--wp-text-muted)' }}>{ts('events.moreEvents', { count: dayJobs.length - 2 })}</p>
                       )}
                     </div>
                   </DroppableMonthDay>
@@ -488,7 +531,7 @@ export function ScheduleClient({ initialJobs, techAssignments = [], translations
         {/* Drag overlay — ghost that follows cursor */}
         <DragOverlay>
           {activeJob && (
-            <div className="p-2 rounded-lg bg-white shadow-xl w-[150px]" style={{ border: '1px solid var(--wp-border)' }}>
+            <div className="p-2 rounded-lg bg-card shadow-xl w-[150px]" style={{ border: '1px solid var(--wp-border)' }}>
               <p className="text-xs font-medium truncate" style={{ color: 'var(--wp-primary)' }} title={activeJob.name}>{activeJob.name}</p>
               <p className="text-xs truncate" style={{ color: 'var(--wp-text-muted)' }} title={activeJob.clientName}>{activeJob.clientName}</p>
             </div>
@@ -539,6 +582,7 @@ function TimeSlotGrid({ hours, displayDays, filteredJobs, techAssignments, techC
   techColorMap: Map<string, string>; locale: string; START_HOUR: number; HOUR_HEIGHT: number; HEADER_HEIGHT: number
   calTitle: string; calSub: string; onPrev: () => void; onNext: () => void; onToday: () => void; onMonthView: () => void
 }) {
+  const ts = useTranslations('schedule')
   const scrollRef = useRef<HTMLDivElement>(null)
   const [now, setNow] = useState(new Date())
 
@@ -576,19 +620,18 @@ function TimeSlotGrid({ hours, displayDays, filteredJobs, techAssignments, techC
           <div className="text-xs mt-0.5" style={{ color: 'var(--wp-text-3)' }}>{calSub}</div>
         </div>
         <div className="flex items-center gap-1.5">
-          <button onClick={onPrev} className="p-1.5 rounded-lg" style={{ border: '1px solid var(--wp-border-v2)', color: 'var(--wp-text-3)' }}>
+          <button onClick={onPrev} className="p-1.5 rounded-lg" style={{ border: '1px solid var(--wp-border-v2)', color: 'var(--wp-text-3)' }} aria-label={ts('nav.previous')}>
             <ChevronLeft size={14} />
           </button>
           <button onClick={onToday} className="text-xs px-3 py-1.5 rounded-lg font-medium" style={{ border: '1px solid var(--wp-border-v2)', color: 'var(--wp-text-2)' }}>
-            Today
+            {ts('nav.today')}
           </button>
-          <button onClick={onNext} className="p-1.5 rounded-lg" style={{ border: '1px solid var(--wp-border-v2)', color: 'var(--wp-text-3)' }}>
+          <button onClick={onNext} className="p-1.5 rounded-lg" style={{ border: '1px solid var(--wp-border-v2)', color: 'var(--wp-text-3)' }} aria-label={ts('nav.next')}>
             <ChevronRight size={14} />
           </button>
           <div className="flex rounded-lg overflow-hidden ml-1" style={{ border: '1px solid var(--wp-border-v2)' }}>
-            <button className="text-[10px] px-2 py-1.5 font-medium" style={{ color: 'var(--wp-text-3)' }}>Day</button>
-            <button className="text-[10px] px-2 py-1.5 font-medium" style={{ background: 'var(--wp-brand)', color: 'white' }}>Week</button>
-            <button onClick={onMonthView} className="text-[10px] px-2 py-1.5 font-medium" style={{ color: 'var(--wp-text-3)' }}>Month</button>
+            <button className="text-[10px] px-2 py-1.5 font-medium" style={{ background: 'var(--wp-brand)', color: 'var(--wp-text-inverse)' }}>{ts('nav.week')}</button>
+            <button onClick={onMonthView} className="text-[10px] px-2 py-1.5 font-medium" style={{ color: 'var(--wp-text-3)' }}>{ts('nav.month')}</button>
           </div>
         </div>
       </div>
@@ -601,7 +644,7 @@ function TimeSlotGrid({ hours, displayDays, filteredJobs, techAssignments, techC
           return (
             <div key={di} className="text-center py-1.5" style={{ height: 44, background: isToday ? 'color-mix(in srgb, var(--wp-info-v2) 8%, white)' : 'var(--wp-surface-2)', borderBottom: '1px solid var(--wp-border-v2)', borderLeft: '1px solid var(--wp-border-light)' }}>
               <div className="text-[10px] font-medium" style={{ color: isToday ? 'var(--wp-brand)' : 'var(--wp-text-3)' }}>
-                {DAY_NAMES[day.getDay()]}
+                {weekdayShort(day.getDay(), locale)}
               </div>
               <div className="text-base font-bold" style={{ color: isToday ? 'var(--wp-brand)' : 'var(--wp-text)' }}>
                 {day.getDate()}
@@ -618,7 +661,7 @@ function TimeSlotGrid({ hours, displayDays, filteredJobs, techAssignments, techC
           <div>
             {hours.map(h => (
               <div key={h} className="text-[10px] font-medium text-right pr-2 flex items-start justify-end" style={{ height: HOUR_HEIGHT, color: 'var(--wp-text-3)', borderBottom: '1px solid var(--wp-border-light)', paddingTop: 2 }}>
-                {h === 12 ? '12 PM' : h < 12 ? `${h} AM` : `${h - 12} PM`}
+                {hourLabel(h, locale)}
               </div>
             ))}
           </div>
@@ -653,7 +696,7 @@ function TimeSlotGrid({ hours, displayDays, filteredJobs, techAssignments, techC
                   const isActive = job.status === 'active'
 
                   return (
-                    <Link key={job.id} href={`/${locale}/jobs/${job.id}`}
+                    <Link key={job.id} href={`/${locale}/projects/${job.id}`}
                       className="absolute left-1 right-1 rounded-lg px-2 py-1.5 overflow-hidden transition-shadow hover:shadow-md z-10"
                       style={{
                         top, height,
@@ -662,7 +705,7 @@ function TimeSlotGrid({ hours, displayDays, filteredJobs, techAssignments, techC
                         outline: isActive && isToday ? `2px solid ${color}` : undefined,
                         outlineOffset: isActive && isToday ? 1 : undefined,
                       }}>
-                      <div className="text-[10px] font-medium" style={{ color }}>{timeStr} · {techName}{isActive && isToday ? ' · en curso' : ''}</div>
+                      <div className="text-[10px] font-medium" style={{ color }}>{timeStr} · {techName}{isActive && isToday ? ` · ${ts('status.inProgress')}` : ''}</div>
                       <div className="text-xs font-semibold mt-0.5 truncate" style={{ color: 'var(--wp-text)' }}>{job.name} · {job.clientName}</div>
                     </Link>
                   )

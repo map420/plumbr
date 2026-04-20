@@ -12,16 +12,23 @@ export function BottomSheet({ open, onClose, title, children }: {
     return () => { document.body.style.overflow = '' }
   }, [open])
 
+  useEffect(() => {
+    if (!open) return
+    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [open, onClose])
+
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 md:hidden" onClick={onClose}>
+    <div className="fixed inset-0 z-50 md:hidden" onClick={onClose} role="dialog" aria-modal="true" aria-label={title ?? 'Actions'}>
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/40" />
 
       {/* Sheet */}
       <div
-        className="absolute bottom-0 inset-x-0 bg-white rounded-t-2xl max-h-[85vh] overflow-y-auto animate-slide-up"
+        className="absolute bottom-0 inset-x-0 bg-card rounded-t-2xl max-h-[85vh] overflow-y-auto animate-slide-up"
         onClick={e => e.stopPropagation()}
       >
         {/* Handle */}
@@ -33,7 +40,7 @@ export function BottomSheet({ open, onClose, title, children }: {
         {title && (
           <div className="flex items-center justify-between px-5 pb-3" style={{ borderBottom: '1px solid var(--wp-border-light)' }}>
             <h3 className="font-semibold" style={{ color: 'var(--wp-text-primary)' }}>{title}</h3>
-            <button onClick={onClose} className="p-1 transition-colors" style={{ color: 'var(--wp-text-muted)' }}>
+            <button onClick={onClose} className="p-1 transition-colors" style={{ color: 'var(--wp-text-muted)' }} aria-label="Close">
               <X size={18} />
             </button>
           </div>

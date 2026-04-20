@@ -41,7 +41,7 @@ export function TotalsCard({ label, total, rows, className }: TotalsCardProps) {
           style={{
             borderTop: '1px solid rgb(255 255 255 / 0.12)',
             opacity: 0.9,
-            color: 'white',
+            color: 'var(--wp-text-inverse)',
           }}
         >
           {rows.map((r, i) => (

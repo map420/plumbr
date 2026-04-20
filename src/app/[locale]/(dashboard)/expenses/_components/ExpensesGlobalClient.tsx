@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState, useTransition } from 'react'
+import { useEscapeKey } from '@/hooks/useEscapeKey'
 import { formatCurrency, formatCurrencyCompact } from '@/lib/format'
 import Link from 'next/link'
 import { useLocale } from 'next-intl'
@@ -70,10 +71,13 @@ export function ExpensesGlobalClient({
     return { byType, grand }
   }, [filtered])
 
-  // KPI totals from ALL expenses (unfiltered)
+  // KPI totals — solo gasto REAL (excluye expenses con date > hoy, que son proyecciones).
+  // Expenses futuros siguen visibles en la lista, pero no inflan el total del KPI card.
   const kpis = useMemo(() => {
+    const nowMs = Date.now()
     let total = 0, materials = 0, tools = 0, fuelOther = 0
     for (const e of initialExpenses) {
+      if (e.date && new Date(e.date).getTime() > nowMs) continue // A5: skip futures
       const amt = parseFloat(e.amount)
       total += amt
       if (e.type === 'material') materials += amt
@@ -89,7 +93,7 @@ export function ExpensesGlobalClient({
     const groups: Record<string, Expense[]> = {}
     const sorted = [...filtered].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     for (const e of sorted) {
-      const key = new Date(e.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+      const key = new Date(e.date).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })
       if (!groups[key]) groups[key] = []
       groups[key].push(e)
     }
@@ -103,10 +107,10 @@ export function ExpensesGlobalClient({
 
   const SEGMENTED_OPTIONS = [
     { value: 'all', label: 'All', count: initialExpenses.length },
-    { value: 'material', label: 'Materials', count: typeCounts['material'] ?? 0 },
-    { value: 'labor', label: 'Tools', count: typeCounts['labor'] ?? 0 },
-    { value: 'subcontractor', label: 'Fuel', count: typeCounts['subcontractor'] ?? 0 },
-    { value: 'other', label: 'Subs', count: typeCounts['other'] ?? 0 },
+    { value: 'labor', label: locale === 'es' ? 'Mano de obra' : 'Labor', count: typeCounts['labor'] ?? 0 },
+    { value: 'material', label: locale === 'es' ? 'Materiales' : 'Materials', count: typeCounts['material'] ?? 0 },
+    { value: 'subcontractor', label: locale === 'es' ? 'Subcontratistas' : 'Subcontractors', count: typeCounts['subcontractor'] ?? 0 },
+    { value: 'other', label: locale === 'es' ? 'Otros' : 'Other', count: typeCounts['other'] ?? 0 },
   ] as const
 
   const hasFilters = typeFilter || jobFilter || techFilter || dateFrom || dateTo
@@ -116,6 +120,7 @@ export function ExpensesGlobalClient({
 
   // New Expense modal state
   const [showNewExpense, setShowNewExpense] = useState(false)
+  useEscapeKey(showNewExpense, () => setShowNewExpense(false))
   const [newExp, setNewExp] = useState({ jobId: '', description: '', type: 'material', amount: '', date: new Date().toISOString().split('T')[0] })
 
   function handleCreateExpense(e: React.FormEvent) {
@@ -135,11 +140,11 @@ export function ExpensesGlobalClient({
   }
 
   return (
-    <div className="px-4 pt-2 pb-4 md:p-8 bg-white md:bg-transparent min-h-full">
+    <div className="px-4 pt-2 pb-4 md:p-8 bg-card md:bg-transparent min-h-full">
       {/* New Expense Modal */}
       {showNewExpense && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowNewExpense(false)}>
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-xl" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowNewExpense(false)} role="dialog" aria-modal="true" aria-label="New expense">
+          <div className="bg-card rounded-xl p-6 max-w-md w-full mx-4 shadow-xl" onClick={e => e.stopPropagation()}>
             <h3 className="font-semibold mb-4" style={{ color: 'var(--wp-text-primary)' }}>New Expense</h3>
             <form onSubmit={handleCreateExpense} className="space-y-3">
               <div>
@@ -198,17 +203,17 @@ export function ExpensesGlobalClient({
 
       {/* KPI row */}
       <div className="hidden md:grid grid-cols-4 gap-3 mb-5">
-        <KpiCard label="Total spent" value={`$${formatCurrencyCompact(kpis.total)}`} sub="this month" tone="danger" />
-        <KpiCard label="Materials" value={`$${formatCurrencyCompact(kpis.materials)}`} sub={`${kpis.total > 0 ? Math.round(kpis.materials / kpis.total * 100) : 0}%`} tone="info" />
-        <KpiCard label="Labor" value={`$${formatCurrencyCompact(kpis.labor)}`} sub={`${kpis.total > 0 ? Math.round(kpis.labor / kpis.total * 100) : 0}%`} tone="warning" />
-        <KpiCard label="Subs + Other" value={`$${formatCurrencyCompact(kpis.tools + kpis.fuelOther)}`} sub={`${kpis.total > 0 ? Math.round((kpis.tools + kpis.fuelOther) / kpis.total * 100) : 0}%`} tone="brand" />
+        <KpiCard label={locale === 'es' ? 'Total gastado' : 'Total spent'} value={`$${formatCurrencyCompact(kpis.total)}`} sub={locale === 'es' ? 'este mes' : 'this month'} tone="danger" />
+        <KpiCard label={locale === 'es' ? 'Materiales' : 'Materials'} value={`$${formatCurrencyCompact(kpis.materials)}`} sub={`${kpis.total > 0 ? Math.round(kpis.materials / kpis.total * 100) : 0}%`} tone="info" />
+        <KpiCard label={locale === 'es' ? 'Mano de obra' : 'Labor'} value={`$${formatCurrencyCompact(kpis.labor)}`} sub={`${kpis.total > 0 ? Math.round(kpis.labor / kpis.total * 100) : 0}%`} tone="warning" />
+        <KpiCard label={locale === 'es' ? 'Subs + Otros' : 'Subs + Other'} value={`$${formatCurrencyCompact(kpis.tools + kpis.fuelOther)}`} sub={`${kpis.total > 0 ? Math.round((kpis.tools + kpis.fuelOther) / kpis.total * 100) : 0}%`} tone="brand" />
       </div>
 
       {/* Mobile: tab-bar for types */}
       <div className="tab-bar mb-3 md:hidden">
-        <button onClick={() => setTypeFilter('')} className={`tab-bar-item ${!typeFilter ? 'tab-bar-item-active' : ''}`}>All</button>
-        <button onClick={() => setTypeFilter(typeFilter === 'labor' ? '' : 'labor')} className={`tab-bar-item ${typeFilter === 'labor' ? 'tab-bar-item-active' : ''}`}>Labor</button>
-        <button onClick={() => setTypeFilter(typeFilter === 'material' ? '' : 'material')} className={`tab-bar-item ${typeFilter === 'material' ? 'tab-bar-item-active' : ''}`}>Material</button>
+        <button onClick={() => setTypeFilter('')} className={`tab-bar-item ${!typeFilter ? 'tab-bar-item-active' : ''}`}>{locale === 'es' ? 'Todos' : 'All'}</button>
+        <button onClick={() => setTypeFilter(typeFilter === 'labor' ? '' : 'labor')} className={`tab-bar-item ${typeFilter === 'labor' ? 'tab-bar-item-active' : ''}`}>{locale === 'es' ? 'Mano obra' : 'Labor'}</button>
+        <button onClick={() => setTypeFilter(typeFilter === 'material' ? '' : 'material')} className={`tab-bar-item ${typeFilter === 'material' ? 'tab-bar-item-active' : ''}`}>{locale === 'es' ? 'Material' : 'Material'}</button>
         <button onClick={() => setTypeFilter(typeFilter === 'subcontractor' ? '' : 'subcontractor')} className={`tab-bar-item ${typeFilter === 'subcontractor' ? 'tab-bar-item-active' : ''}`}>Sub</button>
       </div>
 
@@ -219,7 +224,7 @@ export function ExpensesGlobalClient({
             <span className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--wp-text-3)' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             </span>
-            <input type="text" placeholder={locale === 'es' ? 'Buscar por vendor, categoría o job...' : 'Search by vendor, category or job...'}
+            <input type="text" placeholder={locale === 'es' ? 'Buscar por vendor, categoría o proyecto...' : 'Search by vendor, category or project...'}
               className="w-full pl-9 pr-3 py-2 text-sm rounded-lg outline-none" style={{ background: 'var(--wp-surface-2)', color: 'var(--wp-text)' }} />
           </div>
           <Segmented
@@ -236,7 +241,7 @@ export function ExpensesGlobalClient({
           <div className="py-12 text-center" style={{ color: 'var(--wp-text-muted)', fontSize: '0.875rem' }}>No expenses yet.</div>
         ) : (() => {
           const monthGrouped = filtered.reduce<Record<string, Expense[]>>((acc, exp) => {
-            const key = new Date(exp.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
+            const key = new Date(exp.date).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { year: 'numeric', month: 'long' })
             if (!acc[key]) acc[key] = []
             acc[key].push(exp)
             return acc
@@ -263,7 +268,7 @@ export function ExpensesGlobalClient({
                       </div>
                       <div className="flex items-center justify-between mt-1">
                         <span style={{ fontSize: '0.75rem', color: 'var(--wp-text-muted)' }}>
-                          {job?.name || 'Unknown job'} · {new Date(exp.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          {job?.name || (locale === 'es' ? 'Proyecto desconocido' : 'Unknown project')} · {new Date(exp.date).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { month: 'short', day: 'numeric' })}
                         </span>
                         <span className={`badge badge-sm ${exp.type === 'labor' ? 'badge-sent' : exp.type === 'material' ? 'badge-on-hold' : exp.type === 'subcontractor' ? 'badge-converted' : 'badge-draft'}`}>
                           {TYPE_LABELS[exp.type]}
@@ -318,7 +323,7 @@ export function ExpensesGlobalClient({
                         </div>
                         <div className="min-w-0">
                           {job ? (
-                            <Link href={`/${locale}/jobs/${job.id}`} className="text-sm hover:underline truncate block" style={{ color: 'var(--wp-brand)' }}>
+                            <Link href={`/${locale}/projects/${job.id}`} className="text-sm hover:underline truncate block" style={{ color: 'var(--wp-brand)' }}>
                               {job.name}
                             </Link>
                           ) : (

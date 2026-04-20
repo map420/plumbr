@@ -1,0 +1,128 @@
+<!--
+  Plantilla base para documentos gerenciales de WorkPilot.
+  Cada documento en src/ debe seguir esta estructura.
+  El CSS está en _styles.css (compartido).
+  Mermaid se carga desde CDN y renderiza automáticamente.
+-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>[TÍTULO DEL DOCUMENTO] — WorkPilot</title>
+  <link rel="stylesheet" href="_styles.css">
+</head>
+<body>
+
+  <!-- PORTADA -->
+  <div class="cover">
+    <div class="cover-header">
+      <div class="cover-logo">
+        <span class="cover-logo-mark">W</span>WorkPilot
+      </div>
+      <span class="cover-badge">Confidencial · Uso interno</span>
+    </div>
+
+    <div class="cover-body">
+      <div class="cover-kicker">[CATEGORÍA — ej: DOCUMENTO ESTRATÉGICO]</div>
+      <h1 class="cover-title">[TÍTULO GRANDE]</h1>
+      <p class="cover-subtitle">[Subtítulo descriptivo de 1-2 líneas.]</p>
+    </div>
+
+    <div class="cover-footer">
+      <div class="cover-meta">
+        <span><strong>Versión</strong> 1.0</span>
+        <span><strong>Fecha</strong> Abril 2026</span>
+      </div>
+      <div class="cover-meta" style="text-align: right;">
+        <span><strong>Autor</strong> Equipo WorkPilot</span>
+        <span>workpilot.io</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENIDO -->
+  <div class="content">
+
+    <!-- ÍNDICE (opcional si el doc > 8 páginas) -->
+    <nav class="toc">
+      <h2>Tabla de contenidos</h2>
+      <ul class="toc-list">
+        <li><span class="toc-title">1. Sección de ejemplo</span><span class="toc-page">3</span></li>
+      </ul>
+    </nav>
+
+    <!-- Sección 1 -->
+    <section>
+      <h2>1. Sección de ejemplo</h2>
+      <p>Contenido...</p>
+
+      <!-- Callouts disponibles: info, insight, warning, critical, success -->
+      <div class="callout insight">
+        <span class="callout-label">Insight</span>
+        <div class="callout-body">Un aprendizaje clave destacado.</div>
+      </div>
+
+      <!-- Tablas -->
+      <table>
+        <thead><tr><th>Columna</th><th>Valor</th></tr></thead>
+        <tbody><tr><td>Ejemplo</td><td>123</td></tr></tbody>
+      </table>
+
+      <!-- KPI cards -->
+      <div class="kpi-grid cols-3">
+        <div class="kpi-card">
+          <div class="kpi-value">$29</div>
+          <div class="kpi-label">Precio Pro</div>
+        </div>
+      </div>
+
+      <!-- Mermaid diagram -->
+      <div class="mermaid">
+        graph LR
+          A[Lead] --> B[Estimate]
+          B --> C[Job]
+          C --> D[Invoice]
+          D --> E[Pago]
+      </div>
+
+      <!-- Persona Carlos -->
+      <div class="persona-box">
+        <p><span class="persona-name">Carlos</span>, plomero con 3 técnicos en Miami, usa WorkPilot para...</p>
+      </div>
+    </section>
+
+    <!-- Recomendaciones finales -->
+    <div class="recommendations">
+      <h3>Recomendaciones accionables</h3>
+      <ol>
+        <li>Acción concreta 1.</li>
+        <li>Acción concreta 2.</li>
+      </ol>
+    </div>
+
+  </div>
+
+  <!-- Mermaid init -->
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#1E3A5F',
+        primaryTextColor: '#ffffff',
+        primaryBorderColor: '#0F2440',
+        lineColor: '#64748B',
+        secondaryColor: '#3B82F6',
+        tertiaryColor: '#F1F5F9',
+        background: '#FFFFFF',
+        mainBkg: '#1E3A5F',
+        secondBkg: '#F8FAFC',
+        fontFamily: 'Inter, sans-serif',
+      },
+    });
+    await mermaid.run();
+    window.mermaid_ready = true;
+  </script>
+</body>
+</html>

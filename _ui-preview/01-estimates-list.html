@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estimates · Listado — Before / After</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --wp-primary: #1E3A5F;
+    --wp-primary-dark: #0F2440;
+    --wp-primary-light: #2A4F7A;
+    --wp-accent: #F97316;
+    --wp-accent-hover: #ea6c0a;
+    --wp-accent-subtle: #FFF7ED;
+    --wp-success: #059669;
+    --wp-success-bg: #ECFDF5;
+    --wp-warning: #D97706;
+    --wp-warning-bg: #FFFBEB;
+    --wp-error: #DC2626;
+    --wp-error-bg: #FEF2F2;
+    --wp-info: #2563EB;
+    --wp-info-bg: #EFF6FF;
+    --wp-purple: #7C3AED;
+    --wp-purple-bg: #F5F3FF;
+    --wp-text-primary: #0F172A;
+    --wp-text-secondary: #475569;
+    --wp-text-muted: #94A3B8;
+    --wp-bg-primary: #FFFFFF;
+    --wp-bg-secondary: #F8FAFC;
+    --wp-bg-muted: #F1F5F9;
+    --wp-border: #E2E8F0;
+    --wp-border-light: #F1F5F9;
+    /* NEW tokens (after) */
+    --wp-ring: 0 0 0 1px rgb(15 23 42 / 0.04);
+    --wp-elevation-1: 0 1px 2px rgb(15 23 42 / 0.04), 0 1px 3px rgb(15 23 42 / 0.06);
+    --wp-elevation-2: 0 4px 12px rgb(15 23 42 / 0.05), 0 2px 4px rgb(15 23 42 / 0.04);
+    --wp-surface-raised: #FFFFFF;
+    --wp-surface-sunken: #F8FAFC;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: #EEF2F6;
+    color: var(--wp-text-primary);
+    -webkit-font-smoothing: antialiased;
+  }
+  .shell {
+    max-width: 1480px;
+    margin: 0 auto;
+    padding: 32px 24px 64px;
+  }
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--wp-border);
+  }
+  .page-header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .page-header p { font-size: 13px; color: var(--wp-text-muted); }
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .compare-col {
+    background: white;
+    border: 1px solid var(--wp-border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.03);
+  }
+  .compare-label {
+    padding: 14px 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-bottom: 1px solid var(--wp-border-light);
+    background: var(--wp-bg-secondary);
+  }
+  .compare-label.before { color: #64748B; }
+  .compare-label.after { color: var(--wp-accent); background: var(--wp-accent-subtle); }
+  .viewport {
+    padding: 16px;
+    background: var(--wp-bg-secondary);
+    min-height: 680px;
+  }
+  .viewport.mobile { padding: 0; background: #E2E8F0; }
+  .phone {
+    width: 375px;
+    margin: 0 auto;
+    background: white;
+    min-height: 680px;
+    overflow: hidden;
+  }
+
+  /* ═════════ BEFORE (current) ═════════ */
+
+  .b-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  .b-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+  }
+  .b-btn-primary {
+    background: var(--wp-accent);
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .b-btn-secondary {
+    background: white;
+    color: var(--wp-text-secondary);
+    border: 1px solid var(--wp-border);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-right: 8px;
+  }
+  .b-search {
+    width: 100%;
+    background: var(--wp-bg-muted);
+    border: none;
+    padding: 10px 12px;
+    font-size: 13px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    color: var(--wp-text-primary);
+  }
+  .b-pills {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .b-pill {
+    background: var(--wp-bg-muted);
+    color: var(--wp-text-secondary);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+  }
+  .b-pill-active {
+    background: var(--wp-primary);
+    color: white;
+  }
+  .b-pill .count { opacity: 0.6; margin-left: 4px; }
+  .b-card {
+    background: white;
+    border: 1px solid var(--wp-border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  }
+  .b-bar {
+    height: 6px;
+    background: var(--wp-bg-muted);
+    border-radius: 999px;
+    margin-bottom: 6px;
+    overflow: hidden;
+  }
+  .b-bar-fill { height: 100%; background: var(--wp-success); }
+  .b-bar-label { font-size: 11px; color: var(--wp-text-muted); margin-bottom: 16px; }
+  .b-table { width: 100%; font-size: 13px; border-collapse: collapse; }
+  .b-table thead { background: var(--wp-bg-muted); }
+  .b-table th {
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--wp-text-muted);
+  }
+  .b-table th.right { text-align: right; }
+  .b-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--wp-border-light);
+  }
+  .b-table td.right { text-align: right; }
+  .b-table tr.month-row td {
+    background: var(--wp-bg-muted);
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 8px 14px;
+  }
+  .b-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .b-badge-sent { background: var(--wp-info-bg); color: var(--wp-info); }
+  .b-badge-approved { background: var(--wp-success-bg); color: var(--wp-success); }
+  .b-badge-converted { background: var(--wp-purple-bg); color: var(--wp-purple); }
+  .b-badge-rejected { background: var(--wp-error-bg); color: var(--wp-error); }
+  .b-badge-draft { background: var(--wp-bg-muted); color: var(--wp-text-secondary); }
+
+  /* ═════════ AFTER (new) ═════════ */
+
+  .a-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .a-title-block h1 {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+  }
+  .a-title-block p {
+    font-size: 13px;
+    color: var(--wp-text-muted);
+    margin-top: 4px;
+  }
+  .a-actions { display: flex; gap: 8px; }
+  .a-btn-primary {
+    background: linear-gradient(180deg, #F97316 0%, #ea6c0a 100%);
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 1px 2px rgb(249 115 22 / 0.3), inset 0 1px 0 rgb(255 255 255 / 0.15);
+    transition: transform 120ms;
+  }
+  .a-btn-primary:hover { transform: translateY(-1px); }
+  .a-btn-secondary {
+    background: white;
+    color: var(--wp-text-primary);
+    border: 1px solid var(--wp-border);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: var(--wp-elevation-1);
+  }
+
+  /* KPI row — NEW */
+  .a-kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .a-kpi {
+    background: white;
+    border: 1px solid var(--wp-border);
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: var(--wp-elevation-1);
+    position: relative;
+    overflow: hidden;
+  }
+  .a-kpi::before {
+    content: '';
+    position: absolute; inset: 0 auto 0 0; width: 3px;
+  }
+  .a-kpi.pending::before { background: var(--wp-info); }
+  .a-kpi.approved::before { background: var(--wp-success); }
+  .a-kpi.rejected::before { background: var(--wp-error); }
+  .a-kpi.revenue::before { background: var(--wp-accent); }
+  .a-kpi-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--wp-text-muted);
+    margin-bottom: 6px;
+  }
+  .a-kpi-value {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--wp-text-primary);
+    line-height: 1;
+  }
+  .a-kpi-sub { font-size: 11px; color: var(--wp-text-muted); margin-top: 6px; }
+  .a-kpi-trend-up { color: var(--wp-success); }
+  .a-kpi-trend-down { color: var(--wp-error); }
+
+  .a-toolbar {
+    background: white;
+    border: 1px solid var(--wp-border);
+    border-radius: 12px;
+    padding: 10px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: var(--wp-elevation-1);
+  }
+  .a-search {
+    flex: 1;
+    position: relative;
+  }
+  .a-search input {
+    width: 100%;
+    background: var(--wp-bg-secondary);
+    border: 1px solid transparent;
+    padding: 8px 12px 8px 34px;
+    font-size: 13px;
+    border-radius: 8px;
+    color: var(--wp-text-primary);
+    outline: none;
+    transition: all 150ms;
+  }
+  .a-search input:focus {
+    background: white;
+    border-color: var(--wp-primary);
+    box-shadow: 0 0 0 3px rgb(30 58 95 / 0.12);
+  }
+  .a-search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--wp-text-muted);
+  }
+  .a-pills {
+    display: flex;
+    gap: 4px;
+    padding: 2px;
+    background: var(--wp-bg-secondary);
+    border-radius: 10px;
+  }
+  .a-pill {
+    background: transparent;
+    color: var(--wp-text-secondary);
+    padding: 6px 12px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 120ms;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .a-pill:hover { color: var(--wp-text-primary); }
+  .a-pill-active {
+    background: white;
+    color: var(--wp-primary);
+    box-shadow: var(--wp-elevation-1);
+  }
+  .a-pill .dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--wp-text-muted);
+  }
+  .a-pill.status-sent .dot { background: var(--wp-info); }
+  .a-pill.status-approved .dot { background: var(--wp-success); }
+  .a-pill.status-rejected .dot { background: var(--wp-error); }
+  .a-pill .count { opacity: 0.6; font-weight: 500; }
+
+  .a-card {
+    background: white;
+    border: 1px solid var(--wp-border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: var(--wp-elevation-1);
+  }
+  .a-insight {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: linear-gradient(90deg, var(--wp-warning-bg) 0%, rgba(255,251,235,0.6) 100%);
+    border-left: 3px solid var(--wp-warning);
+    border-radius: 10px;
+    margin-bottom: 16px;
+    font-size: 12px;
+  }
+  .a-insight-icon {
+    width: 28px; height: 28px;
+    background: var(--wp-warning);
+    color: white;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 11px;
+  }
+  .a-insight-text { flex: 1; color: #78350F; }
+  .a-insight-text strong { color: var(--wp-warning); }
+  .a-insight-action {
+    background: white;
+    color: var(--wp-warning);
+    border: 1px solid var(--wp-warning);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .a-table { width: 100%; font-size: 13px; border-collapse: collapse; }
+  .a-table thead { background: var(--wp-bg-secondary); }
+  .a-table th {
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--wp-text-muted);
+    border-bottom: 1px solid var(--wp-border);
+  }
+  .a-table th.right { text-align: right; }
+  .a-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--wp-border-light);
+  }
+  .a-table tr { transition: background 120ms; cursor: pointer; }
+  .a-table tbody tr:hover { background: var(--wp-bg-secondary); }
+  .a-table td.right { text-align: right; }
+  .a-table tr.month-row { background: var(--wp-bg-secondary); }
+  .a-table tr.month-row td {
+    background: transparent;
+    padding: 10px 16px;
+    border-top: 1px solid var(--wp-border);
+  }
+  .a-month-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--wp-text-secondary);
+  }
+  .a-month-count {
+    font-size: 11px;
+    color: var(--wp-text-muted);
+    font-weight: 500;
+    margin-left: 6px;
+  }
+  .a-month-total { font-weight: 700; color: var(--wp-text-primary); font-variant-numeric: tabular-nums; }
+
+  .a-client-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .a-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--wp-primary) 0%, var(--wp-primary-light) 100%);
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+  .a-avatar.g2 { background: linear-gradient(135deg, #7C3AED 0%, #A855F7 100%); }
+  .a-avatar.g3 { background: linear-gradient(135deg, #059669 0%, #10B981 100%); }
+  .a-avatar.g4 { background: linear-gradient(135deg, #DC2626 0%, #F87171 100%); }
+  .a-avatar.g5 { background: linear-gradient(135deg, #F97316 0%, #FB923C 100%); }
+  .a-client-name { font-weight: 600; color: var(--wp-text-primary); line-height: 1.2; }
+  .a-client-sub { font-size: 11px; color: var(--wp-text-muted); margin-top: 2px; }
+
+  .a-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+  .a-status .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .a-status.sent { background: var(--wp-info-bg); color: var(--wp-info); }
+  .a-status.sent .dot { background: var(--wp-info); }
+  .a-status.approved { background: var(--wp-success-bg); color: var(--wp-success); }
+  .a-status.approved .dot { background: var(--wp-success); }
+  .a-status.rejected { background: var(--wp-error-bg); color: var(--wp-error); }
+  .a-status.rejected .dot { background: var(--wp-error); }
+  .a-status.converted { background: var(--wp-purple-bg); color: var(--wp-purple); }
+  .a-status.converted .dot { background: var(--wp-purple); }
+  .a-status.draft { background: var(--wp-bg-muted); color: var(--wp-text-secondary); }
+  .a-status.draft .dot { background: var(--wp-text-muted); }
+
+  .a-total {
+    font-weight: 700;
+    color: var(--wp-text-primary);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+  .a-row-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    justify-content: flex-end;
+    transition: opacity 120ms;
+  }
+  .a-table tbody tr:hover .a-row-actions { opacity: 1; }
+  .a-icon-btn {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--wp-text-muted);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .a-icon-btn:hover { background: var(--wp-bg-muted); color: var(--wp-text-primary); }
+  .a-icon-btn.danger:hover { background: var(--wp-error-bg); color: var(--wp-error); }
+
+  .a-activity-hint {
+    font-size: 10px;
+    color: var(--wp-text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 6px;
+  }
+  .a-activity-hint.opened { color: var(--wp-success); }
+
+  /* Icons */
+  svg { display: inline-block; vertical-align: middle; }
+
+  /* Mobile compare */
+  .mobile-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 40px;
+  }
+  .phone-frame {
+    background: #1a1a1a;
+    border-radius: 32px;
+    padding: 10px;
+    width: 395px;
+    margin: 0 auto;
+    box-shadow: 0 20px 60px rgb(0 0 0 / 0.15);
+  }
+  .phone-screen {
+    background: white;
+    border-radius: 24px;
+    overflow: hidden;
+    height: 720px;
+  }
+  .mob-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--wp-border-light);
+  }
+  .mob-header h1 { font-size: 17px; font-weight: 700; flex: 1; }
+  .mob-header-action { color: var(--wp-accent); font-size: 14px; font-weight: 600; }
+  .mob-search {
+    margin: 10px 16px;
+    background: var(--wp-bg-muted);
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--wp-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .mob-tabs {
+    display: flex;
+    margin: 0 16px;
+    border: 1px solid var(--wp-border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .mob-tab {
+    flex: 1;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 10px 0;
+    color: var(--wp-text-muted);
+    background: white;
+    border-right: 1px solid var(--wp-border);
+  }
+  .mob-tab:last-child { border-right: none; }
+  .mob-tab.active { background: var(--wp-bg-muted); color: var(--wp-text-primary); font-weight: 700; }
+  .mob-month {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background: var(--wp-bg-muted);
+    border-bottom: 1px solid var(--wp-border);
+    margin-top: 12px;
+  }
+  .mob-month-title { font-size: 12px; font-weight: 700; }
+  .mob-month-total { font-size: 12px; font-weight: 700; }
+  .mob-row {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--wp-border-light);
+  }
+  .mob-row-top {
+    display: flex; justify-content: space-between;
+    font-size: 14px; font-weight: 600;
+  }
+  .mob-row-bottom {
+    display: flex; justify-content: space-between;
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--wp-text-muted);
+  }
+
+  /* New mobile */
+  .mob-header-new {
+    padding: 12px 16px 0;
+  }
+  .mob-header-new-top {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .mob-header-new h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .mob-header-new-sub { font-size: 12px; color: var(--wp-text-muted); }
+  .mob-header-new-fab {
+    background: var(--wp-accent);
+    color: white;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 12px rgb(249 115 22 / 0.3);
+  }
+  .mob-kpis-new {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    padding: 12px 16px 0;
+  }
+  .mob-kpi-new {
+    background: var(--wp-bg-secondary);
+    border-radius: 10px;
+    padding: 10px;
+    position: relative;
+  }
+  .mob-kpi-new-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--wp-text-muted); margin-bottom: 4px; }
+  .mob-kpi-new-value { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+  .mob-kpi-new-value.pending { color: var(--wp-info); }
+  .mob-kpi-new-value.approved { color: var(--wp-success); }
+  .mob-kpi-new-value.rejected { color: var(--wp-error); }
+
+  .mob-search-new {
+    margin: 12px 16px;
+    background: var(--wp-bg-secondary);
+    padding: 10px 12px 10px 36px;
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--wp-text-muted);
+    position: relative;
+  }
+  .mob-search-new svg {
+    position: absolute; left: 12px; top: 50%;
+    transform: translateY(-50%);
+  }
+  .mob-tabs-new {
+    display: flex;
+    gap: 4px;
+    padding: 2px;
+    margin: 0 16px;
+    background: var(--wp-bg-muted);
+    border-radius: 10px;
+  }
+  .mob-tab-new {
+    flex: 1;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 0;
+    color: var(--wp-text-muted);
+    border-radius: 7px;
+  }
+  .mob-tab-new.active { background: white; color: var(--wp-text-primary); box-shadow: var(--wp-elevation-1); }
+
+  .mob-month-new {
+    padding: 14px 16px 6px;
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .mob-month-new-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.05em; color: var(--wp-text-secondary);
+  }
+  .mob-month-new-total {
+    font-size: 12px; font-weight: 700; color: var(--wp-text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+  .mob-row-new {
+    padding: 12px 16px;
+    display: flex; gap: 12px;
+    border-bottom: 1px solid var(--wp-border-light);
+  }
+  .mob-row-new-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--wp-primary) 0%, var(--wp-primary-light) 100%);
+    color: white; font-weight: 700; font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .mob-row-new-avatar.g2 { background: linear-gradient(135deg, #7C3AED 0%, #A855F7 100%); }
+  .mob-row-new-avatar.g3 { background: linear-gradient(135deg, #059669 0%, #10B981 100%); }
+  .mob-row-new-body { flex: 1; min-width: 0; }
+  .mob-row-new-top {
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .mob-row-new-name { font-weight: 600; font-size: 14px; }
+  .mob-row-new-total { font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .mob-row-new-bottom {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 4px;
+  }
+  .mob-row-new-meta { font-size: 11px; color: var(--wp-text-muted); }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="page-header">
+    <div>
+      <h1>Estimates · Listado</h1>
+      <p>Comparativa antes / después · Dashboard desktop</p>
+    </div>
+    <p>plumbr UI redesign · v1</p>
+  </div>
+
+  <div class="compare-grid">
+    <!-- ═══════ BEFORE ═══════ -->
+    <div class="compare-col">
+      <div class="compare-label before">● Actual (Before)</div>
+      <div class="viewport">
+        <div class="b-header">
+          <h1>Estimates</h1>
+          <div>
+            <button class="b-btn-secondary">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/></svg>
+              Use Template
+            </button>
+            <button class="b-btn-primary">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New
+            </button>
+          </div>
+        </div>
+        <input class="b-search" placeholder="Search all estimates" />
+        <div class="b-pills">
+          <button class="b-pill b-pill-active">All <span class="count">12</span></button>
+          <button class="b-pill">Sent <span class="count">4</span></button>
+          <button class="b-pill">Approved <span class="count">5</span></button>
+          <button class="b-pill">Rejected <span class="count">1</span></button>
+          <button class="b-pill">Converted <span class="count">2</span></button>
+        </div>
+        <div class="b-card">
+          <table class="b-table">
+            <thead>
+              <tr>
+                <th>Number</th>
+                <th>Client</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th class="right">Total</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="month-row"><td colspan="6">April 2026 · $12,480.00</td></tr>
+              <tr>
+                <td>EST-1042</td>
+                <td>María González</td>
+                <td><span class="b-badge b-badge-sent">sent</span></td>
+                <td style="color: var(--wp-text-muted)">Apr 14, 2026</td>
+                <td class="right">$2,850.00</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>EST-1041</td>
+                <td>Roberto Sánchez</td>
+                <td><span class="b-badge b-badge-approved">approved</span></td>
+                <td style="color: var(--wp-text-muted)">Apr 12, 2026</td>
+                <td class="right">$4,120.00</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>EST-1040</td>
+                <td>Linda Chen</td>
+                <td><span class="b-badge b-badge-converted">converted</span></td>
+                <td style="color: var(--wp-text-muted)">Apr 10, 2026</td>
+                <td class="right">$3,450.00</td>
+                <td></td>
+              </tr>
+              <tr class="month-row"><td colspan="6">March 2026 · $8,900.00</td></tr>
+              <tr>
+                <td>EST-1039</td>
+                <td>James Walker</td>
+                <td><span class="b-badge b-badge-rejected">rejected</span></td>
+                <td style="color: var(--wp-text-muted)">Mar 28, 2026</td>
+                <td class="right">$1,200.00</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>EST-1038</td>
+                <td>Sofia Martínez</td>
+                <td><span class="b-badge b-badge-approved">approved</span></td>
+                <td style="color: var(--wp-text-muted)">Mar 22, 2026</td>
+                <td class="right">$5,780.00</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ AFTER ═══════ -->
+    <div class="compare-col">
+      <div class="compare-label after">◆ Rediseño (After)</div>
+      <div class="viewport">
+        <div class="a-header">
+          <div class="a-title-block">
+            <h1>Estimates</h1>
+            <p>12 total · <span style="color: var(--wp-success); font-weight: 600;">$28,380</span> en aprobados este mes</p>
+          </div>
+          <div class="a-actions">
+            <button class="a-btn-secondary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/></svg>
+              Template
+            </button>
+            <button class="a-btn-primary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New estimate
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI row -->
+        <div class="a-kpi-row">
+          <div class="a-kpi pending">
+            <div class="a-kpi-label">Pending</div>
+            <div class="a-kpi-value">4</div>
+            <div class="a-kpi-sub">$9,240 · <span class="a-kpi-trend-up">↑ 2 opened</span></div>
+          </div>
+          <div class="a-kpi approved">
+            <div class="a-kpi-label">Approved</div>
+            <div class="a-kpi-value">5</div>
+            <div class="a-kpi-sub">$18,140 · <span class="a-kpi-trend-up">2 invoiced</span></div>
+          </div>
+          <div class="a-kpi rejected">
+            <div class="a-kpi-label">Declined</div>
+            <div class="a-kpi-value">1</div>
+            <div class="a-kpi-sub">$1,200 · rate 8%</div>
+          </div>
+          <div class="a-kpi revenue">
+            <div class="a-kpi-label">Est. revenue</div>
+            <div class="a-kpi-value">$28.4k</div>
+            <div class="a-kpi-sub"><span class="a-kpi-trend-up">↑ 12% vs last mo.</span></div>
+          </div>
+        </div>
+
+        <div class="a-insight">
+          <div class="a-insight-icon">!</div>
+          <div class="a-insight-text"><strong>2 estimates</strong> pendientes de respuesta hace 3+ días — considera reenviar</div>
+          <button class="a-insight-action">View</button>
+        </div>
+
+        <div class="a-toolbar">
+          <div class="a-search">
+            <span class="a-search-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </span>
+            <input placeholder="Buscar por cliente, número o estado..." />
+          </div>
+          <div class="a-pills">
+            <button class="a-pill a-pill-active">All <span class="count">12</span></button>
+            <button class="a-pill status-sent"><span class="dot"></span>Sent <span class="count">4</span></button>
+            <button class="a-pill status-approved"><span class="dot"></span>Approved <span class="count">5</span></button>
+            <button class="a-pill status-rejected"><span class="dot"></span>Declined <span class="count">1</span></button>
+          </div>
+        </div>
+
+        <div class="a-card">
+          <table class="a-table">
+            <thead>
+              <tr>
+                <th>Estimate</th>
+                <th>Client</th>
+                <th>Status</th>
+                <th class="right">Total</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="month-row"><td colspan="5">
+                <span class="a-month-title">April 2026</span>
+                <span class="a-month-count">· 3 estimates</span>
+                <span style="float: right;" class="a-month-total">$12,480.00</span>
+              </td></tr>
+              <tr>
+                <td>
+                  <div style="font-weight: 600;">#1042</div>
+                  <div style="font-size: 11px; color: var(--wp-text-muted);">Apr 14 · <span class="a-activity-hint opened">● Opened 2x</span></div>
+                </td>
+                <td>
+                  <div class="a-client-cell">
+                    <div class="a-avatar">MG</div>
+                    <div>
+                      <div class="a-client-name">María González</div>
+                      <div class="a-client-sub">maria@example.com</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="a-status sent"><span class="dot"></span>Sent</span></td>
+                <td class="right"><span class="a-total">$2,850.00</span></td>
+                <td class="right">
+                  <div class="a-row-actions">
+                    <button class="a-icon-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+                    <button class="a-icon-btn danger"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div style="font-weight: 600;">#1041</div>
+                  <div style="font-size: 11px; color: var(--wp-text-muted);">Apr 12</div>
+                </td>
+                <td>
+                  <div class="a-client-cell">
+                    <div class="a-avatar g3">RS</div>
+                    <div>
+                      <div class="a-client-name">Roberto Sánchez</div>
+                      <div class="a-client-sub">Kitchen remodel · Job #88</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="a-status approved"><span class="dot"></span>Approved</span></td>
+                <td class="right"><span class="a-total">$4,120.00</span></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>
+                  <div style="font-weight: 600;">#1040</div>
+                  <div style="font-size: 11px; color: var(--wp-text-muted);">Apr 10</div>
+                </td>
+                <td>
+                  <div class="a-client-cell">
+                    <div class="a-avatar g2">LC</div>
+                    <div>
+                      <div class="a-client-name">Linda Chen</div>
+                      <div class="a-client-sub">Invoice #INV-234</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="a-status converted"><span class="dot"></span>Invoiced</span></td>
+                <td class="right"><span class="a-total">$3,450.00</span></td>
+                <td></td>
+              </tr>
+              <tr class="month-row"><td colspan="5">
+                <span class="a-month-title">March 2026</span>
+                <span class="a-month-count">· 5 estimates</span>
+                <span style="float: right;" class="a-month-total">$8,900.00</span>
+              </td></tr>
+              <tr>
+                <td>
+                  <div style="font-weight: 600;">#1039</div>
+                  <div style="font-size: 11px; color: var(--wp-text-muted);">Mar 28</div>
+                </td>
+                <td>
+                  <div class="a-client-cell">
+                    <div class="a-avatar g4">JW</div>
+                    <div>
+                      <div class="a-client-name">James Walker</div>
+                      <div class="a-client-sub">jwalker@example.com</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="a-status rejected"><span class="dot"></span>Declined</span></td>
+                <td class="right"><span class="a-total">$1,200.00</span></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>
+                  <div style="font-weight: 600;">#1038</div>
+                  <div style="font-size: 11px; color: var(--wp-text-muted);">Mar 22</div>
+                </td>
+                <td>
+                  <div class="a-client-cell">
+                    <div class="a-avatar g5">SM</div>
+                    <div>
+                      <div class="a-client-name">Sofia Martínez</div>
+                      <div class="a-client-sub">Bathroom renovation</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="a-status approved"><span class="dot"></span>Approved</span></td>
+                <td class="right"><span class="a-total">$5,780.00</span></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ MOBILE COMPARE ═══════ -->
+  <div class="page-header" style="margin-top: 48px;">
+    <div>
+      <h1>Vista Móvil</h1>
+      <p>Lista de estimates en pantalla 375px</p>
+    </div>
+  </div>
+
+  <div class="mobile-compare">
+    <div>
+      <div class="compare-label before" style="text-align: center; border-radius: 8px; margin-bottom: 16px;">● Actual (Before)</div>
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <div class="mob-header">
+            <h1>Estimates</h1>
+            <span class="mob-header-action">+ New</span>
+          </div>
+          <div class="mob-search">🔍 Buscar presupuestos</div>
+          <div class="mob-tabs">
+            <div class="mob-tab">Pendiente</div>
+            <div class="mob-tab active">Aprobado</div>
+            <div class="mob-tab">Rechazado</div>
+          </div>
+          <div class="mob-month">
+            <span class="mob-month-title">APRIL 2026</span>
+            <span class="mob-month-total">$12,480.00</span>
+          </div>
+          <div class="mob-row">
+            <div class="mob-row-top">
+              <span>María González</span>
+              <span>$2,850.00</span>
+            </div>
+            <div class="mob-row-bottom">
+              <span>Apr 14 · #1042</span>
+              <span class="b-badge b-badge-sent">sent</span>
+            </div>
+          </div>
+          <div class="mob-row">
+            <div class="mob-row-top">
+              <span>Roberto Sánchez</span>
+              <span>$4,120.00</span>
+            </div>
+            <div class="mob-row-bottom">
+              <span>Apr 12 · #1041</span>
+              <span class="b-badge b-badge-approved">approved</span>
+            </div>
+          </div>
+          <div class="mob-row">
+            <div class="mob-row-top">
+              <span>Linda Chen</span>
+              <span>$3,450.00</span>
+            </div>
+            <div class="mob-row-bottom">
+              <span>Apr 10 · #1040</span>
+              <span class="b-badge b-badge-converted">converted</span>
+            </div>
+          </div>
+          <div class="mob-month">
+            <span class="mob-month-title">MARCH 2026</span>
+            <span class="mob-month-total">$8,900.00</span>
+          </div>
+          <div class="mob-row">
+            <div class="mob-row-top">
+              <span>James Walker</span>
+              <span>$1,200.00</span>
+            </div>
+            <div class="mob-row-bottom">
+              <span>Mar 28 · #1039</span>
+              <span class="b-badge b-badge-rejected">rejected</span>
+            </div>
+          </div>
+          <div class="mob-row">
+            <div class="mob-row-top">
+              <span>Sofia Martínez</span>
+              <span>$5,780.00</span>
+            </div>
+            <div class="mob-row-bottom">
+              <span>Mar 22 · #1038</span>
+              <span class="b-badge b-badge-approved">approved</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="compare-label after" style="text-align: center; border-radius: 8px; margin-bottom: 16px;">◆ Rediseño (After)</div>
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <div class="mob-header-new">
+            <div class="mob-header-new-top">
+              <div>
+                <h1>Estimates</h1>
+                <div class="mob-header-new-sub">12 total · 4 pendientes</div>
+              </div>
+              <div class="mob-header-new-fab">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="mob-kpis-new">
+            <div class="mob-kpi-new">
+              <div class="mob-kpi-new-label">Pending</div>
+              <div class="mob-kpi-new-value pending">4</div>
+            </div>
+            <div class="mob-kpi-new">
+              <div class="mob-kpi-new-label">Approved</div>
+              <div class="mob-kpi-new-value approved">5</div>
+            </div>
+            <div class="mob-kpi-new">
+              <div class="mob-kpi-new-label">Declined</div>
+              <div class="mob-kpi-new-value rejected">1</div>
+            </div>
+          </div>
+          <div class="mob-search-new">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Buscar presupuestos
+          </div>
+          <div class="mob-tabs-new">
+            <div class="mob-tab-new active">Pending</div>
+            <div class="mob-tab-new">Approved</div>
+            <div class="mob-tab-new">Declined</div>
+          </div>
+          <div class="mob-month-new">
+            <span class="mob-month-new-title">April 2026 · 3</span>
+            <span class="mob-month-new-total">$12,480.00</span>
+          </div>
+          <div class="mob-row-new">
+            <div class="mob-row-new-avatar">MG</div>
+            <div class="mob-row-new-body">
+              <div class="mob-row-new-top">
+                <span class="mob-row-new-name">María González</span>
+                <span class="mob-row-new-total">$2,850</span>
+              </div>
+              <div class="mob-row-new-bottom">
+                <span class="mob-row-new-meta">#1042 · Apr 14</span>
+                <span class="a-status sent"><span class="dot"></span>Opened</span>
+              </div>
+            </div>
+          </div>
+          <div class="mob-row-new">
+            <div class="mob-row-new-avatar g3">RS</div>
+            <div class="mob-row-new-body">
+              <div class="mob-row-new-top">
+                <span class="mob-row-new-name">Roberto Sánchez</span>
+                <span class="mob-row-new-total">$4,120</span>
+              </div>
+              <div class="mob-row-new-bottom">
+                <span class="mob-row-new-meta">#1041 · Apr 12</span>
+                <span class="a-status approved"><span class="dot"></span>Approved</span>
+              </div>
+            </div>
+          </div>
+          <div class="mob-row-new">
+            <div class="mob-row-new-avatar g2">LC</div>
+            <div class="mob-row-new-body">
+              <div class="mob-row-new-top">
+                <span class="mob-row-new-name">Linda Chen</span>
+                <span class="mob-row-new-total">$3,450</span>
+              </div>
+              <div class="mob-row-new-bottom">
+                <span class="mob-row-new-meta">#1040 · Apr 10</span>
+                <span class="a-status converted"><span class="dot"></span>Invoiced</span>
+              </div>
+            </div>
+          </div>
+          <div class="mob-month-new">
+            <span class="mob-month-new-title">March 2026 · 5</span>
+            <span class="mob-month-new-total">$8,900.00</span>
+          </div>
+          <div class="mob-row-new">
+            <div class="mob-row-new-avatar g4">JW</div>
+            <div class="mob-row-new-body">
+              <div class="mob-row-new-top">
+                <span class="mob-row-new-name">James Walker</span>
+                <span class="mob-row-new-total">$1,200</span>
+              </div>
+              <div class="mob-row-new-bottom">
+                <span class="mob-row-new-meta">#1039 · Mar 28</span>
+                <span class="a-status rejected"><span class="dot"></span>Declined</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

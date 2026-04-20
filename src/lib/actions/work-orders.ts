@@ -44,7 +44,7 @@ export async function createWorkOrder(data: {
     assignedTechnicianIds: data.assignedTechnicianIds ?? [],
   })
 
-  revalidatePath('/[locale]/jobs', 'page')
+  revalidatePath('/[locale]/projects', 'page')
   return wo
 }
 
@@ -80,7 +80,7 @@ export async function generateWorkOrderFromEstimate(jobId: string, estimateId: s
     assignedTechnicianIds: [],
   })
 
-  revalidatePath('/[locale]/jobs', 'page')
+  revalidatePath('/[locale]/projects', 'page')
   return wo
 }
 
@@ -97,12 +97,12 @@ export async function updateWorkOrder(id: string, data: Partial<{
     ...data.assignedTechnicianIds !== undefined && { assignedTechnicianIds: data.assignedTechnicianIds },
   })
 
-  revalidatePath('/[locale]/jobs', 'page')
+  revalidatePath('/[locale]/projects', 'page')
   return wo
 }
 
 export async function deleteWorkOrder(id: string) {
   const userId = await requirePro()
   await dbAdapter.workOrders.delete(id, userId)
-  revalidatePath('/[locale]/jobs', 'page')
+  revalidatePath('/[locale]/projects', 'page')
 }

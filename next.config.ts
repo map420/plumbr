@@ -78,6 +78,14 @@ const nextConfig: NextConfig = {
       'date-fns',
     ],
   },
+  async redirects() {
+    return [
+      { source: '/jobs', destination: '/projects', permanent: true },
+      { source: '/jobs/:path*', destination: '/projects/:path*', permanent: true },
+      { source: '/:locale(en|es)/jobs', destination: '/:locale/projects', permanent: true },
+      { source: '/:locale(en|es)/jobs/:path*', destination: '/:locale/projects/:path*', permanent: true },
+    ]
+  },
 }
 
 export default withPWA(withNextIntl(nextConfig))

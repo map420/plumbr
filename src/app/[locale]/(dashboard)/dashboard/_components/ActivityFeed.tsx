@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useLocale } from 'next-intl'
 import { Eye, CheckCircle2, AlertTriangle, CreditCard, FileText, X } from 'lucide-react'
 
 type ActivityItem = {
@@ -19,13 +20,14 @@ const ICONS: Record<string, React.ReactNode> = {
   completed: <FileText size={14} className="text-purple-500" />,
 }
 
-function formatTime(date: Date) {
-  return new Date(date).toLocaleDateString('en-US', {
+function formatTime(date: Date, locale: string) {
+  return new Date(date).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', {
     month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
   })
 }
 
 export function ActivityFeed({ items }: { items: ActivityItem[] }) {
+  const locale = useLocale()
   const [showAll, setShowAll] = useState(false)
 
   if (items.length === 0) return null
@@ -48,7 +50,7 @@ export function ActivityFeed({ items }: { items: ActivityItem[] }) {
             <div className="mt-0.5 shrink-0">{ICONS[item.type] || <Eye size={14} style={{ color: 'var(--wp-text-muted)' }} />}</div>
             <p className="text-sm flex-1" style={{ color: 'var(--wp-text-secondary)' }}>{item.title}</p>
             <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[10px]" style={{ color: 'var(--wp-text-muted)' }}>{formatTime(item.timestamp)}</span>
+              <span className="text-[10px]" style={{ color: 'var(--wp-text-muted)' }}>{formatTime(item.timestamp, locale)}</span>
               {!item.read && <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
             </div>
           </div>
