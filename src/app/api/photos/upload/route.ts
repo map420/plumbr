@@ -1,12 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { createPhoto } from '@/lib/actions/photos'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
+// Lazy-init avoids "supabaseUrl is required" during Vercel's build-time page
+// data collection, where runtime env vars aren't available at module scope.
+let _supabase: SupabaseClient | null = null
+function getSupabase(): SupabaseClient {
+  if (_supabase) return _supabase
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !key) throw new Error('Supabase env vars missing (NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY)')
+  _supabase = createClient(url, key)
+  return _supabase
+}
 
 const LOGO_MIME = new Set(['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'])
 const LOGO_MAX_BYTES = 2 * 1024 * 1024
@@ -14,6 +24,8 @@ const LOGO_MAX_BYTES = 2 * 1024 * 1024
 export async function POST(req: NextRequest) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const supabase = getSupabase()
 
   const url = new URL(req.url)
   const kind = url.searchParams.get('kind') === 'logo' ? 'logo' : 'photo'
