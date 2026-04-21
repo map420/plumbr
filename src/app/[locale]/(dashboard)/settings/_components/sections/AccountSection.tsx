@@ -1,10 +1,23 @@
 'use client'
 
-import { SignOutButton, UserProfile } from '@clerk/nextjs'
+import { UserProfile, useClerk } from '@clerk/nextjs'
 import { LogOut } from 'lucide-react'
+import { useState } from 'react'
 
 export function AccountSection({ locale }: { locale: string }) {
   const isEs = locale === 'es'
+  const { signOut } = useClerk()
+  const [signingOut, setSigningOut] = useState(false)
+
+  const handleSignOut = async () => {
+    setSigningOut(true)
+    try {
+      await signOut({ redirectUrl: '/' })
+    } catch {
+      setSigningOut(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="wp-account-embed">
@@ -28,20 +41,22 @@ export function AccountSection({ locale }: { locale: string }) {
               : 'End your session on this device.'}
           </div>
         </div>
-        <SignOutButton>
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors"
-            style={{
-              background: 'var(--wp-error-bg)',
-              color: 'var(--wp-error)',
-              border: '1px solid #FECACA',
-            }}
-          >
-            <LogOut size={14} />
-            {isEs ? 'Cerrar sesión' : 'Sign out'}
-          </button>
-        </SignOutButton>
+        <button
+          type="button"
+          onClick={handleSignOut}
+          disabled={signingOut}
+          className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-60"
+          style={{
+            background: 'var(--wp-error-bg)',
+            color: 'var(--wp-error)',
+            border: '1px solid #FECACA',
+          }}
+        >
+          <LogOut size={14} />
+          {signingOut
+            ? isEs ? 'Saliendo…' : 'Signing out…'
+            : isEs ? 'Cerrar sesión' : 'Sign out'}
+        </button>
       </div>
     </div>
   )
