@@ -84,6 +84,12 @@ const nextConfig: NextConfig = {
       { source: '/jobs/:path*', destination: '/projects/:path*', permanent: true },
       { source: '/:locale(en|es)/jobs', destination: '/:locale/projects', permanent: true },
       { source: '/:locale(en|es)/jobs/:path*', destination: '/:locale/projects/:path*', permanent: true },
+      // Marketing CTAs point to ${appUrl}/login and /signup (generic, no locale).
+      // Map those to the locale-prefixed Clerk sign-in / sign-up routes.
+      { source: '/login', destination: '/en/sign-in', permanent: false },
+      { source: '/login/:path*', destination: '/en/sign-in/:path*', permanent: false },
+      { source: '/signup', destination: '/en/sign-up', permanent: false },
+      { source: '/signup/:path*', destination: '/en/sign-up/:path*', permanent: false },
     ]
   },
 }
